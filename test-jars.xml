@@ -1,0 +1,15 @@
+<!-- Ant project fragment for the unit tests deployment jars
+$Id: test-jars.xml 77754 2008-09-01 14:25:24Z adrian@jboss.org $
+-->
+<project name="test-jars">	
+
+   <!--
+     | Build all jar files.
+     | Add a separate target for each test deployment/set of deployments
+     | and then add that target to depends="..."
+   -->
+   <target name="jars" description="Builds all jar files."
+           depends="init, compile-resources"/>
+           
+</project>
+

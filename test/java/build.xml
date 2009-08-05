@@ -1,0 +1,309 @@
+<?xml version="1.0"?>
+<!--
+ *  Copyright(c) 2008 Red Hat Middleware, LLC,
+ *  and individual contributors as indicated by the @authors tag.
+ *  See the copyright.txt in the distribution for a
+ *  full listing of individual contributors.
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library in the file COPYING.LIB;
+ *  if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * @author Jean-Frederic Clere
+ * @version $Revision$
+-->
+<project name="mod_cluster" default="all" basedir=".">
+
+  <!-- See "build.properties.sample" in the top level directory for all     -->
+  <!-- property values you must customize for successful building!!!        -->
+  <property file="${user.home}/build.properties"/>
+  <property file="build.properties"/>
+
+  <property file="build.properties.default"/>
+
+  <property name="test.classes" value="${basedir}/output/classes"/>
+
+  <property name="compile.source" value="1.5"/>
+
+  <property name="test.runner" value="junit.textui.TestRunner"/>
+
+  <path id="tomcat.test.classpath">
+    <pathelement location="${test.classes}"/>
+    <pathelement location="${junit.jar}"/>
+    <pathelement location="${commons-httpclient.jar}"/>
+    <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${commons-codec.jar}"/>
+
+    <pathelement location="${jbossweb.jar}"/>
+    <pathelement location="${servlet-api.jar}"/>
+
+    <pathelement location="${jboss-logging.jar}"/>
+
+    <pathelement location="${jboss-ejb-api.jar}"/>
+
+   <!-- Paul stuff -->
+    <pathelement location="${mod_cluster.jar}"/>
+<!--
+    <fileset dir="${jbossweb.build}/bin/">
+      <include name="tomcat-juli.jar"/>
+    </fileset>
+ -->
+  </path>
+ 
+  <target name="base">
+    <echo message="${base.path}"/>
+  </target>
+
+  <target name="compile" depends="download">
+
+  <mkdir dir="${test.classes}"/>
+  <mkdir dir="${test.classes}/conf"/>
+
+  <!-- Compile -->
+  <javac srcdir="." destdir="${test.classes}"
+         debug="on" debuglevel="lines,vars,source"
+         deprecation="${compile.deprecation}"
+         source="${compile.source}"
+         optimize="${compile.optimize}">
+         <classpath refid="tomcat.test.classpath" />
+         <include name="org/jboss/mod_cluster/**" />
+  </javac>
+
+  <!-- Build the client (servlets) applications -->
+  <ant dir="Clients/JBWEB-117/" target="build">
+  </ant>
+
+  <!-- Copy the class file in the ouput directory -->
+  <copy file="Clients/JBWEB-117/JBWEB-117.war" todir="${test.classes}"/>
+
+  </target>
+
+  <!-- Download and install httpd -->
+  <target name="testhttpd">
+     <available file="${base.path}/opt/jboss/httpd/sbin/apachectl" property="exist"/>
+  </target>
+  <!--
+  <target name="installhttpd" unless="exist"  depends="testhttpd">
+    -->
+  <target name="installhttpd">
+    <exec executable="bash">
+      <arg value="installhttpd.sh"/>
+    </exec>
+  </target>
+  <target name="httpd" depends="installhttpd">
+    <copy file="apachectl.bat" tofile="apache.bat" />
+    <replace file="apache.bat" token="@BASELOC@" value="${base.path}"/>
+    <exec executable="${base.path}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX">
+      <arg value="start"/>
+    </exec>
+    <exec executable="apache.bat" os="Windows 2003">
+      <arg value="start"/>
+    </exec>
+  </target>
+  <target name="stophttpd">
+    <exec executable="${base.path}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX">
+      <arg value="stop"/>
+    </exec>
+    <exec executable="${base.path}/httpd-2.2/bin/httpd.exe" os="Windows 2003">
+      <arg value="-k stop"/>
+    </exec>
+    <exec executable="${base.path}/httpd-2.2/bin/httpd.exe" os="Windows 2003">
+      <arg value="-k uninstall"/>
+    </exec>
+  </target>
+
+  <!-- Run the tests -->
+  <target name="tests" depends="compile">
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+  </target>
+  <target name="all" depends="compile,httpd">
+     <!-- That is like test but it sets test.failure to make sure we stop httpd even in case of errors -->
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" resultproperty="test.failure">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+     <antcall target="stophttpd">
+     </antcall>
+
+     <condition property="build.failed">
+        <not>
+          <equals arg1="${test.failure}" arg2="0"/>
+        </not>
+      </condition>
+      <fail if="build.failed" message="Build Failed!"/>
+
+  </target>
+
+  <target name="extra" depends="compile">
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <!-- XXX Need to fix the deployement -->
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster} -DTest=testJBWEB_117"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+     <!-- XXX Need to fix the deployement -->
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster} -Dtest=Test_Chunk_JBWEB_117"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+    <!-- This test requires tc/jb native for the moment it fails except if you install by hands the libraries -->
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster} -Dtest=Test_Native_JBWEB_117"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+  </target>
+  <target name="one" depends="compile">
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster} -Dtest=${test}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+  </target>
+
+  <!-- Test the domain logic -->
+  <target name="domain" depends="compile">
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <!-- Create 4 server with a port to stop them -->
+     <java dir="${test.classes}" classname="org.jboss.mod_cluster.StartJBossWeb"
+           spawn="true" fork="yes" failonerror="${test.failonerror}">
+            <arg line="8009 node1 dom1 8005"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+     <java dir="${test.classes}" classname="org.jboss.mod_cluster.StartJBossWeb"
+           spawn="true" fork="yes" failonerror="${test.failonerror}">
+            <arg line="8010 node2 dom1 8006"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+     <java dir="${test.classes}" classname="org.jboss.mod_cluster.StartJBossWeb"
+           spawn="true" fork="yes" failonerror="${test.failonerror}">
+            <arg line="8011 node3 dom2 8007"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+     <java dir="${test.classes}" classname="org.jboss.mod_cluster.StartJBossWeb"
+           spawn="true" fork="yes" failonerror="${test.failonerror}">
+            <arg line="8012 node4 dom2 8008"/>
+            <jvmarg line="-Dcluster=${cluster}"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+     <!-- Run a test : connect, get the node, stop it and check we stay on the domain -->
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <jvmarg line="-Dcluster=${cluster} -Dtest=Domaintest"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+  </target>
+
+  <!-- Download and dependency building -->
+  <target name="proxyflags">
+    <!-- check proxy parameters. -->
+    <condition property="useproxy">
+      <equals arg1="${proxy.use}" arg2="on" />
+    </condition>
+  </target>
+
+  <target name="setproxy" depends="proxyflags" if="useproxy">
+    <taskdef name="setproxy"
+            classname="org.apache.tools.ant.taskdefs.optional.net.SetProxy" />
+    <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"
+              proxyuser="${proxy.user}" proxypassword="${proxy.password}" />
+    <echo message="Using ${proxy.host}:${proxy.port} to download ${sourcefile}"/>
+  </target>
+
+  <target name="testexist">
+    <echo message="Testing for ${destfile}"/>
+    <available file="${destfile}" property="exist"/>
+  </target>
+
+  <target name="downloadgz" unless="exist" depends="setproxy,testexist">
+    <!-- Download and extract the package -->
+    <mkdir dir="${base.path}" />
+    <get src="${sourcefile}" dest="${base.path}/file.tar.gz" />
+    <gunzip src="${base.path}/file.tar.gz" dest="${base.path}/file.tar"/>
+    <untar src="${base.path}/file.tar" dest="${base.path}"/>
+    <delete file="${base.path}/file.tar"/>
+    <delete file="${base.path}/file.tar.gz"/>
+  </target>
+
+  <target name="downloadfile" unless="exist" depends="setproxy,testexist">
+    <!-- Download extract the file -->
+    <mkdir dir="${destdir}" />
+    <get src="${sourcefile}" dest="${destfile}" />
+  </target>
+
+  <target name="download" description="Builds and download dependent components">
+    <antcall target="downloadgz">
+      <param name="sourcefile" value="${commons-httpclient.loc}"/>
+      <param name="destfile" value="${commons-httpclient.jar}"/>
+    </antcall>
+
+    <antcall target="downloadgz">
+      <param name="sourcefile" value="${commons-logging.loc}"/>
+      <param name="destfile" value="${commons-logging.jar}"/>
+    </antcall>
+
+    <antcall target="downloadgz">
+      <param name="sourcefile" value="${commons-codec.loc}"/>
+      <param name="destfile" value="${commons-codec.jar}"/>
+    </antcall>
+
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${jbossweb.jar.loc}"/>
+      <param name="destfile" value="${jbossweb.jar}"/>
+      <param name="destdir" value="${base-jbossweb.home}"/>
+    </antcall>
+
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${servlet-api.jar.loc}"/>
+      <param name="destfile" value="${servlet-api.jar}"/>
+      <param name="destdir" value="${base-jbossweb.home}"/>
+    </antcall>
+
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${jboss-logging.jar.loc}"/>
+      <param name="destfile" value="${jboss-logging.jar}"/>
+      <param name="destdir" value="${base-jboss-logging.home}"/>
+    </antcall>
+
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${jboss-ejb-api.jar.loc}"/>
+      <param name="destfile" value="${jboss-ejb-api.jar}"/>
+      <param name="destdir" value="${base-jboss-ejb-api.home}"/>
+    </antcall>
+
+    <antcall target="downloadfile">
+      <param name="sourcefile" value="${junit.jar.loc}"/>
+      <param name="destfile" value="${junit.jar}"/>
+      <param name="destdir" value="${base-junit.home}"/>
+    </antcall>
+  </target>
+</project>
