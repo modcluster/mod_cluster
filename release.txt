@@ -1,0 +1,7 @@
+1 - Do the maven magic
+  See http://www.jboss.org/community/wiki/MavenReleaseProcess
+2 - Once done go to ../build/unix edit package.list add something like:
+mod_cluster|1.0.0.GA|2.2.11|ssl:v:0.9.8k|zlib:v:1.2.3|jk:v:1.2.27|iconv:v:1.11|
+expat:v:1.95.8|cluster:t:mod_cluster/1.0.0.GA
+    commit it, with message like GA builds.
+3 - Wait for hudson it should build all the bundle.
