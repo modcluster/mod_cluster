@@ -1,0 +1,49 @@
+--- mod_proxy_ajp.c	2008-06-18 17:23:06.000000000 +0200
++++ mod_proxy_ajp.c	2008-06-18 15:41:03.000000000 +0200
+@@ -550,6 +550,8 @@
+     conn_rec *origin = NULL;
+     proxy_conn_rec *backend = NULL;
+     const char *scheme = "AJP";
++    apr_interval_time_t savetimeout;
++    char savetimeout_set;
+     proxy_dir_conf *dconf = ap_get_module_config(r->per_dir_config,
+                                                  &proxy_module);
+ 
+@@ -605,7 +607,18 @@
+         goto cleanup;
+ 
+     /* Step Two: Make the Connection */
+-    if (ap_proxy_connect_backend(scheme, backend, worker, r->server)) {
++    if (worker->ping_timeout_set) {
++        savetimeout_set = worker->timeout_set;
++        savetimeout = worker->timeout;
++        worker->timeout_set = 1;
++        worker->timeout = worker->ping_timeout;
++    }
++    status = ap_proxy_connect_backend(scheme, backend, worker, r->server);
++    if (worker->ping_timeout_set) {
++        worker->timeout_set = savetimeout_set;
++        worker->timeout = savetimeout;
++    }
++    if (status) {
+         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                      "proxy: AJP: failed to make connection to backend: %s",
+                      backend->hostname);
+@@ -615,6 +628,17 @@
+ 
+     /* Handle CPING/CPONG */
+     if (worker->ping_timeout_set) {
++        /* Put a timeout on the socket like ap_proxy_connect_backend() */
++        if (worker->timeout_set == 1) {
++            apr_socket_timeout_set(backend->sock, worker->timeout);
++        }
++        else if (conf->timeout_set == 1) {
++            apr_socket_timeout_set(backend->sock, conf->timeout);
++        }
++        else {
++             apr_socket_timeout_set(backend->sock, r->server->timeout);
++        }
++
+ 
+         status = ajp_handle_cping_cpong(backend->sock, r,
+                                         worker->ping_timeout);
