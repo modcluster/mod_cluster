@@ -6,17 +6,17 @@
   </parent>
   
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jboss.native</groupId>
+  <groupId>org.jboss.modcluster</groupId>
   <artifactId>mod-cluster</artifactId>
-  <version>1.0.2.GA-SNAPSHOT</version>
+  <version>1.0.2-SNAPSHOT</version>
   
   <name>mod_cluster</name>
-  <description />
+  <description></description>
   <url>http://jboss.org/mod_cluster</url>
   
   <scm>
-    <connection>scm:svn:https://svn.jboss.org/repos/jbossnative/trunk/mod_cluster</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/jbossnative/trunk/mod_cluster</developerConnection>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/trunk</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
   </scm>
 
   <dependencies>
