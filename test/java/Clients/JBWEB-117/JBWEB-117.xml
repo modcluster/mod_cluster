@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+  <display-name>JFC test application</display-name>
+  <description>
+     Welcome to JFC test application
+  </description>
+
+  <servlet>
+    <servlet-name>JBWEB_117</servlet-name>
+    <servlet-class>JBWEB_117</servlet-class>
+    <load-on-startup>6</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+      <servlet-name>JBWEB_117</servlet-name>
+      <url-pattern>/JBWEB_117</url-pattern>
+  </servlet-mapping>
+
+  <security-constraint>
+    <web-resource-collection>
+    <web-resource-name>Security Tests</web-resource-name>
+    <url-pattern>/JBWEB_117</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>manager</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <login-config>
+    <auth-method>BASIC</auth-method>
+    <realm-name>Tomcat Manager Application</realm-name>
+  </login-config>
+
+  <security-role>
+    <description>
+      The role that is required to log in to the application.
+    </description>
+    <role-name>manager</role-name>
+  </security-role>
+
+</web-app>
