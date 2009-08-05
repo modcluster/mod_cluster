@@ -1,0 +1,25 @@
+The test directory contains to kind of tests:
+1 - small test using httpclient that allows to read directly information from httpd (TestHttpClient).
+2 - small test suite:
+    to run it:
+    ant
+    to run a single test:
+    ant one -Dtest=test where test is for example Test_Chunk_JBWEB_117
+
+NOTE the httpd should have something like the following in httpd.conf
+<IfModule manager_module>
+   Listen jfcpc:6666
+   <VirtualHost jfcpc:6666>
+    <Directory />
+      Order deny,allow
+      Deny from all
+      Allow from 10.33.144
+    </Directory>
+
+   KeepAliveTimeout 300
+   MaxKeepAliveRequests 0
+   AdvertiseFrequency 5
+   </VirtualHost>
+</IfModule>
+(replace jfpc by your hostname or your IP address)
+(replace 10.33.144 by the subnet you want to allow)

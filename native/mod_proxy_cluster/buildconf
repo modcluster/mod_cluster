@@ -1,0 +1,11 @@
+# Remove aclocal.m4 as it'll break some builds...
+rm -rf aclocal.m4 autom4te*.cache
+
+echo "Creating configure ..."
+### do some work to toss config.cache?
+if ${AUTOCONF:-autoconf}; then
+  :
+else
+  echo "autoconf failed"
+  exit 1
+fi
