@@ -1,0 +1,34 @@
+#
+# Copyright 2006 Red Hat Middleware, LLC.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software distributed
+# under the License is distributed on an "AS IS" BASIS,i
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+APACHE_BASE = @APACHE_BASE@
+top_builddir = @APACHE_BUILDDIR@
+# For .deps.
+builddir = @CLUSTER_BASE@
+
+MOD_OBJS_LO=
+
+include $(top_builddir)/build/rules.mk
+SH_COMPILE = $(LIBTOOL) --mode=compile $(BASE_CC) -I../include -prefer-pic -c $< && touch $@
+
+all: mod_proxy_cluster.so
+
+mod_proxy_cluster.so: mod_proxy_cluster.la
+	$(top_builddir)/build/instdso.sh SH_LIBTOOL='$(LIBTOOL)' mod_proxy_cluster.la `pwd`
+
+mod_proxy_cluster.la: mod_proxy_cluster.slo
+	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version mod_proxy_cluster.lo $(MOD_OBJS_LO)
+
+clean:
+	rm -f *.o *.lo *.slo *.so
+	rm -rf .libs

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="Clients/JBWEB-117/src/" kind="src" path=""/>
+	<classpathentry kind="src" path="Clients/JBWEB-117/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/2.0.3.GA/jboss-logging-spi-2.0.3.GA.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/2.1.1.CR7/jbossweb-2.1.1.CR7.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/2.1.1.CR7/servlet-api-2.1.1.CR7.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/4.2.1.GA/jboss-ejb-api-spi-4.2.1.GA.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/commons-httpclient-3.1/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/commons-logging-1.0.4/commons-logging.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/commons-codec-1.3.jar"/>
+	<classpathentry kind="var" path="TOMCAT_LIBS_BASE/junit-4.5/junit-4.5.jar"/>
+	<classpathentry kind="lib" path="../../mod_cluster/target/mod_cluster-1.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
