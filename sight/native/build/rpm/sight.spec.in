@@ -1,0 +1,77 @@
+
+%define sightver 1
+
+Summary: System information gathering hybrid tool
+Name: sight
+Version: SIGHT_VERSION
+Release: SIGHT_RELEASE
+License: LGPL
+Group: System Environment/Libraries
+URL: http://www.jboss.org/
+Source0: %{name}-%{version}.tar.gz
+BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+BuildPrereq: autoconf, libtool, doxygen, apr-devel >= 0:{version}-{release}
+
+%description
+The mission of the System information gathering hybrid tool (SIGHT) is
+to provide a free library of C data structures and routines.
+This library contains additional utility interfaces for Java.
+
+%package devel
+Group: Development/Libraries
+Summary: System information gathering hybrid tool development kit
+Requires: sight = %{version}-%{release}, apr-devel
+
+%description devel
+The mission of the System information gathering hybrid toolr (SIGHT) is
+to provide a free library of C data structures and routines.
+This library contains additional utility interfaces for Java.
+
+%prep
+%setup -q
+
+%build
+%configure --with-apr=%{_prefix} \
+        --includedir=%{_includedir}/apr-%{sightver}
+make %{?_smp_mflags} && make dox
+
+%check
+# Run non-interactive tests
+pushd test
+make %{?_smp_mflags} testall CFLAGS=-fno-strict-aliasing
+./testall -v || exit 1
+popd
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+
+# Documentation
+mv docs/dox/html html
+
+# Unpackaged files
+rm -f $RPM_BUILD_ROOT%{_libdir}/sight.exp
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%post -p /sbin/ldconfig
+
+%postun -p /sbin/ldconfig
+
+%files
+%defattr(-,root,root,-)
+%doc CHANGES COPYING.LIB NOTICE
+%{_libdir}/libsight-%{sightver}.so.*
+
+%files devel
+%defattr(-,root,root,-)
+%{_libdir}/libsight-%{sightver}.*a
+%{_libdir}/libsight-%{sightver}.so
+%{_libdir}/pkgconfig/sight-%{sightver}.pc
+%{_includedir}/apr-%{sightver}/*.h
+%doc --parents html
+
+%changelog
+* 2006/08/29 Mladen Turk <mturk@jboss.com> 1.0.0-1
+                                                                                

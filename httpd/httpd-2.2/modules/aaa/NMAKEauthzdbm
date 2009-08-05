@@ -1,0 +1,63 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   authz_dbm module makefile.
+#
+# Originally contributed by Mladen Turk <mturk redhat.com>
+#
+# ====================================================================
+#
+
+TARGET=DLL
+PROJECT = mod_authz_dbm
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!include <..\..\NMAKEcommon.inc>
+!include <..\..\NMAKEhttpd.inc>
+
+LDIRS = /libpath:"$(BUILDLIB)"
+LFLAGS = $(LFLAGS) user32.lib psapi.lib gdi32.lib shlwapi.lib wldap32.lib ole32.lib $(LIBAPR) $(LIBAPU) $(LIBHTTPD)
+CFLAGS = $(CFLAGS) -DAAA_DECLARE_EXPORT
+
+INCLUDES = -I$(SRCDIR) -I$(BUILDINC) -I..\database
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).so
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb 
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMFT = $(BUILDBIN).manifest
+
+RCFLAGS =  $(RCFLAGS) /d BIN_NAME="$(PROJECT).so" /d LONG_NAME="authz_dbm_module for Apache"
+
+OBJECTS = \
+	$(WORKDIR)\mod_authz_dbm.obj
+
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): ..\..\build\win32\httpd.rc
+	$(RC) $(RCFLAGS) /i "$(BUILDINC)" /fo $(BUILDRES) ..\..\build\win32\httpd.rc
+
+$(BUILDBIN): $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMFT) \
+		mt -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+
+install: $(BUILDBIN)

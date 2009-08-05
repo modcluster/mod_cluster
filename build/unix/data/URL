@@ -1,0 +1,14 @@
+APRURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-@version@-src.tar.gz
+APUURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-util-@version@-src.tar.gz
+APIURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-iconv-@version@-src.tar.gz
+APRURLBACK=http://archive.apache.org/dist/apr/apr-@version@-src.tar.gz
+APUURLBACK=http://archive.apache.org/dist/apr/apr-util-@version@-src.tar.gz
+APIURLBACK=http://archive.apache.org/dist/apr/apr-iconv-@version@-src.tar.gz
+SSLURL=http://www.openssl.org/source/openssl-@version@-src.tar.gz
+ZLIBURL=http://www.zlib.net/zlib-@version@-src.tar.gz
+ICONVURL=http://ftp.gnu.org/pub/gnu/libiconv/libiconv-@version@-src.tar.gz
+EXPATURL=http://belnet.dl.sourceforge.net/sourceforge/expat/expat-@version@-src.tar.gz
+URLTCC=http://archive.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-@version@/tomcat-connectors-@version@-src.tar.gz
+URLTCCBACK=http://ftp.heanet.ie/mirrors/www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-@version@/tomcat-connectors-@version@-src.tar.gz
+URLHTTPD=http://archive.apache.org/dist/httpd/httpd-@version@-src.tar.gz
+URLJBOSS=http://surfnet.dl.sourceforge.net/sourceforge/jboss/jboss-4.2.0.GA.zip

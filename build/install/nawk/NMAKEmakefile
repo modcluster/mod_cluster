@@ -1,0 +1,99 @@
+#  Copyright(c) 2006 Red Hat Middleware, LLC,
+#  and individual contributors as indicated by the @authors tag.
+#  See the copyright.txt in the distribution for a
+#  full listing of individual contributors. 
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2 of the License, or (at your option) any later version.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library in the file COPYING.LIB;
+#  if not, write to the Free Software Foundation, Inc.,
+#  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+# @author Mladen Turk
+#
+
+!IF !DEFINED(TARGET) || "$(TARGET)" == ""
+TARGET = EXE
+!ENDIF
+PROJECT = nawk
+!include <..\..\NMAKEcommon.inc>
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+YACC   = bison -y
+YFLAGS = -d
+
+LFLAGS = $(LFLAGS) /version:2008.3
+
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\b.obj \
+	$(WORKDIR)\main.obj \
+	$(WORKDIR)\parse.obj \
+	$(WORKDIR)\proctab.obj \
+	$(WORKDIR)\tran.obj \
+	$(WORKDIR)\lib.obj \
+	$(WORKDIR)\run.obj \
+	$(WORKDIR)\missing95.obj \
+	$(WORKDIR)\ytab.obj \
+	$(WORKDIR)\lex.obj
+
+OBJDEPS = $(SRCDIR)\*.h $(SRCDIR)\ytab.h \
+	NMAKEmakefile
+
+BUILDLOC = $(PREFIX)\bin
+BUILDEXE = $(WORKDIR)\$(PROJECT).exe
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDEXE).manifest
+
+all : $(WORKDIR) $(BUILDEXE)
+
+$(BUILDLOC) :
+	@if not exist "$(BUILDLOC)\$(NULL)" mkdir "$(BUILDLOC)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): $(SRCDIR)/$(PROJECT).rc
+	$(RC) $(RCFLAGS) /i "$(SRCDIR)" /fo $(BUILDRES) $(SRCDIR)/$(PROJECT).rc
+
+$(OBJECTS): $(OBJDEPS)
+
+proctab.c: maketab.exe
+	maketab.exe >proctab.c
+
+ytab.h: awk.h proto.h awkgram.y
+	$(YACC) $(YFLAGS) awkgram.y
+	copy y.tab.c ytab.c
+	del y.tab.c
+	copy y.tab.h ytab.h
+	del y.tab.h
+
+maketab.exe: ytab.h maketab.obj
+	$(LINK) $(LFLAGS) maketab.obj $(LIBS)
+
+$(BUILDEXE): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDEXE)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDEXE);1
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLOC) $(WORKDIR) $(BUILDEXE)
+	@xcopy "$(WORKDIR)\*.exe" "$(BUILDLOC)" /Y /Q

@@ -1,0 +1,119 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master HTTPD makefile.
+# Usage:
+#                 DEBUG=1   Build DEBUG version of HTTPD
+#
+# Originally contributed by Mladen Turk <mturk redhat.com>
+#
+# ====================================================================
+#
+
+
+TARGET=EXE
+PROJECT = httpd
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!IF !DEFINED(PREFIX) || "$(PREFIX)" == ""
+PREFIX = $(SRCDIR)\dist\WINNT-$(CPU)
+!ENDIF
+
+!include <NMAKEcommon.inc>
+!include <NMAKEhttpd.inc>
+
+LDIRS =  /libpath:"$(BUILDLIB)"
+LFLAGS = $(LFLAGS) user32.lib psapi.lib gdi32.lib shlwapi.lib wldap32.lib ole32.lib
+LIBS = $(LIBS) $(LIBAPR) $(LIBAPU) $(LIBHTTPD)
+
+INCLUDES = -I$(BUILDINC)
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\main.obj
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).exe
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMFT = $(BUILDBIN).manifest
+
+RCFLAGS =  $(RCFLAGS) /d BIN_NAME="$(PROJECT).exe" /d LONG_NAME="Apache HTTP Server" /d ICON_FILE="apache.ico"
+
+BUILDDEP = $(BUILDOUT)\libhttpd.dll
+BMODULES = $(SRCDIR)\modules\~
+BSUPPORT = $(SRCDIR)\support\~
+BWINSUPP = $(SRCDIR)\support\win32\~
+
+all: $(BUILDINS) $(WORKDIR) $(BUILDBIN)
+	@echo Building $(BUILDBIN)
+
+$(WORKDIR):
+	@$(MAKEWORKDIR)
+
+$(BUILDDEP):
+	@$(MAKE) -nologo -f NMAKElibhttpd PREFIX=$(PREFIX) install
+
+$(BMODULES):
+	@echo Building modules ...
+	@cd $(SRCDIR)\modules
+	@$(MAKE) -nologo -f NMAKEmakefile PREFIX=$(PREFIX) all
+	@cd ..
+
+$(BSUPPORT):
+	@echo Building support utilities ...
+	@cd $(SRCDIR)\support
+	@$(MAKE) -nologo -A -f NMAKEmakefile PREFIX=$(PREFIX) all
+	@cd ..
+
+$(BWINSUPP):
+	@echo Building Windows support utilities ...
+	@cd $(SRCDIR)\support\win32
+	@$(MAKE) -nologo -A -f NMAKEmakefile PREFIX=$(PREFIX) all
+	@cd ..\..
+
+
+{$(SRCDIR)\server}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): build\win32\httpd.rc
+	$(RC) $(RCFLAGS) /i "$(SRCDIR)\build\win32" /i "$(SRCDIR)\include" /i "$(SRCDIR)\srclib\apr\include" /fo $(BUILDRES) build\win32\httpd.rc
+
+$(BUILDBIN): $(WORKDIR) $(BUILDDEP) $(BMODULES) $(BSUPPORT) $(BWINSUPP) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMFT) \
+		mt -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDINS) $(WORKDIR) $(BUILDBIN)
+	@xcopy "$(WORKDIR)\*.exe" "$(BUILDOUT)" /Y /Q 2>NUL
+	@xcopy "$(SRCDIR)\docs\manual" "$(BUILDMAN)" /Y /Q /E
+	@xcopy "$(SRCDIR)\docs\error" "$(BUILDERR)" /Y /Q /E
+	@xcopy "$(SRCDIR)\docs\icons" "$(BUILDICO)" /Y /Q /E
+	@xcopy "$(SRCDIR)\docs\docroot" "$(BUILDDOC)" /Y /Q /E
+	@xcopy "$(SRCDIR)\docs\conf\extra" "$(BUILDCFG)\default\extra" /Y /Q
+	-@copy  /Y "$(SRCDIR)\docs\conf\httpd.conf.in" "$(BUILDCFG)\default" >NUL
+	-@copy  /Y "$(SRCDIR)\docs\conf\charset.conv" "$(BUILDCFG)\default" >NUL
+	-@copy  /Y "$(SRCDIR)\docs\conf\mime.types" "$(BUILDCFG)\default" >NUL
+	-@copy  /Y "$(SRCDIR)\docs\conf\magic" "$(BUILDCFG)\default" >NUL
+	-@copy  /Y "$(SRCDIR)\docs\cgi-examples\printenv" "$(BUILDCGI)\printenv.pl" >NUL
+	-@copy  /Y "$(SRCDIR)\installer\installconf.awk" "$(BUILDOUT)" >NUL
+	-@copy  /Y "$(SRCDIR)\installer\installconf.bat" "$(BUILDOUT)" >NUL
+	-@copy  /Y "$(SRCDIR)\installer\nawk.exe" "$(BUILDOUT)" >NUL

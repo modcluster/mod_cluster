@@ -1,0 +1,3389 @@
+Index: ccs/adobe-stdenc.c
+===================================================================
+--- ccs/adobe-stdenc.c	(revision 603239)
++++ ccs/adobe-stdenc.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(adobe_stdenc) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/adobe-symbol.c
+===================================================================
+--- ccs/adobe-symbol.c	(revision 603239)
++++ ccs/adobe-symbol.c	(working copy)
+@@ -479,7 +479,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(adobe_symbol)= {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/adobe-zdingbats.c
+===================================================================
+--- ccs/adobe-zdingbats.c	(revision 603239)
++++ ccs/adobe-zdingbats.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(adobe_zdingbats) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/big5.c
+===================================================================
+--- ccs/big5.c	(revision 603239)
++++ ccs/big5.c	(working copy)
+@@ -6674,7 +6674,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(big5) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cns11643-plane1.c
+===================================================================
+--- ccs/cns11643-plane1.c	(revision 603239)
++++ ccs/cns11643-plane1.c	(working copy)
+@@ -4708,7 +4708,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cns11643_plane1) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cns11643-plane14.c
+===================================================================
+--- ccs/cns11643-plane14.c	(revision 603239)
++++ ccs/cns11643-plane14.c	(working copy)
+@@ -4297,7 +4297,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cns11643_plane14) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cns11643-plane2.c
+===================================================================
+--- ccs/cns11643-plane2.c	(revision 603239)
++++ ccs/cns11643-plane2.c	(working copy)
+@@ -4506,7 +4506,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cns11643_plane2) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp037.c
+===================================================================
+--- ccs/cp037.c	(revision 603239)
++++ ccs/cp037.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp037) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp038.c
+===================================================================
+--- ccs/cp038.c	(revision 603239)
++++ ccs/cp038.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp038) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10000.c
+===================================================================
+--- ccs/cp10000.c	(revision 603239)
++++ ccs/cp10000.c	(working copy)
+@@ -409,7 +409,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10000) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10006.c
+===================================================================
+--- ccs/cp10006.c	(revision 603239)
++++ ccs/cp10006.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10006) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10007.c
+===================================================================
+--- ccs/cp10007.c	(revision 603239)
++++ ccs/cp10007.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10007) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10029.c
+===================================================================
+--- ccs/cp10029.c	(revision 603239)
++++ ccs/cp10029.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10029) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp1006.c
+===================================================================
+--- ccs/cp1006.c	(revision 603239)
++++ ccs/cp1006.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp1006) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10079.c
+===================================================================
+--- ccs/cp10079.c	(revision 603239)
++++ ccs/cp10079.c	(working copy)
+@@ -374,7 +374,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10079) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp10081.c
+===================================================================
+--- ccs/cp10081.c	(revision 603239)
++++ ccs/cp10081.c	(working copy)
+@@ -374,7 +374,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp10081) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp1026.c
+===================================================================
+--- ccs/cp1026.c	(revision 603239)
++++ ccs/cp1026.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp1026) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp273.c
+===================================================================
+--- ccs/cp273.c	(revision 603239)
++++ ccs/cp273.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp273) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp274.c
+===================================================================
+--- ccs/cp274.c	(revision 603239)
++++ ccs/cp274.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp274) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp275.c
+===================================================================
+--- ccs/cp275.c	(revision 603239)
++++ ccs/cp275.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp275) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp277.c
+===================================================================
+--- ccs/cp277.c	(revision 603239)
++++ ccs/cp277.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp277) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp278.c
+===================================================================
+--- ccs/cp278.c	(revision 603239)
++++ ccs/cp278.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp278) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp280.c
+===================================================================
+--- ccs/cp280.c	(revision 603239)
++++ ccs/cp280.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp280) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp281.c
+===================================================================
+--- ccs/cp281.c	(revision 603239)
++++ ccs/cp281.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp281) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp284.c
+===================================================================
+--- ccs/cp284.c	(revision 603239)
++++ ccs/cp284.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp284) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp285.c
+===================================================================
+--- ccs/cp285.c	(revision 603239)
++++ ccs/cp285.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp285) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp290.c
+===================================================================
+--- ccs/cp290.c	(revision 603239)
++++ ccs/cp290.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp290) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp297.c
+===================================================================
+--- ccs/cp297.c	(revision 603239)
++++ ccs/cp297.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp297) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp420.c
+===================================================================
+--- ccs/cp420.c	(revision 603239)
++++ ccs/cp420.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp420) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp423.c
+===================================================================
+--- ccs/cp423.c	(revision 603239)
++++ ccs/cp423.c	(working copy)
+@@ -221,7 +221,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp423) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp424.c
+===================================================================
+--- ccs/cp424.c	(revision 603239)
++++ ccs/cp424.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp424) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp437.c
+===================================================================
+--- ccs/cp437.c	(revision 603239)
++++ ccs/cp437.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp437) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp500.c
+===================================================================
+--- ccs/cp500.c	(revision 603239)
++++ ccs/cp500.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp500) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp737.c
+===================================================================
+--- ccs/cp737.c	(revision 603239)
++++ ccs/cp737.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp737) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp775.c
+===================================================================
+--- ccs/cp775.c	(revision 603239)
++++ ccs/cp775.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp775) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp850.c
+===================================================================
+--- ccs/cp850.c	(revision 603239)
++++ ccs/cp850.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp850) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp851.c
+===================================================================
+--- ccs/cp851.c	(revision 603239)
++++ ccs/cp851.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp851) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp852.c
+===================================================================
+--- ccs/cp852.c	(revision 603239)
++++ ccs/cp852.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp852) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp855.c
+===================================================================
+--- ccs/cp855.c	(revision 603239)
++++ ccs/cp855.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp855) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp856.c
+===================================================================
+--- ccs/cp856.c	(revision 603239)
++++ ccs/cp856.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp856) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp857.c
+===================================================================
+--- ccs/cp857.c	(revision 603239)
++++ ccs/cp857.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp857) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp860.c
+===================================================================
+--- ccs/cp860.c	(revision 603239)
++++ ccs/cp860.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp860) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp861.c
+===================================================================
+--- ccs/cp861.c	(revision 603239)
++++ ccs/cp861.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp861) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp862.c
+===================================================================
+--- ccs/cp862.c	(revision 603239)
++++ ccs/cp862.c	(working copy)
+@@ -374,7 +374,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp862) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp863.c
+===================================================================
+--- ccs/cp863.c	(revision 603239)
++++ ccs/cp863.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp863) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp864.c
+===================================================================
+--- ccs/cp864.c	(revision 603239)
++++ ccs/cp864.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp864) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp865.c
+===================================================================
+--- ccs/cp865.c	(revision 603239)
++++ ccs/cp865.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp865) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp866.c
+===================================================================
+--- ccs/cp866.c	(revision 603239)
++++ ccs/cp866.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp866) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp868.c
+===================================================================
+--- ccs/cp868.c	(revision 603239)
++++ ccs/cp868.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp868) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp869.c
+===================================================================
+--- ccs/cp869.c	(revision 603239)
++++ ccs/cp869.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp869) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp870.c
+===================================================================
+--- ccs/cp870.c	(revision 603239)
++++ ccs/cp870.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp870) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp871.c
+===================================================================
+--- ccs/cp871.c	(revision 603239)
++++ ccs/cp871.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp871) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp874.c
+===================================================================
+--- ccs/cp874.c	(revision 603239)
++++ ccs/cp874.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp874) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp875.c
+===================================================================
+--- ccs/cp875.c	(revision 603239)
++++ ccs/cp875.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp875) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp880.c
+===================================================================
+--- ccs/cp880.c	(revision 603239)
++++ ccs/cp880.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp880) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp891.c
+===================================================================
+--- ccs/cp891.c	(revision 603239)
++++ ccs/cp891.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp891) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp903.c
+===================================================================
+--- ccs/cp903.c	(revision 603239)
++++ ccs/cp903.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp903) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp904.c
+===================================================================
+--- ccs/cp904.c	(revision 603239)
++++ ccs/cp904.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp904) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp905.c
+===================================================================
+--- ccs/cp905.c	(revision 603239)
++++ ccs/cp905.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp905) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp918.c
+===================================================================
+--- ccs/cp918.c	(revision 603239)
++++ ccs/cp918.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp918) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp932.c
+===================================================================
+--- ccs/cp932.c	(revision 603239)
++++ ccs/cp932.c	(working copy)
+@@ -5134,7 +5134,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp932) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp936.c
+===================================================================
+--- ccs/cp936.c	(revision 603239)
++++ ccs/cp936.c	(working copy)
+@@ -8109,7 +8109,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp936) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp949.c
+===================================================================
+--- ccs/cp949.c	(revision 603239)
++++ ccs/cp949.c	(working copy)
+@@ -9544,7 +9544,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp949) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/cp950.c
+===================================================================
+--- ccs/cp950.c	(revision 603239)
++++ ccs/cp950.c	(working copy)
+@@ -6569,7 +6569,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(cp950) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/dec-mcs.c
+===================================================================
+--- ccs/dec-mcs.c	(revision 603239)
++++ ccs/dec-mcs.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(dec_mcs) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-at-de-a.c
+===================================================================
+--- ccs/ebcdic-at-de-a.c	(revision 603239)
++++ ccs/ebcdic-at-de-a.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_at_de_a) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-at-de.c
+===================================================================
+--- ccs/ebcdic-at-de.c	(revision 603239)
++++ ccs/ebcdic-at-de.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_at_de) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-ca-fr.c
+===================================================================
+--- ccs/ebcdic-ca-fr.c	(revision 603239)
++++ ccs/ebcdic-ca-fr.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_ca_fr) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-dk-no-a.c
+===================================================================
+--- ccs/ebcdic-dk-no-a.c	(revision 603239)
++++ ccs/ebcdic-dk-no-a.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_dk_no_a) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-dk-no.c
+===================================================================
+--- ccs/ebcdic-dk-no.c	(revision 603239)
++++ ccs/ebcdic-dk-no.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_dk_no) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-es-a.c
+===================================================================
+--- ccs/ebcdic-es-a.c	(revision 603239)
++++ ccs/ebcdic-es-a.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_es_a) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-es-s.c
+===================================================================
+--- ccs/ebcdic-es-s.c	(revision 603239)
++++ ccs/ebcdic-es-s.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_es_s) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-es.c
+===================================================================
+--- ccs/ebcdic-es.c	(revision 603239)
++++ ccs/ebcdic-es.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_es) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-fi-se-a.c
+===================================================================
+--- ccs/ebcdic-fi-se-a.c	(revision 603239)
++++ ccs/ebcdic-fi-se-a.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_fi_se_a) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-fi-se.c
+===================================================================
+--- ccs/ebcdic-fi-se.c	(revision 603239)
++++ ccs/ebcdic-fi-se.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_fi_se) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-fr.c
+===================================================================
+--- ccs/ebcdic-fr.c	(revision 603239)
++++ ccs/ebcdic-fr.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_fr) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-it.c
+===================================================================
+--- ccs/ebcdic-it.c	(revision 603239)
++++ ccs/ebcdic-it.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_it) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-pt.c
+===================================================================
+--- ccs/ebcdic-pt.c	(revision 603239)
++++ ccs/ebcdic-pt.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_pt) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-uk.c
+===================================================================
+--- ccs/ebcdic-uk.c	(revision 603239)
++++ ccs/ebcdic-uk.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_uk) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ebcdic-us.c
+===================================================================
+--- ccs/ebcdic-us.c	(revision 603239)
++++ ccs/ebcdic-us.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ebcdic_us) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/gb12345.c
+===================================================================
+--- ccs/gb12345.c	(revision 603239)
++++ ccs/gb12345.c	(working copy)
+@@ -5085,7 +5085,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(gb12345) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/gb_2312-80.c
+===================================================================
+--- ccs/gb_2312-80.c	(revision 603239)
++++ ccs/gb_2312-80.c	(working copy)
+@@ -5012,7 +5012,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(gb_2312_80) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/hp-roman8.c
+===================================================================
+--- ccs/hp-roman8.c	(revision 603239)
++++ ccs/hp-roman8.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(hp_roman8) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-1.c
+===================================================================
+--- ccs/iso-8859-1.c	(revision 603239)
++++ ccs/iso-8859-1.c	(working copy)
+@@ -129,7 +129,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_1) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-10.c
+===================================================================
+--- ccs/iso-8859-10.c	(revision 603239)
++++ ccs/iso-8859-10.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_10) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-13.c
+===================================================================
+--- ccs/iso-8859-13.c	(revision 603239)
++++ ccs/iso-8859-13.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_13) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-14.c
+===================================================================
+--- ccs/iso-8859-14.c	(revision 603239)
++++ ccs/iso-8859-14.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_14) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-15.c
+===================================================================
+--- ccs/iso-8859-15.c	(revision 603239)
++++ ccs/iso-8859-15.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_15) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-2.c
+===================================================================
+--- ccs/iso-8859-2.c	(revision 603239)
++++ ccs/iso-8859-2.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_2) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-3.c
+===================================================================
+--- ccs/iso-8859-3.c	(revision 603239)
++++ ccs/iso-8859-3.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_3) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-4.c
+===================================================================
+--- ccs/iso-8859-4.c	(revision 603239)
++++ ccs/iso-8859-4.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_4) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-5.c
+===================================================================
+--- ccs/iso-8859-5.c	(revision 603239)
++++ ccs/iso-8859-5.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_5) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-6.c
+===================================================================
+--- ccs/iso-8859-6.c	(revision 603239)
++++ ccs/iso-8859-6.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_6) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-7.c
+===================================================================
+--- ccs/iso-8859-7.c	(revision 603239)
++++ ccs/iso-8859-7.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_7) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-8.c
+===================================================================
+--- ccs/iso-8859-8.c	(revision 603239)
++++ ccs/iso-8859-8.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_8) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-8859-9.c
+===================================================================
+--- ccs/iso-8859-9.c	(revision 603239)
++++ ccs/iso-8859-9.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_8859_9) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-10.c
+===================================================================
+--- ccs/iso-ir-10.c	(revision 603239)
++++ ccs/iso-ir-10.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_10) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-102.c
+===================================================================
+--- ccs/iso-ir-102.c	(revision 603239)
++++ ccs/iso-ir-102.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_102) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-103.c
+===================================================================
+--- ccs/iso-ir-103.c	(revision 603239)
++++ ccs/iso-ir-103.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_103) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-11.c
+===================================================================
+--- ccs/iso-ir-11.c	(revision 603239)
++++ ccs/iso-ir-11.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_11) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-111.c
+===================================================================
+--- ccs/iso-ir-111.c	(revision 603239)
++++ ccs/iso-ir-111.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_111) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-121.c
+===================================================================
+--- ccs/iso-ir-121.c	(revision 603239)
++++ ccs/iso-ir-121.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_121) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-122.c
+===================================================================
+--- ccs/iso-ir-122.c	(revision 603239)
++++ ccs/iso-ir-122.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_122) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-123.c
+===================================================================
+--- ccs/iso-ir-123.c	(revision 603239)
++++ ccs/iso-ir-123.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_123) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-128.c
+===================================================================
+--- ccs/iso-ir-128.c	(revision 603239)
++++ ccs/iso-ir-128.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_128) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-13.c
+===================================================================
+--- ccs/iso-ir-13.c	(revision 603239)
++++ ccs/iso-ir-13.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_13) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-139.c
+===================================================================
+--- ccs/iso-ir-139.c	(revision 603239)
++++ ccs/iso-ir-139.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_139) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-14.c
+===================================================================
+--- ccs/iso-ir-14.c	(revision 603239)
++++ ccs/iso-ir-14.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_14) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-141.c
+===================================================================
+--- ccs/iso-ir-141.c	(revision 603239)
++++ ccs/iso-ir-141.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_141) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-142.c
+===================================================================
+--- ccs/iso-ir-142.c	(revision 603239)
++++ ccs/iso-ir-142.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_142) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-143.c
+===================================================================
+--- ccs/iso-ir-143.c	(revision 603239)
++++ ccs/iso-ir-143.c	(working copy)
+@@ -444,7 +444,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_143) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-146.c
+===================================================================
+--- ccs/iso-ir-146.c	(revision 603239)
++++ ccs/iso-ir-146.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_146) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-147.c
+===================================================================
+--- ccs/iso-ir-147.c	(revision 603239)
++++ ccs/iso-ir-147.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_147) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-15.c
+===================================================================
+--- ccs/iso-ir-15.c	(revision 603239)
++++ ccs/iso-ir-15.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_15) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-150.c
+===================================================================
+--- ccs/iso-ir-150.c	(revision 603239)
++++ ccs/iso-ir-150.c	(working copy)
+@@ -183,7 +183,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_150) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-151.c
+===================================================================
+--- ccs/iso-ir-151.c	(revision 603239)
++++ ccs/iso-ir-151.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_151) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-152.c
+===================================================================
+--- ccs/iso-ir-152.c	(revision 603239)
++++ ccs/iso-ir-152.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_152) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-153.c
+===================================================================
+--- ccs/iso-ir-153.c	(revision 603239)
++++ ccs/iso-ir-153.c	(working copy)
+@@ -164,7 +164,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_153) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-154.c
+===================================================================
+--- ccs/iso-ir-154.c	(revision 603239)
++++ ccs/iso-ir-154.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_154) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-155.c
+===================================================================
+--- ccs/iso-ir-155.c	(revision 603239)
++++ ccs/iso-ir-155.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_155) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-158.c
+===================================================================
+--- ccs/iso-ir-158.c	(revision 603239)
++++ ccs/iso-ir-158.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_158) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-16.c
+===================================================================
+--- ccs/iso-ir-16.c	(revision 603239)
++++ ccs/iso-ir-16.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_16) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-17.c
+===================================================================
+--- ccs/iso-ir-17.c	(revision 603239)
++++ ccs/iso-ir-17.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_17) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-18.c
+===================================================================
+--- ccs/iso-ir-18.c	(revision 603239)
++++ ccs/iso-ir-18.c	(working copy)
+@@ -218,7 +218,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_18) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-19.c
+===================================================================
+--- ccs/iso-ir-19.c	(revision 603239)
++++ ccs/iso-ir-19.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_19) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-2.c
+===================================================================
+--- ccs/iso-ir-2.c	(revision 603239)
++++ ccs/iso-ir-2.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_2) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-21.c
+===================================================================
+--- ccs/iso-ir-21.c	(revision 603239)
++++ ccs/iso-ir-21.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_21) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-25.c
+===================================================================
+--- ccs/iso-ir-25.c	(revision 603239)
++++ ccs/iso-ir-25.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_25) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-27.c
+===================================================================
+--- ccs/iso-ir-27.c	(revision 603239)
++++ ccs/iso-ir-27.c	(working copy)
+@@ -183,7 +183,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_27) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-37.c
+===================================================================
+--- ccs/iso-ir-37.c	(revision 603239)
++++ ccs/iso-ir-37.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_37) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-4.c
+===================================================================
+--- ccs/iso-ir-4.c	(revision 603239)
++++ ccs/iso-ir-4.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_4) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-47.c
+===================================================================
+--- ccs/iso-ir-47.c	(revision 603239)
++++ ccs/iso-ir-47.c	(working copy)
+@@ -218,7 +218,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_47) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-49.c
+===================================================================
+--- ccs/iso-ir-49.c	(revision 603239)
++++ ccs/iso-ir-49.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_49) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-50.c
+===================================================================
+--- ccs/iso-ir-50.c	(revision 603239)
++++ ccs/iso-ir-50.c	(working copy)
+@@ -288,7 +288,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_50) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-51.c
+===================================================================
+--- ccs/iso-ir-51.c	(revision 603239)
++++ ccs/iso-ir-51.c	(working copy)
+@@ -288,7 +288,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_51) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-54.c
+===================================================================
+--- ccs/iso-ir-54.c	(revision 603239)
++++ ccs/iso-ir-54.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_54) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-55.c
+===================================================================
+--- ccs/iso-ir-55.c	(revision 603239)
++++ ccs/iso-ir-55.c	(working copy)
+@@ -218,7 +218,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_55) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-57.c
+===================================================================
+--- ccs/iso-ir-57.c	(revision 603239)
++++ ccs/iso-ir-57.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_57) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-60.c
+===================================================================
+--- ccs/iso-ir-60.c	(revision 603239)
++++ ccs/iso-ir-60.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_60) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-61.c
+===================================================================
+--- ccs/iso-ir-61.c	(revision 603239)
++++ ccs/iso-ir-61.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_61) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-69.c
+===================================================================
+--- ccs/iso-ir-69.c	(revision 603239)
++++ ccs/iso-ir-69.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_69) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-70.c
+===================================================================
+--- ccs/iso-ir-70.c	(revision 603239)
++++ ccs/iso-ir-70.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_70) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-8-1.c
+===================================================================
+--- ccs/iso-ir-8-1.c	(revision 603239)
++++ ccs/iso-ir-8-1.c	(working copy)
+@@ -218,7 +218,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_8_1) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-8-2.c
+===================================================================
+--- ccs/iso-ir-8-2.c	(revision 603239)
++++ ccs/iso-ir-8-2.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_8_2) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-84.c
+===================================================================
+--- ccs/iso-ir-84.c	(revision 603239)
++++ ccs/iso-ir-84.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_84) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-85.c
+===================================================================
+--- ccs/iso-ir-85.c	(revision 603239)
++++ ccs/iso-ir-85.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_85) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-86.c
+===================================================================
+--- ccs/iso-ir-86.c	(revision 603239)
++++ ccs/iso-ir-86.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_86) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-88.c
+===================================================================
+--- ccs/iso-ir-88.c	(revision 603239)
++++ ccs/iso-ir-88.c	(working copy)
+@@ -183,7 +183,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_88) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-89.c
+===================================================================
+--- ccs/iso-ir-89.c	(revision 603239)
++++ ccs/iso-ir-89.c	(working copy)
+@@ -183,7 +183,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_89) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-9-1.c
+===================================================================
+--- ccs/iso-ir-9-1.c	(revision 603239)
++++ ccs/iso-ir-9-1.c	(working copy)
+@@ -218,7 +218,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_9_1) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-9-2.c
+===================================================================
+--- ccs/iso-ir-9-2.c	(revision 603239)
++++ ccs/iso-ir-9-2.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_9_2) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-90.c
+===================================================================
+--- ccs/iso-ir-90.c	(revision 603239)
++++ ccs/iso-ir-90.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_90) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-91.c
+===================================================================
+--- ccs/iso-ir-91.c	(revision 603239)
++++ ccs/iso-ir-91.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_91) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-92.c
+===================================================================
+--- ccs/iso-ir-92.c	(revision 603239)
++++ ccs/iso-ir-92.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_92) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-93.c
+===================================================================
+--- ccs/iso-ir-93.c	(revision 603239)
++++ ccs/iso-ir-93.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_93) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-94.c
+===================================================================
+--- ccs/iso-ir-94.c	(revision 603239)
++++ ccs/iso-ir-94.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_94) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-95.c
+===================================================================
+--- ccs/iso-ir-95.c	(revision 603239)
++++ ccs/iso-ir-95.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_95) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-96.c
+===================================================================
+--- ccs/iso-ir-96.c	(revision 603239)
++++ ccs/iso-ir-96.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_96) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-98.c
+===================================================================
+--- ccs/iso-ir-98.c	(revision 603239)
++++ ccs/iso-ir-98.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_98) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso-ir-99.c
+===================================================================
+--- ccs/iso-ir-99.c	(revision 603239)
++++ ccs/iso-ir-99.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_ir_99) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso646-dk.c
+===================================================================
+--- ccs/iso646-dk.c	(revision 603239)
++++ ccs/iso646-dk.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso646_dk) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/iso646-kr.c
+===================================================================
+--- ccs/iso646-kr.c	(revision 603239)
++++ ccs/iso646-kr.c	(working copy)
+@@ -148,7 +148,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso646_kr) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/jis_x0201.c
+===================================================================
+--- ccs/jis_x0201.c	(revision 603239)
++++ ccs/jis_x0201.c	(working copy)
+@@ -199,7 +199,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(jis_x0201) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/jis_x0208-1983.c
+===================================================================
+--- ccs/jis_x0208-1983.c	(revision 603239)
++++ ccs/jis_x0208-1983.c	(working copy)
+@@ -4796,7 +4796,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(jis_x0208_1983) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/jis_x0212-1990.c
+===================================================================
+--- ccs/jis_x0212-1990.c	(revision 603239)
++++ ccs/jis_x0212-1990.c	(working copy)
+@@ -4450,7 +4450,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(jis_x0212_1990) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/johab.c
+===================================================================
+--- ccs/johab.c	(revision 603239)
++++ ccs/johab.c	(working copy)
+@@ -9124,7 +9124,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(johab) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/koi8-r.c
+===================================================================
+--- ccs/koi8-r.c	(revision 603239)
++++ ccs/koi8-r.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(koi8_r) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/koi8-ru.c
+===================================================================
+--- ccs/koi8-ru.c	(revision 603239)
++++ ccs/koi8-ru.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(koi8_ru) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/koi8-u.c
+===================================================================
+--- ccs/koi8-u.c	(revision 603239)
++++ ccs/koi8-u.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(koi8_u) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/ksx1001.c
+===================================================================
+--- ccs/ksx1001.c	(revision 603239)
++++ ccs/ksx1001.c	(working copy)
+@@ -6844,7 +6844,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ksx1001) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-ce.c
+===================================================================
+--- ccs/mac-ce.c	(revision 603239)
++++ ccs/mac-ce.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_ce) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-croatian.c
+===================================================================
+--- ccs/mac-croatian.c	(revision 603239)
++++ ccs/mac-croatian.c	(working copy)
+@@ -409,7 +409,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_croatian) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-cyrillic.c
+===================================================================
+--- ccs/mac-cyrillic.c	(revision 603239)
++++ ccs/mac-cyrillic.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_cyrillic) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-dingbats.c
+===================================================================
+--- ccs/mac-dingbats.c	(revision 603239)
++++ ccs/mac-dingbats.c	(working copy)
+@@ -374,7 +374,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_dingbats) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-greek.c
+===================================================================
+--- ccs/mac-greek.c	(revision 603239)
++++ ccs/mac-greek.c	(working copy)
+@@ -339,7 +339,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_greek) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-iceland.c
+===================================================================
+--- ccs/mac-iceland.c	(revision 603239)
++++ ccs/mac-iceland.c	(working copy)
+@@ -409,7 +409,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_iceland) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-japan.c
+===================================================================
+--- ccs/mac-japan.c	(revision 603239)
++++ ccs/mac-japan.c	(working copy)
+@@ -5169,7 +5169,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_japan) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-roman.c
+===================================================================
+--- ccs/mac-roman.c	(revision 603239)
++++ ccs/mac-roman.c	(working copy)
+@@ -444,7 +444,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_roman) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-romania.c
+===================================================================
+--- ccs/mac-romania.c	(revision 603239)
++++ ccs/mac-romania.c	(working copy)
+@@ -409,7 +409,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_romania) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-thai.c
+===================================================================
+--- ccs/mac-thai.c	(revision 603239)
++++ ccs/mac-thai.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_thai) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-turkish.c
+===================================================================
+--- ccs/mac-turkish.c	(revision 603239)
++++ ccs/mac-turkish.c	(working copy)
+@@ -409,7 +409,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_turkish) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/mac-ukraine.c
+===================================================================
+--- ccs/mac-ukraine.c	(revision 603239)
++++ ccs/mac-ukraine.c	(working copy)
+@@ -78,7 +78,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(mac_ukraine) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/macintosh.c
+===================================================================
+--- ccs/macintosh.c	(revision 603239)
++++ ccs/macintosh.c	(working copy)
+@@ -444,7 +444,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(macintosh) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/osd_ebcdic_df04_1.c
+===================================================================
+--- ccs/osd_ebcdic_df04_1.c	(revision 603239)
++++ ccs/osd_ebcdic_df04_1.c	(working copy)
+@@ -140,7 +140,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(osd_ebcdic_df04_1) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/osd_ebcdic_df04_15.c
+===================================================================
+--- ccs/osd_ebcdic_df04_15.c	(revision 603239)
++++ ccs/osd_ebcdic_df04_15.c	(working copy)
+@@ -210,7 +210,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(osd_ebcdic_df04_15) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/shift_jis.c
+===================================================================
+--- ccs/shift_jis.c	(revision 603239)
++++ ccs/shift_jis.c	(working copy)
+@@ -4749,7 +4749,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(shift_jis) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/us-ascii.c
+===================================================================
+--- ccs/us-ascii.c	(revision 603239)
++++ ccs/us-ascii.c	(working copy)
+@@ -113,7 +113,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(us_ascii) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1250.c
+===================================================================
+--- ccs/windows-1250.c	(revision 603239)
++++ ccs/windows-1250.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1250) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1251.c
+===================================================================
+--- ccs/windows-1251.c	(revision 603239)
++++ ccs/windows-1251.c	(working copy)
+@@ -234,7 +234,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1251) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1252.c
+===================================================================
+--- ccs/windows-1252.c	(revision 603239)
++++ ccs/windows-1252.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1252) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1253.c
+===================================================================
+--- ccs/windows-1253.c	(revision 603239)
++++ ccs/windows-1253.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1253) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1254.c
+===================================================================
+--- ccs/windows-1254.c	(revision 603239)
++++ ccs/windows-1254.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1254) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1255.c
+===================================================================
+--- ccs/windows-1255.c	(revision 603239)
++++ ccs/windows-1255.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1255) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1256.c
+===================================================================
+--- ccs/windows-1256.c	(revision 603239)
++++ ccs/windows-1256.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1256) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1257.c
+===================================================================
+--- ccs/windows-1257.c	(revision 603239)
++++ ccs/windows-1257.c	(working copy)
+@@ -269,7 +269,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1257) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ccs/windows-1258.c
+===================================================================
+--- ccs/windows-1258.c	(revision 603239)
++++ ccs/windows-1258.c	(working copy)
+@@ -304,7 +304,7 @@
+ 	convert_from_ucs, convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(windows_1258) = {
+ 	ICMOD_UC_CCS,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/_tbl_simple.c
+===================================================================
+--- ces/_tbl_simple.c	(revision 603239)
++++ ces/_tbl_simple.c	(working copy)
+@@ -176,7 +176,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(_tbl_simple) = {
+ 	ICMOD_UC_CES,
+ 	table_event,
+ 	NULL,
+Index: ces/euc-jp.c
+===================================================================
+--- ces/euc-jp.c	(revision 603239)
++++ ces/euc-jp.c	(working copy)
+@@ -72,7 +72,7 @@
+ 	apr_iconv_euc_convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(euc_jp) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/euc-kr.c
+===================================================================
+--- ces/euc-kr.c	(revision 603239)
++++ ces/euc-kr.c	(working copy)
+@@ -65,7 +65,7 @@
+ 	apr_iconv_euc_convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(euc_kr) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/euc-tw.c
+===================================================================
+--- ces/euc-tw.c	(revision 603239)
++++ ces/euc-tw.c	(working copy)
+@@ -69,7 +69,7 @@
+ 	apr_iconv_euc_convert_to_ucs,
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(euc_tw) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/gb2312.c
+===================================================================
+--- ces/gb2312.c	(revision 603239)
++++ ces/gb2312.c	(working copy)
+@@ -65,7 +65,7 @@
+ 	apr_iconv_euc_convert_to_ucs
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(gb2312) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/iso-10646-ucs-2.c
+===================================================================
+--- ces/iso-10646-ucs-2.c	(revision 603239)
++++ ces/iso-10646-ucs-2.c	(working copy)
+@@ -30,9 +30,10 @@
+  *	iconv (Charset Conversion Library) v1.0
+  */
+ 
++#include <stdlib.h>	/* free, malloc */
++
+ #define ICONV_INTERNAL
+ #include "iconv.h"
+-#include <stdlib.h>	/* free, malloc */
+ 
+ static const char * const names[] = {
+ 	"iso-10646-ucs-2", "csUnicode", "ucs-2", NULL
+@@ -58,7 +59,7 @@
+ 	bytes = *state ? 2 : 4;
+ 	if (*outbytesleft < bytes)
+ 		return 0;	/* No space in the output buffer */
+-	if (*state == 0) {
++	if (*state) {
+ 		*(*outbuf)++ = 0xFE;
+ 		*(*outbuf)++ = 0xFF;
+ 		*state = 1;
+@@ -125,7 +126,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_10646_ucs_2) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/iso-10646-ucs-4.c
+===================================================================
+--- ces/iso-10646-ucs-4.c	(revision 603239)
++++ ces/iso-10646-ucs-4.c	(working copy)
+@@ -30,11 +30,11 @@
+  *	iconv (Charset Conversion Library) v1.0
+  */
+ 
++#include <stdlib.h>	/* free, malloc */
++
+ #define ICONV_INTERNAL
+ #include "iconv.h"
+-#include <stdlib.h>	/* free, malloc */
+ 
+-
+ static const char * const names[] = {
+ 	"iso-10646-ucs-2", "ucs-4", "ucs4", NULL
+ };
+@@ -130,7 +130,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_10646_ucs_4) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/iso-2022-cn.c
+===================================================================
+--- ces/iso-2022-cn.c	(revision 603239)
++++ ces/iso-2022-cn.c	(working copy)
+@@ -72,7 +72,7 @@
+ 	shift_tab
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_2022_cn) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/iso-2022-jp-2.c
+===================================================================
+--- ces/iso-2022-jp-2.c	(revision 603239)
++++ ces/iso-2022-jp-2.c	(working copy)
+@@ -84,7 +84,7 @@
+ 	shift_tab
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_2022_jp_2) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/iso-2022-jp.c
+===================================================================
+--- ces/iso-2022-jp.c	(revision 603239)
++++ ces/iso-2022-jp.c	(working copy)
+@@ -74,7 +74,7 @@
+ 	shift_tab
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_2022_jp) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/iso-2022-kr.c
+===================================================================
+--- ces/iso-2022-kr.c	(revision 603239)
++++ ces/iso-2022-kr.c	(working copy)
+@@ -69,7 +69,7 @@
+ 	shift_tab
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(iso_2022_kr) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	iconv_module_depend,
+Index: ces/ucs2-internal.c
+===================================================================
+--- ces/ucs2-internal.c	(revision 603239)
++++ ces/ucs2-internal.c	(working copy)
+@@ -90,7 +90,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ucs2_internal) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/ucs4-internal.c
+===================================================================
+--- ces/ucs4-internal.c	(revision 603239)
++++ ces/ucs4-internal.c	(working copy)
+@@ -88,7 +88,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(ucs4_internal) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/unicode-1-1-utf-7.c
+===================================================================
+--- ces/unicode-1-1-utf-7.c	(revision 603239)
++++ ces/unicode-1-1-utf-7.c	(working copy)
+@@ -295,7 +295,7 @@
+ 	convert_to_ucs, NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(unicode_1_1_utf_7) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/utf-16.c
+===================================================================
+--- ces/utf-16.c	(revision 603239)
++++ ces/utf-16.c	(working copy)
+@@ -147,7 +147,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(utf_16) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: ces/utf-8.c
+===================================================================
+--- ces/utf-8.c	(revision 603239)
++++ ces/utf-8.c	(working copy)
+@@ -150,7 +150,7 @@
+ 	NULL
+ };
+ 
+-struct iconv_module_desc iconv_module = {
++API_DECLARE_MODULE(utf_8) = {
+ 	ICMOD_UC_CES,
+ 	apr_iconv_mod_noevent,
+ 	NULL,
+Index: lib/iconv.h
+===================================================================
+--- lib/iconv.h	(revision 603239)
++++ lib/iconv.h	(working copy)
+@@ -130,6 +130,8 @@
+ 	iconv_conv_t *	icd_conv;
+ };
+ 
++typedef struct iconv_module_desc iconv_module_desc_t;
++
+ struct iconv_converter {
+ 	struct iconv_converter_desc *ic_desc;
+ 	void *		ic_data;
+@@ -348,7 +350,6 @@
+ 
+ extern struct iconv_converter_desc iconv_uc_desc;
+ 
+-
+ API_DECLARE_NONSTD(apr_status_t) apr_iconv_euc_open(struct iconv_ces *ces, apr_pool_t *ctx);
+ API_DECLARE_NONSTD(apr_status_t) apr_iconv_euc_close(struct iconv_ces *ces);
+ API_DECLARE_NONSTD(apr_ssize_t)  apr_iconv_euc_convert_from_ucs(struct iconv_ces *ces, ucs_t in,	unsigned char **outbuf, apr_size_t *outbytesleft);
+@@ -360,6 +361,17 @@
+ API_DECLARE_NONSTD(apr_ssize_t) apr_iconv_iso2022_convert_from_ucs(struct iconv_ces *ces, ucs_t in, unsigned char **outbuf, apr_size_t *outbytesleft);
+ API_DECLARE_NONSTD(ucs_t) apr_iconv_iso2022_convert_to_ucs(struct iconv_ces *ces, const unsigned char **inbuf, apr_size_t *inbytesleft);
+ 
++#ifdef API_MODULE_STATIC
++#define API_DECLARE_MODULE(M) iconv_module_desc_t M##_iconv_module
++#define API_IMPORT_MODULE(M)  extern iconv_module_desc_t M##_iconv_module
++#define API_USE_MODULE(M)     1, &M##_iconv_module
++#else
++#define API_DECLARE_MODULE(M) iconv_module_desc_t iconv_module
++#define API_IMPORT_MODULE(M)
++#define API_USE_MODULE(M)     0, NULL
++
++#endif
++
+ #endif /* ICONV_INTERNAL */
+ 
+ #endif /* _ICONV_H_ */
+Index: lib/iconv_module.c
+===================================================================
+--- lib/iconv_module.c	(revision 603239)
++++ lib/iconv_module.c	(working copy)
+@@ -52,6 +52,510 @@
+ 
+ #define APR_ICONV_PATH "APR_ICONV" API_STRINGIFY(API_MAJOR_VERSION) "_PATH"
+ 
++API_IMPORT_MODULE(_tbl_simple);
++API_IMPORT_MODULE(adobe_stdenc);
++API_IMPORT_MODULE(adobe_symbol);
++API_IMPORT_MODULE(adobe_zdingbats);
++API_IMPORT_MODULE(big5);
++API_IMPORT_MODULE(cns11643_plane1);
++API_IMPORT_MODULE(cns11643_plane14);
++API_IMPORT_MODULE(cns11643_plane2);
++API_IMPORT_MODULE(cp037);
++API_IMPORT_MODULE(cp038);
++API_IMPORT_MODULE(cp10000);
++API_IMPORT_MODULE(cp10006);
++API_IMPORT_MODULE(cp10007);
++API_IMPORT_MODULE(cp10029);
++API_IMPORT_MODULE(cp1006);
++API_IMPORT_MODULE(cp10079);
++API_IMPORT_MODULE(cp10081);
++API_IMPORT_MODULE(cp1026);
++API_IMPORT_MODULE(cp273);
++API_IMPORT_MODULE(cp274);
++API_IMPORT_MODULE(cp275);
++API_IMPORT_MODULE(cp277);
++API_IMPORT_MODULE(cp278);
++API_IMPORT_MODULE(cp280);
++API_IMPORT_MODULE(cp281);
++API_IMPORT_MODULE(cp284);
++API_IMPORT_MODULE(cp285);
++API_IMPORT_MODULE(cp290);
++API_IMPORT_MODULE(cp297);
++API_IMPORT_MODULE(cp420);
++API_IMPORT_MODULE(cp423);
++API_IMPORT_MODULE(cp424);
++API_IMPORT_MODULE(cp437);
++API_IMPORT_MODULE(cp500);
++API_IMPORT_MODULE(cp737);
++API_IMPORT_MODULE(cp775);
++API_IMPORT_MODULE(cp850);
++API_IMPORT_MODULE(cp851);
++API_IMPORT_MODULE(cp852);
++API_IMPORT_MODULE(cp855);
++API_IMPORT_MODULE(cp856);
++API_IMPORT_MODULE(cp857);
++API_IMPORT_MODULE(cp860);
++API_IMPORT_MODULE(cp861);
++API_IMPORT_MODULE(cp862);
++API_IMPORT_MODULE(cp863);
++API_IMPORT_MODULE(cp864);
++API_IMPORT_MODULE(cp865);
++API_IMPORT_MODULE(cp866);
++API_IMPORT_MODULE(cp868);
++API_IMPORT_MODULE(cp869);
++API_IMPORT_MODULE(cp870);
++API_IMPORT_MODULE(cp871);
++API_IMPORT_MODULE(cp874);
++API_IMPORT_MODULE(cp875);
++API_IMPORT_MODULE(cp880);
++API_IMPORT_MODULE(cp891);
++API_IMPORT_MODULE(cp903);
++API_IMPORT_MODULE(cp904);
++API_IMPORT_MODULE(cp905);
++API_IMPORT_MODULE(cp918);
++API_IMPORT_MODULE(cp932);
++API_IMPORT_MODULE(cp936);
++API_IMPORT_MODULE(cp949);
++API_IMPORT_MODULE(cp950);
++API_IMPORT_MODULE(dec_mcs);
++API_IMPORT_MODULE(ebcdic_at_de);
++API_IMPORT_MODULE(ebcdic_at_de_a);
++API_IMPORT_MODULE(ebcdic_ca_fr);
++API_IMPORT_MODULE(ebcdic_dk_no);
++API_IMPORT_MODULE(ebcdic_dk_no_a);
++API_IMPORT_MODULE(ebcdic_es);
++API_IMPORT_MODULE(ebcdic_es_a);
++API_IMPORT_MODULE(ebcdic_es_s);
++API_IMPORT_MODULE(ebcdic_fi_se);
++API_IMPORT_MODULE(ebcdic_fi_se_a);
++API_IMPORT_MODULE(ebcdic_fr);
++API_IMPORT_MODULE(ebcdic_it);
++API_IMPORT_MODULE(ebcdic_pt);
++API_IMPORT_MODULE(ebcdic_uk);
++API_IMPORT_MODULE(ebcdic_us);
++API_IMPORT_MODULE(euc_jp);
++API_IMPORT_MODULE(euc_kr);
++API_IMPORT_MODULE(euc_tw);
++API_IMPORT_MODULE(gb12345);
++API_IMPORT_MODULE(gb2312);
++API_IMPORT_MODULE(gb_2312_80);
++API_IMPORT_MODULE(hp_roman8);
++API_IMPORT_MODULE(iso646_dk);
++API_IMPORT_MODULE(iso646_kr);
++API_IMPORT_MODULE(iso_10646_ucs_2);
++API_IMPORT_MODULE(iso_10646_ucs_4);
++API_IMPORT_MODULE(iso_2022_cn);
++API_IMPORT_MODULE(iso_2022_jp);
++API_IMPORT_MODULE(iso_2022_jp_2);
++API_IMPORT_MODULE(iso_2022_kr);
++API_IMPORT_MODULE(iso_8859_1);
++API_IMPORT_MODULE(iso_8859_10);
++API_IMPORT_MODULE(iso_8859_13);
++API_IMPORT_MODULE(iso_8859_14);
++API_IMPORT_MODULE(iso_8859_15);
++API_IMPORT_MODULE(iso_8859_2);
++API_IMPORT_MODULE(iso_8859_3);
++API_IMPORT_MODULE(iso_8859_4);
++API_IMPORT_MODULE(iso_8859_5);
++API_IMPORT_MODULE(iso_8859_6);
++API_IMPORT_MODULE(iso_8859_7);
++API_IMPORT_MODULE(iso_8859_8);
++API_IMPORT_MODULE(iso_8859_9);
++API_IMPORT_MODULE(iso_ir_10);
++API_IMPORT_MODULE(iso_ir_102);
++API_IMPORT_MODULE(iso_ir_103);
++API_IMPORT_MODULE(iso_ir_11);
++API_IMPORT_MODULE(iso_ir_111);
++API_IMPORT_MODULE(iso_ir_121);
++API_IMPORT_MODULE(iso_ir_122);
++API_IMPORT_MODULE(iso_ir_123);
++API_IMPORT_MODULE(iso_ir_128);
++API_IMPORT_MODULE(iso_ir_13);
++API_IMPORT_MODULE(iso_ir_139);
++API_IMPORT_MODULE(iso_ir_14);
++API_IMPORT_MODULE(iso_ir_141);
++API_IMPORT_MODULE(iso_ir_142);
++API_IMPORT_MODULE(iso_ir_143);
++API_IMPORT_MODULE(iso_ir_146);
++API_IMPORT_MODULE(iso_ir_147);
++API_IMPORT_MODULE(iso_ir_15);
++API_IMPORT_MODULE(iso_ir_150);
++API_IMPORT_MODULE(iso_ir_151);
++API_IMPORT_MODULE(iso_ir_152);
++API_IMPORT_MODULE(iso_ir_153);
++API_IMPORT_MODULE(iso_ir_154);
++API_IMPORT_MODULE(iso_ir_155);
++API_IMPORT_MODULE(iso_ir_158);
++API_IMPORT_MODULE(iso_ir_16);
++API_IMPORT_MODULE(iso_ir_17);
++API_IMPORT_MODULE(iso_ir_18);
++API_IMPORT_MODULE(iso_ir_19);
++API_IMPORT_MODULE(iso_ir_2);
++API_IMPORT_MODULE(iso_ir_21);
++API_IMPORT_MODULE(iso_ir_25);
++API_IMPORT_MODULE(iso_ir_27);
++API_IMPORT_MODULE(iso_ir_37);
++API_IMPORT_MODULE(iso_ir_4);
++API_IMPORT_MODULE(iso_ir_47);
++API_IMPORT_MODULE(iso_ir_49);
++API_IMPORT_MODULE(iso_ir_50);
++API_IMPORT_MODULE(iso_ir_51);
++API_IMPORT_MODULE(iso_ir_54);
++API_IMPORT_MODULE(iso_ir_55);
++API_IMPORT_MODULE(iso_ir_57);
++API_IMPORT_MODULE(iso_ir_60);
++API_IMPORT_MODULE(iso_ir_61);
++API_IMPORT_MODULE(iso_ir_69);
++API_IMPORT_MODULE(iso_ir_70);
++API_IMPORT_MODULE(iso_ir_84);
++API_IMPORT_MODULE(iso_ir_85);
++API_IMPORT_MODULE(iso_ir_86);
++API_IMPORT_MODULE(iso_ir_88);
++API_IMPORT_MODULE(iso_ir_89);
++API_IMPORT_MODULE(iso_ir_8_1);
++API_IMPORT_MODULE(iso_ir_8_2);
++API_IMPORT_MODULE(iso_ir_90);
++API_IMPORT_MODULE(iso_ir_91);
++API_IMPORT_MODULE(iso_ir_92);
++API_IMPORT_MODULE(iso_ir_93);
++API_IMPORT_MODULE(iso_ir_94);
++API_IMPORT_MODULE(iso_ir_95);
++API_IMPORT_MODULE(iso_ir_96);
++API_IMPORT_MODULE(iso_ir_98);
++API_IMPORT_MODULE(iso_ir_99);
++API_IMPORT_MODULE(iso_ir_9_1);
++API_IMPORT_MODULE(iso_ir_9_2);
++API_IMPORT_MODULE(jis_x0201);
++API_IMPORT_MODULE(jis_x0208_1983);
++API_IMPORT_MODULE(jis_x0212_1990);
++API_IMPORT_MODULE(johab);
++API_IMPORT_MODULE(koi8_r);
++API_IMPORT_MODULE(koi8_ru);
++API_IMPORT_MODULE(koi8_u);
++API_IMPORT_MODULE(ksx1001);
++API_IMPORT_MODULE(mac_ce);
++API_IMPORT_MODULE(mac_croatian);
++API_IMPORT_MODULE(mac_cyrillic);
++API_IMPORT_MODULE(mac_dingbats);
++API_IMPORT_MODULE(mac_greek);
++API_IMPORT_MODULE(mac_iceland);
++API_IMPORT_MODULE(mac_japan);
++API_IMPORT_MODULE(mac_roman);
++API_IMPORT_MODULE(mac_romania);
++API_IMPORT_MODULE(mac_thai);
++API_IMPORT_MODULE(mac_turkish);
++API_IMPORT_MODULE(mac_ukraine);
++API_IMPORT_MODULE(macintosh);
++API_IMPORT_MODULE(osd_ebcdic_df04_1);
++API_IMPORT_MODULE(osd_ebcdic_df04_15);
++API_IMPORT_MODULE(shift_jis);
++API_IMPORT_MODULE(ucs2_internal);
++API_IMPORT_MODULE(ucs4_internal);
++API_IMPORT_MODULE(unicode_1_1_utf_7);
++API_IMPORT_MODULE(us_ascii);
++API_IMPORT_MODULE(utf_16);
++API_IMPORT_MODULE(utf_8);
++API_IMPORT_MODULE(windows_1250);
++API_IMPORT_MODULE(windows_1251);
++API_IMPORT_MODULE(windows_1252);
++API_IMPORT_MODULE(windows_1253);
++API_IMPORT_MODULE(windows_1254);
++API_IMPORT_MODULE(windows_1255);
++API_IMPORT_MODULE(windows_1256);
++API_IMPORT_MODULE(windows_1257);
++API_IMPORT_MODULE(windows_1258);
++
++static struct static_iconv_module {
++    const char *name;
++    int        present;
++    iconv_module_desc_t *module;
++} const static_iconv_modules[] = {
++    { "_tbl_simple", API_USE_MODULE(_tbl_simple) },
++    { "adobe-stdenc", API_USE_MODULE(adobe_stdenc) },
++    { "adobe-symbol", API_USE_MODULE(adobe_symbol) },
++    { "adobe-zdingbats", API_USE_MODULE(adobe_zdingbats) },
++    { "big5", API_USE_MODULE(big5) },
++    { "cns11643-plane1", API_USE_MODULE(cns11643_plane1) },
++    { "cns11643-plane14", API_USE_MODULE(cns11643_plane14) },
++    { "cns11643-plane2", API_USE_MODULE(cns11643_plane2) },
++    { "cp037", API_USE_MODULE(cp037) },
++    { "cp038", API_USE_MODULE(cp038) },
++    { "cp10000", API_USE_MODULE(cp10000) },
++    { "cp10006", API_USE_MODULE(cp10006) },
++    { "cp10007", API_USE_MODULE(cp10007) },
++    { "cp10029", API_USE_MODULE(cp10029) },
++    { "cp1006", API_USE_MODULE(cp1006) },
++    { "cp10079", API_USE_MODULE(cp10079) },
++    { "cp10081", API_USE_MODULE(cp10081) },
++    { "cp1026", API_USE_MODULE(cp1026) },
++    { "cp273", API_USE_MODULE(cp273) },
++    { "cp274", API_USE_MODULE(cp274) },
++    { "cp275", API_USE_MODULE(cp275) },
++    { "cp277", API_USE_MODULE(cp277) },
++    { "cp278", API_USE_MODULE(cp278) },
++    { "cp280", API_USE_MODULE(cp280) },
++    { "cp281", API_USE_MODULE(cp281) },
++    { "cp284", API_USE_MODULE(cp284) },
++    { "cp285", API_USE_MODULE(cp285) },
++    { "cp290", API_USE_MODULE(cp290) },
++    { "cp297", API_USE_MODULE(cp297) },
++    { "cp420", API_USE_MODULE(cp420) },
++    { "cp423", API_USE_MODULE(cp423) },
++    { "cp424", API_USE_MODULE(cp424) },
++    { "cp437", API_USE_MODULE(cp437) },
++    { "cp500", API_USE_MODULE(cp500) },
++    { "cp737", API_USE_MODULE(cp737) },
++    { "cp775", API_USE_MODULE(cp775) },
++    { "cp850", API_USE_MODULE(cp850) },
++    { "cp851", API_USE_MODULE(cp851) },
++    { "cp852", API_USE_MODULE(cp852) },
++    { "cp855", API_USE_MODULE(cp855) },
++    { "cp856", API_USE_MODULE(cp856) },
++    { "cp857", API_USE_MODULE(cp857) },
++    { "cp860", API_USE_MODULE(cp860) },
++    { "cp861", API_USE_MODULE(cp861) },
++    { "cp862", API_USE_MODULE(cp862) },
++    { "cp863", API_USE_MODULE(cp863) },
++    { "cp864", API_USE_MODULE(cp864) },
++    { "cp865", API_USE_MODULE(cp865) },
++    { "cp866", API_USE_MODULE(cp866) },
++    { "cp868", API_USE_MODULE(cp868) },
++    { "cp869", API_USE_MODULE(cp869) },
++    { "cp870", API_USE_MODULE(cp870) },
++    { "cp871", API_USE_MODULE(cp871) },
++    { "cp874", API_USE_MODULE(cp874) },
++    { "cp875", API_USE_MODULE(cp875) },
++    { "cp880", API_USE_MODULE(cp880) },
++    { "cp891", API_USE_MODULE(cp891) },
++    { "cp903", API_USE_MODULE(cp903) },
++    { "cp904", API_USE_MODULE(cp904) },
++    { "cp905", API_USE_MODULE(cp905) },
++    { "cp918", API_USE_MODULE(cp918) },
++    { "cp932", API_USE_MODULE(cp932) },
++    { "cp936", API_USE_MODULE(cp936) },
++    { "cp949", API_USE_MODULE(cp949) },
++    { "cp950", API_USE_MODULE(cp950) },
++    { "dec-mcs", API_USE_MODULE(dec_mcs) },
++    { "ebcdic-at-de", API_USE_MODULE(ebcdic_at_de) },
++    { "ebcdic-at-de-a", API_USE_MODULE(ebcdic_at_de_a) },
++    { "ebcdic-ca-fr", API_USE_MODULE(ebcdic_ca_fr) },
++    { "ebcdic-dk-no", API_USE_MODULE(ebcdic_dk_no) },
++    { "ebcdic-dk-no-a", API_USE_MODULE(ebcdic_dk_no_a) },
++    { "ebcdic-es", API_USE_MODULE(ebcdic_es) },
++    { "ebcdic-es-a", API_USE_MODULE(ebcdic_es_a) },
++    { "ebcdic-es-s", API_USE_MODULE(ebcdic_es_s) },
++    { "ebcdic-fi-se", API_USE_MODULE(ebcdic_fi_se) },
++    { "ebcdic-fi-se-a", API_USE_MODULE(ebcdic_fi_se_a) },
++    { "ebcdic-fr", API_USE_MODULE(ebcdic_fr) },
++    { "ebcdic-it", API_USE_MODULE(ebcdic_it) },
++    { "ebcdic-pt", API_USE_MODULE(ebcdic_pt) },
++    { "ebcdic-uk", API_USE_MODULE(ebcdic_uk) },
++    { "ebcdic-us", API_USE_MODULE(ebcdic_us) },
++    { "euc-jp", API_USE_MODULE(euc_jp) },
++    { "euc-kr", API_USE_MODULE(euc_kr) },
++    { "euc-tw", API_USE_MODULE(euc_tw) },
++    { "gb12345", API_USE_MODULE(gb12345) },
++    { "gb2312", API_USE_MODULE(gb2312) },
++    { "gb_2312-80", API_USE_MODULE(gb_2312_80) },
++    { "hp-roman8", API_USE_MODULE(hp_roman8) },
++    { "iso646-dk", API_USE_MODULE(iso646_dk) },
++    { "iso646-kr", API_USE_MODULE(iso646_kr) },
++    { "iso-10646-ucs-2", API_USE_MODULE(iso_10646_ucs_2) },
++    { "iso-10646-ucs-4", API_USE_MODULE(iso_10646_ucs_4) },
++    { "iso-2022-cn", API_USE_MODULE(iso_2022_cn) },
++    { "iso-2022-jp", API_USE_MODULE(iso_2022_jp) },
++    { "iso-2022-jp-2", API_USE_MODULE(iso_2022_jp_2) },
++    { "iso-2022-kr", API_USE_MODULE(iso_2022_kr) },
++    { "iso-8859-1", API_USE_MODULE(iso_8859_1) },
++    { "iso-8859-10", API_USE_MODULE(iso_8859_10) },
++    { "iso-8859-13", API_USE_MODULE(iso_8859_13) },
++    { "iso-8859-14", API_USE_MODULE(iso_8859_14) },
++    { "iso-8859-15", API_USE_MODULE(iso_8859_15) },
++    { "iso-8859-2", API_USE_MODULE(iso_8859_2) },
++    { "iso-8859-3", API_USE_MODULE(iso_8859_3) },
++    { "iso-8859-4", API_USE_MODULE(iso_8859_4) },
++    { "iso-8859-5", API_USE_MODULE(iso_8859_5) },
++    { "iso-8859-6", API_USE_MODULE(iso_8859_6) },
++    { "iso-8859-7", API_USE_MODULE(iso_8859_7) },
++    { "iso-8859-8", API_USE_MODULE(iso_8859_8) },
++    { "iso-8859-9", API_USE_MODULE(iso_8859_9) },
++    { "iso-ir-10", API_USE_MODULE(iso_ir_10) },
++    { "iso-ir-102", API_USE_MODULE(iso_ir_102) },
++    { "iso-ir-103", API_USE_MODULE(iso_ir_103) },
++    { "iso-ir-11", API_USE_MODULE(iso_ir_11) },
++    { "iso-ir-111", API_USE_MODULE(iso_ir_111) },
++    { "iso-ir-121", API_USE_MODULE(iso_ir_121) },
++    { "iso-ir-122", API_USE_MODULE(iso_ir_122) },
++    { "iso-ir-123", API_USE_MODULE(iso_ir_123) },
++    { "iso-ir-128", API_USE_MODULE(iso_ir_128) },
++    { "iso-ir-13", API_USE_MODULE(iso_ir_13) },
++    { "iso-ir-139", API_USE_MODULE(iso_ir_139) },
++    { "iso-ir-14", API_USE_MODULE(iso_ir_14) },
++    { "iso-ir-141", API_USE_MODULE(iso_ir_141) },
++    { "iso-ir-142", API_USE_MODULE(iso_ir_142) },
++    { "iso-ir-143", API_USE_MODULE(iso_ir_143) },
++    { "iso-ir-146", API_USE_MODULE(iso_ir_146) },
++    { "iso-ir-147", API_USE_MODULE(iso_ir_147) },
++    { "iso-ir-15", API_USE_MODULE(iso_ir_15) },
++    { "iso-ir-150", API_USE_MODULE(iso_ir_150) },
++    { "iso-ir-151", API_USE_MODULE(iso_ir_151) },
++    { "iso-ir-152", API_USE_MODULE(iso_ir_152) },
++    { "iso-ir-153", API_USE_MODULE(iso_ir_153) },
++    { "iso-ir-154", API_USE_MODULE(iso_ir_154) },
++    { "iso-ir-155", API_USE_MODULE(iso_ir_155) },
++    { "iso-ir-158", API_USE_MODULE(iso_ir_158) },
++    { "iso-ir-16", API_USE_MODULE(iso_ir_16) },
++    { "iso-ir-17", API_USE_MODULE(iso_ir_17) },
++    { "iso-ir-18", API_USE_MODULE(iso_ir_18) },
++    { "iso-ir-19", API_USE_MODULE(iso_ir_19) },
++    { "iso-ir-2", API_USE_MODULE(iso_ir_2) },
++    { "iso-ir-21", API_USE_MODULE(iso_ir_21) },
++    { "iso-ir-25", API_USE_MODULE(iso_ir_25) },
++    { "iso-ir-27", API_USE_MODULE(iso_ir_27) },
++    { "iso-ir-37", API_USE_MODULE(iso_ir_37) },
++    { "iso-ir-4", API_USE_MODULE(iso_ir_4) },
++    { "iso-ir-47", API_USE_MODULE(iso_ir_47) },
++    { "iso-ir-49", API_USE_MODULE(iso_ir_49) },
++    { "iso-ir-50", API_USE_MODULE(iso_ir_50) },
++    { "iso-ir-51", API_USE_MODULE(iso_ir_51) },
++    { "iso-ir-54", API_USE_MODULE(iso_ir_54) },
++    { "iso-ir-55", API_USE_MODULE(iso_ir_55) },
++    { "iso-ir-57", API_USE_MODULE(iso_ir_57) },
++    { "iso-ir-60", API_USE_MODULE(iso_ir_60) },
++    { "iso-ir-61", API_USE_MODULE(iso_ir_61) },
++    { "iso-ir-69", API_USE_MODULE(iso_ir_69) },
++    { "iso-ir-70", API_USE_MODULE(iso_ir_70) },
++    { "iso-ir-84", API_USE_MODULE(iso_ir_84) },
++    { "iso-ir-85", API_USE_MODULE(iso_ir_85) },
++    { "iso-ir-86", API_USE_MODULE(iso_ir_86) },
++    { "iso-ir-88", API_USE_MODULE(iso_ir_88) },
++    { "iso-ir-89", API_USE_MODULE(iso_ir_89) },
++    { "iso-ir-8-1", API_USE_MODULE(iso_ir_8_1) },
++    { "iso-ir-8-2", API_USE_MODULE(iso_ir_8_2) },
++    { "iso-ir-90", API_USE_MODULE(iso_ir_90) },
++    { "iso-ir-91", API_USE_MODULE(iso_ir_91) },
++    { "iso-ir-92", API_USE_MODULE(iso_ir_92) },
++    { "iso-ir-93", API_USE_MODULE(iso_ir_93) },
++    { "iso-ir-94", API_USE_MODULE(iso_ir_94) },
++    { "iso-ir-95", API_USE_MODULE(iso_ir_95) },
++    { "iso-ir-96", API_USE_MODULE(iso_ir_96) },
++    { "iso-ir-98", API_USE_MODULE(iso_ir_98) },
++    { "iso-ir-99", API_USE_MODULE(iso_ir_99) },
++    { "iso-ir-9-1", API_USE_MODULE(iso_ir_9_1) },
++    { "iso-ir-9-2", API_USE_MODULE(iso_ir_9_2) },
++    { "jis_x0201", API_USE_MODULE(jis_x0201) },
++    { "jis_x0208-1983", API_USE_MODULE(jis_x0208_1983) },
++    { "jis_x0212-1990", API_USE_MODULE(jis_x0212_1990) },
++    { "johab", API_USE_MODULE(johab) },
++    { "koi8-r", API_USE_MODULE(koi8_r) },
++    { "koi8-ru", API_USE_MODULE(koi8_ru) },
++    { "koi8-u", API_USE_MODULE(koi8_u) },
++    { "ksx1001", API_USE_MODULE(ksx1001) },
++    { "mac-ce", API_USE_MODULE(mac_ce) },
++    { "mac-croatian", API_USE_MODULE(mac_croatian) },
++    { "mac-cyrillic", API_USE_MODULE(mac_cyrillic) },
++    { "mac-dingbats", API_USE_MODULE(mac_dingbats) },
++    { "mac-greek", API_USE_MODULE(mac_greek) },
++    { "mac-iceland", API_USE_MODULE(mac_iceland) },
++    { "mac-japan", API_USE_MODULE(mac_japan) },
++    { "mac-roman", API_USE_MODULE(mac_roman) },
++    { "mac-romania", API_USE_MODULE(mac_romania) },
++    { "mac-thai", API_USE_MODULE(mac_thai) },
++    { "mac-turkish", API_USE_MODULE(mac_turkish) },
++    { "mac-ukraine", API_USE_MODULE(mac_ukraine) },
++    { "macintosh", API_USE_MODULE(macintosh) },
++    { "osd_ebcdic_df04_1", API_USE_MODULE(osd_ebcdic_df04_1) },
++    { "osd_ebcdic_df04_15", API_USE_MODULE(osd_ebcdic_df04_15) },
++    { "shift_jis", API_USE_MODULE(shift_jis) },
++    { "ucs2-internal", API_USE_MODULE(ucs2_internal) },
++    { "ucs4-internal", API_USE_MODULE(ucs4_internal) },
++    { "unicode-1-1-utf-7", API_USE_MODULE(unicode_1_1_utf_7) },
++    { "us-ascii", API_USE_MODULE(us_ascii) },
++    { "utf-16", API_USE_MODULE(utf_16) },
++    { "utf-8", API_USE_MODULE(utf_8) },
++    { "windows-1250", API_USE_MODULE(windows_1250) },
++    { "windows-1251", API_USE_MODULE(windows_1251) },
++    { "windows-1252", API_USE_MODULE(windows_1252) },
++    { "windows-1253", API_USE_MODULE(windows_1253) },
++    { "windows-1254", API_USE_MODULE(windows_1254) },
++    { "windows-1255", API_USE_MODULE(windows_1255) },
++    { "windows-1256", API_USE_MODULE(windows_1256) },
++    { "windows-1257", API_USE_MODULE(windows_1257) },
++    { "windows-1258", API_USE_MODULE(windows_1258) },
++
++    { NULL, 0, NULL}
++};
++
++static const size_t static_iconv_modules_count =
++    sizeof(static_iconv_modules)/sizeof(static_iconv_modules[0]) - 1;
++
++
++/* Compare two static modules. */
++static int static_iconv_module_compare (const void *u, const void *v)
++{
++    const struct static_iconv_module *const a = u;
++    const struct static_iconv_module *const b = v;
++    return strcmp(a->name, b->name);
++}
++
++static iconv_module_desc_t *static_iconv_module_find(const char *name)
++{
++    struct static_iconv_module key;
++    struct static_iconv_module *val;
++#if 'A' == '\xC1' /* if EBCDIC host */
++    /* The table is sorted in ASCII collation order, not in EBCDIC order.
++     * At the first access, we sort it automatically
++     * Criterion for the 1st time initialization is the fact that the
++     * 1st name in the list starts with a digit (in ASCII, numbers
++     * have a lower ordinal value than alphabetic characters; while
++     * in EBCDIC, their ordinal value is higher)
++     */
++    if (isdigit(static_iconv_modules[0].name[0]))  {
++        qsort((void *)static_iconv_modules, static_iconv_modules_count,
++              sizeof(static_iconv_modules[0]),
++              static_iconv_module_compare);
++    }
++#endif
++    key.name = name;
++    val = bsearch(&key, static_iconv_modules, static_iconv_modules_count,
++                  sizeof(static_iconv_modules[0]),
++                  static_iconv_module_compare);
++    if (val)
++        return val->module;
++    else
++        return NULL;
++}
++
++
++static int
++iconv_smopen(const char *name, void **dpp)
++{
++
++    char buffer[APR_PATH_MAX];
++    char *ptr;
++    iconv_module_desc_t *module;
++
++    if (apr_tolower(name[0]) == 'x' && name[1] == '-')
++        name += 2;
++    ptr = buffer;
++    while (0 != (*ptr++ = apr_tolower(*name++)))
++    module = static_iconv_module_find(buffer);
++    if (!module) {
++        const char *alias = charset_alias_find(buffer);
++        if (alias) {
++            if ((module = static_iconv_module_find(alias))) {
++                *dpp = module;
++                return 0;
++            }
++        }
++    }
++    else {
++        *dpp = module;
++        return 0;
++    }
++    return EINVAL;
++}
++
+ static apr_status_t
+ iconv_getpathname(char *buffer, const char *dir, const char *name, apr_pool_t *ctx)
+ {
+@@ -140,6 +644,7 @@
+ 	return EINVAL;
+ }
+ 
++
+ API_DECLARE_NONSTD(int)
+ apr_iconv_mod_load(const char *modname, int modtype, const void *args,
+ 	struct iconv_module **modpp, apr_pool_t *ctx)
+@@ -148,22 +653,28 @@
+ 	struct iconv_module *mod, *depmod;
+ 	const struct iconv_module_depend *depend;
+ 	char buffer[APR_PATH_MAX];
+-	void *handle;
++	void *handle = NULL;
+ 	int error;
++	
++	/* Try to load the built-in modules first */
++	error = iconv_smopen(modname, (void**)&mdesc);
++	if (error) {
++		if (iconv_getpath(buffer, modname, ctx) != 0)
++			return EINVAL;
+ 
+-	if (iconv_getpath(buffer, modname, ctx) != 0)
+-		return EINVAL;
+-
+-	error = iconv_dlopen(buffer, "iconv_module", &handle, (void**)&mdesc, ctx);
++		error = iconv_dlopen(buffer, "iconv_module", &handle, (void**)&mdesc, ctx);
++	}
+ 	if (error)
+ 		return error;
+ 	if (modtype != ICMOD_ANY && mdesc->imd_type != modtype) {
+-		apr_dso_unload(handle);
++		if (handle)
++			apr_dso_unload(handle);
+ 		return APR_EFTYPE;
+ 	}
+ 	mod = malloc(sizeof(*mod));
+ 	if (mod == NULL) {
+-		apr_dso_unload(handle);
++		if (handle)
++			apr_dso_unload(handle);
+ 		return ENOMEM;
+ 	}
+ 	memset(mod, 0, sizeof(*mod));

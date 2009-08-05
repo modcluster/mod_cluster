@@ -1,0 +1,65 @@
+/* Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+#include "apxwin.h"
+#include "prunsrv.h"
+
+#define STR_COPYRIGHT       "Copyright © 2007 Red Hat Middleware, LLC. " \
+                            "or its licensors, as applicable."
+
+#define STR_LICENSE         "Distributable under LGPL license. " \
+                            "See terms of license at gnu.org."
+
+#define STR_COMPANY         "Red Hat®, Inc."
+#define STR_TRADEMARK       "™ Red Hat Inc."
+#define STR_PRODUCT         "JBoss Web Service wrapper"
+
+IDI_MAINICON         ICON                   "../../resources/jboss.ico" 
+IDI_REDHATICON       ICON                   "../../resources/jboss.ico" 
+
+1 VERSIONINFO
+ FILEVERSION CSV_VERSION
+ PRODUCTVERSION CSV_VERSION
+ FILEFLAGSMASK 0x3fL
+#if defined(_DEBUG)
+ FILEFLAGS 0x03L
+#else
+ FILEFLAGS 0x02L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "Comments", STR_COPYRIGHT "\0"
+      VALUE "CompanyName", STR_COMPANY "\0"
+      VALUE "FileDescription", STR_PRODUCT "\0"
+      VALUE "FileVersion", PRG_VERSION
+      VALUE "InternalName", STR_PRODUCT "\0"
+      VALUE "LegalCopyright", STR_COPYRIGHT "\0"
+      VALUE "OriginalFilename", "jbossweb.exe\0"
+      VALUE "ProductName", STR_PRODUCT "\0"
+      VALUE "ProductVersion", PRG_VERSION
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END 

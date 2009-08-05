@@ -1,0 +1,139 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master SIGHT makefile.
+# Usage:
+#                 DEBUG=1   Build DEBUG version of SIGHT
+#
+# Originally contributed by Mladen Turk <mturk jboss.com>
+#
+# ====================================================================
+#
+
+!IF !DEFINED(APR_DECLARE_STATIC) || "$(APR_DECLARE_STATIC)" == ""
+PROJECT = libsight-1
+APR_LIB = libapr-1.lib
+APU_LIB = libaprutil-1.lib
+!ELSE
+CFLAGS = -DAPR_DECLARE_STATIC -DAPU_DECLARE_STATIC $(CFLAGS)
+PROJECT = sight-1
+APR_LIB = apr-1.lib
+APU_LIB = aprutil-1.lib
+!ENDIF
+TARGET = DLL
+
+!include <..\..\NMAKEcommon.inc>
+
+CFLAGS = $(CFLAGS) -DSIGHT_DECLARE_EXPORT
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!IFNDEF WITH_APR
+!ERROR WITH_APR Not defined
+!ENDIF
+
+INCLUDES = -I$(SRCDIR)\include -I$(SRCDIR)\include\arch\windows $(JAVA_INCLUDES)
+INCLUDES = $(INCLUDES) -I$(WITH_APR)\include\apr-1 -I$(WITH_APR)\include\apr-1\arch\win32
+
+LDIRS = /libpath:"$(WITH_APR)\lib"
+
+LFLAGS = $(LFLAGS) $(APR_LIB) $(APU_LIB)
+LFLAGS = $(LFLAGS) user32.lib psapi.lib gdi32.lib shlwapi.lib wldap32.lib ole32.lib netapi32.lib iphlpapi.lib
+
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\buildmark.obj \
+	$(WORKDIR)\cache.obj \
+	$(WORKDIR)\clazz.obj \
+	$(WORKDIR)\console.obj \
+	$(WORKDIR)\dir.obj \
+	$(WORKDIR)\error.obj \
+	$(WORKDIR)\file.obj \
+	$(WORKDIR)\finfo.obj \
+	$(WORKDIR)\group.obj \
+	$(WORKDIR)\hash.obj \
+	$(WORKDIR)\jnu.obj \
+	$(WORKDIR)\library.obj \
+	$(WORKDIR)\no.obj \
+	$(WORKDIR)\pool.obj \
+	$(WORKDIR)\cpu.obj \
+	$(WORKDIR)\cpustat.obj \
+	$(WORKDIR)\main.obj \
+	$(WORKDIR)\memory.obj \
+	$(WORKDIR)\module.obj \
+	$(WORKDIR)\mutex.obj \
+	$(WORKDIR)\netadapter.obj \
+	$(WORKDIR)\network.obj \
+	$(WORKDIR)\netaddr.obj \
+	$(WORKDIR)\os.obj \
+	$(WORKDIR)\proc.obj \
+	$(WORKDIR)\process.obj \
+	$(WORKDIR)\registry.obj \
+	$(WORKDIR)\scm.obj \
+	$(WORKDIR)\service.obj \
+	$(WORKDIR)\shm.obj \
+	$(WORKDIR)\tcpconn.obj \
+	$(WORKDIR)\tcpstat.obj \
+	$(WORKDIR)\udpconn.obj \
+	$(WORKDIR)\udpstat.obj \
+	$(WORKDIR)\user.obj \
+	$(WORKDIR)\utils.obj \
+	$(WORKDIR)\variant.obj \
+	$(WORKDIR)\volume.obj \
+	$(WORKDIR)\wmiapi.obj \
+	$(WORKDIR)\wmi.obj
+
+BUILDLIB = $(PREFIX)\lib
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDBIN).manifest
+
+all : $(WORKDIR) $(BUILDBIN)
+
+$(BUILDLIB) :
+	@if not exist "$(BUILDLIB)\$(NULL)" mkdir "$(BUILDLIB)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)\share}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\os\windows}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\os\windows}.cpp{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(OBJECTS): $(SRCDIR)\include\*.h $(SRCDIR)\include\arch\windows\*.h
+
+$(BUILDRES): $(SRCDIR)\os\windows\libsight.rc $(SRCDIR)\include\*.h  $(SRCDIR)\include\arch\windows\*.h
+	$(RC) $(RCFLAGS) /i "$(SRCDIR)\include" /fo $(BUILDRES) $(SRCDIR)\os\windows\libsight.rc
+
+$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDBIN);2
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLIB) $(WORKDIR) $(BUILDBIN)
+	@xcopy "$(WORKDIR)\*.dll" "$(BUILDLIB)" /Y /Q

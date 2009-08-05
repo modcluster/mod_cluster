@@ -1,0 +1,16 @@
+# list of the packages
+# add new versions of package after existing ones.
+jboss-native|2.0.1|TOMCAT_NATIVE_1_1_11|apr:v:1.2.9|apu:v:1.2.8|api:v:1.2.1|ssl:v:0.9.8e|zlib:v:1.2.3
+jboss-native|2.0.2|TOMCAT_NATIVE_1_1_11|apr:v:1.2.9|apu:v:1.2.8|api:v:1.2.1|ssl:v:0.9.8e|zlib:v:1.2.3
+jboss-native|2.0.3|TOMCAT_NATIVE_1_1_12|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1|ssl:v:0.9.8e|zlib:v:1.2.3
+jboss-native|2.0.4|TOMCAT_NATIVE_1_1_13|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1|ssl:v:0.9.8e|zlib:v:1.2.3
+jboss-native|2.0.5-dev|TOMCAT_NATIVE_1_1_14|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1|ssl:v:0.9.8h|zlib:v:1.2.3
+# SIGHT
+jboss-sight|1.0.0|trunk|apr:v:1.2.9|apu:v:1.2.8|api:v:1.2.1
+jboss-sight|1.0.1|trunk|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1
+jboss-sight|1.0.2|trunk|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1
+jboss-sight|1.0.3-dev|trunk|apr:v:1.2.8|apu:v:1.2.8|api:v:1.2.1
+# httpd
+jboss-httpd|0.0.1|2.2.8|api:v:1.2.1|ssl:v:0.9.8e|zlib:v:1.2.3
+rhel-httpd|2.2.3-11.el5_1.3|httpd-2_2_3-11_el5_1_3|apr:r:apr-1_2_7-11|apu:r:apr-util-1_2_7-7_el5|api:v:1.2.1|ssl:r:openssl-0_9_8b-8_3_el5_0_2|zlib:v:1.2.3|jk:v:1.2.26|iconv:v:1.11|expat:v:1.95.8
+rhel-httpd|2.2.8-1.el5s2|httpd-2_2_8-1_el5s2|apr:r:apr-1_2_7-11|apu:r:apr-util-1_2_7-7_el5|api:v:1.2.1|ssl:r:openssl-0_9_8b-8_3_el5_0_2|zlib:v:1.2.3|jk:v:1.2.26|iconv:v:1.11|expat:v:1.95.8|cluster:t:trunk

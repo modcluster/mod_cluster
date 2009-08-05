@@ -1,0 +1,61 @@
+--- include/tcn_version.h
++++ include/tcn_version.h
+@@ -69,7 +69,7 @@
+ #define TCN_MINOR_VERSION       1
+ 
+ /** patch level */
+-#define TCN_PATCH_VERSION       12
++#define TCN_PATCH_VERSION       13
+ 
+ /**
+  *  This symbol is defined for internal, "development" copies of TCN. This
+--- os/win32/libtcnative.rc
++++ os/win32/libtcnative.rc
+@@ -20,7 +20,7 @@
+                      "See the License for the specific language governing " \
+                      "permissions and limitations under the License."
+ 
+-#define TCN_VERISON "1.1.12"
++#define TCN_VERISON "1.1.13"
+ 1000 ICON "apache.ico"
+ 
+ 1001 DIALOGEX 0, 0, 252, 51
+@@ -36,8 +36,8 @@
+ END
+ 
+ 1 VERSIONINFO
+- FILEVERSION 1,1,12,0
+- PRODUCTVERSION 1,1,12,0
++ FILEVERSION 1,1,13,1
++ PRODUCTVERSION 1,1,13,1
+  FILEFLAGSMASK 0x3fL
+ #ifdef _DEBUG
+  FILEFLAGS 0x1L
+--- src/network.c
++++ src/network.c
+@@ -17,7 +17,7 @@
+ /*
+  *
+  * @author Mladen Turk
+- * @version $Revision: 562478 $, $Date: 2007-08-03 16:33:51 +0200 (Fri, 03 Aug 2007) $
++ * @version $Revision: 631212 $, $Date: 2008-02-26 14:46:57 +0100 (Tue, 26 Feb 2008) $
+  */
+ 
+ #include "tcn.h"
+@@ -1106,7 +1106,6 @@
+ 
+     UNREFERENCED(o);
+     if (!s->sock) {
+-        tcn_ThrowAPRException(e, APR_ENOTSOCK);
+         return APR_ENOTSOCK;
+     }
+     else
+@@ -1120,7 +1119,7 @@
+     apr_int32_t on = 0;
+ 
+     UNREFERENCED(o);
+-    if (s->sock)
++    if (!s->sock)
+         tcn_ThrowAPRException(e, APR_ENOTSOCK);
+     else {
+         TCN_THROW_IF_ERR((*s->net->opt_get)(s->opaque, (apr_int32_t)opt,

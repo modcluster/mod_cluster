@@ -1,0 +1,109 @@
+The subproject of jbossnative are build using the build.sh script
+
+Configuration file:
+The build.sh parses a file name pkg.list:
+jboss-native|2.0.0|1.2.9|1.2.8|0.9.8e|TOMCAT_NATIVE_1_1_11
+jboss-sight|1.0.0|1.2.9|1.2.8||trunk
+The first column is the package name.
+The 2d the version.
+The 3d is the APR version to use for this package.
+The 4th is the APR-UTIL version to use for this package.
+The 5th is the OpenSSL version to use for this package. A SSL and non-SSL
+  version of the package could be built in this case.
+The 6th is tag of the repos we are building.
+
+Parameters:
+The lastest description of the package is the one choosen to build the package.
+build.sh: Build.sh will check where it is located and will build the binary
+packages from the sources of its location. If it isn't in sources it will
+print an error message. A ssl version of the package will be build if the
+source directory is a ssl one.
+build.sh all: Build all the non-ssl version of the packages described in
+pkg.list.
+build.sh sources: Build only the sources tarballs.
+Modifers parameters.
+build jboss-sight: Build jboss-sight only. The lastest description of the
+package in pkg.list is use.
+build jboss-sight 1.0.0: Build the specified version of jboss-sight.
+Options parameters.
+-ssl:    Build the SSL version of the package(s). If the package doesn't
+  use SSL an error will occur.
+default: Build only the non-SSL version of the package(s). 
+
+Internals:
+The logic of build.sh uses hooks (sub shell) to process specific handling
+to a package. The sub shells are called with parameters.
+For example:
+buildsourcejboss_native.sh (all machines)
+buildsourcejboss_native.linux2.sh (only linux)
+buildsourcejboss_native.linux2.i686.sh (only  linux running on i686 machines).
+build.sh will look for the most specific hook to create the sources tarball
+for jboss_native
+The exit code of the sub shell is use to control the main build.
+exit(2) Stop the main build without error (for not supported platforms).
+exit(1) Stop the main build with error (something wrong in build).
+exit(0) Success the main build process the next step.
+
+The download and build of APR and OpenSSL are cached when you start build.sh
+with -cache. A file named .cache contains the plaform information to prevent
+using wrong objects when using shared file system.
+
+Build.sh creates 3 directory and populates them:
+cache: contains the .cache file, a lock file to prevent having more that one
+build.sh running running at once on one system. It also contains the sources
+and a configured and compiled APR or OpenSSL it was run before on that
+machine.
+work: The work directory. This directory is temporary and it contains
+      the full package build.
+output: The result of build will be put in this directory.
+        (source and binary tarballs).
+        The produced archives has a common naming:
+        jboss-<Package Name>-<Package Version>-<Platform>-<Cpu>[-ssl]
+        jboss-<Package Name>-<Package Version>-src[-ssl]
+        
+cache: Cache directory that contains platform specific builds.
+       Each platform has its own subdirectory in the format
+       <Operating System><Target CPU>
+       The common libraries will not be build once they are in cache,
+       so make sure the cache is purged if apr or openssl version is
+       changed.       
+
+Windows build:
+For building on windows use cygwin and Microsoft compile tools.
+The build downloads apr and apr-util with .zip suffix instead .tar.gz
+The produced source and binary packages also have .zip suffix
+All downloaded sources via svn have the platform native line endings,
+in this case CRLF.
+Cygwin needs a minimum base system plus the folowing packages:
+- wget
+- w3m
+- perl
+- unzip and zip
+- subversion
+
+
+Windows build presumes few environment variables preset before
+calling build.sh. They are set within build.bat and are:
+BUILD_CPU (can be i686, amd64 or ia64)
+BUILD_SYS (always windows)
+
+Supported Windows compliers:
+- Visual C++ 6.0
+  Service Pack 6 for Visual C++ 6.0
+  Needs Platform SDK and Microsoft Assembler 6.11
+  
+- Microsoft® Windows Server 2003 R2 Platform SDK - March 2006 Edition
+  Used for building amd64 and ia64 binaries.
+
+- Microsoft Visual Studio 2005
+
+Setting up the Windows environment:
+Before calling build.sh make sure you have cygwin\bin in
+the PATH.
+Microsoft Visual Studio 2005:
+1. Open cmd.exe and navigate to the build location
+2. call <Your Microsoft Visual Studio 2005 Install>\vc\bin\vcvars32.bat
+3. bash build.sh jboss-<package name> -cache [-ssl]
+
+On windows the build.sh does not calls configure, because all
+needed configuration is done via make files.

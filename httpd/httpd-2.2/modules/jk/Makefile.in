@@ -1,0 +1,2 @@
+VPATH =  $(srcdir)/common:$(srcdir)/apache-2.0
+include $(top_srcdir)/build/special.mk

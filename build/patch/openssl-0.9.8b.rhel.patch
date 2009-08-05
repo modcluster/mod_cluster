@@ -1,0 +1,52 @@
+--- Configure	2008-02-06 09:11:22.000000000 +0100
++++ Configure	2008-02-06 09:24:06.000000000 +0100
+@@ -322,7 +322,7 @@
+ ####
+ "linux-generic64","gcc:-DTERMIO -Wall \$(RPM_OPT_FLAGS)::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_INT DES_UNROLL BF_PTR:${no_asm}:dlfcn:linux-shared:-fPIC:\$(RPM_OPT_FLAGS):.so.\$(SHLIB_SONAMEVER)",
+ # -bpowerpc64-linux is transient option, -m64 should be the one to use...
+-"linux-ppc64",	"gcc:-DB_ENDIAN -DTERMIO -Wall \$(RPM_OPT_FLAGS)::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_RISC1 DES_UNROLL::linux_ppc64.o::::::::::dlfcn:linux-shared:-fPIC:\$(RPM_OPT_FLAGS):.so.\$(SHLIB_SONAMEVER)",
++"linux-ppc64",	"gcc:-m64 -O3 -DB_ENDIAN -DTERMIO -Wall \$(RPM_OPT_FLAGS)::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_RISC1 DES_UNROLL::linux_ppc64.o::::::::::dlfcn:linux-shared:-fPIC:-m64 \$(RPM_OPT_FLAGS):.so.\$(SHLIB_SONAMEVER)",
+ "linux-ia64",	"gcc:-DL_ENDIAN -DTERMIO -Wall \$(RPM_OPT_FLAGS)::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC:\$(RPM_OPT_FLAGS):.so.\$(SHLIB_SONAMEVER)",
+ "linux-ia64-ecc","ecc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-ia64-icc","icc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+--- crypto/rand/rand_unix.c	Wed Mar  5 09:02:06 2008
++++ crypto/rand/rand_unix.c	Wed Mar  5 10:46:29 2008
+@@ -205,6 +205,30 @@
+ 
+ 			do
+ 				{
++#if defined(__hpux)
++                                /* use select() */
++                                int usec = 10*1000; /* spend 10ms on each file */
++                                fd_set fset;
++                                struct timeval t;
++
++                                t.tv_sec = 0;
++                                t.tv_usec = usec;
++
++                                FD_ZERO(&fset);
++                                FD_SET(fd, &fset);
++
++                                if (select(fd+1,&fset,NULL,NULL,&t) >= 0)
++                                        {
++                                        usec = t.tv_usec;
++                                        if (FD_ISSET(fd, &fset))
++					        r=read(fd,(unsigned char *)tmpbuf+n, ENTROPY_NEEDED-n);
++                                                if (r > 0)
++                                                        n += r;
++                                        }
++                                else
++                                        usec = 0;
++    
++#else
+ 				pfd.fd = fd;
+ 				pfd.events = POLLIN;
+ 				pfd.revents = 0;
+@@ -221,6 +245,7 @@
+ 				/* we don't know how big part of the timeout elapsed
+ 				    wait half the original timeout next time */
+ 				t >>= 1; 
++#endif
+ 				}
+ 			while ((r > 0 || (errno == EINTR || errno == EAGAIN))
+ 				&& t != 0 && n < ENTROPY_NEEDED);

@@ -1,0 +1,162 @@
+#!/bin/sh
+#
+#   SIGHT - System information gathering hybrid tool
+#
+#   Copyright(c) 2007 Red Hat Middleware, LLC,
+#   and individual contributors as indicated by the @authors tag.
+#   See the copyright.txt in the distribution for a
+#   full listing of individual contributors.
+#
+#   This library is free software; you can redistribute it and/or
+#   modify it under the terms of the GNU Lesser General Public
+#   License as published by the Free Software Foundation; either
+#   version 2 of the License, or (at your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#   Lesser General Public License for more details.
+#
+#   You should have received a copy of the GNU Lesser General Public
+#   License along with this library in the file COPYING.LIB;
+#   if not, write to the Free Software Foundation, Inc.,
+#   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+#
+
+
+# Verify that the builder has the right config tools installed
+#
+build/buildcheck.sh || exit 1
+
+# Default place to look for apr source.  Can be overridden with 
+#   --with-apr=[directory]
+apr_src_dir=../../srclib/apr
+
+while test $# -gt 0 
+do
+  # Normalize
+  case "$1" in
+  -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case "$1" in
+  --with-apr=*)
+  apr_src_dir=$optarg
+  ;;
+  esac
+
+  shift
+done
+
+if test -d "$apr_src_dir"
+then
+  echo ""
+  echo "Looking for apr source in $apr_src_dir"
+else
+  echo ""
+  echo "Problem finding apr source in $apr_src_dir."
+  echo "Use:"
+  echo "  --with-apr=[directory]" 
+  exit 1
+fi
+
+# Remove some files, then copy them from apr source tree
+rm -f build/apr_common.m4 build/find_apr.m4 build/install.sh \
+      build/config.guess build/config.sub
+cp $apr_src_dir/build/apr_common.m4 $apr_src_dir/build/find_apr.m4 \
+   $apr_src_dir/build/install.sh $apr_src_dir/build/config.guess  \
+   $apr_src_dir/build/config.sub build
+
+# Clean up any leftovers
+rm -f aclocal.m4 libtool.m4
+
+libtoolize=`build/printpath glibtoolize libtoolize15 libtoolize14 libtoolize`
+if [ "x$libtoolize" = "x" ]; then
+    echo "libtoolize not found in path"
+    exit 1
+fi
+
+# Create the libtool helper files
+#
+# Note: we copy (rather than link) them to simplify distribution.
+# Note: APR supplies its own config.guess and config.sub -- we do not
+#       rely on libtool's versions
+#
+echo "Copying libtool helper files ..."
+
+# Remove any libtool files so one can switch between libtool 1.3
+# and libtool 1.4 by simply rerunning the buildconf script.
+(cd build ; rm -f ltconfig ltmain.sh libtool.m4)
+
+$libtoolize --copy --automake
+
+if [ -f libtool.m4 ]; then 
+   ltfile=`pwd`/libtool.m4
+else
+   ltfindcmd="`sed -n \"/=[^\\\`]/p;/libtool_m4=/{s/.*=/echo /p;q;}\" \
+                   < $libtoolize`"
+   ltfile=${LIBTOOL_M4-`eval "$ltfindcmd"`}
+   # Expecting the code above to be very portable, but just in case...
+   if [ -z "$ltfile" -o ! -f "$ltfile" ]; then
+     ltpath=`dirname $libtoolize`
+     ltfile=`cd $ltpath/../share/aclocal ; pwd`/libtool.m4
+   fi
+fi
+  
+if [ ! -f $ltfile ]; then
+    echo "$ltfile not found"
+    exit 1
+fi
+
+echo "buildconf: Using libtool.m4 at ${ltfile}."
+
+cat $ltfile | sed -e 's/LIBTOOL=\(.*\)top_build/LIBTOOL=\1apr_build/' > build/libtool.m4
+
+# libtool.m4 from 1.6 requires ltsugar.m4
+if [ -f ltsugar.m4 ]; then
+   rm -f build/ltsugar.m4
+   mv ltsugar.m4 build/ltsugar.m4
+fi
+
+echo "Creating include/arch/unix/sight_platform.h.in ..."
+${AUTOHEADER:-autoheader}
+
+echo "Creating configure ..."
+### do some work to toss config.cache?
+if ${AUTOCONF:-autoconf}; then
+  :
+else
+  echo "autoconf failed"
+  exit 1
+fi
+
+# Remove autoconf 2.5x's cache directory
+rm -rf autom4te*.cache
+
+#
+# Generate build-outputs.mk for the build systme
+#
+echo "Generating 'make' outputs ..."
+build/gen-build.py make
+
+# Remove autoconf cache again
+rm -rf autom4te*.cache
+
+# Create RPM Spec file
+if [ -f `which cut` ]; then
+  echo rebuilding rpm spec file
+  ( REVISION=`build/get-version.sh all include/sight_version.h SIGHT`
+    VERSION=`echo $REVISION | cut -d- -s -f1`
+    RELEASE=`echo $REVISION | cut -d- -s -f2`
+    if [ "x$VERSION" = "x" ]; then
+      VERSION=$REVISION
+      RELEASE=1
+    fi
+    cat ./build/rpm/sight.spec.in | \
+    sed -e "s/SIGHT_VERSION/$VERSION/" \
+        -e "s/SIGHT_RELEASE/$RELEASE/" \
+    > sight.spec )
+fi
+

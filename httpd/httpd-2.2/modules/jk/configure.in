@@ -1,0 +1,123 @@
+AC_PREREQ(2.13)
+AC_INIT(common/jk_worker.h)
+AC_CONFIG_HEADER(common/portable.h)
+AC_CONFIG_AUX_DIR(scripts/build/unix)
+
+sinclude(scripts/build/jk_common.m4)
+
+dnl ----------------------------- Checks for standard typedefs
+
+dnl Checks for integer size
+AC_CHECK_SIZEOF(char, 1)
+AC_CHECK_SIZEOF(int, 4)
+AC_CHECK_SIZEOF(long, 4)
+AC_CHECK_SIZEOF(short, 2)
+AC_CHECK_SIZEOF(long double, 12)
+AC_CHECK_SIZEOF(long long, 8)
+AC_CHECK_SIZEOF(longlong, 8)
+
+
+# Now we need to find what jk_uint32_t (sizeof == 4) will be.
+# The first match is our preference.
+if test "$ac_cv_sizeof_int" = "4"; then
+    int32_t_fmt='#define JK_INT32_T_FMT "d"'
+    uint32_t_fmt='#define JK_UINT32_T_FMT "u"'
+    uint32_t_hex_fmt='#define JK_UINT32_T_HEX_FMT "x"'
+    int32_value="int"
+elif test "$ac_cv_sizeof_long" = "4"; then
+    int32_t_fmt='#define JK_INT32_T_FMT "ld"'
+    uint32_t_fmt='#define JK_UINT32_T_FMT "lu"'
+    uint32_t_hex_fmt='#define JK_UINT32_T_HEX_FMT "lx"'
+    int32_value="long"
+else
+    int32_t_fmt='#error could not detect a 32-bit integer type'
+    uint32_t_fmt='#error could not detect a 32-bit integer type'
+    uint32_t_hex_fmt='#error could not detect a 32-bit integer type'
+    AC_ERROR([could not detect a 32-bit integer type])
+fi
+
+# Now we need to find what jk_uint64_t (sizeof == 8) will be.
+# The first match is our preference.
+if test "$ac_cv_sizeof_int" = "8"; then
+    int64_t_fmt='#define JK_INT64_T_FMT "d"'
+    uint64_t_fmt='#define JK_UINT64_T_FMT "u"'
+    uint64_t_hex_fmt='#define JK_UINT64_T_HEX_FMT "x"'
+    int64_value="int"
+elif test "$ac_cv_sizeof_long" = "8"; then
+    int64_t_fmt='#define JK_INT64_T_FMT "ld"'
+    uint64_t_fmt='#define JK_UINT64_T_FMT "lu"'
+    uint64_t_hex_fmt='#define JK_UINT64_T_HEX_FMT "lx"'
+    int64_value="long"
+elif test "$ac_cv_sizeof_long_long" = "8"; then
+    # Linux, Solaris, FreeBSD all support ll with printf.
+    # BSD 4.4 originated 'q'.  Solaris is more popular and 
+    # doesn't support 'q'.  Solaris wins.  Exceptions can
+    # go to the OS-dependent section.
+    int64_t_fmt='#define JK_INT64_T_FMT "lld"'
+    uint64_t_fmt='#define JK_UINT64_T_FMT "llu"'
+    uint64_t_hex_fmt='#define JK_UINT64_T_HEX_FMT "llx"'
+    int64_value="long long"
+elif test "$ac_cv_sizeof_long_double" = "8"; then
+    int64_t_fmt='#define JK_INT64_T_FMT "Ld"'
+    uint64_t_fmt='#define JK_UINT64_T_FMT "Lu"'
+    uint64_t_hex_fmt='#define JK_UINT64_T_HEX_FMT "Lx"'
+    int64_value="long double"
+elif test "$ac_cv_sizeof_longlong" = "8"; then
+    int64_t_fmt='#define JK_INT64_T_FMT "qd"'
+    uint64_t_fmt='#define JK_UINT64_T_FMT "qu"'
+    uint64_t_hex_fmt='#define JK_UINT64_T_HEX_FMT "qx"'
+    int64_value="__int64"
+else
+    int64_t_fmt='#error could not detect a 64-bit integer type'
+    uint64_t_fmt='#error could not detect a 64-bit integer type'
+    uint64_t_hex_fmt='#error could not detect a 64-bit integer type'
+    AC_ERROR([could not detect a 64-bit integer type])
+fi
+
+JK_CHECK_SIZEOF_EXTENDED([#include <sys/types.h>], pid_t, 8)
+
+if test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_short"; then
+    pid_t_fmt='#define JK_PID_T_FMT "hd"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_int"; then
+    pid_t_fmt='#define JK_PID_T_FMT "d"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long"; then
+    pid_t_fmt='#define JK_PID_T_FMT "ld"'
+elif test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long_long"; then
+    pid_t_fmt='#define JK_PID_T_FMT JK_INT64_T_FMT'
+else
+    pid_t_fmt='#error Can not determine the proper size for pid_t'
+fi
+
+# Basically, we have tried to figure out the correct format strings
+# for pid_t which varies between platforms, but we don't always get
+# it right.  If you find that we don't get it right for your platform,
+# you can override our decision below.
+case $host in
+   *-solaris*)
+       if test "$ac_cv_sizeof_pid_t" = "$ac_cv_sizeof_long"; then
+           pid_t_fmt='#define JK_PID_T_FMT "ld"'
+       fi
+       ;;
+esac
+
+AC_SUBST(int32_value)
+AC_SUBST(int32_t_fmt) 
+AC_SUBST(uint32_t_fmt) 
+AC_SUBST(uint32_t_hex_fmt) 
+AC_SUBST(int64_value)
+AC_SUBST(int64_t_fmt) 
+AC_SUBST(uint64_t_fmt) 
+AC_SUBST(uint64_t_hex_fmt) 
+AC_SUBST(pid_t_fmt)
+
+dnl check for snprintf and vsnprintf.
+AC_CHECK_FUNC(snprintf, AC_DEFINE(HAVE_SNPRINTF,1,[Have snprintf()]))
+AC_CHECK_FUNC(vsnprintf, AC_DEFINE(HAVE_VSNPRINTF,1,[Have vsnprintf()]))
+dnl check for flock function.
+AC_CHECK_FUNC(flock, AC_DEFINE(HAVE_FLOCK,1,[Have flock()]))
+
+dnl check for filio.h used on Solaris to define FIONREAD ioctl.
+AC_CHECK_HEADERS(sys/filio.h)
+
+AC_OUTPUT([common/jk_types.h
+         ])

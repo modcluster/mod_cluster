@@ -1,0 +1,336 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master APR-ICONV makefile.
+# Usage:
+#                 DLL=1     Build DLL version
+#                 DEBUG=1   Build DEBUG version of APR
+#
+# Originally contributed by Mladen Turk <mturk jboss.com>
+#
+# ====================================================================
+#
+
+
+!IF !DEFINED(APR_DECLARE_STATIC) || "$(APR_DECLARE_STATIC)" == ""
+TARGET=DLL
+CFLAGS = -DAPR_DECLARE_EXPORT -DAPI_DECLARE_EXPORT -DAPI_MODULE_STATIC $(CFLAGS)
+PROJECT = libapriconv-1
+APR_LIB = libapr-1.lib
+!ELSE
+CFLAGS = -DAPR_DECLARE_STATIC -DAPI_DECLARE_STATIC -DAPI_MODULE_STATIC $(CFLAGS)
+PROJECT = apriconv-1
+APR_LIB = apr-1.lib
+TARGET=LIB
+!ENDIF
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!include <..\..\NMAKEcommon.inc>
+
+!IFNDEF WITH_APR
+!ERROR WITH_APR Not defined
+!ENDIF
+
+LDIRS = /libpath:"$(WITH_APR)\lib"
+!IF "$(TARGET)" != "LIB"
+LFLAGS = $(LFLAGS) /version:1.2
+!ENDIF
+LFLAGS = $(LFLAGS) $(APR_LIB)
+!IF "$(TARGET)" == "DLL"
+LFLAGS = $(LFLAGS) user32.lib psapi.lib gdi32.lib shlwapi.lib wldap32.lib ole32.lib
+!ENDIF
+
+INCLUDES = -I$(SRCDIR)\include -I$(SRCDIR)\lib -I$(WITH_APR)\include\apr-1
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\adobe-stdenc.obj \
+	$(WORKDIR)\adobe-symbol.obj \
+	$(WORKDIR)\adobe-zdingbats.obj \
+	$(WORKDIR)\big5.obj \
+	$(WORKDIR)\cns11643-plane1.obj \
+	$(WORKDIR)\cns11643-plane14.obj \
+	$(WORKDIR)\cns11643-plane2.obj \
+	$(WORKDIR)\cp037.obj \
+	$(WORKDIR)\cp038.obj \
+	$(WORKDIR)\cp10000.obj \
+	$(WORKDIR)\cp10006.obj \
+	$(WORKDIR)\cp10007.obj \
+	$(WORKDIR)\cp10029.obj \
+	$(WORKDIR)\cp1006.obj \
+	$(WORKDIR)\cp10079.obj \
+	$(WORKDIR)\cp10081.obj \
+	$(WORKDIR)\cp1026.obj \
+	$(WORKDIR)\cp273.obj \
+	$(WORKDIR)\cp274.obj \
+	$(WORKDIR)\cp275.obj \
+	$(WORKDIR)\cp277.obj \
+	$(WORKDIR)\cp278.obj \
+	$(WORKDIR)\cp280.obj \
+	$(WORKDIR)\cp281.obj \
+	$(WORKDIR)\cp284.obj \
+	$(WORKDIR)\cp285.obj \
+	$(WORKDIR)\cp290.obj \
+	$(WORKDIR)\cp297.obj \
+	$(WORKDIR)\cp420.obj \
+	$(WORKDIR)\cp423.obj \
+	$(WORKDIR)\cp424.obj \
+	$(WORKDIR)\cp437.obj \
+	$(WORKDIR)\cp500.obj \
+	$(WORKDIR)\cp737.obj \
+	$(WORKDIR)\cp775.obj \
+	$(WORKDIR)\cp850.obj \
+	$(WORKDIR)\cp851.obj \
+	$(WORKDIR)\cp852.obj \
+	$(WORKDIR)\cp855.obj \
+	$(WORKDIR)\cp856.obj \
+	$(WORKDIR)\cp857.obj \
+	$(WORKDIR)\cp860.obj \
+	$(WORKDIR)\cp861.obj \
+	$(WORKDIR)\cp862.obj \
+	$(WORKDIR)\cp863.obj \
+	$(WORKDIR)\cp864.obj \
+	$(WORKDIR)\cp865.obj \
+	$(WORKDIR)\cp866.obj \
+	$(WORKDIR)\cp868.obj \
+	$(WORKDIR)\cp869.obj \
+	$(WORKDIR)\cp870.obj \
+	$(WORKDIR)\cp871.obj \
+	$(WORKDIR)\cp874.obj \
+	$(WORKDIR)\cp875.obj \
+	$(WORKDIR)\cp880.obj \
+	$(WORKDIR)\cp891.obj \
+	$(WORKDIR)\cp903.obj \
+	$(WORKDIR)\cp904.obj \
+	$(WORKDIR)\cp905.obj \
+	$(WORKDIR)\cp918.obj \
+	$(WORKDIR)\cp932.obj \
+	$(WORKDIR)\cp936.obj \
+	$(WORKDIR)\cp949.obj \
+	$(WORKDIR)\cp950.obj \
+	$(WORKDIR)\dec-mcs.obj \
+	$(WORKDIR)\ebcdic-at-de-a.obj \
+	$(WORKDIR)\ebcdic-at-de.obj \
+	$(WORKDIR)\ebcdic-ca-fr.obj \
+	$(WORKDIR)\ebcdic-dk-no-a.obj \
+	$(WORKDIR)\ebcdic-dk-no.obj \
+	$(WORKDIR)\ebcdic-es-a.obj \
+	$(WORKDIR)\ebcdic-es-s.obj \
+	$(WORKDIR)\ebcdic-es.obj \
+	$(WORKDIR)\ebcdic-fi-se-a.obj \
+	$(WORKDIR)\ebcdic-fi-se.obj \
+	$(WORKDIR)\ebcdic-fr.obj \
+	$(WORKDIR)\ebcdic-it.obj \
+	$(WORKDIR)\ebcdic-pt.obj \
+	$(WORKDIR)\ebcdic-uk.obj \
+	$(WORKDIR)\ebcdic-us.obj \
+	$(WORKDIR)\gb12345.obj \
+	$(WORKDIR)\gb_2312-80.obj \
+	$(WORKDIR)\hp-roman8.obj \
+	$(WORKDIR)\iso-8859-1.obj \
+	$(WORKDIR)\iso-8859-10.obj \
+	$(WORKDIR)\iso-8859-13.obj \
+	$(WORKDIR)\iso-8859-14.obj \
+	$(WORKDIR)\iso-8859-15.obj \
+	$(WORKDIR)\iso-8859-2.obj \
+	$(WORKDIR)\iso-8859-3.obj \
+	$(WORKDIR)\iso-8859-4.obj \
+	$(WORKDIR)\iso-8859-5.obj \
+	$(WORKDIR)\iso-8859-6.obj \
+	$(WORKDIR)\iso-8859-7.obj \
+	$(WORKDIR)\iso-8859-8.obj \
+	$(WORKDIR)\iso-8859-9.obj \
+	$(WORKDIR)\iso-ir-10.obj \
+	$(WORKDIR)\iso-ir-102.obj \
+	$(WORKDIR)\iso-ir-103.obj \
+	$(WORKDIR)\iso-ir-11.obj \
+	$(WORKDIR)\iso-ir-111.obj \
+	$(WORKDIR)\iso-ir-121.obj \
+	$(WORKDIR)\iso-ir-122.obj \
+	$(WORKDIR)\iso-ir-123.obj \
+	$(WORKDIR)\iso-ir-128.obj \
+	$(WORKDIR)\iso-ir-13.obj \
+	$(WORKDIR)\iso-ir-139.obj \
+	$(WORKDIR)\iso-ir-14.obj \
+	$(WORKDIR)\iso-ir-141.obj \
+	$(WORKDIR)\iso-ir-142.obj \
+	$(WORKDIR)\iso-ir-143.obj \
+	$(WORKDIR)\iso-ir-146.obj \
+	$(WORKDIR)\iso-ir-147.obj \
+	$(WORKDIR)\iso-ir-15.obj \
+	$(WORKDIR)\iso-ir-150.obj \
+	$(WORKDIR)\iso-ir-151.obj \
+	$(WORKDIR)\iso-ir-152.obj \
+	$(WORKDIR)\iso-ir-153.obj \
+	$(WORKDIR)\iso-ir-154.obj \
+	$(WORKDIR)\iso-ir-155.obj \
+	$(WORKDIR)\iso-ir-158.obj \
+	$(WORKDIR)\iso-ir-16.obj \
+	$(WORKDIR)\iso-ir-17.obj \
+	$(WORKDIR)\iso-ir-18.obj \
+	$(WORKDIR)\iso-ir-19.obj \
+	$(WORKDIR)\iso-ir-2.obj \
+	$(WORKDIR)\iso-ir-21.obj \
+	$(WORKDIR)\iso-ir-25.obj \
+	$(WORKDIR)\iso-ir-27.obj \
+	$(WORKDIR)\iso-ir-37.obj \
+	$(WORKDIR)\iso-ir-4.obj \
+	$(WORKDIR)\iso-ir-47.obj \
+	$(WORKDIR)\iso-ir-49.obj \
+	$(WORKDIR)\iso-ir-50.obj \
+	$(WORKDIR)\iso-ir-51.obj \
+	$(WORKDIR)\iso-ir-54.obj \
+	$(WORKDIR)\iso-ir-55.obj \
+	$(WORKDIR)\iso-ir-57.obj \
+	$(WORKDIR)\iso-ir-60.obj \
+	$(WORKDIR)\iso-ir-61.obj \
+	$(WORKDIR)\iso-ir-69.obj \
+	$(WORKDIR)\iso-ir-70.obj \
+	$(WORKDIR)\iso-ir-8-1.obj \
+	$(WORKDIR)\iso-ir-8-2.obj \
+	$(WORKDIR)\iso-ir-84.obj \
+	$(WORKDIR)\iso-ir-85.obj \
+	$(WORKDIR)\iso-ir-86.obj \
+	$(WORKDIR)\iso-ir-88.obj \
+	$(WORKDIR)\iso-ir-89.obj \
+	$(WORKDIR)\iso-ir-9-1.obj \
+	$(WORKDIR)\iso-ir-9-2.obj \
+	$(WORKDIR)\iso-ir-90.obj \
+	$(WORKDIR)\iso-ir-91.obj \
+	$(WORKDIR)\iso-ir-92.obj \
+	$(WORKDIR)\iso-ir-93.obj \
+	$(WORKDIR)\iso-ir-94.obj \
+	$(WORKDIR)\iso-ir-95.obj \
+	$(WORKDIR)\iso-ir-96.obj \
+	$(WORKDIR)\iso-ir-98.obj \
+	$(WORKDIR)\iso-ir-99.obj \
+	$(WORKDIR)\iso646-dk.obj \
+	$(WORKDIR)\iso646-kr.obj \
+	$(WORKDIR)\jis_x0201.obj \
+	$(WORKDIR)\jis_x0208-1983.obj \
+	$(WORKDIR)\jis_x0212-1990.obj \
+	$(WORKDIR)\johab.obj \
+	$(WORKDIR)\koi8-r.obj \
+	$(WORKDIR)\koi8-ru.obj \
+	$(WORKDIR)\koi8-u.obj \
+	$(WORKDIR)\ksx1001.obj \
+	$(WORKDIR)\mac-ce.obj \
+	$(WORKDIR)\mac-croatian.obj \
+	$(WORKDIR)\mac-cyrillic.obj \
+	$(WORKDIR)\mac-dingbats.obj \
+	$(WORKDIR)\mac-greek.obj \
+	$(WORKDIR)\mac-iceland.obj \
+	$(WORKDIR)\mac-japan.obj \
+	$(WORKDIR)\mac-roman.obj \
+	$(WORKDIR)\mac-romania.obj \
+	$(WORKDIR)\mac-thai.obj \
+	$(WORKDIR)\mac-turkish.obj \
+	$(WORKDIR)\mac-ukraine.obj \
+	$(WORKDIR)\macintosh.obj \
+	$(WORKDIR)\osd_ebcdic_df04_1.obj \
+	$(WORKDIR)\osd_ebcdic_df04_15.obj \
+	$(WORKDIR)\shift_jis.obj \
+	$(WORKDIR)\us-ascii.obj \
+	$(WORKDIR)\windows-1250.obj \
+	$(WORKDIR)\windows-1251.obj \
+	$(WORKDIR)\windows-1252.obj \
+	$(WORKDIR)\windows-1253.obj \
+	$(WORKDIR)\windows-1254.obj \
+	$(WORKDIR)\windows-1255.obj \
+	$(WORKDIR)\windows-1256.obj \
+	$(WORKDIR)\windows-1257.obj \
+	$(WORKDIR)\windows-1258.obj \
+	$(WORKDIR)\_tbl_simple.obj \
+	$(WORKDIR)\euc-jp.obj \
+	$(WORKDIR)\euc-kr.obj \
+	$(WORKDIR)\euc-tw.obj \
+	$(WORKDIR)\gb2312.obj \
+	$(WORKDIR)\iso-10646-ucs-2.obj \
+	$(WORKDIR)\iso-10646-ucs-4.obj \
+	$(WORKDIR)\iso-2022-cn.obj \
+	$(WORKDIR)\iso-2022-jp-2.obj \
+	$(WORKDIR)\iso-2022-jp.obj \
+	$(WORKDIR)\iso-2022-kr.obj \
+	$(WORKDIR)\ucs2-internal.obj \
+	$(WORKDIR)\ucs4-internal.obj \
+	$(WORKDIR)\unicode-1-1-utf-7.obj \
+	$(WORKDIR)\utf-16.obj \
+	$(WORKDIR)\utf-8.obj \
+	$(WORKDIR)\api_version.obj \
+	$(WORKDIR)\iconv.obj \
+	$(WORKDIR)\iconv_ccs.obj \
+	$(WORKDIR)\iconv_ces.obj \
+	$(WORKDIR)\iconv_ces_euc.obj \
+	$(WORKDIR)\iconv_ces_iso2022.obj \
+	$(WORKDIR)\iconv_int.obj \
+	$(WORKDIR)\iconv_module.obj \
+	$(WORKDIR)\iconv_uc.obj
+
+
+BUILDLIB = $(PREFIX)\lib
+BUILDINC = $(PREFIX)\include\apr-1
+
+!IF "$(TARGET)" == "DLL"
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDBIN).manifest
+!ELSE
+BUILDBIN = $(WORKDIR)\$(PROJECT).lib
+!ENDIF
+
+all : $(WORKDIR) $(BUILDLIB)
+
+$(BUILDLIB) :
+	@if not exist "$(BUILDLIB)\$(NULL)" mkdir "$(BUILDLIB)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)\ccs}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\ces}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\lib}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+
+$(OBJECTS): $(SRCDIR)\include\*.h
+
+!IF "$(TARGET)" == "DLL"
+$(BUILDRES): libapriconv.rc
+	$(RC) $(RCFLAGS) /i "$(WITH_APR)\include" /i "$(SRCDIR)\include" /d "API_VERSION_ONLY" /fo $(BUILDRES) $(SRCDIR)\libapriconv.rc
+$(BUILDBIN): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDBIN);2
+!ELSE
+$(BUILDBIN): $(WORKDIR) $(OBJECTS)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(LDIRS) /out:$(BUILDBIN)
+!ENDIF
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLIB) $(WORKDIR) $(BUILDBIN)
+	@xcopy "$(SRCDIR)\include\*.h" "$(BUILDINC)" /Y /Q
+	@xcopy "$(WORKDIR)\*.lib" "$(BUILDLIB)" /Y /Q
+	@xcopy "$(WORKDIR)\*.dll" "$(BUILDLIB)" /Y /Q 2>NUL

@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+SIGHT_MAJOR_VERSION=@SIGHT_MAJOR_VERSION@
+includedir=@includedir@
+
+Name: SIGHT
+Description: System information gathering hybrid tool
+Version: @SIGHT_DOTTED_VERSION@
+# assume that sight requires libapr of same major version
+Requires: apr-@SIGHT_MAJOR_VERSION@
+Libs: -L${libdir} -l@SIGHT_LIBNAME@ @SIGHT_EXPORT_LIBS@
+Cflags: -I${includedir}

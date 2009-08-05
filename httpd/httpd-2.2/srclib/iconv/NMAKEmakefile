@@ -1,0 +1,118 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master LIBICONV makefile.
+# Usage:
+#                 DLL=1     Build DLL version
+#                 DEBUG=1   Build DEBUG version of LIBICONV
+#
+# Originally contributed by Mladen Turk <mturk redhat.com>
+#
+# ====================================================================
+#
+
+!IF !DEFINED(ICONV_DECLARE_STATIC) || "$(ICONV_DECLARE_STATIC)" == ""
+TARGET=DLL
+CFLAGS = -DICONV_DECLARE_EXPORT -DHAVE_CONFIG_H -DNO_XMALLOC -DBUILDING_DLL
+PROJECT = libiconv-1
+!ELSE
+TARGET=LIB
+CFLAGS = -DICONV_DECLARE_STATIC -DHAVE_CONFIG_H -DNO_XMALLOC
+PROJECT = iconv-1
+!ENDIF
+
+VMAJOR = 1
+VMINOR = 12
+VPATCH = 0
+VSTRING= "$(VMAJOR).$(VMINOR).$(VPATCH)"
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!include <..\..\NMAKEcommon.inc>
+!include <..\..\NMAKEhttpd.inc> 
+
+INCLUDES = -I$(SRCDIR)\include -I$(SRCDIR)\lib -I$(SRCDIR)\libcharset\include
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\localcharset.obj \
+	$(WORKDIR)\relocatable.obj \
+	$(WORKDIR)\iconv.obj
+
+HEADERS = \
+	$(SRCDIR)\include\iconv.h \
+	$(SRCDIR)\lib\config.h \
+	$(SRCDIR)\libcharset\include\libcharset.h \
+	$(SRCDIR)\libcharset\include\localcharset.h
+
+!IF "$(TARGET)" == "DLL"
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMFT = $(BUILDBIN).manifest
+!ELSE
+BUILDBIN = $(WORKDIR)\$(PROJECT).lib
+!ENDIF
+
+all : $(BUILDINS) $(WORKDIR) $(HEADERS) $(BUILDBIN)
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+.SUFFIXES : .hw
+
+{$(SRCDIR)\lib}.hw{$(SRCDIR)\lib}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\include}.hw{$(SRCDIR)\include}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\libcharset}.hw{$(SRCDIR)\libcharset}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\libcharset\include}.hw{$(SRCDIR)\libcharset\include}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\lib}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\libcharset\lib}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+
+$(OBJECTS): $(SRCDIR)\include\*.h $(SRCDIR)\libcharset\include\*.h
+
+!IF "$(TARGET)" == "DLL"
+$(BUILDRES): $(SRCDIR)\windows\libiconv.rc $(HEADERS) $(SRCDIR)\include\*.h
+	$(RC) $(RCFLAGS) /i "$(SRCDIR)\include" /d PACKAGE_VERSION_MAJOR=$(VMAJOR) /d PACKAGE_VERSION_MINOR=$(VMINOR) /d PACKAGE_VERSION_SUBMINOR=$(VPATCH) /d PACKAGE_VERSION_STRING=$(VSTRING) /fo $(BUILDRES) $(SRCDIR)\windows\libiconv.rc
+$(BUILDBIN): $(WORKDIR) $(HEADERS) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMFT) \
+		mt -nologo -manifest $(BUILDMFT) -outputresource:$(BUILDBIN);2
+!ELSE
+$(BUILDBIN): $(WORKDIR) $(OBJECTS)
+	$(LINK) $(LFLAGS) $(OBJECTS) /out:$(BUILDBIN)
+!ENDIF
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDINS) $(WORKDIR) $(HEADERS) $(BUILDBIN)
+	@xcopy "$(SRCDIR)\include\iconv.h" "$(BUILDINC)" /Y /Q
+	@xcopy "$(WORKDIR)\*.lib" "$(BUILDLIB)" /Y /Q
+	@xcopy "$(WORKDIR)\*.dll" "$(BUILDOUT)" /Y /Q 2>NUL

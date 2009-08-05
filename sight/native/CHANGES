@@ -1,0 +1,5 @@
+Changes for SIGHT 1.0.2
+    - Added close method for Directory
+    - Added open and close methods for File
+
+Changes for SIGHT 1.0.0

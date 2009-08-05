@@ -1,0 +1,93 @@
+#  Copyright(c) 2006 Red Hat Middleware, LLC,
+#  and individual contributors as indicated by the @authors tag.
+#  See the copyright.txt in the distribution for a
+#  full listing of individual contributors. 
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2 of the License, or (at your option) any later version.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library in the file COPYING.LIB;
+#  if not, write to the Free Software Foundation, Inc.,
+#  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+# @author Mladen Turk
+#
+
+TARGET = EXE
+PROJECT = jbossweb
+!include <..\..\NMAKEcommon.inc>
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!IF "$(CPU)" == "X86"
+LFLAGS = $(LFLAGS) /stack:0x50000
+!ENDIF
+
+LFLAGS = $(LFLAGS) /version:2.0
+LFLAGS = $(LFLAGS) user32.lib gdi32.lib winspool.lib comdlg32.lib comctl32.lib shlwapi.lib netapi32.lib
+INCLUDES = -I$(SRCDIR)\include -I$(SRCDIR)\src -I$(SRCDIR)\apps\prunsrv -I$(JAVA_HOME)\include -I$(JAVA_HOME)\include\win32
+
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\cmdline.obj \
+	$(WORKDIR)\console.obj \
+	$(WORKDIR)\gui.obj \
+	$(WORKDIR)\handles.obj \
+	$(WORKDIR)\javajni.obj \
+	$(WORKDIR)\log.obj \
+	$(WORKDIR)\mclib.obj \
+	$(WORKDIR)\registry.obj \
+	$(WORKDIR)\rprocess.obj \
+	$(WORKDIR)\service.obj \
+	$(WORKDIR)\utils.obj \
+	$(WORKDIR)\prunsrv.obj
+
+BUILDLOC = $(PREFIX)\bin
+!IF "$(CPU)" == "X86"
+BUILDEXE = $(WORKDIR)\$(PROJECT).exe
+!ELSEIF "$(CPU)" == "X64"
+BUILDEXE = $(WORKDIR)\$(PROJECT).x64.exe
+!ELSEIF "$(CPU)" == "I64"
+BUILDEXE = $(WORKDIR)\$(PROJECT).i64.exe
+!ENDIF
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDEXE).manifest
+
+all : $(WORKDIR) $(BUILDEXE)
+
+$(BUILDLOC) :
+	@if not exist "$(BUILDLOC)\$(NULL)" mkdir "$(BUILDLOC)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)\src}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\apps\prunsrv}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): $(SRCDIR)/apps/prunsrv/prunsrv.rc
+	$(RC) $(RCFLAGS) /i "$(SRCDIR)\include" /fo $(BUILDRES) $(SRCDIR)/apps/prunsrv/prunsrv.rc
+
+$(BUILDEXE): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDEXE)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDEXE);1
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLOC) $(WORKDIR) $(BUILDEXE)
+	@xcopy "$(WORKDIR)\*.exe" "$(BUILDLOC)" /Y /Q

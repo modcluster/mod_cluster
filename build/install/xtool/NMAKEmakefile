@@ -1,0 +1,75 @@
+#  Copyright(c) 2006 Red Hat Middleware, LLC,
+#  and individual contributors as indicated by the @authors tag.
+#  See the copyright.txt in the distribution for a
+#  full listing of individual contributors. 
+#
+#  This library is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU Lesser General Public
+#  License as published by the Free Software Foundation; either
+#  version 2 of the License, or (at your option) any later version.
+#
+#  This library is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  Lesser General Public License for more details.
+#
+#  You should have received a copy of the GNU Lesser General Public
+#  License along with this library in the file COPYING.LIB;
+#  if not, write to the Free Software Foundation, Inc.,
+#  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+#
+# @author Mladen Turk
+#
+
+TARGET = EXE
+PROJECT = xtool
+!include <..\..\NMAKEcommon.inc>
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+LFLAGS = $(LFLAGS) /version:1.0
+LFLAGS = $(LFLAGS) user32.lib gdi32.lib winspool.lib comdlg32.lib comctl32.lib
+LFLAGS = $(LFLAGS) shlwapi.lib netapi32.lib shell32.lib ole32.lib urlmon.lib
+LFLAGS = $(LFLAGS) oleaut32.lib psapi.lib version.lib advapi32.lib imagehlp.lib
+
+
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\xtool.obj
+
+OBJDEPS = NMAKEmakefile
+
+BUILDLOC = $(PREFIX)\bin
+BUILDEXE = $(WORKDIR)\$(PROJECT).exe
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDEXE).manifest
+
+all : $(WORKDIR) $(BUILDEXE)
+
+$(BUILDLOC) :
+	@if not exist "$(BUILDLOC)\$(NULL)" mkdir "$(BUILDLOC)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDRES): $(SRCDIR)/$(PROJECT).rc
+	$(RC) $(RCFLAGS) /fo $(BUILDRES) $(SRCDIR)/$(PROJECT).rc
+
+$(OBJECTS): $(OBJDEPS)
+
+$(BUILDEXE): $(WORKDIR) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDEXE)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDEXE);1
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLOC) $(WORKDIR) $(BUILDEXE)
+	@xcopy "$(WORKDIR)\*.exe" "$(BUILDLOC)" /Y /Q

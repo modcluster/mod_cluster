@@ -1,0 +1,269 @@
+<?xml version="1.0"?>
+<!-- Build file for SIGHT -->
+<project name="System information gathering hybrid tool Library" default="compile" basedir=".">
+    <!-- Give user a chance to override without editing this file
+        (and without typing -D each time it compiles it
+    -->
+    <property file="${user.home}/.ant.properties" />
+    <property file="${user.home}/build.properties" />
+    <property file="build.properties" />
+    <property file=".ant.properties" />
+
+    <!-- Initialization properties -->
+    <property name="name" value="System information gathering hybrid tool"/>
+    <property name="title" value="JBoss system information gathering hybrid tool library"/>
+    <property name="version" value="1.0.2"/>
+    <property name="version.number" value="102"/>
+    <property name="project" value="sight"/>
+    <property name="build.dir" value="./dist"/>
+    <property name="build.src" value="${build.dir}/src"/>
+    <property name="build.dest" value="${build.dir}/bin"/>
+    <property name="src.dir" value="."/>
+    <property name="final.name" value="${project}-${version}"/>
+    <property name="dist.root" value="./dist"/>
+    <property name="ant.home" value="."/>
+
+    <property name="debug" value="off"/>
+    <property name="optimize" value="on"/>
+    <property name="deprecation" value="on"/>
+
+    <property name="docs.src" value="./xdocs"/>
+    <property name="docs.dest" value="${dist.root}/doc"/>
+    <property name="docs.dest.print" value="${dist.root}/doc/printable"/>
+    <property name="test.runner" value="junit.textui.TestRunner"/>
+    <property name="test.dir" value="${build.dest}/test"/>
+    <property name="examples.dir" value="${build.dest}/examples"/>
+    <property name="junit.home" value="./lib"/>
+    <property name="junit.jar" value="${junit.home}/junit-4.3.1.jar"/>
+
+    <property name="compile.source" value="5"/>
+    <property name="compile.target" value="5"/>
+
+    <!-- The base directory for component sources -->
+    <property name="source.home" value="java"/>
+
+    <!-- Build classpath -->
+    <path id="classpath">
+        <pathelement location="${build.dest}/java"/>
+    </path>
+
+    <!-- Test classpath -->
+    <path id="test.classpath">
+        <pathelement location="${build.dest}/java"/>
+        <pathelement location="${build.dest}/test"/>
+        <pathelement location="${junit.jar}"/>
+    </path>
+
+    <!-- Examples classpath -->
+    <path id="examples.classpath">
+        <pathelement location="${build.dest}/java"/>
+        <pathelement location="${build.dest}/examples"/>
+    </path>
+
+    <!-- =================================================================== -->
+    <!-- prints the environment                                              -->
+    <!-- =================================================================== -->
+    <target name="env">
+        <echo message="java.home = ${java.home}"/>
+        <echo message="user.home = ${user.home}"/>
+        <!--
+        <echo message="java.class.path = ${java.class.path}"/>
+        -->
+        <echo message="sight.library.path = ${sight.library.path}"/>
+        <echo message=""/>
+    </target>
+
+    <target name="prepare" depends="env">
+       <mkdir dir="${build.dir}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Creates the API documentation                                       -->
+    <!-- =================================================================== -->
+    <target name="javadocs" description="Java documentation">
+        <mkdir dir="${docs.dest}"/>
+        <mkdir dir="${docs.dest}/api"/>
+        <javadoc sourcepath="${build.src}/java"
+            destdir="${docs.dest}/api"
+            author="true"
+            version="true"
+            overview="${src.dir}/java/overview.html"
+            packagenames="org.jboss.sight.*"
+            windowtitle="${title} (Version ${version})"
+            doctitle="&lt;h2&gt;${title}&lt;/h2&gt;"
+            bottom="Copyright 2007 Red Hat, Inc.&lt;!--
+JBoss, the OpenSource J2EE webOS
+
+Distributable under LGPL license.
+See terms of license at gnu.org.--&gt;">
+            <classpath refid="classpath"/>
+        </javadoc>
+     </target>
+
+    <!-- =================================================================== -->
+    <!-- Cleans up the build directory                                       -->
+    <!-- =================================================================== -->
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the source directory                                       -->
+    <!-- =================================================================== -->
+    <target name="compile" depends="prepare">
+        <mkdir dir="${build.dest}"/>
+        <mkdir dir="${build.dest}/java"/>
+        <mkdir dir="${build.src}"/>
+        <mkdir dir="${build.src}/java"/>
+        <tstamp>
+            <format property="TODAY" pattern="MMM d yyyy" locale="en"/>
+            <format property="TSTAMP" pattern="hh:mm:ss"/>
+        </tstamp>
+        <!-- Copy static resource files -->
+        <filter token="VERSION" value="${version}"/>
+        <filter token="VERSION_NUMBER" value="${version.number}"/>
+        <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
+        <copy todir="${build.src}/java" filtering="yes">
+            <fileset dir="${src.dir}/java">
+                <include name="**/*.java"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+
+        <javac srcdir="${build.src}/java"
+            destdir="${build.dest}/java"
+            debug="${debug}"
+            deprecation="${deprecation}"
+            source="${compile.source}"
+            target="${compile.target}"
+            failonerror="false"
+            optimize="${optimize}">
+            <classpath refid="classpath"/>
+            <compilerarg line="-Xmaxerrs 1000"/>
+        </javac>
+        <copy todir="${build.dest}/java" filtering="yes">
+            <fileset dir="${build.src}/java">
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+    </target>
+
+      <target name="compile-only"
+              description="Compile shareable components">
+
+        <javac srcdir="${source.home}"
+            destdir="${build.home}/java"
+            debug="${compile.debug}"
+            source="${compile.source}"
+            target="${compile.target}"
+            deprecation="${compile.deprecation}"
+            optimize="${compile.optimize}">
+          <classpath refid="classpath"/>
+        </javac>
+        <copy    todir="${build.home}/java" filtering="on">
+          <fileset dir="${source.home}" excludes="**/*.java"/>
+        </copy>
+      </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the examples directory                                     -->
+    <!-- =================================================================== -->
+    <target name="examples" depends="compile">
+        <mkdir dir="${build.dest}"/>
+        <mkdir dir="${build.dest}/examples"/>
+        <mkdir dir="${build.src}"/>
+        <mkdir dir="${build.src}/examples"/>
+        <tstamp>
+            <format property="TODAY" pattern="MMM d yyyy" locale="en"/>
+            <format property="TSTAMP" pattern="hh:mm:ss"/>
+        </tstamp>
+        <!-- Copy static resource files -->
+        <filter token="VERSION" value="${version}"/>
+        <filter token="VERSION_NUMBER" value="${version.number}"/>
+        <filter token="VERSION_BUILT" value="${TODAY} ${TSTAMP}"/>
+        <copy todir="${build.src}/examples" filtering="yes">
+            <fileset dir="${src.dir}/examples">
+                <include name="**/*.java"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+
+        <javac srcdir="${build.src}/examples"
+            destdir="${build.dest}/examples"
+            debug="${debug}"
+            source="${compile.source}"
+            target="${compile.target}"
+            deprecation="${deprecation}"
+            optimize="${optimize}">
+            <classpath refid="examples.classpath"/>
+        </javac>
+        <copy todir="${build.dest}/examples" filtering="yes">
+            <fileset dir="${build.src}/examples">
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <!-- ================================================================== -->
+    <!-- Make the library jar                                               -->
+    <!-- ================================================================== -->
+    <target name="jar" depends="compile"
+        description="Generates the Jar file">
+        <jar
+            destfile="${build.dir}/${final.name}.jar"
+            basedir="${build.dir}/bin/java"
+            excludes="**/*.java">
+            <manifest>
+                <section name="org/jboss/sight">
+                    <attribute name="Specification-Title" value="JBoss Sight library"/>
+                    <attribute name="Specification-Version" value="${version}"/>
+                    <attribute name="Specification-Vendor" value="Red Hat, Inc."/>
+                    <attribute name="Implementation-Title" value="org.jboss.sight"/>
+                    <attribute name="Implementation-Vendor" value="Red Hat Middleware, LLC"/>
+                    <attribute name="Implementation-Vendor-Id" value="org.jboss"/>
+                    <attribute name="Implementation-Version" value="${version} (build ${DSTAMP} ${TSTAMP})"/>
+                </section>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Compiles the test directory                                         -->
+    <!-- =================================================================== -->
+    <target name="tests" depends="compile">
+        <mkdir dir="${build.dest}/test"/>
+        <mkdir dir="${build.src}/test"/>
+        <copy todir="${build.src}/test" filtering="yes">
+            <fileset dir="${src.dir}/test">
+                <include name="**/*.java"/>
+                <include name="**/*.xml"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+        <javac srcdir="${build.src}/test"
+            destdir="${build.dest}/test"
+            debug="${debug}"
+            source="${compile.source}"
+            target="${compile.target}"
+            deprecation="${deprecation}"
+            optimize="${optimize}">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+
+    <!-- =================================================================== -->
+    <!-- Junit tests                                                         -->
+    <!-- =================================================================== -->
+    <target name="test.file" depends="tests">
+        <echo message="Running SIGHT package tests ..."/>
+        <java dir="${test.dir}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+            <arg value="org.jboss.clr.ObjectTestSuite"/>
+            <classpath refid="test.classpath"/>
+        </java>
+    </target>
+
+</project>

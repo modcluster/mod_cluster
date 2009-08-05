@@ -1,0 +1,9 @@
+$Id: VERSIONS 4354 2006-05-22 17:53:20Z mladen.turk@jboss.com $
+
+Use the following version of the libraries
+
+- APR 1.2.8, http://apr.apache.org
+- APR UTIL 1.2.8, http://apr.apache.org
+- OpenSSL 0.9.8e, http://www.openssl.org
+- Zlib 1.2.3, http://www.zlib.net
+- Bzip2 1.0.3, http://www.bzip.org

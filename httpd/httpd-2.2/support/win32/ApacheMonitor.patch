@@ -1,0 +1,28 @@
+Index: ApacheMonitor.c
+===================================================================
+--- ApacheMonitor.c
++++ ApacheMonitor.c
+@@ -23,7 +23,9 @@
+  * ====================================================================
+  */
+ 
++#ifndef _WIN32_WINNT
+ #define _WIN32_WINNT 0x0400
++#endif
+ #ifndef STRICT
+ #define STRICT
+ #endif
+Index: ApacheMonitor.rc
+===================================================================
+--- ApacheMonitor.rc
++++ ApacheMonitor.rc
+@@ -23,6 +23,9 @@
+ 
+ #include "../../build/win32/httpd.rc"
+ 
++#if 1
++CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ApacheMonitor.manifest"
++#endif
+ 
+ IDI_APSRVMON            ICON    DISCARDABLE     "ApacheMonitor.ico"
+ IDI_ICOSTOP             ICON    DISCARDABLE     "apstop.ico"

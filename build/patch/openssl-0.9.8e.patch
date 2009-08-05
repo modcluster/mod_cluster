@@ -1,0 +1,104 @@
+--- util/mk1mf.pl
++++ util/mk1mf.pl
+@@ -331,24 +331,24 @@
+ if ($shlib)
+ 	{
+ 	$extra_install= <<"EOF";
+-	\$(CP) \$(O_SSL) \$(INSTALLTOP)${o}bin
+-	\$(CP) \$(O_CRYPTO) \$(INSTALLTOP)${o}bin
+-	\$(CP) \$(L_SSL) \$(INSTALLTOP)${o}lib
+-	\$(CP) \$(L_CRYPTO) \$(INSTALLTOP)${o}lib
++	\$(CP) \"\$(O_SSL)\" \"\$(INSTALLTOP)${o}bin\"
++	\$(CP) \"\$(O_CRYPTO)\" \"\$(INSTALLTOP)${o}bin\"
++	\$(CP) \"\$(L_SSL)\" \"\$(INSTALLTOP)${o}lib\"
++	\$(CP) \"\$(L_CRYPTO)\" \"\$(INSTALLTOP)${o}lib\"
+ EOF
+ 	if ($no_static_engine)
+ 		{
+ 		$extra_install .= <<"EOF"
+-	\$(MKDIR) \$(INSTALLTOP)${o}lib${o}engines
+-	\$(CP) \$(E_SHLIB) \$(INSTALLTOP)${o}lib${o}engines
++	\$(MKDIR) \"\$(INSTALLTOP)${o}lib${o}engines\"
++	\$(CP) \"\$(E_SHLIB)\" \"\$(INSTALLTOP)${o}lib${o}engines\"
+ EOF
+ 		}
+ 	}
+ else
+ 	{
+ 	$extra_install= <<"EOF";
+-	\$(CP) \$(O_SSL) \$(INSTALLTOP)${o}lib
+-	\$(CP) \$(O_CRYPTO) \$(INSTALLTOP)${o}lib
++	\$(CP) \"\$(O_SSL)\" \"\$(INSTALLTOP)${o}lib\"
++	\$(CP) \"\$(O_CRYPTO)\" \"\$(INSTALLTOP)${o}lib\"
+ EOF
+ 	$ex_libs .= " $zlib_lib" if $zlib_opt == 1;
+ 	}
+@@ -488,7 +488,7 @@
+ $banner
+ 
+ \$(TMP_D):
+-	\$(MKDIR) \$(TMP_D)
++	\$(MKDIR) \"\$(TMP_D)\"
+ # NB: uncomment out these lines if BIN_D, TEST_D and LIB_D are different
+ #\$(BIN_D):
+ #	\$(MKDIR) \$(BIN_D)
+@@ -497,13 +497,13 @@
+ #	\$(MKDIR) \$(TEST_D)
+ 
+ \$(LIB_D):
+-	\$(MKDIR) \$(LIB_D)
++	\$(MKDIR) \"\$(LIB_D)\"
+ 
+ \$(INCO_D): \$(INC_D)
+-	\$(MKDIR) \$(INCO_D)
++	\$(MKDIR) \"\$(INCO_D)\"
+ 
+ \$(INC_D):
+-	\$(MKDIR) \$(INC_D)
++	\$(MKDIR) \"\$(INC_D)\"
+ 
+ headers: \$(HEADER) \$(EXHEADER)
+ 	@
+@@ -513,14 +513,14 @@
+ exe: \$(T_EXE) \$(BIN_D)$o\$(E_EXE)$exep
+ 
+ install: all
+-	\$(MKDIR) \$(INSTALLTOP)
+-	\$(MKDIR) \$(INSTALLTOP)${o}bin
+-	\$(MKDIR) \$(INSTALLTOP)${o}include
+-	\$(MKDIR) \$(INSTALLTOP)${o}include${o}openssl
+-	\$(MKDIR) \$(INSTALLTOP)${o}lib
+-	\$(CP) \$(INCO_D)${o}*.\[ch\] \$(INSTALLTOP)${o}include${o}openssl
+-	\$(CP) \$(BIN_D)$o\$(E_EXE)$exep \$(INSTALLTOP)${o}bin
+-	\$(CP) apps${o}openssl.cnf \$(INSTALLTOP)
++	\$(MKDIR) \"\$(INSTALLTOP)\"
++	\$(MKDIR) \"\$(INSTALLTOP)${o}bin\"
++	\$(MKDIR) \"\$(INSTALLTOP)${o}include\"
++	\$(MKDIR) \"\$(INSTALLTOP)${o}include${o}openssl\"
++	\$(MKDIR) \"\$(INSTALLTOP)${o}lib\"
++	\$(CP) \"\$(INCO_D)${o}*.\[ch\]\" \"\$(INSTALLTOP)${o}include${o}openssl\"
++	\$(CP) \"\$(BIN_D)$o\$(E_EXE)$exep\" \"\$(INSTALLTOP)${o}bin\"
++	\$(CP) \"apps${o}openssl.cnf\" \"\$(INSTALLTOP)\"
+ $extra_install
+ 
+ 
+@@ -957,7 +957,7 @@
+ 		if ($n =~ /bss_file/)
+ 			{ $pp=".c"; }
+ 		else	{ $pp=$p; }
+-		$ret.="$to${o}$n$pp: \$(SRC_D)$o$_$pp\n\t\$(CP) \$(SRC_D)$o$_$pp $to${o}$n$pp\n\n";
++		$ret.="$to${o}$n$pp: \$(SRC_D)$o$_$pp\n\t\$(CP) \"\$(SRC_D)$o$_$pp\" \"$to${o}$n$pp\"\n\n";
+ 		}
+ 	return($ret);
+ 	}
+--- Configure	2007-09-20 11:02:30.000000000 -0400
++++ Configure	2007-09-20 11:03:32.000000000 -0400
+@@ -322,7 +322,7 @@
+ ####
+ "linux-generic64","gcc:-DTERMIO -O3 -Wall::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_INT DES_UNROLL BF_PTR:${no_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ # -bpowerpc64-linux is transient option, -m64 should be the one to use...
+-"linux-ppc64",	"gcc:-bpowerpc64-linux -DB_ENDIAN -DTERMIO -O3 -Wall::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_RISC1 DES_UNROLL::linux_ppc64.o::::::::::dlfcn:linux-shared:-fPIC:-bpowerpc64-linux:.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
++"linux-ppc64",	"gcc:-m64 -DB_ENDIAN -DTERMIO -O3 -Wall::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHAR RC4_CHUNK DES_RISC1 DES_UNROLL::linux_ppc64.o::::::::::dlfcn:linux-shared:-fPIC:-m64:.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-ia64",	"gcc:-DL_ENDIAN -DTERMIO -O3 -Wall::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-ia64-ecc","ecc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",
+ "linux-ia64-icc","icc:-DL_ENDIAN -DTERMIO -O2 -Wall -no_cpprt::-D_REENTRANT::-ldl:SIXTY_FOUR_BIT_LONG RC4_CHUNK:${ia64_asm}:dlfcn:linux-shared:-fPIC::.so.\$(SHLIB_MAJOR).\$(SHLIB_MINOR)",

@@ -1,0 +1,13 @@
+--- apu.hw
++++ apu.hw
+@@ -101,8 +101,8 @@
+ #define APU_HAVE_SQLITE3       0
+ #define APU_HAVE_ORACLE        0
+ 
+-#define APU_HAVE_APR_ICONV     1
+-#define APU_HAVE_ICONV         0
++#define APU_HAVE_APR_ICONV     0
++#define APU_HAVE_ICONV         1
+ #define APR_HAS_XLATE          (APU_HAVE_APR_ICONV || APU_HAVE_ICONV)
+ 
+ #endif /* APU_H */

@@ -1,0 +1,4 @@
+To build the native part from svn:
+./buildconf --with-apr=/path/to/the/apr-1.2.7-src
+./configure --with-apr=/path/to/the/apr/install --prefix=/path/to/the/install-loc
+make && make install

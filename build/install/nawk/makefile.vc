@@ -1,0 +1,94 @@
+# Copyright 2001-2006 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+#
+# Originally contributed by Mladen Turk <mturk jboss.com>
+#
+# ====================================================================
+# 
+
+NMAKE_WINVER = 0x0500 
+CC = cl -c
+RC = rc
+CFLAGS = -nologo -DWIN32 -D_WIN32 -D_WINDOWS -W3 -D_X86_=1 -O2 -Ob2 -Oy- -Zi -DNDEBUG
+CFLAGS = $(CFLAGS) -D_MT -MD -D_WIN32_WINNT=$(NMAKE_WINVER) -DWINVER=$(NMAKE_WINVER)
+
+LINK = link
+LFLAGS = /nologo /INCREMENTAL:NO /DEBUG /OPT:REF /SUBSYSTEM:CONSOLE /MACHINE:X86
+LIBS = kernel32.lib advapi32.lib ole32.lib shell32.lib rpcrt4.lib
+
+YACC = bison -y
+YFLAGS = -d
+
+OFILES = b.obj \
+	main.obj \
+	parse.obj \
+	proctab.obj \
+	tran.obj \
+	lib.obj \
+	run.obj \
+	missing95.obj \
+	lex.obj
+
+SOURCE = awk.h \
+	ytab.c \
+	awkgram.h \
+	proto.h \
+	awkgram.y \
+	lex.c \
+	b.c \
+	main.c \
+	maketab.c \
+	parse.c \
+	lib.c \
+	run.c \
+	tran.c \
+	missing95.obj \
+	proctab.c
+
+nawk.exe: nawk.res ytab.obj $(OFILES)
+	$(LINK) $(LFLAGS) /out:nawk.exe nawk.res ytab.obj $(OFILES) $(LIBS)
+	IF EXIST nawk.exe.manifest \
+		mt -nologo -manifest nawk.exe.manifest -outputresource:nawk.exe;1
+
+nawk.res: nawk.rc
+	$(RC) /l 0x409 /d "NDEBUG" /fo nawk.res nawk.rc
+
+$(OFILES): awk.h proto.h
+
+awkgram.h: awk.h proto.h awkgram.y
+	$(YACC) $(YFLAGS) awkgram.y
+	copy y.tab.c ytab.c
+	del y.tab.c
+	copy y.tab.h awkgram.h
+	del y.tab.h
+
+ytab.obj: awk.h proto.h awkgram.h
+	$(CC) $(CFLAGS) ytab.c
+
+proctab.obj: maketab.exe
+	maketab.exe >proctab.c
+	$(CC) $(CFLAGS) proctab.c
+
+maketab.exe: awkgram.h maketab.obj
+	$(LINK) $(LFLAGS) maketab.obj $(LIBS)
+
+clean:
+	del *.exe *.obj *.pdb maketab.exe proctab.c
+
+distclean: clean
+	del ytab.c awkgram.h *.bak

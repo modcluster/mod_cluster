@@ -1,0 +1,6 @@
+	Apache Portable Runtime Iconv Library
+	-------------------------------------
+
+This version uses all provided modules as builtin
+In general it is used only on windows platform where
+there is no provided system iconv library

@@ -1,0 +1,14 @@
+APRURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-@version@-win32-src.zip
+APUURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-util-@version@-win32-src.zip
+APIURL=http://ftp.heanet.ie/mirrors/www.apache.org/dist/apr/apr-iconv-@version@-win32-src.zip
+APRURLBACK=http://archive.apache.org/dist/apr/apr-@version@-win32-src.zip
+APUURLBACK=http://archive.apache.org/dist/apr/apr-util-@version@-win32-src.zip
+APIURLBACK=http://archive.apache.org/dist/apr/apr-iconv-@version@-win32-src.zip
+SSLURL=http://www.openssl.org/source/openssl-@version@.tar.gz
+ZLIBURL=http://www.zlib.net/zlib-@version@.tar.gz
+ICONVURL=http://ftp.gnu.org/pub/gnu/libiconv/libiconv-@version@.tar.gz
+EXPATURL=http://belnet.dl.sourceforge.net/sourceforge/expat/expat-@version@.tar.gz
+URLTCC=http://archive.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-@version@/tomcat-connectors-@version@-src.zip
+URLTCCBACK=http://ftp.heanet.ie/mirrors/www.apache.org/dist/tomcat/tomcat-connectors/jk/source/jk-@version@/tomcat-connectors-@version@-src.zip
+URLHTTPD=http://archive.apache.org/dist/httpd/httpd-@version@-win32-src.zip
+URLJBOSS=http://surfnet.dl.sourceforge.net/sourceforge/jboss/jboss-4.2.0.GA.zip

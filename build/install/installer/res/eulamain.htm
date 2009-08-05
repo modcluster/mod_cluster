@@ -1,0 +1,147 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HEAD lang="en">
+    <META http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <META http-equiv="MSThemeCompatible" content="Yes">
+    <TITLE>Accept License Agreement</TITLE>
+    <STYLE type="text/css">
+        BODY, TABLE, TR, TD, UL, OL, LI, P { 
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+            font-style: normal;
+            text-decoration: none;
+            background-color: ButtonFace;
+            color: ButtonText;
+        }
+        INPUT {
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+        }
+        TH {
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+            font-style: normal;
+            text-decoration: none;
+            text-align: left;
+            line-height: 22px;
+            background-color: ActiveCaption;
+            color: CaptionText;
+        }
+        H1 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 24px;        
+        }
+        H2 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 20px;        
+        }
+        H3 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 18px;        
+        }
+        H4 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 13px;        
+        }
+        A {
+            color: blue;
+        }
+        IFRAME {
+            border-left:0px;
+            border-right:0px;
+            border-top:1px solid;
+            border-top-color: ActiveBorder;
+            border-bottom:1px solid;
+            border-bottom-color: ActiveBorder;
+        }
+        .hide {
+	        display: none;
+	        visibility: hidden;
+        }
+        .show {
+	        display: block;
+	        visibility: visible;
+        }
+    </STYLE>
+    <SCRIPT language="JScript">   
+             
+        function pageOnLoad()
+        {
+            window.returnValue = null;
+            if (window.dialogArguments != null) {
+                var args;
+                args = window.dialogArguments.split("\t");                
+                for (i = 0; i < args.length; i++) {
+                    try {
+                        obj = eval("val" + i);
+                        if (obj != null)
+                            obj.value = args[i];
+                    } catch (err) {
+                        // Nothing    
+                    }
+                }
+            }
+            iLicense.focus();
+            return true;
+        }
+        
+        function okClick()
+        {
+            rv = "OK";
+            for (i = 0; i < 4; i++) {
+               try {
+                  obj = eval("val" + i);
+                   if (obj != null) {
+                      rv = rv + "\t" + obj.value;
+                   }
+               } catch (err) {
+                   // Nothing    
+               }
+            }
+            window.returnValue = rv;
+            window.close();
+        }    
+
+        function cancelClick()
+        {
+            window.returnValue = "CANCEL";
+            window.close();
+        }    
+    
+        function onAcceptClick()
+        {
+            if (accept.checked)
+                ok.disabled=false;
+            else
+                ok.disabled=true;                                
+        }
+    </SCRIPT>
+</HEAD>
+<BODY scroll="no" topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+      marginwidth="0" marginheight="0" onload="pageOnLoad(); return true;">
+<DIV style="position:absolute; top:0px; left:0px; width=505px; height:360px; border:0px solid;">
+<DIV style="position:absolute; top:0px; left:0px; width=505px; height:48px;">
+<IMG src="PNG/IMG_JBOSSTOP" border="0"/>
+</DIV>
+<DIV style="position:absolute; top:48px; left:0px; width=505px;">
+<IFRAME src="HTML_EULA" id="iLicense" FRAMEBORDER=0 SCROLLING=YES style="width: 100%; height: 240px;"></IFRAME>
+</DIV>
+<DIV style="position:absolute; top:296px; left:6px; width=505px; height:48px;">
+&nbsp;<strong style="color:red;">Required: </strong> You must accept the License Agreement to install the product.<br/>
+<INPUT type="checkbox" id="accept" onclick="onAcceptClick();"/>&nbsp;Accept License Agreement
+</DIV>
+<DIV style="position:absolute; top:336px; left:10px; width=300px;">
+<IMG src="PNG/IMG_REDHAT16" border="0" width=16 height=16/>&nbsp; Copyright &copy; 2008 Red Hat&reg; Middleware, LLC.
+</DIV>
+<DIV style="position:absolute; top:310px; left:300px;">    
+<TABLE cellspacing="0" style="margin:6px;">
+  <TR>
+    <TD align="right">
+    <INPUT type="button" value="Accept" disabled id="ok" style="width: 88px; height: 24px; cursor: hand;" onclick="okClick();"/>
+    <INPUT type="button" value="Decline" id="cancel" style="width: 88px; height: 24px; cursor: hand;" onclick="cancelClick();"/>
+    </TD>
+  </TR>
+</TABLE>
+</DIV>
+</DIV>
+</BODY>
+</HTML>

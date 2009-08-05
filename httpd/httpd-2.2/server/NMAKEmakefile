@@ -1,0 +1,65 @@
+# Copyright 2001-2007 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master HTTPD makefile.
+# Usage:
+#                 DEBUG=1   Build DEBUG version of HTTPD
+#
+# Originally contributed by Mladen Turk <mturk redhat.com>
+#
+# ====================================================================
+#
+
+
+TARGET=EXE
+PROJECT = gen_test_char
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!include <..\NMAKEcommon.inc>
+!include <..\NMAKEhttpd.inc>
+
+CFLAGS = $(CFLAGS) -DAPR_DECLARE_STATIC
+LDIRS =  /libpath:"$(BUILDLIB)"
+LIBS = $(LIBS) $(APR)
+
+INCLUDES = -I$(BUILDINC)
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\gen_test_char.obj
+
+BUILDBIN = $(WORKDIR)\$(PROJECT).exe
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+
+all : $(WORKDIR) $(BUILDBIN)
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+{$(SRCDIR)}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(BUILDBIN): $(WORKDIR) $(BUILDDEP) $(OBJECTS)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+
+clean:
+	@$(CLEANTARGET)
+
+install : $(WORKDIR) $(BUILDBIN)
+	@copy /Y $(BUILDBIN) $(SRCDIR)

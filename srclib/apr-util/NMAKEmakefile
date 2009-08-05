@@ -1,0 +1,212 @@
+# Copyright 2001-2006 The Apache Software Foundation or its licensors, as
+# applicable.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# ====================================================================
+#
+# NMAKEmakefile   Master APR-UTIL makefile.
+# Usage:
+#                 DLL=1     Build DLL version
+#                 DEBUG=1   Build DEBUG version of APR
+#
+# Originally contributed by Mladen Turk <mturk jboss.com>
+#
+# ====================================================================
+#
+
+
+!IF !DEFINED(APR_DECLARE_STATIC) || "$(APR_DECLARE_STATIC)" == ""
+TARGET=DLL
+CFLAGS = -DAPR_DECLARE_EXPORT -DAPU_DECLARE_EXPORT $(CFLAGS)
+PROJECT = libaprutil-1
+APR_LIB = libapr-1.lib
+!ELSE
+CFLAGS = -DAPR_DECLARE_STATIC -DAPU_DECLARE_STATIC $(CFLAGS)
+PROJECT = aprutil-1
+APR_LIB = apr-1.lib
+TARGET=LIB
+!ENDIF
+
+CFLAGS = $(CFLAGS) -DAPU_USE_SDBM -DVERSION=\"expat_1.95.2\" 
+
+!IF !DEFINED(SRCDIR) || "$(SRCDIR)" == ""
+SRCDIR = .
+!ENDIF
+
+!include <..\..\NMAKEcommon.inc>
+
+!IFNDEF WITH_APR
+!ERROR WITH_APR Not defined
+!ENDIF
+
+LDIRS = /libpath:"$(WITH_APR)\lib"
+
+!IF "$(TARGET)" != "LIB"
+LFLAGS = $(LFLAGS) /version:1.2
+!ENDIF
+LFLAGS = $(LFLAGS) $(APR_LIB)
+!IF "$(TARGET)" == "DLL"
+LFLAGS = $(LFLAGS) user32.lib psapi.lib gdi32.lib shlwapi.lib wldap32.lib ole32.lib
+!ENDIF
+
+INCLUDES = -I$(SRCDIR)\include -I$(SRCDIR)\include\private -I$(SRCDIR)\xml\expat\lib -I$(WITH_APR)\include\apr-1
+PDBFLAGS = -Fo$(WORKDIR)\ -Fd$(WORKDIR)\$(PROJECT)-src
+OBJECTS = \
+	$(WORKDIR)\apr_brigade.obj \
+	$(WORKDIR)\apr_buckets.obj \
+	$(WORKDIR)\apr_buckets_alloc.obj \
+	$(WORKDIR)\apr_buckets_eos.obj \
+	$(WORKDIR)\apr_buckets_file.obj \
+	$(WORKDIR)\apr_buckets_flush.obj \
+	$(WORKDIR)\apr_buckets_heap.obj \
+	$(WORKDIR)\apr_buckets_mmap.obj \
+	$(WORKDIR)\apr_buckets_pipe.obj \
+	$(WORKDIR)\apr_buckets_pool.obj \
+	$(WORKDIR)\apr_buckets_refcount.obj \
+	$(WORKDIR)\apr_buckets_simple.obj \
+	$(WORKDIR)\apr_buckets_socket.obj \
+	$(WORKDIR)\apr_md4.obj \
+	$(WORKDIR)\apr_md5.obj \
+	$(WORKDIR)\apr_sha1.obj \
+	$(WORKDIR)\getuuid.obj \
+	$(WORKDIR)\uuid.obj \
+	$(WORKDIR)\apr_dbd.obj \
+	$(WORKDIR)\apr_dbd_pgsql.obj \
+	$(WORKDIR)\apr_dbd_sqlite2.obj \
+	$(WORKDIR)\apr_dbd_sqlite3.obj \
+	$(WORKDIR)\apr_dbm.obj \
+	$(WORKDIR)\apr_dbm_berkeleydb.obj \
+	$(WORKDIR)\apr_dbm_gdbm.obj \
+	$(WORKDIR)\apr_dbm_sdbm.obj \
+	$(WORKDIR)\sdbm.obj \
+	$(WORKDIR)\sdbm_hash.obj \
+	$(WORKDIR)\sdbm_lock.obj \
+	$(WORKDIR)\sdbm_pair.obj \
+	$(WORKDIR)\apr_base64.obj \
+	$(WORKDIR)\apr_hooks.obj \
+	$(WORKDIR)\apr_ldap_init.obj \
+	$(WORKDIR)\apr_ldap_url.obj \
+	$(WORKDIR)\apr_ldap_option.obj \
+	$(WORKDIR)\apr_date.obj \
+	$(WORKDIR)\apr_queue.obj \
+	$(WORKDIR)\apr_reslist.obj \
+	$(WORKDIR)\apr_rmm.obj \
+	$(WORKDIR)\apu_version.obj \
+	$(WORKDIR)\apr_strmatch.obj \
+	$(WORKDIR)\apr_uri.obj \
+	$(WORKDIR)\xlate.obj \
+	$(WORKDIR)\apr_xml.obj \
+	$(WORKDIR)\xmlparse.obj \
+	$(WORKDIR)\xmlrole.obj \
+	$(WORKDIR)\xmltok.obj
+
+HEADERS = \
+	$(SRCDIR)\include\apu.h \
+	$(SRCDIR)\include\apu_want.h \
+	$(SRCDIR)\include\apr_ldap.h \
+	$(SRCDIR)\include\private\apu_config.h \
+	$(SRCDIR)\include\private\apu_select_dbm.h
+
+
+BUILDLIB = $(PREFIX)\lib
+BUILDINC = $(PREFIX)\include\apr-1
+
+!IF "$(TARGET)" == "DLL"
+BUILDBIN = $(WORKDIR)\$(PROJECT).dll
+BUILDPDB = $(WORKDIR)\$(PROJECT).pdb
+BUILDRES = $(WORKDIR)\$(PROJECT).res
+BUILDMAN = $(BUILDBIN).manifest
+!ELSE
+BUILDBIN = $(WORKDIR)\$(PROJECT).lib
+!ENDIF
+
+all : $(WORKDIR) $(BUILDLIB)
+
+$(BUILDLIB) :
+	@if not exist "$(BUILDLIB)\$(NULL)" mkdir "$(BUILDLIB)"
+
+$(WORKDIR) :
+	@$(MAKEWORKDIR)
+
+.SUFFIXES : .hw
+
+{$(SRCDIR)\include}.hw{$(SRCDIR)\include}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\include\private}.hw{$(SRCDIR)\include\private}.h:
+	@copy /Y $< $@ >NUL
+
+{$(SRCDIR)\buckets}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\crypto}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\dbd}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\dbm}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\dbm\sdbm}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\encoding}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\hooks}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\ldap}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\misc}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\strmatch}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\uri}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\xlate}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\xml}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+{$(SRCDIR)\xml\expat\lib}.c{$(WORKDIR)}.obj:
+	$(CC) $(CFLAGS) $(INCLUDES) $(PDBFLAGS) $<
+
+$(OBJECTS): $(SRCDIR)\include\*.h $(SRCDIR)\include\private\*.h
+
+!IF "$(TARGET)" == "DLL"
+$(BUILDRES): libaprutil.rc $(HEADERS)
+	$(RC) $(RCFLAGS) /i "$(WITH_APR)\include" /i "$(SRCDIR)\include" /d "APU_VERSION_ONLY" /fo $(BUILDRES) libaprutil.rc
+$(BUILDBIN): $(WORKDIR) $(HEADERS) $(OBJECTS) $(BUILDRES)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(BUILDRES) $(LIBS) $(LDIRS) /pdb:$(BUILDPDB) /out:$(BUILDBIN)
+	IF EXIST $(BUILDMAN) \
+		mt -nologo -manifest $(BUILDMAN) -outputresource:$(BUILDBIN);2
+!ELSE
+$(BUILDBIN): $(WORKDIR) $(HEADERS) $(OBJECTS)
+	$(LINK) $(LFLAGS) $(OBJECTS) $(LDIRS) /out:$(BUILDBIN)
+!ENDIF
+
+clean:
+	@$(CLEANTARGET)
+
+install: $(BUILDLIB) $(WORKDIR) $(BUILDBIN)
+	@xcopy "$(SRCDIR)\include\*.h" "$(BUILDINC)" /Y /Q
+	@xcopy "$(WORKDIR)\*.lib" "$(BUILDLIB)" /Y /Q
+	@xcopy "$(WORKDIR)\*.dll" "$(BUILDLIB)" /Y /Q 2>NUL

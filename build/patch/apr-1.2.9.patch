@@ -1,0 +1,24 @@
+--- include/apr.hw
++++ include/apr.hw
+@@ -217,7 +217,7 @@
+ #define APR_HAVE_IN_ADDR        1
+ #define APR_HAVE_INET_ADDR      1
+ #define APR_HAVE_INET_NETWORK   0
+-#define APR_HAVE_IPV6           0
++#define APR_HAVE_IPV6           1
+ #define APR_HAVE_MEMMOVE        1
+ #define APR_HAVE_SETRLIMIT      0
+ #define APR_HAVE_SIGACTION      0
+--- misc/win32/rand.c
++++ misc/win32/rand.c
+@@ -14,9 +14,8 @@
+  * limitations under the License.
+  */
+ 
+-#include <windows.h>
+-#include <wincrypt.h>
+ #include "apr.h"
++#include <wincrypt.h>
+ #include "apr_private.h"
+ #include "apr_general.h"
+ #include "apr_portable.h"

@@ -1,0 +1,69 @@
+--- modules/proxy/mod_proxy_ajp.c	2008-07-24 09:31:12.000000000 +0200
++++ modules/proxy/mod_proxy_ajp.c	2008-07-24 09:37:02.000000000 +0200
+@@ -499,6 +499,8 @@
+     conn_rec *origin = NULL;
+     proxy_conn_rec *backend = NULL;
+     const char *scheme = "AJP";
++    apr_interval_time_t savetimeout;
++    char savetimeout_set;
+     proxy_dir_conf *dconf = ap_get_module_config(r->per_dir_config,
+                                                  &proxy_module);
+ 
+@@ -554,7 +556,18 @@
+         goto cleanup;
+ 
+     /* Step Two: Make the Connection */
+-    if (ap_proxy_connect_backend(scheme, backend, worker, r->server)) {
++    if (worker->ping_timeout_set) {
++        savetimeout_set = worker->timeout_set;
++        savetimeout = worker->timeout;
++        worker->timeout_set = 1;
++        worker->timeout = worker->ping_timeout;
++    }
++    status = ap_proxy_connect_backend(scheme, backend, worker, r->server);
++    if (worker->ping_timeout_set) {
++        worker->timeout_set = savetimeout_set;
++        worker->timeout = savetimeout;
++    }
++    if (status) {
+         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                      "proxy: AJP: failed to make connection to backend: %s",
+                      backend->hostname);
+@@ -564,6 +577,16 @@
+ 
+     /* Handle CPING/CPONG */
+     if (worker->ping_timeout_set) {
++        /* Put a timeout on the socket like ap_proxy_connect_backend() */
++        if (worker->timeout_set == 1) {
++            apr_socket_timeout_set(backend->sock, worker->timeout);
++        }
++        else if (conf->timeout_set == 1) {
++            apr_socket_timeout_set(backend->sock, conf->timeout);
++        }
++        else {
++             apr_socket_timeout_set(backend->sock, r->server->timeout);
++        }
+         status = ajp_handle_cping_cpong(backend->sock, r,
+                                         worker->ping_timeout);
+         if (status != APR_SUCCESS) {
+--- modules/proxy/ajp.h (original)
++++ modules/proxy/ajp.h Mon Jan 28 08:20:44 2008
+@@ -147,6 +147,7 @@
+ #define AJP_MSG_BUFFER_SZ           8192
+ #define AJP_MAX_BUFFER_SZ           65536
+ #define AJP13_MAX_SEND_BODY_SZ      (AJP_MAX_BUFFER_SZ - AJP_HEADER_SZ)
++#define AJP_PING_PONG_SZ            128
+ 
+ /** Send a request from web server to container*/
+ #define CMD_AJP13_FORWARD_REQUEST   (unsigned char)2
+--- modules/proxy/ajp_utils.c (original)
++++ modules/proxy/ajp_utils.c Mon Jan 28 08:20:44 2008
+@@ -31,7 +31,7 @@
+     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                          "Into ajp_handle_cping_cpong");
+ 
+-    rc = ajp_msg_create(r->pool, AJP_HEADER_SZ_LEN+1, &msg);
++    rc = ajp_msg_create(r->pool, AJP_PING_PONG_SZ, &msg);
+     if (rc != APR_SUCCESS) {
+         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                "ajp_handle_cping_cpong: ajp_msg_create failed");

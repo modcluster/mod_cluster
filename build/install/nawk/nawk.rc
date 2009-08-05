@@ -1,0 +1,117 @@
+/*
+ *  NAWK - Port of One True Awk
+ *
+ *  Copyright(c) 2007 Red Hat Middleware, LLC,
+ *  and individual contributors as indicated by the @authors tag.
+ *  See the copyright.txt in the distribution for a
+ *  full listing of individual contributors. 
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library in the file COPYING.LIB;
+ *  if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * @author Mladen Turk
+ */
+#include <windows.h>
+
+#define STR_COPYRIGHT       "Copyright © 2008 Lucent Technologies."
+#define STR_LICENSE         "Permission to use, copy, modify, and distribute " \
+                            "this software and its documentation for any " \
+                            "purpose and without fee is hereby granted, " \
+                            "provided that the above copyright notice appear " \
+                            "in all copies and that both that the copyright " \
+                            "notice and this permission notice and warranty " \
+                            "disclaimer appear in supporting documentation, " \
+                            "and that the name Lucent Technologies or any of " \
+                            "its entities not be used in advertising or " \
+                            "publicity pertaining to distribution of the " \
+                            "software without specific, written prior " \
+                            "permission.\n\n" \
+                            "LUCENT DISCLAIMS ALL WARRANTIES WITH REGARD TO " \
+                            "THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES " \
+                            "OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL " \
+                            "LUCENT OR ANY OF ITS ENTITIES BE LIABLE FOR ANY " \
+                            "SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY " \
+                            "DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, " \
+                            "DATA OR PROFITS, WHETHER IN AN ACTION OF " \
+                            "CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, " \
+                            "ARISING OUT OF OR IN CONNECTION WITH THE USE OR " \
+                            "PERFORMANCE OF THIS SOFTWARE."
+
+#define STR_COMPANY         "Red Hat®, Inc."
+#define STR_TRADEMARK       "™ Red Hat Inc."
+#define STR_PRODUCT         "Nawk: pattern scanning and text processing language"
+#define STR_VERISON         "2007.05.01.0"
+#define CSV_VERISON         2007,5,1,0
+#define PRIVATE_BUILD       0
+#define PRERELEASE_BUILD    0
+
+#if PRIVATE_BUILD
+#define STR_PRIVATE   "Initial Prerelease"
+#define STR_SPECIAL   "Basic functionality"
+#define STD_FILEFLAGS VS_FF_PRIVATEBUILD | VS_FF_SPECIALBUILD
+#else
+#define STD_FILEFLAGS 0x0L
+#endif
+
+#if RERELEASE_BUILD
+#define PSTD_FILEFLAGS STD_FILEFLAGS | VS_FF_PRERELEASE
+#else
+#define PSTD_FILEFLAGS STD_FILEFLAGS
+#endif
+
+#ifdef _DEBUG
+#define APP_FILEFLAGS STD_FILEFLAGS | VS_FF_DEBUG
+#else
+#define APP_FILEFLAGS STD_FILEFLAGS
+#endif
+
+
+IDI_MAINICON         ICON                   "nawk.ico"
+
+LANGUAGE 0x9,0x1
+ 1 VERSIONINFO
+ FILEVERSION CSV_VERISON
+ PRODUCTVERSION CSV_VERISON
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+ FILEFLAGS APP_FILEFLAGS
+ FILEOS VOS_NT
+ FILETYPE VFT_APP
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments",  STR_PRODUCT "\0"
+            VALUE "CompanyName", STR_COMPANY "\0"
+            VALUE "FileDescription", STR_PRODUCT "\0"
+            VALUE "FileVersion", STR_VERISON "\0"
+            VALUE "InternalName", "nawk"
+            VALUE "LegalCopyright", STR_COPYRIGHT "\0"
+            VALUE "LegalTrademarks", STR_TRADEMARK "\0"
+            VALUE "OriginalFilename", "nawk.exe"
+            VALUE "ProductName", STR_PRODUCT "\0"
+            VALUE "ProductVersion", STR_VERISON "\0"
+#if PRIVATE_BUILD
+            VALUE "PrivateBuild", STR_PRIVATE "\0"
+            VALUE "SpecialBuild", STR_SPECIAL "\0"
+#endif
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

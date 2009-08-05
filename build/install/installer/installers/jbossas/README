@@ -1,0 +1,17 @@
+Making installation
+
+1. Unzip JBoss AS .zip distribution in this directory
+   > unzip jboss-5.0.0.Beta4
+2. Modify the _install\install bat so that PACKAGE_NAME
+   is the same as unizpped directory
+3. Create new zip file
+   > zip -qr -9 jboss-5.0.0.Beta4.install.zip _install jboss-5.0.0.Beta4
+4. Merge the sinstall stub
+   > copy /Y /b sinstall.exe + /b jboss-5.0.0.Beta4.install.zip jboss-5.0.0.Beta4.exe
+5. Embedd parameters to the installer
+   > sinstall -qxu -S 0 -e jboss-5.0.0.Beta4.exe  
+   This step can be ommited if the sinstall already has embedded config
+6. Fix zip sfx archive
+   > zip -A jboss-5.0.0.Beta4.exe
+
+That's it

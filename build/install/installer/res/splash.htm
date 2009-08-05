@@ -1,0 +1,88 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HEAD lang="en">
+    <META http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <META http-equiv="MSThemeCompatible" content="Yes">
+    <TITLE>Initializing JBoss Installer</TITLE>
+    <STYLE type="text/css">
+        BODY, TABLE, TR, TD, UL, OL, LI, P { 
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+            font-style: normal;
+            text-decoration: none;
+            background-color: ButtonFace;
+            color: ButtonText;
+        }
+        INPUT {
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+        }
+        TH {
+            font-family: MS Shell Dlg;
+            font-size: 10px;
+            font-style: normal;
+            text-decoration: none;
+            text-align: left;
+            line-height: 22px;
+            background-color: ActiveCaption;
+            color: CaptionText;
+        }
+        H1 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 24px;        
+        }
+        H2 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 20px;        
+        }
+        H3 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 18px;        
+        }
+        H4 {
+            font-family: Serife, Verdana, Helvetica, Arial, Tahoma;
+            font-size: 13px;        
+        }
+        A {
+            color: blue;
+        }
+        IFRAME {
+            border-left:0px;
+            border-right:0px;
+            border-top:1px solid;
+            border-top-color: ActiveBorder;
+            border-bottom:1px solid;
+            border-bottom-color: ActiveBorder;
+        }
+        .hide {
+	        display: none;
+	        visibility: hidden;
+        }
+        .show {
+	        display: block;
+	        visibility: visible;
+        }
+    </STYLE>
+    <SCRIPT language="JScript">   
+             
+        function pageOnLoad()
+        {
+            window.returnValue = null;
+            setTimeout("onTimeout()", 60000);
+            return true;
+        }
+          
+        function onTimeout()
+        {
+            window.returnValue = "TIMEOUT";
+            window.close();
+        }    
+    </SCRIPT>
+</HEAD>
+<BODY scroll="no" topmargin="0" leftmargin="0" rightmargin="0" bottommargin="0"
+      marginwidth="0" marginheight="0" onload="pageOnLoad(); return true;">
+<DIV style="position:absolute; top:0px; left:0px; width=505px; height:360px; border:0px solid;">
+<IMG src="PNG/IMG_JBOSPLASH" border="0" onclick="onTimeout(); return true;"/>
+</DIV>
+</DIV>
+</BODY>
+</HTML>

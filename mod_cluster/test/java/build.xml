@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<!--
+ *  Copyright(c) 2008 Red Hat Middleware, LLC,
+ *  and individual contributors as indicated by the @authors tag.
+ *  See the copyright.txt in the distribution for a
+ *  full listing of individual contributors.
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library in the file COPYING.LIB;
+ *  if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
+ *
+ * @author Jean-Frederic Clere
+ * @version $Revision$
+-->
+<project name="mod_cluster" default="all" basedir=".">
+
+  <!-- See "build.properties.sample" in the top level directory for all     -->
+  <!-- property values you must customize for successful building!!!        -->
+  <property file="${user.home}/build.properties"/>
+  <property file="build.properties"/>
+
+  <property file="build.properties.default"/>
+
+  <property name="test.classes" value="${basedir}/output/classes"/>
+
+  <property name="compile.source" value="1.5"/>
+
+  <property name="junit.jar" value="${junit.home}/junit.jar"/>
+  <property name="test.runner" value="junit.textui.TestRunner"/>
+
+  <path id="tomcat.test.classpath">
+    <pathelement location="${test.classes}"/>
+    <pathelement location="${junit.jar}"/>
+    <pathelement location="${commons-httpclient.jar}"/>
+    <pathelement location="${commons-logging.jar}"/>
+    <pathelement location="${commons-codec.jar}"/>
+    <pathelement location="${bootstrap.jar}"/>
+    <pathelement location="${annotations-api.jar}"/>
+
+    <fileset dir="${jbosswebjar}/">
+      <include name="jbossweb.jar"/>
+      <include name="servlet-api.jar"/>
+    </fileset>
+
+<!--
+    <fileset dir="${jbossweb.build}/bin/">
+      <include name="tomcat-juli.jar"/>
+    </fileset>
+ -->
+  </path>
+
+  <target name="compile">
+
+  <mkdir dir="${test.classes}"/>
+  <mkdir dir="${test.classes}/conf"/>
+
+  <!-- Compile -->
+  <javac srcdir="." destdir="${test.classes}"
+         debug="on" debuglevel="lines,vars,source"
+         deprecation="${compile.deprecation}"
+         source="${compile.source}"
+         optimize="${compile.optimize}">
+         <classpath refid="tomcat.test.classpath" />
+         <include name="org/jboss/mod_cluster/**" />
+  </javac>
+
+  </target>
+
+  <target name="all" depends="compile">
+     <copy file="conf/web.xml" todir="${test.classes}/conf"/>
+     <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
+            <arg value="org.jboss.mod_cluster.Maintest"/>
+            <classpath refid="tomcat.test.classpath"/>
+     </java>
+
+  </target>
+</project>
