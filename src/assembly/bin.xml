@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assembly xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/assembly-1.0.0.xsd">
+  <id>bin</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <includes>
+        <include>*.txt</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>target/mod-cluster.sar</directory>
+      <outputDirectory>mod-cluster.sar</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>target/demo</directory>
+      <outputDirectory>demo</outputDirectory>
+      <excludes>
+        <exclude>classes/**</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>target/JBossWeb-Tomcat</directory>
+      <outputDirectory>JBossWeb-Tomcat</outputDirectory>
+    </fileSet>
+  </fileSets>
+</assembly>

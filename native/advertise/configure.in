@@ -1,0 +1,24 @@
+dnl configure for mod_manager
+dnl
+
+AC_INIT(mod_advertise.c)
+
+AC_MSG_CHECKING(for Apache httpd installation)
+AC_ARG_WITH(apache,
+[  --with-apache[=DIR] DIR is the apache base installation
+],
+[   if test "$withval" = "yes"; then
+        withval=/usr/local/etc/httpd
+    fi
+    if test "$withval" != "no"; then
+        APACHE_BASE=$withval
+    else
+        AC_MSG_ERROR(mod_manager need a valid apache location)
+    fi
+],
+[   AC_MSG_ERROR(Please use --with-apache[=DIR])])
+CLUSTER_BASE=`pwd`
+
+AC_SUBST(APACHE_BASE)
+AC_SUBST(CLUSTER_BASE)
+AC_OUTPUT(Makefile)
