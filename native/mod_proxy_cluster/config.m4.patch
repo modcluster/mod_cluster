@@ -1,0 +1,28 @@
+Index: config.m4
+===================================================================
+--- config.m4	(revision 663923)
++++ config.m4	(working copy)
+@@ -18,6 +18,7 @@
+ proxy_http_objs="mod_proxy_http.lo"
+ proxy_ajp_objs="mod_proxy_ajp.lo ajp_header.lo ajp_link.lo ajp_msg.lo ajp_utils.lo"
+ proxy_balancer_objs="mod_proxy_balancer.lo"
++proxy_cluster_objs="mod_proxy_cluster.lo"
+ 
+ case "$host" in
+   *os2*)
+@@ -28,6 +29,7 @@
+     proxy_http_objs="$proxy_http_objs mod_proxy.la"
+     proxy_ajp_objs="$proxy_ajp_objs mod_proxy.la"
+     proxy_balancer_objs="$proxy_balancer_objs mod_proxy.la"
++    proxy_cluster_objs="$proxy_cluster_objs mod_proxy.la"
+     ;;
+ esac
+ 
+@@ -36,6 +38,7 @@
+ APACHE_MODULE(proxy_http, Apache proxy HTTP module, $proxy_http_objs, , $proxy_mods_enable)
+ APACHE_MODULE(proxy_ajp, Apache proxy AJP module, $proxy_ajp_objs, , $proxy_mods_enable)
+ APACHE_MODULE(proxy_balancer, Apache proxy BALANCER module, $proxy_balancer_objs, , $proxy_mods_enable)
++APACHE_MODULE(proxy_cluster, proxy CLUSTER module, $proxy_cluster_objs, , $proxy_mods_enable)
+ 
+ APR_ADDTO(INCLUDES, [-I\$(top_srcdir)/$modpath_current/../generators])
+ 
