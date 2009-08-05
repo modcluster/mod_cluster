@@ -1,0 +1,23 @@
+# Makefile.in for mod_proxy_cluster
+# copy the source in the httpd Apache source tree
+APACHE_BASE = @APACHE_BASE@
+top_builddir = @APACHE_BUILDDIR@
+# For .deps.
+builddir = @CLUSTER_BASE@
+# For the apache includes
+top_srcdir = @APACHE_BASE@
+
+include $(top_builddir)/build/rules.mk
+SH_COMPILE = $(LIBTOOL) --mode=compile $(BASE_CC) -I../include -prefer-pic -c $< && touch $@
+
+all: mod_manager.so
+
+mod_manager.so: mod_manager.la
+	 $(top_builddir)/build/instdso.sh SH_LIBTOOL='$(LIBTOOL)' mod_manager.la `pwd`
+
+mod_manager.la: mod_manager.slo node.slo context.slo host.slo balancer.slo sessionid.slo domain.slo
+	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version  mod_manager.lo node.lo context.lo host.lo balancer.lo sessionid.lo domain.lo
+
+clean:
+	rm -f *.o *.lo *.slo *.so
+	rm -rf .libs
