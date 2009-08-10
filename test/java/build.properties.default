@@ -1,6 +1,6 @@
 test.failonerror=true
 BUILDTEST=N
-build_version=1.0.0.dev
+build_version=1.1.0-SNAPSHOT
 root=.
 
 base-apache.loc=http://archive.apache.org/dist/
@@ -45,4 +45,4 @@ base-jboss-ejb-api.home=${base.path}/${jboss-ejb-api.version}/lib
 jboss-ejb-api.jar.loc=${base-jboss.loc}/jboss-ejb-api/${jboss-ejb-api.version}/jboss-ejb-api-${jboss-ejb-api.version}.jar
 jboss-ejb-api.jar=${base.path}/${jboss-ejb-api.version}/jboss-ejb-api-spi-${jboss-ejb-api.version}.jar
 
-mod_cluster.jar=../../target/mod-cluster-1.0.1-SNAPSHOT.jar
+mod_cluster.jar=../../target/mod-cluster-${build_version}.jar
