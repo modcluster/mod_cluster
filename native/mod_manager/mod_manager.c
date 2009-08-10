@@ -1653,6 +1653,19 @@ static char *process_domain(request_rec *r, char **ptr, int *errtype, const char
     }
     return errstring;
 }
+/* XXX: move to mod_proxy_cluster as a provider ? */
+static void printproxy_stat(request_rec *r, proxy_worker_stat *proxystat)
+{
+    char *status = NULL;
+    if (proxystat->status & PROXY_WORKER_NOT_USABLE_BITMAP)
+        status = "NOTOK";
+    else
+        status = "OK";
+    ap_rprintf(r, ",Status: %s,Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
+               status,
+               proxystat->elected, proxystat->read, proxystat->transferred,
+               proxystat->busy, proxystat->lbfactor);
+}
 static int manager_info(request_rec *r)
 {
     int size, i, sizesessionid;
@@ -1799,7 +1812,6 @@ static int manager_info(request_rec *r)
 
     /* display the ordered nodes */
     for (i=0; i<size; i++) {
-        proxy_worker_stat *proxystat;
         char *flushpackets;
         nodeinfo_t *ou = &nodes[i];
 
@@ -1830,14 +1842,13 @@ static int manager_info(request_rec *r)
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
                    ou->mess.ping, ou->mess.smax, ou->mess.ttl);
-        proxystat  = (proxy_worker_stat *) ou->stat;
-        ap_rprintf(r, ",Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
-                   proxystat->elected, proxystat->read, proxystat->transferred,
-                   proxystat->busy, proxystat->lbfactor);
-        if (sizesessionid)
-            ap_rprintf(r, ",Num sessions: %d\n",  count_sessionid(r, ou->mess.JVMRoute));
-         else
-            ap_rprintf(r, "\n");
+
+        printproxy_stat(r, (proxy_worker_stat *) ou->stat);
+
+        if (sizesessionid) {
+            ap_rprintf(r, ",Num sessions: %d",  count_sessionid(r, ou->mess.JVMRoute));
+        }
+        ap_rprintf(r, "\n");
 
         /* Process the Vhosts */
         manager_info_hosts(r, id[i], ou->mess.JVMRoute); 
