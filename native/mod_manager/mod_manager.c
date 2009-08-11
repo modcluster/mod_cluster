@@ -390,8 +390,13 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         domain = ap_server_root_relative(ptemp, "logs/manager.domain");
     }
 
-    /* Get a provider to handle the shared memory */
+    /* Do some sanity checks */
+    if (mconf->maxhost < mconf->maxnode)
+        mconf->maxhost = mconf->maxnode;
+    if (mconf->maxcontext < mconf->maxhost)
+        mconf->maxcontext = mconf->maxhost;
 
+    /* Get a provider to handle the shared memory */
     storage = ap_lookup_provider(SLOTMEM_STORAGE, "shared", "0");
     if (storage == NULL) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "ap_lookup_provider %s failed", SLOTMEM_STORAGE);
