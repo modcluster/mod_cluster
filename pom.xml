@@ -19,6 +19,13 @@
     <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/branches/1.0.x</developerConnection>
   </scm>
 
+  <distributionManagement>
+    <repository>
+      <id>repository.jboss.org</id>
+      <url>http://repository.jboss.org/maven2</url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.jboss.cluster</groupId>
