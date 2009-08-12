@@ -43,25 +43,45 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestAddDel extends TestCase {
 
+    String snumbnodes = System.getProperty("numbnodes", "10");
+    int numbnodes = 10;
     /* Test */
     public void testAddDel() {
 
         boolean clienterror = false;
-        int numbnodes = 10;
+        try {
+            numbnodes = Integer.valueOf(snumbnodes);
+        } catch (Exception ex) {
+        }
+
         String [] nodenames = new String [numbnodes];
         JBossWeb [] service = new JBossWeb[numbnodes];
         LifecycleListener lifecycle = null;
 
-        System.out.println("TestAddDel Started");
+        System.out.println("TestAddDel Started for " + numbnodes + " nodes");
         StandardServer server = Maintest.getServer();
+        int i0 = 1;
+        int i1 = 0;
+        int i2 = 0;
         for (int i=0; i<numbnodes; i++) {
             try {
                 // server = (StandardServer) ServerFactory.getServer();
                 String name = "node" + i;
+                String host = "127." + i2 + "." + i1 + "." + i0;
                 nodenames[i] = name;
                 service[i] = new JBossWeb(name,  "localhost");
-                service[i].addConnector(8010 + i);
+                service[i].addConnector(8010, "ajp", host);
                 server.addService(service[i]);
+                i0++;
+                if (i0 == 256) {
+                    i1++;
+                    i0=0; 
+                }
+                if (i1 == 256) {
+                    i2++;
+                    i1 = 0;
+                }
+                   
  
             } catch(IOException ex) {
                 ex.printStackTrace();
