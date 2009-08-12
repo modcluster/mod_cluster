@@ -891,6 +891,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
             String message = null;
             String errorType = null;
             int contentLength = 0;
+            boolean close = false;
             if (line != null)
             {
                try
@@ -919,6 +920,11 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                      else if ("content-length".equalsIgnoreCase(headerName))
                      {
                         contentLength = Integer.parseInt(headerValue);
+                     }
+                     else if ("connection".equalsIgnoreCase(headerName))
+                     {
+                        if ("close".equalsIgnoreCase(headerValue))
+                           close = true;
                      }
                      line = reader.readLine();
                   }
@@ -956,11 +962,13 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                }
             }
             
-            if (contentLength == 0) return null;
+            if (contentLength == 0 && !close) return null;
             
             // Read the request body
             StringBuilder result = new StringBuilder();
             char[] buffer = new char[512];
+            if (close)
+               contentLength = Integer.MAX_VALUE;
             while (contentLength > 0)
             {
                int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
