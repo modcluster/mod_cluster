@@ -83,6 +83,7 @@
 #define MBALAUI "MEM: Can't update or insert balancer"
 #define MNODERD "MEM: Can't read node"
 #define MHOSTRD "MEM: Can't read host alias"
+#define MHOSTUI "MEM: Can't update or insert host alias"
 
 /* Protocol version supported */
 #define VERSION_PROTOCOL "0.0.0"
@@ -483,13 +484,13 @@ static char **process_buff(request_rec *r, char *buff)
 /*
  * Insert the hosts from Alias information
  */
-static int  insert_update_hosts(mem_t *mem, char *str, int node, int vhost)
+static apr_status_t  insert_update_hosts(mem_t *mem, char *str, int node, int vhost)
 {
     char *ptr = str;
     char *previous = str;
-    int ret = 0;
     hostinfo_t info;
     char empty[1] = {'\0'};
+    apr_status_t status;
 
     info.node = node;
     info.vhost = vhost;
@@ -501,16 +502,15 @@ static int  insert_update_hosts(mem_t *mem, char *str, int node, int vhost)
         if (*ptr == ',') {
             *ptr = '\0';
             strncpy(info.host, previous, sizeof(info.host));
-            insert_update_host(mem, &info); 
-            if (!ret)
-                ret = info.id;
+            status = insert_update_host(mem, &info); 
+            if (status != APR_SUCCESS)
+                return status;
             previous = ptr + 1;
         }
         ptr ++;
     }
     strncpy(info.host, previous, sizeof(info.host));
-    insert_update_host(mem, &info); 
-    return ret;
+    return insert_update_host(mem, &info); 
 }
 /*
  * Insert the context from Context information
@@ -1154,7 +1154,10 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         if (status == REMOVE)
             return NULL;
         /* If the Host doesn't exist yet create it */
-        insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid);
+        if (insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid) != APR_SUCCESS) {
+            *errtype = TYPEMEM;
+            return MHOSTUI; 
+        }
         hostinfo.id = 0;
         if (vhost->host != NULL)
             strcpy(hostinfo.host, vhost->host);
