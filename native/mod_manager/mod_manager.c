@@ -1522,7 +1522,8 @@ static void manager_info_hosts(request_rec *r, int node, char *JVMRoute)
         }
         ap_rprintf(r, "%s\n", ou->host);
     }
-    ap_rprintf(r, "</pre>");
+    if (size)
+        ap_rprintf(r, "</pre>");
 
 }
 static void manager_sessionid(request_rec *r)
