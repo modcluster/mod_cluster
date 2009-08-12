@@ -42,6 +42,7 @@ import org.apache.catalina.Service;
 import org.apache.catalina.util.StringManager;
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.beans.metadata.api.model.FromContext;
+import org.jboss.ha.framework.interfaces.CachableMarshalledValue;
 import org.jboss.ha.framework.interfaces.ClusterNode;
 import org.jboss.ha.framework.interfaces.DistributedReplicantManager;
 import org.jboss.ha.framework.interfaces.HAPartition;
@@ -50,6 +51,7 @@ import org.jboss.ha.framework.server.HAServiceEvent;
 import org.jboss.ha.framework.server.HAServiceEventFactory;
 import org.jboss.ha.framework.server.HAServiceRpcHandler;
 import org.jboss.ha.framework.server.HASingletonImpl;
+import org.jboss.ha.framework.server.SimpleCachableMarshalledValue;
 import org.jboss.modcluster.Constants;
 import org.jboss.modcluster.ContainerEventHandler;
 import org.jboss.modcluster.CatalinaEventHandler;
@@ -436,12 +438,12 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
    /**
     * {@inheritDoc}
     * 
-    * @return a {@link ModClusterServiceDRMEntry}
+    * @return a {@link SimpleCachableMarshalledValue} containing a {@link ModClusterServiceDRMEntry}
     */
    @Override
    protected Serializable getReplicant()
    {
-      return this.drmEntry;
+      return this.createReplicant(this.drmEntry);
    }
 
    /**
@@ -469,12 +471,9 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
     * @return a list of cluster nodes from which to elect a new master
     */
    @Override
-   @SuppressWarnings("unchecked")
    protected List<ClusterNode> getElectionCandidates()
    {
-      List<ModClusterServiceDRMEntry> candidates = this.getHAPartition().getDistributedReplicantManager().lookupReplicants(this.getHAServiceKey());
-      
-      return this.narrowCandidateList(candidates);
+      return this.narrowCandidateList(this.lookupDRMEntries());
    }
    
    /**
@@ -552,11 +551,68 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       }
    }
    
-   void updateLocalDRM(ModClusterServiceDRMEntry status)
+   void updateLocalDRM(ModClusterServiceDRMEntry entry)
    {
+      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
+      
       try
       {
-         this.getHAPartition().getDistributedReplicantManager().add(this.getHAServiceKey(), status);
+         drm.add(this.getHAServiceKey(), this.createReplicant(entry));
+      }
+      catch (Exception e)
+      {
+         throw Utils.convertToUnchecked(e);
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   List<ModClusterServiceDRMEntry> lookupDRMEntries()
+   {
+      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
+      List<CachableMarshalledValue> values = drm.lookupReplicants(this.getHAServiceKey());
+      
+      if (values == null) return null;
+      
+      List<ModClusterServiceDRMEntry> entries = new ArrayList<ModClusterServiceDRMEntry>(values.size());
+      
+      for (CachableMarshalledValue value: values)
+      {
+         entries.add(this.toDRMEntry(value));
+      }
+      
+      return entries;
+   }
+   
+   ModClusterServiceDRMEntry lookupLocalDRMEntry()
+   {
+      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
+      
+      return this.toDRMEntry((CachableMarshalledValue) drm.lookupLocalReplicant(this.getHAServiceKey()));
+   }
+   
+   private Serializable createReplicant(ModClusterServiceDRMEntry entry)
+   {
+      return new SimpleCachableMarshalledValue(entry);
+   }
+   
+   private ModClusterServiceDRMEntry toDRMEntry(CachableMarshalledValue value)
+   {
+      if (value == null) return null;
+      
+      try
+      {
+         Object entry = value.get();
+         
+         // MODCLUSTER-88: This can happen if service was redeployed, and DRM contains objects from the obsolete classloader
+         if (!(entry instanceof ModClusterServiceDRMEntry))
+         {
+            // Force re-deserialization w/current classloader
+            value.toByteArray();
+            
+            entry = value.get();
+         }
+         
+         return (ModClusterServiceDRMEntry) entry;
       }
       catch (Exception e)
       {
@@ -655,14 +711,12 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             // Notify our handler that any reset requests have been processed
             this.coord.clusteredHandler.resetCompleted();
             
-            DistributedReplicantManager drm = partition.getDistributedReplicantManager();
-            String key = this.coord.getHAServiceKey();
-            ModClusterServiceDRMEntry previousStatus = (ModClusterServiceDRMEntry) drm.lookupLocalReplicant(key);
+            ModClusterServiceDRMEntry previousStatus = this.coord.lookupLocalDRMEntry();
             if (!status.equals(previousStatus))
             {
                try
                {
-                  drm.add(key, new ModClusterServiceDRMEntry(cn, status.getMCMPServerStates(), previousStatus.getJvmRoutes()));
+                  this.coord.updateLocalDRM(new ModClusterServiceDRMEntry(cn, status.getMCMPServerStates(), previousStatus.getJvmRoutes()));
                }
                catch (Exception e)
                {
@@ -838,7 +892,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          }
       }
       
-      @SuppressWarnings("unchecked")
       void updateClusterStatus()
       {
          Set<MCMPServerState> masterList = null;
@@ -848,7 +901,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses = new HashMap<ClusterNode, PeerMCMPDiscoveryStatus>();
          List<MCMPRequest> resetRequests = new ArrayList<MCMPRequest>();
          HAPartition partition = this.coord.getHAPartition();
-         DistributedReplicantManager drm = partition.getDistributedReplicantManager();
          boolean resync = false;
 
          do
@@ -863,7 +915,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
                latestEvents = new HashMap<ClusterNode, MCMPServerDiscoveryEvent>(this.coord.proxyChangeDigest);
             }
             
-            List<ModClusterServiceDRMEntry> replicants = drm.lookupReplicants(this.coord.getHAServiceKey());
+            List<ModClusterServiceDRMEntry> replicants = this.coord.lookupDRMEntries();
             nonresponsive.clear();
             
             for (ModClusterServiceDRMEntry replicant: replicants)
@@ -988,8 +1040,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          
          // Determine who should update DRM first -- us or the rest of the nodes
          Set<ModClusterServiceDRMEntry> allStatuses = new HashSet<ModClusterServiceDRMEntry>(statuses.values());
-         DistributedReplicantManager drm = partition.getDistributedReplicantManager();
-         ModClusterServiceDRMEntry ourCurrentStatus = (ModClusterServiceDRMEntry) drm.lookupLocalReplicant(this.coord.getHAServiceKey());
+         ModClusterServiceDRMEntry ourCurrentStatus = this.coord.lookupLocalDRMEntry();
          allStatuses.add(ourCurrentStatus);
          
          ClusterNode node = partition.getClusterNode();
