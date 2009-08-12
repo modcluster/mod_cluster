@@ -1497,6 +1497,8 @@ static void manager_info_hosts(request_rec *r, int node, char *JVMRoute)
     size = get_max_size_host(hoststatsmem);
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
+    if (!size)
+        return;
     for (i=0; i<size; i++) {
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
@@ -1777,7 +1779,7 @@ static int manager_info(request_rec *r)
                  "&Cmd=INFO&Range=ALL",
                  "\">show INFO output</a>", NULL);
 
-    ap_rputs("<pre>", r);
+    ap_rputs("\n", r);
 
     sizesessionid = get_max_size_sessionid(sessionidstatsmem);
 
@@ -1810,12 +1812,12 @@ static int manager_info(request_rec *r)
             domain_command_string(r, DISABLED, domain);
             ap_rprintf(r, "</h1>\n");
         }
-        ap_rprintf(r, "<h1> Node %s (%s://%s:%s): ",
+        ap_rprintf(r, "<h1> Node %s (%s://%s:%s): </h1>\n",
                    ou->mess.JVMRoute, ou->mess.Type, ou->mess.Host, ou->mess.Port);
 
         node_command_string(r, ENABLED, ou->mess.JVMRoute);
         node_command_string(r, DISABLED, ou->mess.JVMRoute);
-        ap_rprintf(r, "</h1>\n");
+        ap_rprintf(r, "<br/>\n");
 
         ap_rprintf(r, "Balancer: %s,Domain: %s", ou->mess.balancer, ou->mess.Domain);
 
