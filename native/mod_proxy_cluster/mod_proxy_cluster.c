@@ -807,7 +807,7 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
     if (balancer == NULL) {
         balancer = (proxy_balancer *)conf->balancers->elts;
         for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
-            if (strcasecmp(balancer->name, uri) == 0)
+            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], balancer_name) == 0)
                 break;
         }
         if (i == conf->balancers->nelts)
