@@ -193,7 +193,7 @@
      <copy file="conf/web.xml" todir="${test.classes}/conf"/>
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
             <arg value="org.jboss.mod_cluster.Maintest"/>
-            <jvmarg line="-Dcluster=${cluster} -Dtest=${test} -Dnumbnodes=${numbnodes}"/>
+            <jvmarg line="-Dcluster=${cluster} -Dtest=${test}"/>
             <classpath refid="tomcat.test.classpath"/>
      </java>
   </target>
