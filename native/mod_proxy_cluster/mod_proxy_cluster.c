@@ -795,7 +795,7 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 {
     proxy_balancer *balancer = balance;
     char *sessionid;
-    char *uri = r->filename + 6;
+    char *uri;
     char *sticky_used;
     int i;
 
@@ -820,6 +820,13 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 
     if (balancer->sticky == NULL)
         return 0;
+
+    if (r->filename)
+        uri = r->filename + 6;
+    else {
+        /* We are coming from proxy_cluster_trans */
+        uri = r->unparsed_uri;
+    }
 
     sessionid = cluster_get_sessionid(r, balancer->sticky, uri, &sticky_used);
     if (sessionid) {
