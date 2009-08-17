@@ -795,7 +795,7 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 {
     proxy_balancer *balancer = balance;
     char *sessionid;
-    char *uri = r->filename + 6;
+    char *uri;
     char *sticky_used;
     int i;
 
@@ -807,7 +807,7 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
     if (balancer == NULL) {
         balancer = (proxy_balancer *)conf->balancers->elts;
         for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
-            if (strcasecmp(balancer->name, uri) == 0)
+            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], balancer_name) == 0)
                 break;
         }
         if (i == conf->balancers->nelts)
@@ -820,6 +820,13 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 
     if (balancer->sticky == NULL)
         return 0;
+
+    if (r->filename)
+        uri = r->filename + 6;
+    else {
+        /* We are coming from proxy_cluster_trans */
+        uri = r->unparsed_uri;
+    }
 
     sessionid = cluster_get_sessionid(r, balancer->sticky, uri, &sticky_used);
     if (sessionid) {
