@@ -1862,7 +1862,7 @@ static int manager_info(request_rec *r)
         ap_rprintf(r, "\n");
 
         /* Process the Vhosts */
-        manager_info_hosts(r, id[i], ou->mess.JVMRoute); 
+        manager_info_hosts(r, ou->mess.id, ou->mess.JVMRoute); 
     }
     /* Display the sessions */
     if (sizesessionid)
