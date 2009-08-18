@@ -85,9 +85,10 @@ static int creat_bal = CREAT_ROOT;
 
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
 
+static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
+
 #define WAITFORREMOVE 10 /* seconds */
 
-#define TIMEINTERVAL apr_time_from_sec(1)    /* recalcul the lbstatus based on number of request in the time interval */
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
 
@@ -615,7 +616,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
             continue;
-        if (ou->mess.updatetimelb < (now - TIMEINTERVAL)) {
+        if (ou->mess.updatetimelb < (now - lbstatus_recalc_time)) {
             /* The lbstatus needs to be updated */
             int elected, oldelected;
             proxy_worker_stat *stat;
@@ -2384,6 +2385,17 @@ static const char*cmd_proxy_cluster_use_alias(cmd_parms *cmd, void *dummy, const
     return NULL;
 }
 
+static const char*cmd_proxy_cluster_lbstatus_recalc_time(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    int val = atoi(arg);
+    if (val<0) {
+        return "LBstatusRecalTime must be greater than 0";
+    } else {
+        lbstatus_recalc_time = apr_time_from_sec(val);
+    }
+    return NULL;
+}
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -2399,6 +2411,13 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "UseAlias - Check that the Alias corresponds to the ServerName 0: Don't (ignore Aliases), 1: Check it (Default: 0 Ignore)"
+    ),
+    AP_INIT_TAKE1(
+        "LBstatusRecalTime",
+        cmd_proxy_cluster_lbstatus_recalc_time,
+        NULL,
+        OR_ALL,
+        "LBstatusRecalTime - Time interval in seconds for loadbalancing logic to recalculate the status of a node: (Default: 5 seconds)"
     ),
     {NULL}
 };
