@@ -1273,7 +1273,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     apr_status_t rv;
     proxy_worker *worker = NULL;
     server_rec *s = main_server;
-    proxy_server_conf *conf;
+    proxy_server_conf *conf = NULL;
     nodeinfo_t *node;
 
     if (node_storage->read_node(id, &node) != APR_SUCCESS)
@@ -1392,7 +1392,6 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
     apr_pool_t *pool;
-    server_rec *server = (server_rec *) data;
     for (;;) {
         server_rec *s = main_server;
         void *sconf = s->module_config;
