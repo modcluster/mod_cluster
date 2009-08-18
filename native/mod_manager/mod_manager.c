@@ -2037,7 +2037,7 @@ static const char *cmd_manager_memmanagerfile(cmd_parms *cmd, void *mconfig, con
 }
 static const char *cmd_manager_balancername(cmd_parms *cmd, void *mconfig, const char *word)
 {
-    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    // mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
     /* XXX: create the entry in the shared balancer table */
     return NULL;
 }
