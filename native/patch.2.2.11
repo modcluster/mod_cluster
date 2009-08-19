@@ -1,0 +1,40 @@
+--- mod_proxy.c	2009-08-12 10:10:00.059833450 +0200
++++ mod_proxy.c	2008-11-11 21:01:59.000000000 +0100
+@@ -132,7 +132,7 @@
+          * If set this will be the maximum time to
+          * wait for a free connection.
+          */
+-        if (cluster_timeout_parameter_parse(val, &timeout, "ms") != APR_SUCCESS)
++        if (ap_timeout_parameter_parse(val, &timeout, "ms") != APR_SUCCESS)
+             return "Acquire timeout has wrong format";
+         if (timeout < 1000)
+             return "Acquire must be at least one millisecond";
+@@ -272,7 +272,7 @@
+     else if (!strcasecmp(key, "ping")) {
+         /* Ping/Pong timeout in given unit (default is second).
+          */
+-        if (cluster_timeout_parameter_parse(val, &timeout, "s") != APR_SUCCESS)
++        if (ap_timeout_parameter_parse(val, &timeout, "s") != APR_SUCCESS)
+             return "Ping/Pong timeout has wrong format";
+         if (timeout < 1000)
+             return "Ping/Pong timeout must be at least one millisecond";
+@@ -283,7 +283,7 @@
+         /* Request timeout in given unit (default is second).
+          * Defaults to connection timeout
+          */
+-        if (cluster_timeout_parameter_parse(val, &timeout, "s") != APR_SUCCESS)
++        if (ap_timeout_parameter_parse(val, &timeout, "s") != APR_SUCCESS)
+             return "Connectiontimeout has wrong format";
+         if (timeout < 1000)
+             return "Connectiontimeout must be at least one millisecond.";
+--- mod_proxy_http.c	2009-08-12 10:10:00.058833253 +0200
++++ mod_proxy_http.c	2008-11-11 21:04:34.000000000 +0100
+@@ -1626,7 +1626,7 @@
+                          "proxy: HTTP: received interim %d response",
+                          r->status);
+             if (!policy || !strcasecmp(policy, "RFC")) {
+-                cluster_send_interim_response(r, 1);
++                ap_send_interim_response(r, 1);
+             }
+             /* FIXME: refine this to be able to specify per-response-status
+              * policies and maybe also add option to bail out with 502
