@@ -19,12 +19,12 @@
     <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/1.0.2.GA</developerConnection>
   </scm>
 
-  <distributionManagement>
+  <repositories>
     <repository>
       <id>repository.jboss.org</id>
       <url>http://repository.jboss.org/maven2</url>
     </repository>
-  </distributionManagement>
+  </repositories>
 
   <dependencies>
     <dependency>
