@@ -58,7 +58,7 @@ public class  ManagerClient {
           */
         public ManagerClient(String string) throws Exception
         {
-            URL = "http://" + string + "/mod_cluster-manager/";
+            URL = "http://" + string + "/mod_cluster_manager/";
                 GetMethod gm = null;
                 HttpMethodBase bm = null;
                 if (httpClient == null) {
