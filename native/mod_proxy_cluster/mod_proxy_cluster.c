@@ -1510,6 +1510,8 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
         return !OK;
     }
 
+    /* Add version information */
+    ap_add_version_component(p, MOD_CLUSTER_EXPOSED_VERSION);
     return OK;
 }
 

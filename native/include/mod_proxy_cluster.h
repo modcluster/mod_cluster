@@ -28,6 +28,8 @@
 #ifndef MOD_PROXY_CLUSTER_H
 #define MOD_PROXY_CLUSTER_H
 
+#define MOD_CLUSTER_EXPOSED_VERSION "mod_cluster/1.1.x"
+
 /* define the values for sticky_force */
 #define STSESSION 0x01 /* Use sticky session logic (first sessionid and then domain) */
 #define STSESSREM 0x02 /* Remove session information if the failover can't use sticky */
