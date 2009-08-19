@@ -899,8 +899,8 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         ap_rprintf(r, "node: [%d:%d],Balancer: %s,JVMRoute: %s,Domain: [%s],Host: %s,Port: %s,Type: %s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
                    id[i], ou->mess.id, ou->mess.balancer, ou->mess.JVMRoute, ou->mess.Domain,
                    ou->mess.Host, ou->mess.Port, ou->mess.Type,
-                   ou->mess.flushpackets, ou->mess.flushwait/1000, apr_time_sec(ou->mess.ping), ou->mess.smax,
-                   apr_time_sec(ou->mess.ttl), apr_time_sec(ou->mess.timeout));
+                   ou->mess.flushpackets, ou->mess.flushwait/1000, (int) apr_time_sec(ou->mess.ping), ou->mess.smax,
+                   (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
     }
 
     size = get_max_size_host(hoststatsmem);
@@ -960,11 +960,11 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         }
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
-                   ou->mess.ping, ou->mess.smax, ou->mess.ttl);
+                   (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
         proxystat  = (proxy_worker_stat *) ou->stat;
         ap_rprintf(r, ",Elected: %d,Read: %d,Transfered: %d,Connected: %d,Load: %d\n",
-                   proxystat->elected, proxystat->read, proxystat->transferred,
-                   proxystat->busy, proxystat->lbfactor);
+                   (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
+                   (int) proxystat->busy, proxystat->lbfactor);
         
     }
 
@@ -1276,7 +1276,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
     if (ap_my_generation)
         ap_rprintf(r, "&id=%d", ap_my_generation);
     else
-        ap_rprintf(r, "&id=%d", ap_scoreboard_image->global->restart_time);
+        ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
 
     ap_rprintf(r, "\n");
     return NULL;
@@ -1674,8 +1674,8 @@ static void printproxy_stat(request_rec *r, proxy_worker_stat *proxystat)
         status = "OK";
     ap_rprintf(r, ",Status: %s,Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
                status,
-               proxystat->elected, proxystat->read, proxystat->transferred,
-               proxystat->busy, proxystat->lbfactor);
+               (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
+               (int) proxystat->busy, proxystat->lbfactor);
 }
 static int manager_info(request_rec *r)
 {
@@ -1852,7 +1852,7 @@ static int manager_info(request_rec *r)
         }
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
-                   ou->mess.ping, ou->mess.smax, ou->mess.ttl);
+                   (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
 
         printproxy_stat(r, (proxy_worker_stat *) ou->stat);
 
@@ -2057,7 +2057,7 @@ static const char *cmd_manager_memmanagerfile(cmd_parms *cmd, void *mconfig, con
 }
 static const char *cmd_manager_balancername(cmd_parms *cmd, void *mconfig, const char *word)
 {
-    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    // mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
     /* XXX: create the entry in the shared balancer table */
     return NULL;
 }
