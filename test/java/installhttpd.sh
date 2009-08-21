@@ -270,12 +270,20 @@ cat >> "$file.new" <<EOF
      Allow from @SUBIP@
     </Directory>
 
-     KeepAliveTimeout 300
-     MaxKeepAliveRequests 0
-     ServerAdvertise on http://@IP@:6666
-     AdvertiseFrequency 5
-     AdvertiseGroup @ADVIP@:23364
-     </VirtualHost>
+    KeepAliveTimeout 300
+    MaxKeepAliveRequests 0
+    ServerAdvertise on http://@IP@:6666
+    AdvertiseFrequency 5
+    AdvertiseGroup @ADVIP@:23364
+
+    <Location /mod_cluster_manager>
+       SetHandler mod_cluster-manager
+       Order deny,allow
+       Deny from all
+       Allow from @SUBIP@
+    </Location>
+
+  </VirtualHost>
 </IfModule>
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd
