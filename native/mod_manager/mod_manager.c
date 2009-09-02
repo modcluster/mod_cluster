@@ -721,6 +721,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             if (strcasecmp(ptr[i+1], "no") == 0)
                 balancerinfo.StickySessionForce = 0;
         }
+        /* Note that it is workerTimeout (set/getWorkerTimeout in java code) */ 
         if (strcasecmp(ptr[i], "WaitWorker") == 0) {
             balancerinfo.Timeout = apr_time_from_sec(atoi(ptr[i+1]));
         }
