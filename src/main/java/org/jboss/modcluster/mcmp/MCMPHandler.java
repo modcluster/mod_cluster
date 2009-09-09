@@ -181,6 +181,14 @@ public interface MCMPHandler
    String getProxyInfo();
    
    /**
+    * Sends a {@link MCMPRequestType#PING PING} request to all proxies,
+    * concatentating their responses into a single string.
+    * 
+    * @return the node status from all the accessible proxies.
+    */
+   String doProxyPing(String JvmRoute);
+   
+   /**
     * Perform periodic processing. Update the list of proxies to reflect any
     * calls to <code>addProxy(...)</code> or <code>removeProxy(...)</code>.
     * Attempt to establish communication with any proxies whose state is

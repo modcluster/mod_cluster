@@ -235,6 +235,10 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    {
       return this.infoRequest;
    }
+   public MCMPRequest createPingRequest(String JvmRoute)
+   {
+      return new DefaultMCMPRequest(MCMPRequestType.PING, false, JvmRoute, EMPTY_MAP);
+   }
 
    private MCMPRequest createRequest(MCMPRequestType type, Context context)
    {

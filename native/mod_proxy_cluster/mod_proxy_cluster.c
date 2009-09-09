@@ -1266,6 +1266,10 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
  * Check that we could connect to the node and create corresponding balancers and workers.
  * id   : worker id
  * load : load factor from the cluster manager.
+ * load > 0  : a load factor.
+ * load = 0  : standby worker.
+ * load = -1 : errored worker.
+ * load = -2 : just do a cping/cpong. 
  */
 static int proxy_node_isup(request_rec *r, int id, int load)
 {
@@ -1306,7 +1310,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     }
 
     /* Try a  ping/pong to check the node */
-    if (load > 0) {
+    if (load > 0 || load == -2) {
         /* Only try usuable nodes */
         char sport[7];
         char *url;
@@ -1320,7 +1324,10 @@ static int proxy_node_isup(request_rec *r, int id, int load)
             return 500;
         }
     }
-    if (load == -1) {
+    if (load == -2) {
+        return 0;
+    }
+    else if (load == -1) {
         worker->s->status |= PROXY_WORKER_IN_ERROR;
     }
     else if (load == 0) {

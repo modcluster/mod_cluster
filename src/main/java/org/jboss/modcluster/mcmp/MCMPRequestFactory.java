@@ -51,10 +51,12 @@ public interface MCMPRequestFactory
    MCMPRequest createDisableRequest(Engine engine);
 
    MCMPRequest createRemoveRequest(Engine engine);
-   
+
    MCMPRequest createInfoRequest();
-   
+
    MCMPRequest createDumpRequest();
+
+   MCMPRequest createPingRequest(String JvmRoute);
    
    MCMPRequest createRequest(MCMPRequestType type, String jvmRoute, Set<String> aliases, String path);
 }

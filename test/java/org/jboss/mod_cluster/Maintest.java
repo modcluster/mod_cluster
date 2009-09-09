@@ -90,6 +90,8 @@ public class Maintest extends TestCase {
             System.gc();
             suite.addTest(new TestSuite(Testmod_cluster_manager.class));
             System.gc();
+            suite.addTest(new TestSuite(TestPing.class));
+            System.gc();
             /* XXX The JBWEB_117 tests are not really related to mod_cluster
              * Run them one by one using ant one -Dtest=test
             suite.addTest(new TestSuite(TestJBWEB_117.class));
@@ -160,6 +162,38 @@ public class Maintest extends TestCase {
         }
 
         return lifecycle;
+    }
+    static String doProxyPing(LifecycleListener lifecycle, String JvmRoute) {
+        String result = null;
+        if (isJBossWEB) {
+            ClusterListener jcluster = (ClusterListener) lifecycle;
+            result = jcluster.doProxyPing(JvmRoute);
+        } else {
+            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            result = pcluster.doProxyPing(JvmRoute);
+        }
+        return result;
+    }
+    /* Analyse the PING-RSP message: Type=PING-RSP&State=OK&id=1 */
+    static boolean checkProxyPing(String result) {
+        String [] records = result.split("\n");
+        if (records.length != 3)
+            return false;
+        String [] results = records[1].split("&");
+        int ret = 0;
+        for (int j=0; j<results.length; j++) {
+            String [] data = results[j].split("=");
+            if (data[0].compareToIgnoreCase("Type") == 0 &&
+                data[1].compareToIgnoreCase("PING-RSP") == 0)
+                ret++;
+            if (data[0].compareToIgnoreCase("State") == 0 &&
+                data[1].compareToIgnoreCase("OK") == 0)
+                ret++;
+        }
+        if (ret == 2)
+           return true;
+
+        return false;
     }
     static String getProxyInfo(LifecycleListener lifecycle) {
         String result = null;

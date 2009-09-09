@@ -127,6 +127,15 @@ public abstract class AbstractModClusterService extends ModClusterConfig
    }
 
    /**
+    * @{inheritDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#doProxyPing()
+    */
+   public String doProxyPing(String JvmRoute)
+   {
+      return this.mcmpHandler.doProxyPing(JvmRoute);
+   }
+
+   /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
     * be refreshed. To be used through JMX or similar.
     */

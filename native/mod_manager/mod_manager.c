@@ -1284,6 +1284,70 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
 }
 
 /*
+ * Process the PING command
+ * With a JVMRoute does a cping/cpong in the node.
+ * Without just answers ok.
+ * NOTE: It is hard to cping/cpong a host + port but CONFIG + PING + REMOVE_APP *
+ *       would do the same.
+ */
+static char * process_ping(request_rec *r, char **ptr, int *errtype)
+{
+    nodeinfo_t nodeinfo;
+    nodeinfo_t *node;
+
+    int i = 0;
+
+    nodeinfo.mess.id = -1;
+    while (ptr[i] && ptr[i][0] != '\0') {
+        if (strcasecmp(ptr[i], "JVMRoute") == 0) {
+            if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.JVMRoute)) {
+                *errtype = TYPESYNTAX;
+                return SROUBIG;
+            }
+            strcpy(nodeinfo.mess.JVMRoute, ptr[i+1]);
+            nodeinfo.mess.id = 0;
+        }
+        else {
+            *errtype = TYPESYNTAX;
+            return apr_psprintf(r->pool, SBADFLD, ptr[i]);
+        }
+        i++;
+        i++;
+    }
+    if (nodeinfo.mess.id) {
+        ap_set_content_type(r, "text/plain");
+        ap_rprintf(r, "Type=PING-RSP&State=OK");
+    } else {
+
+        /* Read the node */
+        node = read_node(nodestatsmem, &nodeinfo);
+        if (node == NULL) {
+            *errtype = TYPEMEM;
+            return MNODERD;
+        }
+
+        /*
+         * If the node is usualable do a ping/pong to prevent Split-Brain Syndrome
+         * and update the worker status and load factor acccording to the test result.
+         */
+        ap_set_content_type(r, "text/plain");
+        ap_rprintf(r, "Type=PING-RSP&JVMRoute=%s", nodeinfo.mess.JVMRoute);
+
+        if (isnode_up(r, node->mess.id, -2) != OK)
+            ap_rprintf(r, "&State=NOTOK");
+        else
+            ap_rprintf(r, "&State=OK");
+    }
+    if (ap_my_generation)
+        ap_rprintf(r, "&id=%d", ap_my_generation);
+    else
+        ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
+
+    ap_rprintf(r, "\n");
+    return NULL;
+}
+
+/*
  * Decodes a '%' escaped string, and returns the number of characters
  * (From mod_proxy_ftp.c).
  */
@@ -1399,6 +1463,8 @@ static int manager_trans(request_rec *r)
     else if (strcasecmp(r->method, "ERROR") == 0)
         ours = 1;
     else if (strcasecmp(r->method, "INFO") == 0)
+        ours = 1;
+    else if (strcasecmp(r->method, "PING") == 0)
         ours = 1;
     if (ours) {
         int i;
@@ -1947,6 +2013,8 @@ static int manager_handler(request_rec *r)
         errstring = process_dump(r, ptr, &errtype);
     else if (strcasecmp(r->method, "INFO") == 0)
         errstring = process_info(r, ptr, &errtype);
+    else if (strcasecmp(r->method, "PING") == 0)
+        errstring = process_ping(r, ptr, &errtype);
     else {
         errstring = SCMDUNS;
         errtype = TYPESYNTAX;

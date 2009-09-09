@@ -74,6 +74,14 @@ public interface ModClusterServiceMBean
    public String getProxyInfo();
 
    /**
+    * Ping a node from httpd.
+    *
+    *
+    * @return PING_RSP String.
+    */
+   public String doProxyPing(String JvmRoute);
+
+   /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
     * be refreshed.
     */

@@ -37,7 +37,8 @@ public enum MCMPRequestType
    REMOVE_APP("REMOVE-APP", false),
    STATUS("STATUS", false),
    INFO("INFO", false),
-   DUMP("DUMP", false);
+   DUMP("DUMP", false),
+   PING("PING", false);
    
    private final String command;
    private final boolean establishesServer;

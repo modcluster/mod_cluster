@@ -327,6 +327,17 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
    }
 
    /**
+    * Do a PING using each proxy
+    *
+    * @return the proxy PING_RSP strings.
+    */
+   public String doProxyPing(String JvmRoute)
+   {
+      // Send PING * request
+      return this.getProxyMessage(this.requestFactory.createPingRequest(JvmRoute));
+   }
+   
+   /**
     * Retrieves the full proxy info message.
     *
     * @return the proxy info confguration
