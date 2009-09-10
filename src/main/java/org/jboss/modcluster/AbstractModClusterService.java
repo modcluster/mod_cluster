@@ -21,6 +21,10 @@
  */
 package org.jboss.modcluster;
 
+import java.util.Map;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.LifecycleEvent;
@@ -34,6 +38,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
+import org.jboss.modcluster.mcmp.MCMPServerState;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
@@ -49,6 +54,8 @@ public abstract class AbstractModClusterService extends ModClusterConfig
    private final LifecycleListener lifecycleListener;
    private final MCMPRequestFactory requestFactory;
    private final ServerProvider<Server> serverProvider;
+
+   private static final String NEW_LINE = "\r\n";
    
    public AbstractModClusterService()
    {
@@ -124,15 +131,6 @@ public abstract class AbstractModClusterService extends ModClusterConfig
    public String getProxyInfo()
    {
       return this.mcmpHandler.getProxyInfo();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#doProxyPing()
-    */
-   public String doProxyPing(String JvmRoute)
-   {
-      return this.mcmpHandler.doProxyPing(JvmRoute);
    }
 
    /**
@@ -216,5 +214,26 @@ public abstract class AbstractModClusterService extends ModClusterConfig
       this.mcmpHandler.sendRequest(request);
       
       return this.mcmpHandler.isProxyHealthOK();
+   }
+
+   public String doProxyPing(String JvmRoute)
+   {
+      MCMPRequest request = this.requestFactory.createPingRequest(JvmRoute);
+      Map<MCMPServerState, String> map = this.mcmpHandler.sendRequest(request);
+      if (map.isEmpty())
+         return null;
+
+      StringBuilder result = new StringBuilder();;
+      Set entries = map.entrySet();
+      Iterator iterator = entries.iterator();
+      int i = 0;
+      while (iterator.hasNext()) {
+         Map.Entry entry = (Map.Entry)iterator.next();
+         MCMPServerState state = (MCMPServerState) entry.getKey();
+         result.append("Proxy[").append(i).append("]: [").append(state.getAddress()).append(':').append(state.getPort()).append("]: ").append(NEW_LINE);
+         result.append(entry.getValue()).append(NEW_LINE);
+         i++;
+      }
+      return result.toString();
    }
 }

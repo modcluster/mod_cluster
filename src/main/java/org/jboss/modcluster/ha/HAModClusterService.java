@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Iterator;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
@@ -116,6 +117,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
    private final RpcHandler rpcHandler;
    private final String domain;
    private final boolean masterPerDomain;
+
+   private static final String NEW_LINE = "\r\n";
    
    volatile int latestLoad;
    volatile int statusCount = 0;
@@ -373,6 +376,27 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       this.clusteredHandler.sendRequest(request);
       
       return this.clusteredHandler.isProxyHealthOK();
+   }
+
+   public String doProxyPing(String JvmRoute)
+   {
+      MCMPRequest request = this.requestFactory.createPingRequest(JvmRoute);
+      Map<MCMPServerState, String> map = this.clusteredHandler.sendRequest(request);
+      if (map.isEmpty())
+         return null;
+
+      StringBuilder result = new StringBuilder();;
+      Set entries = map.entrySet();
+      Iterator iterator = entries.iterator();
+      int i = 0;
+      while (iterator.hasNext()) {
+         Map.Entry entry = (Map.Entry)iterator.next();
+         MCMPServerState state = (MCMPServerState) entry.getKey();
+         result.append("Proxy[").append(i).append("]: [").append(state.getAddress()).append(':').append(state.getPort()).append("]: ").append(NEW_LINE);
+         result.append(entry.getValue()).append(NEW_LINE);
+         i++;
+      }
+      return result.toString();
    }
    
    // ------------------------------------------------------------- Properties
