@@ -101,7 +101,7 @@
     <exec executable="bash">
       <arg value="installhttpd.sh"/>
       <arg value="localhost"/>
-      <arg value="232.0.0.2"/>
+      <arg value="224.0.1.105"/>
       <arg value="127.0.0.1"/>
       <arg value="${BUILDTEST}"/>
       <arg value="${build_version}"/>
