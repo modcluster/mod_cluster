@@ -24,7 +24,7 @@ base-junit.home=${base.path}/junit-${junit.version}
 
 # Location of jbossweb jar files.
 base-jbossweb.loc=http://repository.jboss.com/maven2/jboss/web/
-jbossweb.version=2.1.3.GA
+jbossweb.version=2.1.4.GA
 base-jbossweb.home=${base.path}/${jbossweb.version}/lib
 
 jbossweb.jar.loc=${base-jbossweb.loc}/jbossweb/${jbossweb.version}/jbossweb-${jbossweb.version}.jar 
