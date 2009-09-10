@@ -8,7 +8,7 @@
 # $5: version to build.
 # $6: root to find the binaries.
 IP=localhost
-ADVIP=232.0.0.2
+ADVIP=224.0.1.105
 SUBIP=127.0.0.1
 BUILDTEST=N
 build_version=1.0.0.dev

@@ -67,7 +67,7 @@ public class TestStickyForce extends TestCase {
             connector2.setProperty("connectionTimeout", "3000");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("232.0.0.2", 23364, false);
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false);
             server.addLifecycleListener(cluster);
             // Maintest.listServices();
 

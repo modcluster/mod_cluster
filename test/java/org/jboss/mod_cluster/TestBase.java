@@ -62,7 +62,7 @@ public class TestBase extends TestCase {
             service2.addConnector(8010);
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("232.0.0.2", 23364, false);
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false);
             server.addLifecycleListener(cluster);
 
             // Debug Stuff
