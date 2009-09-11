@@ -223,17 +223,23 @@ public abstract class AbstractModClusterService extends ModClusterConfig
       if (map.isEmpty())
          return null;
 
-      StringBuilder result = new StringBuilder();;
+      StringBuilder result = null;
       Set entries = map.entrySet();
       Iterator iterator = entries.iterator();
       int i = 0;
       while (iterator.hasNext()) {
          Map.Entry entry = (Map.Entry)iterator.next();
          MCMPServerState state = (MCMPServerState) entry.getKey();
-         result.append("Proxy[").append(i).append("]: [").append(state.getAddress()).append(':').append(state.getPort()).append("]: ").append(NEW_LINE);
-         result.append(entry.getValue()).append(NEW_LINE);
-         i++;
+         if (state.getState() == MCMPServerState.State.OK) {
+            if (result == null)
+               result = new StringBuilder();
+            result.append("Proxy[").append(i).append("]: [").append(state.getAddress()).append(':').append(state.getPort()).append("]: ").append(NEW_LINE);
+            result.append(entry.getValue()).append(NEW_LINE);
+            i++;
+         }
       }
+      if (result == null)
+         return null;
       return result.toString();
    }
 }

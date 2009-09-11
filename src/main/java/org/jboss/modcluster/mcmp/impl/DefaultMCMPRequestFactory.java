@@ -235,9 +235,43 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    {
       return this.infoRequest;
    }
+   /**
+    * Returns a PING MCMPRequest.
+    *
+    * @param JvmRoute a <code>String</code> containing
+    * the name of node (JVMRoute) or an url to PING
+    */
    public MCMPRequest createPingRequest(String JvmRoute)
    {
-      return new DefaultMCMPRequest(MCMPRequestType.PING, false, JvmRoute, EMPTY_MAP);
+      int protocolIndex = -1;
+      if (JvmRoute != null)
+         protocolIndex = JvmRoute.indexOf("://");
+      if (protocolIndex == -1)
+         return new DefaultMCMPRequest(MCMPRequestType.PING, false, JvmRoute, EMPTY_MAP);
+      else {
+         /* we have scheme://host[:port] */
+         String scheme = JvmRoute.substring(0,protocolIndex);
+         String port = "8009";
+         if (scheme.equals("https"))
+            port = "443";
+         else if (scheme.equals("http"))
+            port = "80";
+
+         int hostIndex = JvmRoute.indexOf(":", protocolIndex+3);
+         String host = "localhost";
+         if (hostIndex != -1) {
+            port = JvmRoute.substring(hostIndex+1);
+            host = JvmRoute.substring(protocolIndex+3, hostIndex);
+         } else {
+            host = JvmRoute.substring(protocolIndex+3);
+         }
+         Map<String, String> parameters = new HashMap<String, String>();
+         parameters.put("Scheme", scheme);
+         parameters.put("Host", host);
+         parameters.put("Port", port);
+         return new DefaultMCMPRequest(MCMPRequestType.PING, false, null, parameters);
+         
+      }
    }
 
    private MCMPRequest createRequest(MCMPRequestType type, Context context)
