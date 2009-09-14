@@ -934,8 +934,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                      }
                      else if ("connection".equalsIgnoreCase(headerName))
                      {
-                        if ("close".equalsIgnoreCase(headerValue))
-                           close = true;
+                        close = "close".equalsIgnoreCase(headerValue);
                      }
                      line = reader.readLine();
                   }
@@ -972,14 +971,20 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                   log.error(this.sm.getString("modcluster.error.other", command, proxy, errorType, message));
                }
             }
-            
-            if (contentLength == 0 && !close) return null;
+
+            if (close)
+            {
+               contentLength = Integer.MAX_VALUE;
+            }
+            else if (contentLength == 0)
+            {
+               return null;
+            }
             
             // Read the request body
             StringBuilder result = new StringBuilder();
             char[] buffer = new char[512];
-            if (close)
-               contentLength = Integer.MAX_VALUE;
+            
             while (contentLength > 0)
             {
                int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
