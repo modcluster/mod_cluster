@@ -1132,6 +1132,7 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
     apr_size_t written = 5;
     apr_interval_time_t org; 
     apr_status_t status;
+    apr_status_t rv;
 
     /* built the cping message */
     buf[0] = 0x12;
@@ -1171,11 +1172,11 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
         status = APR_EGENERAL;
     }
 cleanup:
-    status = apr_socket_timeout_set(sock, org);
-    if (status != APR_SUCCESS) {
+    rv = apr_socket_timeout_set(sock, org);
+    if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                "ajp_cping_cpong: apr_socket_timeout_set failed");
-        return status;
+        return rv;
     }
 
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1351,12 +1352,56 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     }
     return 0;
 }
+static int proxy_host_isup(request_rec *r, char *scheme, char *host, char *port)
+{
+    apr_socket_t *sock;
+    apr_sockaddr_t *to;
+    apr_status_t rv;
+    int nport = atoi(port);
+
+    rv = apr_socket_create(&sock, APR_INET, SOCK_STREAM, 0, r->pool);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "proxy_host_isup: pingpong (apr_socket_create) failed");
+        return 500; 
+    }
+    rv = apr_sockaddr_info_get(&to, host, APR_INET, nport, 0, r->pool);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "proxy_host_isup: pingpong (apr_sockaddr_info_get(%s, %d)) failed", host, nport);
+        return 500; 
+    }
+
+    rv = apr_socket_connect(sock, to);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "proxy_host_isup: pingpong (apr_socket_connect) failed");
+        return 500; 
+    }
+
+    /* XXX: For the moment we support only AJP */
+    if (strcasecmp(scheme, "AJP") == 0) {
+        rv = ajp_handle_cping_cpong(sock, r, apr_time_from_sec(10));
+        if (rv!= APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_host_isup: cping_cpong failed");
+            return 500;
+        }
+    } else {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_host_isup: %s no yet supported", scheme);
+    }
+
+    apr_socket_close(sock);
+    return 0;
+}
 /*
  * For the provider
  */
 static const struct balancer_method balancerhandler =
 {
-    proxy_node_isup
+    proxy_node_isup,
+    proxy_host_isup
 };
 
 /*

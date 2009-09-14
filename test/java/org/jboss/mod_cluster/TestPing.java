@@ -28,6 +28,7 @@
 package org.jboss.mod_cluster;
 
 import java.io.IOException;
+import java.net.ServerSocket;
 
 import junit.framework.TestCase;
 
@@ -41,6 +42,26 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestPing extends TestCase {
 
+    private static int WaitForHttpd(LifecycleListener cluster, int maxtries) {
+        // Wait until httpd as received the nodes information.
+        String result = null;
+        int tries = 0;
+        while (result == null && tries<maxtries) {
+            result = Maintest.doProxyPing(cluster, null);
+            if (result != null) {
+                if (Maintest.checkProxyPing(result))
+                    break; // Done
+                return -1; // Failed.
+            }
+            try {
+                Thread me = Thread.currentThread();
+                me.sleep(5000);
+                tries++;
+            } catch (Exception ex) {
+            }
+        }
+        return tries;
+    }
     /* Test that the sessions are really sticky */
     public void testPing() {
 
@@ -77,21 +98,9 @@ public class TestPing extends TestCase {
         wait.start();
          
         // Wait until httpd as received the nodes information.
-        String proxy = null;
-        int tries = 0;
-        while (proxy == null && tries<20) {
-            String result = Maintest.doProxyPing(cluster, null);
-            if (result != null) {
-                if (!Maintest.checkProxyPing(result))
-                    fail("can't find PING-RSP in proxy response");
-                break; // Done.
-            }
-            try {
-                Thread me = Thread.currentThread();
-                me.sleep(5000);
-                tries++;
-            } catch (Exception ex) {
-            }
+        int tries = WaitForHttpd(cluster, 20);
+        if (tries == -1) {
+            fail("can't find PING-RSP in proxy response");
         }
         if (tries == 20) {
             fail("can't find proxy");
@@ -122,13 +131,55 @@ public class TestPing extends TestCase {
         }
         if (countinfo == 20)
             fail("can't find node(s) PING-RSP in proxy response");
-
         // Try a not existing node.
         String result = Maintest.doProxyPing(cluster, "NONE");
         if (result == null)
            fail("Maintest.doProxyPing failed");
         if (Maintest.checkProxyPing(result))
            fail("doProxyPing on not existing node should have failed");
+
+        // Get the connection back.
+        tries = WaitForHttpd(cluster, 20);
+        if (tries == -1) {
+            fail("can't find PING-RSP in proxy response");
+        }
+        if (tries == 20) {
+            fail("can't find proxy");
+        }
+
+        // Ping using url
+        String url = "ajp://localhost:8011";
+        result = Maintest.doProxyPing(cluster, url);
+        if (result == null)
+           fail("Maintest.doProxyPing failed");
+        if (!Maintest.checkProxyPing(result))
+           fail("doProxyPing on " + url + " have failed");
+        // Try a not existing node.
+        url = "ajp://localhost:8012";
+        result = Maintest.doProxyPing(cluster, url);
+        if (result == null)
+           fail("Maintest.doProxyPing failed");
+        if (Maintest.checkProxyPing(result))
+           fail("doProxyPing on " + url + " should have failed");
+        // Try a timeout node.
+        try {
+        ServerSocket sock = new ServerSocket(8012);
+        } catch (Exception ex) {
+            fail("can't create ServerSocket on 8012");
+        }
+        tries = WaitForHttpd(cluster, 20);
+        if (tries == -1) {
+            fail("can't find PING-RSP in proxy response");
+        }
+        if (tries == 20) {
+            fail("can't find proxy");
+        }
+        url = "ajp://localhost:8012";
+        result = Maintest.doProxyPing(cluster, url);
+        if (result == null)
+           fail("Maintest.doProxyPing failed");
+        if (Maintest.checkProxyPing(result))
+           fail("doProxyPing on " + url + " should have failed");
 
         // Stop the jboss and remove the services.
         try {

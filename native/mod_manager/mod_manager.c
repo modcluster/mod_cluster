@@ -72,6 +72,7 @@
 #define SALIBAD "SYNTAX: Alias without Context"
 #define SCONBAD "SYNTAX: Context without Alias"
 #define SBADFLD "SYNTAX: Invalid field \"%s\" in message"
+#define SMISFLD "SYNTAX: Mandatory field(s) missing in message"
 #define SCMDUNS "SYNTAX: Command is not supported"
 #define SMULALB "SYNTAX: Only one Alias in APP command"
 #define SMULCTB "SYNTAX: Only one Context in APP command"
@@ -1223,6 +1224,17 @@ static int isnode_up(request_rec *r, int id, int Load)
     return OK;
 }
 /*
+ * Call the ping/pong logic using scheme://host:port
+ * Do a ping/png request to the node and set the load factor.
+ */
+static int ishost_up(request_rec *r, char *scheme, char *host, char *port)
+{
+    if (balancerhandler != NULL) {
+        return (balancerhandler->proxy_host_isup(r, scheme, host, port));
+    }
+    return OK;
+}
+/*
  * Process the STATUS command
  * Load -1 : Broken
  * Load 0  : Standby.
@@ -1294,6 +1306,9 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
 {
     nodeinfo_t nodeinfo;
     nodeinfo_t *node;
+    char *scheme = NULL;
+    char *host = NULL;
+    char *port = NULL;
 
     int i = 0;
 
@@ -1307,6 +1322,12 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
             strcpy(nodeinfo.mess.JVMRoute, ptr[i+1]);
             nodeinfo.mess.id = 0;
         }
+        else if (strcasecmp(ptr[i], "Scheme") == 0)
+            scheme = apr_pstrdup(r->pool, ptr[i+1]);
+        else if (strcasecmp(ptr[i], "Host") == 0)
+            host = apr_pstrdup(r->pool, ptr[i+1]);
+        else if (strcasecmp(ptr[i], "Port") == 0)
+            port = apr_pstrdup(r->pool, ptr[i+1]);
         else {
             *errtype = TYPESYNTAX;
             return apr_psprintf(r->pool, SBADFLD, ptr[i]);
@@ -1314,9 +1335,24 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
         i++;
         i++;
     }
-    if (nodeinfo.mess.id) {
-        ap_set_content_type(r, "text/plain");
-        ap_rprintf(r, "Type=PING-RSP&State=OK");
+    if (nodeinfo.mess.id == -1) {
+        /* PING scheme, host, port or just httpd */
+        if (scheme == NULL && host == NULL && port == NULL) {
+            ap_set_content_type(r, "text/plain");
+            ap_rprintf(r, "Type=PING-RSP&State=OK");
+        }  else {
+            if (scheme == NULL || host == NULL || port == NULL) {
+                *errtype = TYPESYNTAX;
+                return apr_psprintf(r->pool, SMISFLD);
+            }
+            ap_set_content_type(r, "text/plain");
+            ap_rprintf(r, "Type=PING-RSP");
+
+            if (ishost_up(r, scheme, host, port) != OK)
+                ap_rprintf(r, "&State=NOTOK");
+            else
+                ap_rprintf(r, "&State=OK");
+        }
     } else {
 
         /* Read the node */

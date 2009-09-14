@@ -44,6 +44,15 @@ struct balancer_method {
  * @return 0: All OK 500 : Error
  */ 
 int (* proxy_node_isup)(request_rec *r, int id, int load);
+/**
+ * Check that the node is responding
+ * @param r request_rec structure.
+ * @param scheme something like ajp, http or https.
+ * @param host the hostname.
+ * @param port the port on which the node connector is running
+ * @return 0: All OK 500 : Error
+ */ 
+int (* proxy_host_isup)(request_rec *r, char *scheme, char *host, char *port);
 };
 typedef struct balancer_method balancer_method;
 #endif /*MOD_PROXY_CLUSTER_H*/
