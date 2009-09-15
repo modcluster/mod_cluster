@@ -92,6 +92,9 @@ static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the l
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
 
+/* XXX: Move the code to remove prototype */
+static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker, char *url, proxy_server_conf *conf);
+
 /* reslist constructor */
 /* XXX: Should use the proxy_util one. */
 static apr_status_t connection_constructor(void **resource, void *params,
@@ -597,6 +600,21 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
              "update_workers_node done");
 }
 
+static proxy_worker *get_worker_from_id(proxy_server_conf *conf, int id)
+{
+    int i;
+    proxy_worker *worker;
+
+    worker = (proxy_worker *)conf->workers->elts;
+    for (i = 0; i < conf->workers->nelts; i++) {
+        if (worker->id == id) {
+            return worker;
+        }
+        worker++;
+    }
+    return NULL;
+}
+
 /*
  * update the lbfactor of each node if needed,
  */
@@ -629,6 +647,42 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
             ou->mess.oldelected = elected;
             if (stat->lbfactor > 0)
                 stat->lbstatus = ((elected - oldelected) * 1000) / stat->lbfactor;
+            if (elected == oldelected) {
+                /* lbstatus_recalc_time without changes: test for broken nodes */
+                /* first get the worker, create a dummy request and do a ping  */
+                char sport[7];
+                char *url;
+                apr_status_t rv;
+                apr_pool_t *rrp;
+                request_rec *rnew;
+                proxy_worker *worker = get_worker_from_id(conf, id[i]);
+                if (worker == NULL)
+                    continue; /* skip it */
+                apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
+                url = apr_pstrcat(pool, worker->scheme, "://", worker->hostname,  sport, "/", NULL);
+
+                apr_pool_create(&rrp, pool);
+                apr_pool_tag(rrp, "subrequest");
+                rnew = apr_pcalloc(rrp, sizeof(request_rec));
+                rnew->pool = rrp;
+                /* we need only those ones */
+                rnew->server = server;
+                rnew->connection = apr_pcalloc(rrp, sizeof(conn_rec));
+                rnew->per_dir_config = server->lookup_defaults;
+                rv = proxy_cluster_try_pingpong(rnew, worker, url, conf);
+                if (rv != APR_SUCCESS) {
+                    /* We can't reach the node */
+                    worker->s->status |= PROXY_WORKER_IN_ERROR;
+                    ou->mess.num_failure_idle++;
+                    if (ou->mess.num_failure_idle > 60) {
+                        /* Failing for 5 minutes: time to mark it removed */
+                        ou->mess.remove = 1;
+                        ou->updatetime = now;
+                    } 
+                } else
+                    ou->mess.num_failure_idle = 0;
+            } else
+                ou->mess.num_failure_idle = 0;
         } 
     } 
 }
@@ -1274,7 +1328,6 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
  */
 static int proxy_node_isup(request_rec *r, int id, int load)
 {
-    int i, foundid = -1;
     apr_status_t rv;
     proxy_worker *worker = NULL;
     server_rec *s = main_server;
@@ -1292,19 +1345,12 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         void *sconf = s->module_config;
         conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
 
-        worker = (proxy_worker *)conf->workers->elts;
-        for (i = 0; i < conf->workers->nelts; i++) {
-            if (worker->id == id) {
-                foundid = id;
-                break;
-            }
-            worker++;
-        }
-        if (foundid == id)
+        worker = get_worker_from_id(conf, id);
+        if (worker != NULL)
             break;
         s = s->next;
     }
-    if (foundid != id) {
+    if (worker == NULL) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "proxy_cluster_isup: Can't find worker for %d", id);
         return 500;
@@ -1437,6 +1483,7 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
                 }
             }
             /* remove the node from the shared memory */
+            node_storage->remove_host_context(ou->mess.id, pool);
             node_storage->remove_node(ou);
         }
     }

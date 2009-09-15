@@ -200,6 +200,35 @@ static int loc_worker_nodes_are_updated(void *data)
     mconf->last_updated = apr_time_now();
     return (0);
 }
+/* Remove the virtual hosts and contexts corresponding the node */
+static void loc_remove_host_context(int node, apr_pool_t *pool)
+{
+    /* for read the hosts */
+    int i;
+    int size = get_max_size_host(hoststatsmem);
+    int *id = apr_palloc(pool, sizeof(int) * size);
+    int sizecontext = get_max_size_context(contextstatsmem);
+    int *idcontext = apr_palloc(pool, sizeof(int) * sizecontext);
+
+    size = get_ids_used_host(hoststatsmem, id);
+    for (i=0; i<size; i++) {
+        hostinfo_t *ou;
+
+        if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
+            continue;
+        if (ou->node == node)
+            remove_host(hoststatsmem, ou);
+    }
+
+    sizecontext = get_ids_used_context(contextstatsmem, idcontext);
+    for (i=0; i<sizecontext; i++) {
+        contextinfo_t *context;
+        if (get_context(contextstatsmem, &context, idcontext[i]) != APR_SUCCESS)
+            continue;
+        if (context->node == node)
+            remove_context(contextstatsmem, context);
+    }
+}
 static const struct node_storage_method node_storage =
 {
     loc_read_node,
@@ -209,6 +238,7 @@ static const struct node_storage_method node_storage =
     loc_worker_nodes_are_updated,
     loc_remove_node,
     loc_find_node,
+    loc_remove_host_context,
 };
 
 /*
@@ -843,7 +873,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             strcpy(node->mess.JVMRoute, "REMOVED");
             node->mess.remove = 1;
             insert_update_node(nodestatsmem, node, &id);
-            remove_host_context(r, node->mess.id);
+            loc_remove_host_context(node->mess.id, r->pool);
             *errtype = TYPEMEM;
             return MNODERM;
         }

@@ -68,6 +68,7 @@ struct nodemess {
     /* part updated in httpd */
     int id;                   /* id in table and worker id */
     apr_time_t updatetimelb; /* time of last update of the lbstatus value */
+    int num_failure_idle;    /* number of time the cping/cpong failed while calculating the lbstatus value */
     int oldelected;          /* value of s->elected when calculating the lbstatus */
     apr_time_t lastcleantry; /* time of last unsuccessful try to clean the worker in proxy part */
 };
@@ -200,5 +201,9 @@ int (*remove_node)(nodeinfo_t *node);
  * Find the node using the JVMRoute information
  */
 apr_status_t (*find_node)(nodeinfo_t **node, const char *route);
+/*
+ * Remove the virtual hosts and contexts corresponding the node.
+ */
+void (*remove_host_context)(int node, apr_pool_t *pool);
 };
 #endif /*NODE_H*/
