@@ -92,9 +92,6 @@ static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the l
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
 
-/* XXX: Move the code to remove prototype */
-static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker, char *url, proxy_server_conf *conf);
-
 /* reslist constructor */
 /* XXX: Should use the proxy_util one. */
 static apr_status_t connection_constructor(void **resource, void *params,
@@ -613,6 +610,151 @@ static proxy_worker *get_worker_from_id(proxy_server_conf *conf, int id)
         worker++;
     }
     return NULL;
+}
+
+/*
+ * Do a ping/pong to the node
+ * XXX: ajp_handle_cping_cpong should come from a provider as
+ * it is already in modules/proxy/ajp_utils.c
+ */
+static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
+                                           request_rec *r,
+                                           apr_interval_time_t timeout)
+{
+    char buf[5];
+    apr_size_t written = 5;
+    apr_interval_time_t org; 
+    apr_status_t status;
+    apr_status_t rv;
+
+    /* built the cping message */
+    buf[0] = 0x12;
+    buf[1] = 0x34;
+    buf[2] = (apr_byte_t) 0;
+    buf[3] = (apr_byte_t) 1;
+    buf[4] = (unsigned char)10;
+
+    status = apr_socket_send(sock, buf, &written);
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+                      "ajp_cping_cpong(): send failed");
+        return status;
+    }
+    status = apr_socket_timeout_get(sock, &org);
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+                      "ajp_cping_cpong(): apr_socket_timeout_get failed");
+        return status;
+    }
+    status = apr_socket_timeout_set(sock, timeout);
+    written = 5;
+    status = apr_socket_recv(sock, buf, &written);
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+               "ajp_cping_cpong: apr_socket_recv failed");
+        goto cleanup;
+    }
+    if (buf[0] != 0x41 || buf[1] != 0x42 || buf[2] != 0 || buf[3] != 1  || buf[4] != (unsigned char)9) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+               "ajp_cping_cpong: awaited CPONG, received %02x %02x %02x %02x %02x",
+               buf[0] & 0xFF,
+               buf[1] & 0xFF,
+               buf[2] & 0xFF,
+               buf[3] & 0xFF,
+               buf[4] & 0xFF);
+        status = APR_EGENERAL;
+    }
+cleanup:
+    rv = apr_socket_timeout_set(sock, org);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+               "ajp_cping_cpong: apr_socket_timeout_set failed");
+        return rv;
+    }
+
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "ajp_cping_cpong: Done");
+    return status;
+}
+static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker, char *url, proxy_server_conf *conf)
+{
+    apr_status_t status;
+    apr_interval_time_t timeout;
+    apr_interval_time_t savetimeout;
+    char savetimeout_set;
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
+#else
+    proxy_cluster_helper *helperping;
+#endif
+    proxy_conn_rec *backend = NULL;
+    char server_portstr[32];
+    char *locurl = url;
+    apr_uri_t *uri;
+
+     /* create space for state information */
+    status = ap_proxy_acquire_connection(worker->scheme, &backend, worker, r->server);
+    if (status != OK) {
+        if (backend) {
+            backend->close_on_recycle = 1;
+            ap_proxy_release_connection(worker->scheme, backend, r->server);
+        }
+        return status;
+    }
+
+    /* Step One: Determine Who To Connect To */
+    uri = apr_palloc(r->pool, sizeof(*uri)); /* We don't use it anyway */
+    status = ap_proxy_determine_connection(r->pool, r, conf, worker, backend,
+                                           uri, &locurl, worker->hostname, worker->port,
+                                           server_portstr,
+                                           sizeof(server_portstr));
+    if (status != OK) {
+        ap_proxy_release_connection(worker->scheme, backend, r->server);
+        return status;
+    }
+
+    /* Set the timeout: Note that the default timeout logic in the proxy_util.c is:
+     * 1 - worker->timeout (if timeout_set timeout=n in the worker)
+     * 2 - conf->timeout (if timeout_set ProxyTimeout 300)
+     * 3 - s->timeout (TimeOut 300).
+     * We hack it... Via 1
+     */
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
+    timeout = worker->ping_timeout;
+#else
+    helperping = worker->opaque;
+    timeout = helperping->ping_timeout;
+#endif
+    if (timeout <= 0)
+        timeout =  apr_time_from_sec(10); /* 10 seconds */
+
+    savetimeout_set = worker->timeout_set;
+    savetimeout = worker->timeout;
+    worker->timeout_set = 1;
+    worker->timeout = timeout;
+
+    /* Step Two: Make the Connection */
+    status = ap_proxy_connect_backend(worker->scheme, backend, worker, r->server);
+    worker->timeout_set = savetimeout_set;
+    worker->timeout = savetimeout;
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "proxy_cluster_try_pingpong: can't connect to backend");
+        ap_proxy_release_connection(worker->scheme, backend, r->server);
+        return status;
+    }
+
+    /* XXX: For the moment we support only AJP */
+    if (strcasecmp(worker->scheme, "AJP") == 0) {
+        status = ajp_handle_cping_cpong(backend->sock, r, timeout);
+        if (status != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_cluster_try_pingpong: cping_cpong failed");
+            backend->close++;
+        }
+        
+    }
+    ap_proxy_release_connection(worker->scheme, backend, r->server);
+    return status;
 }
 
 /*
@@ -1173,150 +1315,6 @@ static proxy_worker *find_best_byrequests(proxy_balancer *balancer,
     return internal_find_best_byrequests(balancer, conf, r, NULL, 0);
 }
 
-/*
- * Do a ping/pong to the node
- * XXX: ajp_handle_cping_cpong should come from a provider as
- * it is already in modules/proxy/ajp_utils.c
- */
-static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
-                                           request_rec *r,
-                                           apr_interval_time_t timeout)
-{
-    char buf[5];
-    apr_size_t written = 5;
-    apr_interval_time_t org; 
-    apr_status_t status;
-    apr_status_t rv;
-
-    /* built the cping message */
-    buf[0] = 0x12;
-    buf[1] = 0x34;
-    buf[2] = (apr_byte_t) 0;
-    buf[3] = (apr_byte_t) 1;
-    buf[4] = (unsigned char)10;
-
-    status = apr_socket_send(sock, buf, &written);
-    if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
-                      "ajp_cping_cpong(): send failed");
-        return status;
-    }
-    status = apr_socket_timeout_get(sock, &org);
-    if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
-                      "ajp_cping_cpong(): apr_socket_timeout_get failed");
-        return status;
-    }
-    status = apr_socket_timeout_set(sock, timeout);
-    written = 5;
-    status = apr_socket_recv(sock, buf, &written);
-    if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-               "ajp_cping_cpong: apr_socket_recv failed");
-        goto cleanup;
-    }
-    if (buf[0] != 0x41 || buf[1] != 0x42 || buf[2] != 0 || buf[3] != 1  || buf[4] != (unsigned char)9) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-               "ajp_cping_cpong: awaited CPONG, received %02x %02x %02x %02x %02x",
-               buf[0] & 0xFF,
-               buf[1] & 0xFF,
-               buf[2] & 0xFF,
-               buf[3] & 0xFF,
-               buf[4] & 0xFF);
-        status = APR_EGENERAL;
-    }
-cleanup:
-    rv = apr_socket_timeout_set(sock, org);
-    if (rv != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-               "ajp_cping_cpong: apr_socket_timeout_set failed");
-        return rv;
-    }
-
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "ajp_cping_cpong: Done");
-    return status;
-}
-static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker, char *url, proxy_server_conf *conf)
-{
-    apr_status_t status;
-    apr_interval_time_t timeout;
-    apr_interval_time_t savetimeout;
-    char savetimeout_set;
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-#else
-    proxy_cluster_helper *helperping;
-#endif
-    proxy_conn_rec *backend = NULL;
-    char server_portstr[32];
-    char *locurl = url;
-    apr_uri_t *uri;
-
-     /* create space for state information */
-    status = ap_proxy_acquire_connection(worker->scheme, &backend, worker, r->server);
-    if (status != OK) {
-        if (backend) {
-            backend->close_on_recycle = 1;
-            ap_proxy_release_connection(worker->scheme, backend, r->server);
-        }
-        return status;
-    }
-
-    /* Step One: Determine Who To Connect To */
-    uri = apr_palloc(r->pool, sizeof(*uri)); /* We don't use it anyway */
-    status = ap_proxy_determine_connection(r->pool, r, conf, worker, backend,
-                                           uri, &locurl, worker->hostname, worker->port,
-                                           server_portstr,
-                                           sizeof(server_portstr));
-    if (status != OK) {
-        ap_proxy_release_connection(worker->scheme, backend, r->server);
-        return status;
-    }
-
-    /* Set the timeout: Note that the default timeout logic in the proxy_util.c is:
-     * 1 - worker->timeout (if timeout_set timeout=n in the worker)
-     * 2 - conf->timeout (if timeout_set ProxyTimeout 300)
-     * 3 - s->timeout (TimeOut 300).
-     * We hack it... Via 1
-     */
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-    timeout = worker->ping_timeout;
-#else
-    helperping = worker->opaque;
-    timeout = helperping->ping_timeout;
-#endif
-    if (timeout <= 0)
-        timeout =  apr_time_from_sec(10); /* 10 seconds */
-
-    savetimeout_set = worker->timeout_set;
-    savetimeout = worker->timeout;
-    worker->timeout_set = 1;
-    worker->timeout = timeout;
-
-    /* Step Two: Make the Connection */
-    status = ap_proxy_connect_backend(worker->scheme, backend, worker, r->server);
-    worker->timeout_set = savetimeout_set;
-    worker->timeout = savetimeout;
-    if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "proxy_cluster_try_pingpong: can't connect to backend");
-        ap_proxy_release_connection(worker->scheme, backend, r->server);
-        return status;
-    }
-
-    /* XXX: For the moment we support only AJP */
-    if (strcasecmp(worker->scheme, "AJP") == 0) {
-        status = ajp_handle_cping_cpong(backend->sock, r, timeout);
-        if (status != APR_SUCCESS) {
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "proxy_cluster_try_pingpong: cping_cpong failed");
-            backend->close++;
-        }
-        
-    }
-    ap_proxy_release_connection(worker->scheme, backend, r->server);
-    return status;
-}
 /*
  * Check that we could connect to the node and create corresponding balancers and workers.
  * id   : worker id
