@@ -131,6 +131,8 @@ public class JBossWeb extends Embedded {
         fd.mkdirs();
         fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyCount.class");
         File fdin = new File ("MyCount.class");
+        if (!fdin.exists())
+            fdin = new File ("output/classes/MyCount.class");
         copyFile(fdin, fd);
         
 
