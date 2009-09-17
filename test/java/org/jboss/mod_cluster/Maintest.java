@@ -105,7 +105,20 @@ public class Maintest extends TestCase {
        return suite;
     }
     static StandardServer getServer() {
-       return server;
+        if (server == null) {
+            server = (StandardServer) ServerFactory.getServer();
+            // Read the -Dcluster=true/false.
+            String jbossweb = System.getProperty("cluster");
+            if (jbossweb != null && jbossweb.equalsIgnoreCase("false")) {
+                 System.out.println("Running tests with jbossweb listener");
+    	         isJBossWEB = true;
+            } else {
+                 System.out.println("Running tests with mod_cluster listener");
+    	         isJBossWEB = false;
+            }
+
+        }
+        return server;
     }
     static boolean isJBossWEB() {
     	return isJBossWEB;
@@ -209,6 +222,9 @@ public class Maintest extends TestCase {
     /* Check that the nodes are returned by the INFO command */
     static boolean checkProxyInfo(LifecycleListener lifecycle, String [] nodes) {
         String result = getProxyInfo(lifecycle);
+        return checkProxyInfo(result, nodes);
+    }
+    static boolean checkProxyInfo(String result, String [] nodes) {
         if (result == null) {
             if (nodes == null)
                 return true;

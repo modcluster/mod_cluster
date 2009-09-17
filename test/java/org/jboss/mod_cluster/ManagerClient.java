@@ -124,4 +124,23 @@ public class  ManagerClient {
             throw(new Exception("Reponse notok"));
 
         }
+        public String getProxyInfo() throws Exception {
+            String DURL = URL + "?nonce=" + nonce + "&Cmd=INFO&Range=ALL";
+            GetMethod gm = new GetMethod(DURL);
+            try {
+                httpResponseCode = httpClient.executeMethod(gm);
+
+                if (httpResponseCode == 200) {
+                    String result = gm.getResponseBodyAsString();
+                    gm.releaseConnection();
+                    return result;
+                }
+            } catch (HttpException e) {
+                    System.out.println("error: " + e);
+                    throw(e);
+            }
+            gm.releaseConnection();
+            throw(new Exception("Reponse notok"));
+
+        }
 }
