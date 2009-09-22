@@ -302,4 +302,25 @@ public class Maintest extends TestCase {
             return true;
     }
 
+    // Wait until we are able to PING httpd.
+    // tries maxtries and wait 5 s between retries...
+    static int WaitForHttpd(LifecycleListener cluster, int maxtries) {
+        String result = null;
+        int tries = 0;
+        while (result == null && tries<maxtries) {
+            result = Maintest.doProxyPing(cluster, null);
+            if (result != null) {
+                if (Maintest.checkProxyPing(result))
+                    break; // Done
+                return -1; // Failed.
+            }
+            try {
+                Thread me = Thread.currentThread();
+                me.sleep(5000);
+                tries++;
+            } catch (Exception ex) {
+            }
+        }
+        return tries;
+    }
 }

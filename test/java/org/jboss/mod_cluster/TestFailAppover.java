@@ -80,11 +80,10 @@ public class TestFailAppover extends TestCase {
         ServerThread wait = new ServerThread(3000, server);
         wait.start();
 
-        // Wait until httpd as received the nodes information.
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+        // Wait until we are able to connect to httpd.
+        int tries = Maintest.WaitForHttpd(cluster, 60);
+        if (tries == -1) {
+            fail("can't find PING-RSP in proxy response");
         }
 
         // Start the client and wait for it.

@@ -42,26 +42,6 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestPing extends TestCase {
 
-    private static int WaitForHttpd(LifecycleListener cluster, int maxtries) {
-        // Wait until httpd as received the nodes information.
-        String result = null;
-        int tries = 0;
-        while (result == null && tries<maxtries) {
-            result = Maintest.doProxyPing(cluster, null);
-            if (result != null) {
-                if (Maintest.checkProxyPing(result))
-                    break; // Done
-                return -1; // Failed.
-            }
-            try {
-                Thread me = Thread.currentThread();
-                me.sleep(5000);
-                tries++;
-            } catch (Exception ex) {
-            }
-        }
-        return tries;
-    }
     /* Test that the sessions are really sticky */
     public void testPing() {
 
@@ -98,7 +78,7 @@ public class TestPing extends TestCase {
         wait.start();
          
         // Wait until httpd as received the nodes information.
-        int tries = WaitForHttpd(cluster, 20);
+        int tries = Maintest.WaitForHttpd(cluster, 20);
         if (tries == -1) {
             fail("can't find PING-RSP in proxy response");
         }
@@ -139,7 +119,7 @@ public class TestPing extends TestCase {
            fail("doProxyPing on not existing node should have failed");
 
         // Get the connection back.
-        tries = WaitForHttpd(cluster, 20);
+        tries = Maintest.WaitForHttpd(cluster, 20);
         if (tries == -1) {
             fail("can't find PING-RSP in proxy response");
         }
@@ -167,7 +147,7 @@ public class TestPing extends TestCase {
         } catch (Exception ex) {
             fail("can't create ServerSocket on 8012");
         }
-        tries = WaitForHttpd(cluster, 20);
+        tries = Maintest.WaitForHttpd(cluster, 20);
         if (tries == -1) {
             fail("can't find PING-RSP in proxy response");
         }
