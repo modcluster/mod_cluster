@@ -94,6 +94,13 @@ public class  Client extends Thread {
                         ex.printStackTrace();
                     }
                 }
+                for (int i=0; i<client.length; i++) {
+                    if (!client[i].getresultok()) {
+                        System.out.println("Failed: at least one client failed");
+                        System.exit(1);
+                    }
+                }
+                System.out.println("Done");
         }
 
         /**
