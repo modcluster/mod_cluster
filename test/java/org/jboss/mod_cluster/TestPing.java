@@ -78,11 +78,11 @@ public class TestPing extends TestCase {
         wait.start();
          
         // Wait until httpd as received the nodes information.
-        int tries = Maintest.WaitForHttpd(cluster, 20);
+        int tries = Maintest.WaitForHttpd(cluster, 60);
         if (tries == -1) {
             fail("can't find PING-RSP in proxy response");
         }
-        if (tries == 20) {
+        if (tries == 60) {
             fail("can't find proxy");
         }
 
