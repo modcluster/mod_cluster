@@ -80,7 +80,7 @@ public class Testmod_cluster_manager extends TestCase {
         // Wait until httpd as received the nodes information.
         String proxy = null;
         int tries = 0;
-        while (proxy == null && tries<20) {
+        while (proxy == null && tries<60) {
             String result = Maintest.getProxyInfo(cluster);
             if (result != null) {
                 String [] records = result.split("\n");
@@ -98,7 +98,7 @@ public class Testmod_cluster_manager extends TestCase {
             } catch (Exception ex) {
             }
         }
-        if (tries == 20) {
+        if (tries == 60) {
             fail("can't find proxy");
         }
         ManagerClient managerclient = null;
