@@ -50,7 +50,7 @@ public class Testmod_cluster_manager extends TestCase {
         JBossWeb service2 = null;
         LifecycleListener cluster = null;
 
-        System.out.println("Testmod_cluster-manager Started");
+        System.out.println("Testmod_cluster_manager Started");
         try {
             // server = (StandardServer) ServerFactory.getServer();
 
