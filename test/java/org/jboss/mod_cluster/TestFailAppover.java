@@ -89,7 +89,7 @@ public class TestFailAppover extends TestCase {
         // Wait until 2 nodes are created in httpd.
         String [] nodes = new String[2];
         nodes[0] = "node3";
-        nodes[0] = "node4";
+        nodes[1] = "node4";
         Maintest.TestForNodes(cluster, nodes);
 
         // Start the client and wait for it.
