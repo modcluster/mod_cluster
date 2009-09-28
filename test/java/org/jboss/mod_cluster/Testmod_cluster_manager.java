@@ -89,6 +89,9 @@ public class Testmod_cluster_manager extends TestCase {
                     records = results[1].split("\\]");
                     proxy = records[0];
                     break; // Done.
+                } else {
+                    /* We get something unexpected */
+                    System.out.println(result);
                 }
             }
             try {
