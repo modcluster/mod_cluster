@@ -1159,6 +1159,9 @@ static char *get_context_host_balancer(request_rec *r)
             proxy_balancer *balancer = ap_proxy_get_balancer(r->pool, conf, name);
             if (balancer)
                 return ret;
+            else
+                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "get_context_host_balancer: balancer %s not found", name);
         }
     }
     return NULL;
@@ -1819,6 +1822,12 @@ static int proxy_cluster_trans(request_rec *r)
     }
     if (!balancer)
         balancer = get_context_host_balancer(r);
+    if (!balancer) {
+        /* May be the balancer has not been created (we use shared memory to find the balancer name) */
+        update_workers_node(conf, r->pool, r->server, 1);
+        balancer = get_context_host_balancer(r, conf);
+    }
+    
 
     if (balancer) {
         int i;
