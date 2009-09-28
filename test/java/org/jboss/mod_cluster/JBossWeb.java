@@ -126,15 +126,21 @@ public class JBossWeb extends Embedded {
         out.write(route + ":This is a test\n");
         out.close();
 
-        // Copy a small servlet for testing.
+        // Copy a small servlets for testing.
         fd = new File ( route + "/webapps/ROOT/WEB-INF/classes");
         fd.mkdirs();
+        // Session logic tests...
         fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyCount.class");
         File fdin = new File ("MyCount.class");
         if (!fdin.exists())
             fdin = new File ("output/classes/MyCount.class");
         copyFile(fdin, fd);
-        
+        // Simple tests...
+        fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyTest.class");
+        fdin = new File ("MyTest.class");
+        if (!fdin.exists())
+            fdin = new File ("output/classes/MyTest.class");
+        copyFile(fdin, fd);
 
         //Create Host
         Host baseHost =  createHost( host, appBase);

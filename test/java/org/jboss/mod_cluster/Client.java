@@ -263,8 +263,12 @@ public class  Client extends Thread {
                         } else {
                             // Look in the response to make sure that there is a cookie.
                             int len = (int) bm.getResponseContentLength();
-                            if (bm.getResponseBodyAsString(len).indexOf(jsessionid) != -1) {
+
+                            if (jsessionid != null && bm.getResponseBodyAsString(len).indexOf(jsessionid) != -1) {
                                 bm.releaseConnection();
+                                return 0;
+                            }
+                            if (jsessionid == null && !checkcookie) {
                                 return 0;
                             }
                             System.out.println("No cookies");
