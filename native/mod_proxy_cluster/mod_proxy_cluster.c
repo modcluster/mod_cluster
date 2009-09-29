@@ -1825,7 +1825,7 @@ static int proxy_cluster_trans(request_rec *r)
     if (!balancer) {
         /* May be the balancer has not been created (we use shared memory to find the balancer name) */
         update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_context_host_balancer(r, conf);
+        balancer = get_context_host_balancer(r);
     }
     
 
