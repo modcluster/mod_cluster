@@ -367,9 +367,9 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
 }
 
 /**
- * Add a node to the worker conf
+ * Add balancer to the proxy_server_conf.
  * NOTE: pool is the request pool or any temporary pool. Use conf->pool for any data that live longer.
- * @param node the pointer to the node structure
+ * @param node the pointer to the node structure (contains the balancer information).
  * @param conf a proxy_server_conf.
  * @param balancer the balancer to update or NULL to create it.
  * @param name the name of the balancer.
@@ -377,18 +377,16 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
  * @server the server rec for logging purposes.
  *
  */
-static void add_workers_node(nodeinfo_t *node, proxy_server_conf *conf, proxy_balancer *balancer,
-                             char *name, apr_pool_t *pool, server_rec *server)
+static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *conf,
+                                         apr_pool_t *pool, server_rec *server)
 {
-    proxy_worker *worker = NULL;
+    proxy_balancer *balancer = NULL;
+    char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
+
+    balancer = ap_proxy_get_balancer(pool, conf, name);
     if (!balancer) {
-        if (creat_bal == CREAT_NONE)
-            return; /* Don't create balancers */
-        if (creat_bal == CREAT_ROOT && server != main_server)
-            return; /* Don't create balancers if not root */
-        /* Create one */
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
-                      "add_workers_node: Create balancer %s", name);
+                      "add_balancer_node: Create balancer %s", name);
         balancer = apr_array_push(conf->balancers);
         memset(balancer, 0, sizeof(proxy_balancer));
         balancer->name = apr_pstrdup(conf->pool, name);
@@ -400,12 +398,12 @@ static void add_workers_node(nodeinfo_t *node, proxy_server_conf *conf, proxy_ba
                     APR_THREAD_MUTEX_DEFAULT, conf->pool) != APR_SUCCESS) {
             /* XXX: Do we need to log something here */
             ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
-                          "add_workers_node: Can't create lock for balancer");
+                          "add_balancer_node: Can't create lock for balancer");
         }
 #endif
     } else {
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
-                      "add_workers_node: Using balancer %s", name);
+                      "add_balancer_node: Using balancer %s", name);
     }
 
     if (balancer && balancer->workers->nelts == 0) {
@@ -437,17 +435,29 @@ static void add_workers_node(nodeinfo_t *node, proxy_server_conf *conf, proxy_ba
             }
         }
     }
-    if (balancer) {
-        create_worker(conf, balancer, server, &worker, node, pool);
-    } else {
-        ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
-                      "add_workers_node: Can't find balancer");
-    }
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-             "add_workers_node done");
+    return balancer;
+}
+/**
+ * Add a node to the worker conf
+ * NOTE: pool is the request pool or any temporary pool. Use conf->pool for any data that live longer.
+ * @param node the pointer to the node structure
+ * @param conf a proxy_server_conf.
+ * @param balancer the balancer to update.
+ * @param pool a temporary pool.
+ * @server the server rec for logging purposes.
+ *
+ */
+static void add_workers_node(nodeinfo_t *node, proxy_server_conf *conf, proxy_balancer *balancer,
+                             apr_pool_t *pool, server_rec *server)
+{
+    proxy_worker *worker = NULL;
+    create_worker(conf, balancer, server, &worker, node, pool);
 }
 /*
- * Adds the balancers and the workers to the VirtualHosts
+ * Adds the balancers and the workers to the VirtualHosts corresponding to node
+ * Note that the calling routine should lock before calling us.
+ * @param node the node information to add.
+ * @param pool  temporary pool to use for temporary buffer.
  */
 static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
 {
@@ -459,13 +469,15 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
         proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
 
-        if (!balancer && creat_bal == CREAT_NONE) {
+        if (!balancer && (creat_bal == CREAT_NONE ||
+            creat_bal == CREAT_ROOT && s!=main_server)) {
             s = s->next;
             continue;
         }
-        add_workers_node(node, conf, balancer, name, pool, s);
-        if (creat_bal == CREAT_ROOT)
-            break;
+        if (!balancer)
+            balancer = add_balancer_node(node, conf, pool, s);
+        if (balancer)
+            add_workers_node(node, conf, balancer, pool, s);
         s = s->next;
     }
 }
@@ -585,9 +597,7 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
             if (ou->mess.remove)
                 notok = notok + remove_workers_node(ou, conf, pool, server);
             else {
-                char *name = apr_pstrcat(pool, "balancer://", ou->mess.balancer, NULL);
-                proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
-                add_workers_node(ou, conf, balancer, name, pool, server);
+                add_balancers_workers(ou, pool);
             }
         } 
     } 
@@ -1339,7 +1349,9 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         return 500;
 
     /* create the balancers and workers (that could be the first time) */
+    apr_thread_mutex_lock(lock);
     add_balancers_workers(node, r->pool);
+    apr_thread_mutex_unlock(lock);
 
     /* search for the worker in the VirtualHosts */ 
     while (s) {
@@ -1870,6 +1882,11 @@ static int proxy_cluster_trans(request_rec *r)
         return OK; /* Mod_proxy will process it */
     }
  
+#if HAVE_CLUSTER_EX_DEBUG
+    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s",
+                 balancer, r->filename, r->unparsed_uri);
+#endif
     return DECLINED;
 }
 

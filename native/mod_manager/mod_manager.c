@@ -2110,6 +2110,8 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
     char *sessionid;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
 
+    mconf->last_updated = 0;
+
     if (mconf->basefilename) {
         node = apr_pstrcat(p, mconf->basefilename, ".node", NULL);
         context = apr_pstrcat(p, mconf->basefilename, ".context", NULL);
