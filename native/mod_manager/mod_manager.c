@@ -1922,6 +1922,7 @@ static int manager_info(request_rec *r)
     ap_rputs(DOCTYPE_HTML_3_2
              "<html><head>\n<title>Mod_cluster Status</title>\n</head><body>\n",
              r);
+    ap_rvputs(r, "<h1>", MOD_CLUSTER_EXPOSED_VERSION, "</h1>", NULL);
     ap_rvputs(r, "<a href=\"", r->uri, "?nonce=", balancer_nonce,
                  "&refresh=10",
                  "\">Auto Refresh</a>", NULL);
