@@ -98,7 +98,7 @@ public class JBossWeb extends Embedded {
         copyFiles(in, ou);
     }
 
-    public JBossWeb(String route, String host, boolean nat) throws IOException {
+    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
 
         // Copy native tree...
         if (nat) {
@@ -117,26 +117,26 @@ public class JBossWeb extends Embedded {
         baseEngine.setRealm(null);
 
         // Create node1/webapps/ROOT and index.html
-        File fd = new File ( route + "/webapps/ROOT");
+        File fd = new File ( route + "/webapps/" + webapp);
         fd.mkdirs();
         String docBase = fd.getAbsolutePath();
         String appBase = fd.getParent();
-        fd = new File (route + "/webapps/ROOT" , "index.html");
+        fd = new File (route + "/webapps/" + webapp, "index.html");
         FileWriter out = new FileWriter(fd);
         out.write(route + ":This is a test\n");
         out.close();
 
         // Copy a small servlets for testing.
-        fd = new File ( route + "/webapps/ROOT/WEB-INF/classes");
+        fd = new File ( route + "/webapps/" + webapp + "/WEB-INF/classes");
         fd.mkdirs();
         // Session logic tests...
-        fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyCount.class");
+        fd = new File (route + "/webapps/" + webapp + "/WEB-INF/classes" , "MyCount.class");
         File fdin = new File ("MyCount.class");
         if (!fdin.exists())
             fdin = new File ("output/classes/MyCount.class");
         copyFile(fdin, fd);
         // Simple tests...
-        fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyTest.class");
+        fd = new File (route + "/webapps/" + webapp + "/WEB-INF/classes" , "MyTest.class");
         fdin = new File ("MyTest.class");
         if (!fdin.exists())
             fdin = new File ("output/classes/MyTest.class");
@@ -155,7 +155,11 @@ public class JBossWeb extends Embedded {
         baseEngine.addChild( baseHost );
 
         //Create default context
-        Context rootContext = createContext("/",docBase);
+        Context rootContext;
+        if (webapp.equals("ROOT"))
+            rootContext = createContext("/",docBase );
+        else
+            rootContext = createContext("/" + webapp, docBase );
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
         baseHost.addChild( rootContext );
@@ -178,6 +182,13 @@ public class JBossWeb extends Embedded {
     public JBossWeb(String route, String host) throws IOException {
         this(route, host, false);
     }
+    public JBossWeb(String route, String host, boolean nat) throws IOException {
+        this(route, host, nat, "ROOT");
+    }
+    public JBossWeb(String route, String host, String webapp) throws IOException {
+        this(route, host, false, webapp);
+    }
+
 
     public void addWAR(String file, String route) throws IOException {
         File fd = new File ( route + "/" +  route + "/webapps");

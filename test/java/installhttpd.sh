@@ -285,6 +285,9 @@ cat >> "$file.new" <<EOF
 
   </VirtualHost>
 </IfModule>
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
+RewriteRule ^/$ /myapp/MyCount [PT]
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd

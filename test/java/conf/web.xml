@@ -19,6 +19,8 @@
     <servlet-mapping>
         <servlet-name>invoker</servlet-name>
         <url-pattern>/ROOT/*</url-pattern>
+        <url-pattern>/myapp/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
