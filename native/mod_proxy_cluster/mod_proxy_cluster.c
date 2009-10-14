@@ -1871,7 +1871,8 @@ static int proxy_cluster_trans(request_rec *r)
             }
         }
 
-        r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->unparsed_uri, NULL);
+        /* It is safer to use r->uri and get_balancer_by_node() use r->uri too */
+        r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
         r->handler = "proxy-server";
         r->proxyreq = PROXYREQ_REVERSE;
 #if HAVE_CLUSTER_EX_DEBUG
