@@ -144,11 +144,11 @@ public class Maintest extends TestCase {
     	return createClusterListener(groupa, groupp, ssl, null);
     }
     static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain) {
-    	return createClusterListener(groupa, groupp, ssl, domain, true, false, true);
+    	return createClusterListener(groupa, groupp, ssl, domain, true, false, true, null);
     }
     static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
-                                                   boolean stickySessionForce) {
+                                                   boolean stickySessionForce, String advertiseSecurityKey) {
         LifecycleListener lifecycle = null;
         ClusterListener jcluster = null;
         org.jboss.modcluster.ModClusterListener pcluster = null;
@@ -162,6 +162,8 @@ public class Maintest extends TestCase {
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
+            if (advertiseSecurityKey != null)
+                jcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = jcluster;
         } else {
             pcluster = new org.jboss.modcluster.ModClusterListener();
@@ -172,6 +174,8 @@ public class Maintest extends TestCase {
             pcluster.setStickySession(stickySession);
             pcluster.setStickySessionRemove(stickySessionRemove);
             pcluster.setStickySessionForce(stickySessionForce);
+            if (advertiseSecurityKey != null)
+                pcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = pcluster;
 
         }
