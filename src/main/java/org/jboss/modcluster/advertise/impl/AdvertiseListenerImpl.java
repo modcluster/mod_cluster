@@ -348,23 +348,39 @@ public class AdvertiseListenerImpl implements AdvertiseListener
       }
    }
 
-   // TODO This isn't correct - it always returns true!
-   boolean verifyDigest(String digest, String server, String date)
+   // Check the digest, using our key and server + date.
+   // digest is a hex string for httpd.
+   boolean verifyDigest(String digest, String server, String date, String sequence)
    {
       if (this.md == null) return true;
       if (this.securityKey == null) return true; // Not set: No used
       
       this.md.reset();
       digestString(this.md, this.securityKey);
+      byte[] ssalt = this.md.digest();
+      this.md.update(ssalt);
       digestString(this.md, date);
+      digestString(this.md, sequence);
       digestString(this.md, server);
-//      byte[] our = this.md.digest();
-      byte[] dst = new byte[digest.length() * 2];
-      for (int i = 0, j = 0; i < digest.length(); i++)
+      byte[] our = this.md.digest();
+      if (our.length != digest.length() / 2)
+         return false;
+
+      byte[] dst = new byte[digest.length() / 2];
+      int val = 0;
+      for (int i = 0;  i < digest.length(); i++)
       {
-         char ch = digest.charAt(i);
-         dst[j++] = (byte) ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+         int ch = digest.charAt(i);
+         if (i%2 == 0)
+            val = ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+         else {
+            val = val * 16 +  ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+            if (our[i/2] != (byte) val) {
+               return false;
+            }
+         }
       }
+     
       return true;
    }
 
@@ -455,6 +471,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
                String status_desc = null;
                String digest = null;
                String server_name = null;
+               String sequence = null;
                AdvertisedServer server = null;
                boolean added = false;
                for (int i = 0; i < headers.length; i++)
@@ -496,6 +513,10 @@ public class AdvertiseListenerImpl implements AdvertiseListener
                      {
                         digest = hdrv[1];
                      }
+                     else if (hdrv[0].equals("Sequence"))
+                     {
+                        sequence = hdrv[1];
+                     }
                      else if (hdrv[0].equals("Server"))
                      {
                         server_name = hdrv[1];
@@ -515,7 +536,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
                if (server != null && status > 0)
                {
                   /* We need a digest to match */
-                  if (!AdvertiseListenerImpl.this.verifyDigest(digest, server_name, date_str))
+                  if (!AdvertiseListenerImpl.this.verifyDigest(digest, server_name, date_str, sequence))
                   {
                      continue;
                   }
