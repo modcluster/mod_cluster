@@ -256,6 +256,8 @@ LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
 LoadModule manager_module modules/mod_manager.so
 LoadModule slotmem_module modules/mod_slotmem.so
 LoadModule advertise_module modules/mod_advertise.so
+
+LoadModule rewrite_module modules/mod_rewrite.so
 EOF
 fi
 
