@@ -1,5 +1,5 @@
 The source could be in httpd-2.2.x source tree.
-The ./buildconf must be run again amd the configure need at least:
+The ./buildconf must be run again and the configure need at least:
 ./configure --enable-advertise
 
 The source could build with a installed version of httpd-2-2.x:
