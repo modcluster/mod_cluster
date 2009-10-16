@@ -148,6 +148,21 @@ public class Maintest extends TestCase {
     }
     static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
+                                                   boolean stickySessionForce) {
+    	return createClusterListener(groupa, groupp, ssl, domain, stickySession, stickySessionRemove, stickySessionForce, null);
+    }
+    /* Create the listener
+     * groupa: multi address to receive from httpd.
+     * groupp: port to receive from httpd.
+     * ssl: use ssl.
+     * domain: domain to send to httpd (to fail over in the domain).
+     * stickySession: use stickySession.
+     * stickySessionRemove: remove the sessionid if we are sticky and need to failover.
+     * stickySessionForce: return an error if we have to failover to another node.
+     * advertiseSecurityKey: Key for the digest logic.
+     */ 
+    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+                                                   boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey) {
         LifecycleListener lifecycle = null;
         ClusterListener jcluster = null;
