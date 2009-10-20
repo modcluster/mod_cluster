@@ -111,7 +111,6 @@ extern "C" {
  */
 typedef enum {
     ma_advertise_off,
-    ma_advertise_status,
     ma_advertise_on
 } ma_advertise_e;
 

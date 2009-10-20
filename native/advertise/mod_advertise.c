@@ -54,36 +54,38 @@ static int        ma_generation     = 0;
 static apr_time_t ma_child_started  = 0;
 static pid_t      ma_parent_pid     = -1;
 
-/*
- * Global configuration
- */
-static int   ma_manager_strict = 0;
-static int   ma_advertise_set  = 0;
+/* Global (really) */
+
 static int   ma_advertise_run  = 0;
 static int   ma_advertise_stat = 0;
-static char *ma_advertise_adrs = MA_DEFAULT_GROUP;
-static char *ma_advertise_adsi = NULL;
-static char *ma_advertise_srvm = NULL;
-static char *ma_advertise_srvh = NULL;
-static char *ma_advertise_srvs = NULL;
-static char *ma_advertise_srvi = NULL;
-static char *ma_advertise_uuid = NULL;
 
-static char *ma_advertise_skey = NULL;
+/*
+ * configuration.
+ */
+typedef struct mod_advertise_config
+{
+    server_rec *ma_advertise_server;
+    char *ma_advertise_adrs;
+    char *ma_advertise_adsi;
+    char *ma_advertise_srvm;
+    char *ma_advertise_srvh;
+    char *ma_advertise_srvs;
+    char *ma_advertise_srvi;
+    char *ma_advertise_uuid;
 
-static int   ma_bind_set  = 0;
-static char *ma_bind_adrs = NULL;
-static char *ma_bind_adsi = NULL;
-static apr_port_t ma_bind_port = 0;
+    char *ma_advertise_skey;
 
-static ma_advertise_srv_t  ma_advs_server;
+    int   ma_bind_set;
+    char *ma_bind_adrs;
+    char *ma_bind_adsi;
+    apr_port_t ma_bind_port;
 
+    apr_port_t ma_advertise_port;
+    apr_port_t ma_advertise_srvp;
+    ma_advertise_e ma_advertise_mode;
+    apr_interval_time_t ma_advertise_freq;
+} mod_advertise_config;
 
-/* Advertise is by default turned off */
-static apr_port_t ma_advertise_port          = MA_DEFAULT_ADVPORT;
-static apr_port_t ma_advertise_srvp          = 0;
-static ma_advertise_e ma_advertise_mode      = ma_advertise_on;
-static apr_interval_time_t ma_advertise_freq = MA_DEFAULT_ADV_FREQ;
 
 /* Advertise sockets */
 static apr_socket_t     *ma_mgroup_socket = NULL;
@@ -138,36 +140,31 @@ static ma_global_data_t  *magd = NULL;
 static const char *cmd_advertise_m(cmd_parms *cmd, void *dummy,
                                    const char *arg, const char *opt)
 {
-
-    if (ma_advertise_srvs)
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
+    if (mconf->ma_advertise_srvs)
         return "Duplicate ServerAdvertise directives are not allowed";
 
-    /* Virtual Host containing the directive */
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
-
     if (strcasecmp(arg, "Off") == 0)
-        ma_advertise_mode = ma_advertise_off;
+        mconf->ma_advertise_mode = ma_advertise_off;
     else if (strcasecmp(arg, "On") == 0)
-        ma_advertise_mode = ma_advertise_on;
+        mconf->ma_advertise_mode = ma_advertise_on;
     else
         return "ServerAdvertise must be Off or On";
     if (opt) {
         const char *p = ap_strstr_c(opt, "://");
         if (p) {
-            ma_advertise_srvm = apr_pstrndup(cmd->pool, opt, p - opt);
+            mconf->ma_advertise_srvm = apr_pstrndup(cmd->pool, opt, p - opt);
             opt = p + 3;
         }
-        if (apr_parse_addr_port(&ma_advertise_srvs,
-                                &ma_advertise_srvi,
-                                &ma_advertise_srvp,
+        if (apr_parse_addr_port(&mconf->ma_advertise_srvs,
+                                &mconf->ma_advertise_srvi,
+                                &mconf->ma_advertise_srvp,
                                 opt, cmd->pool) != APR_SUCCESS ||
-                                !ma_advertise_srvs ||
-                                !ma_advertise_srvp)
+                                !mconf->ma_advertise_srvs ||
+                                !mconf->ma_advertise_srvp)
             return "Invalid ServerAdvertise Address";
     }
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 
@@ -180,24 +177,20 @@ static const char *cmd_advertise_m(cmd_parms *cmd, void *dummy,
 static const char *cmd_advertise_g(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
-
-    if (ma_advertise_set)
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
+    if (mconf->ma_advertise_port && mconf->ma_advertise_port)
         return "Duplicate AdvertiseGroup directives are not allowed";
 
-    if (apr_parse_addr_port(&ma_advertise_adrs,
-                            &ma_advertise_adsi,
-                            &ma_advertise_port,
+    if (apr_parse_addr_port(&mconf->ma_advertise_adrs,
+                            &mconf->ma_advertise_adsi,
+                            &mconf->ma_advertise_port,
                             arg, cmd->pool) != APR_SUCCESS)
         return "Invalid AdvertiseGroup address";
-    if (!ma_advertise_adrs)
+    if (!mconf->ma_advertise_adrs)
         return "Missing Ip part from AdvertiseGroup address";
-    if (!ma_advertise_port)
-        ma_advertise_port = MA_DEFAULT_ADVPORT;
-    ma_advertise_set = 1;
+    if (!mconf->ma_advertise_port)
+        mconf->ma_advertise_port = MA_DEFAULT_ADVPORT;
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 
@@ -209,24 +202,21 @@ static const char *cmd_advertise_g(cmd_parms *cmd, void *dummy,
 static const char *cmd_bindaddr(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
-
-    if (ma_bind_set)
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
+    if (mconf->ma_bind_set)
         return "Duplicate AdvertiseBindAddress directives are not allowed";
 
-    if (apr_parse_addr_port(&ma_bind_adrs,
-                            &ma_bind_adsi,
-                            &ma_bind_port,
+    if (apr_parse_addr_port(&mconf->ma_bind_adrs,
+                            &mconf->ma_bind_adsi,
+                            &mconf->ma_bind_port,
                             arg, cmd->pool) != APR_SUCCESS)
         return "Invalid AdvertiseBindAddress address";
-    if (!ma_bind_adrs)
+    if (!mconf->ma_bind_adrs)
         return "Missing Ip part from AdvertiseBindAddress address";
-    if (!ma_bind_port)
-        ma_bind_port = MA_DEFAULT_ADVPORT;
-    ma_bind_set = 1;
+    if (!mconf->ma_bind_port)
+        mconf->ma_bind_port = MA_DEFAULT_ADVPORT;
+    mconf->ma_bind_set = 1;
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 /*--------------------------------------------------------------------------*/
@@ -234,27 +224,25 @@ static const char *cmd_bindaddr(cmd_parms *cmd, void *dummy,
 /* AdvertiseFrequency directive                                             */
 /*                                                                          */
 /*--------------------------------------------------------------------------*/
+
 static const char *cmd_advertise_f(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
     apr_time_t s, u = 0;
     const char *p;
 
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
-
-    if (ma_advertise_freq != MA_DEFAULT_ADV_FREQ)
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
+    if (mconf->ma_advertise_freq != MA_DEFAULT_ADV_FREQ)
         return "Duplicate AdvertiseFrequency directives are not allowed";
     if ((p = ap_strchr_c(arg, '.')) || (p = ap_strchr_c(arg, ',')))
         u = atoi(p + 1);
 
     s = atoi(arg);
-    ma_advertise_freq = s * APR_USEC_PER_SEC + u * APR_TIME_C(1000);
-    if (ma_advertise_freq == 0)
+    mconf->ma_advertise_freq = s * APR_USEC_PER_SEC + u * APR_TIME_C(1000);
+    if (mconf->ma_advertise_freq == 0)
         return "Invalid AdvertiseFrequency value";
 
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 
@@ -266,14 +254,11 @@ static const char *cmd_advertise_f(cmd_parms *cmd, void *dummy,
 static const char *cmd_advertise_k(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
-
-    if (ma_advertise_skey != NULL)
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
+    if (mconf->ma_advertise_skey != NULL)
         return "Duplicate AdvertiseSecurityKey directives are not allowed";
-    ma_advertise_skey = apr_pstrdup(cmd->pool, arg);
+    mconf->ma_advertise_skey = apr_pstrdup(cmd->pool, arg);
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 
@@ -285,14 +270,12 @@ static const char *cmd_advertise_k(cmd_parms *cmd, void *dummy,
 static const char *cmd_advertise_h(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
-    if (ma_server_rec !=NULL && ma_server_rec != cmd->server)
-        return "All Advertise directives must be in the same VirtualHost";
-    if (ma_server_rec == NULL)
-        ma_server_rec = cmd->server;
+    mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
 
-    if (ma_advertise_srvh != NULL)
+    if (mconf->ma_advertise_srvh != NULL)
         return "Duplicate AdvertiseManagerUrl directives are not allowed";
-    ma_advertise_srvh = apr_pstrdup(cmd->pool, arg);
+    mconf->ma_advertise_srvh = apr_pstrdup(cmd->pool, arg);
+    mconf->ma_advertise_server = cmd->server;
     return NULL;
 }
 
@@ -317,6 +300,7 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
     apr_size_t l = MA_BSIZE - 8;
     apr_size_t n = 0;
     apr_md5_ctx_t md;
+    mod_advertise_config *mconf = ap_get_module_config(server->module_config, &advertise_module);
 
     ma_sequence++;
     if (ma_sequence < 1)
@@ -349,10 +333,10 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
                           "X-Manager-Url: %s" CRLF
                           "X-Manager-Protocol: %s" CRLF
                           "X-Manager-Host: %s" CRLF,
-                          ma_advertise_srvs,
-                          ma_advertise_srvp,
-                          ma_advertise_srvh,
-                          ma_advertise_srvm,
+                          mconf->ma_advertise_srvs,
+                          mconf->ma_advertise_srvp,
+                          mconf->ma_advertise_srvh,
+                          mconf->ma_advertise_srvm,
                           server->server_hostname);
 
     }
@@ -363,6 +347,7 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
 }
 
 static apr_status_t ma_group_join(const char *addr, apr_port_t port,
+                                  const char *bindaddr, apr_port_t bindport,
                                   apr_pool_t *pool, server_rec *s)
 {
     apr_status_t rv;
@@ -375,11 +360,11 @@ static apr_status_t ma_group_join(const char *addr, apr_port_t port,
                      addr, port);
         return rv;
     }
-    if ((rv = apr_sockaddr_info_get(&ma_listen_sa, ma_bind_adrs,
-                                    ma_mgroup_sa->family, ma_bind_port,
+    if ((rv = apr_sockaddr_info_get(&ma_listen_sa, bindaddr,
+                                    ma_mgroup_sa->family, bindport,
                                     APR_UNSPEC, pool)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, s,
-                     "mod_advertise: ma_group_join apr_sockaddr_info_get(%s:%d) failed", ma_bind_adsi, ma_bind_port);
+                     "mod_advertise: ma_group_join apr_sockaddr_info_get(%s:%d) failed", bindaddr, bindport);
         return rv;
     }
     if ((rv = apr_sockaddr_info_get(&ma_niface_sa, NULL,
@@ -448,6 +433,7 @@ static void * APR_THREAD_FUNC parent_thread(apr_thread_t *thd, void *data)
     int f_time = 1;
     apr_interval_time_t a_step = 0;
     server_rec *s = (server_rec *)data;
+    mod_advertise_config *mconf = ap_get_module_config(s->module_config, &advertise_module);
     is_mp_created = 1;
 
     while (is_mp_running) {
@@ -461,7 +447,7 @@ static void * APR_THREAD_FUNC parent_thread(apr_thread_t *thd, void *data)
                 current_status = ma_advertise_stat;
                 f_time = 1;
             }
-            if (a_step >= ma_advertise_freq || f_time) {
+            if (a_step >= mconf->ma_advertise_freq || f_time) {
                 /* Run advertise */
                 ma_advertise_server(s, MA_ADVERTISE_SERVER);
                 a_step = 0;
@@ -555,6 +541,32 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     const char *pk = "advertise_init_module_tag";
     apr_pool_t *pproc = s->process->pool;
     apr_thread_t *tp;
+    mod_advertise_config *mconf = ap_get_module_config(s->module_config, &advertise_module);
+    int advertisefound = 0;
+    server_rec *server = s;
+
+    /* Advertise directive in more than one VirtualHost: not supported */
+    while (server) {
+        mod_advertise_config *conf = ap_get_module_config(server->module_config, &advertise_module);
+        if (conf->ma_advertise_server == server) {
+            if (advertisefound) {
+                ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                         "mod_advertise: directive in more than one VirtualHost: not supported");
+                return !OK;
+            } else
+                advertisefound = -1;
+        }
+        server = server->next;
+    }
+
+    /* Our server */
+    server = s;
+    while (server) {
+        mconf = ap_get_module_config(server->module_config, &advertise_module);
+        if (mconf->ma_advertise_server == server)
+            break;
+        server = server->next;
+    }
 
     apr_pool_userdata_get((void *)&magd, pk, pproc);
     if (!magd) {
@@ -578,28 +590,29 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
         }
     }
 #endif
+    ma_server_rec = server; 
     if (!magd->generation) {
         /* Favor dynamic configuration */
-        if (ma_advertise_skey) {
+        if (mconf->ma_advertise_skey) {
             apr_md5_ctx_t mc;
             apr_md5_init(&mc);
-            apr_md5_update(&mc, ma_advertise_skey, strlen(ma_advertise_skey));
+            apr_md5_update(&mc, mconf->ma_advertise_skey, strlen(mconf->ma_advertise_skey));
             apr_md5_final(magd->ssalt, &mc);
         }
         apr_uuid_get(&magd->suuid);
         magd->srvid[0] = '/';
         apr_uuid_format(&magd->srvid[1], &magd->suuid);
     }
-    if (!ma_advertise_srvh)
-        ma_advertise_srvh = magd->srvid;
+    if (!mconf->ma_advertise_srvh)
+        mconf->ma_advertise_srvh = magd->srvid;
     /* Check if we have advertise set */
-    if (ma_advertise_mode != ma_advertise_off &&
-        ma_advertise_adrs) {
-        rv = ma_group_join(ma_advertise_adrs, ma_advertise_port, pconf, s);
+    if (mconf->ma_advertise_mode != ma_advertise_off &&
+        mconf->ma_advertise_adrs) {
+        rv = ma_group_join(mconf->ma_advertise_adrs, mconf->ma_advertise_port, mconf->ma_bind_adrs, mconf->ma_bind_port, pconf, s);
         if (rv != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_ERR, rv, s,
                          "mod_advertise: multicast join failed for %s:%d.",
-                         ma_advertise_adrs, ma_advertise_port);
+                         mconf->ma_advertise_adrs, mconf->ma_advertise_port);
             ma_advertise_run = 0;
         }
         else {
@@ -609,36 +622,38 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     }
 
     /* Fill default values */
-    if (!ma_advertise_srvm)  {
+    if (!mconf->ma_advertise_srvm)  {
         if (ma_server_rec && ma_server_rec->server_scheme) {
             /* ServerName scheme://fully-qualified-domain-name[:port] */
-            ma_advertise_srvm = apr_pstrdup(pconf, ma_server_rec->server_scheme);
+            mconf->ma_advertise_srvm = apr_pstrdup(pconf, ma_server_rec->server_scheme);
         } else {
-            ma_advertise_srvm = apr_pstrdup(pconf, "http");
+            mconf->ma_advertise_srvm = apr_pstrdup(pconf, "http");
         }
     }
 
-    if (ma_advertise_srvs == NULL && ma_server_rec) {
+    if (mconf->ma_advertise_srvs == NULL && ma_server_rec) {
         /*
          * That is not easy just use ServerAdvertise with the server parameter
          * if the code below doesn't work
          */
-        char *ptr;
+        char *ptr = NULL;
         int port = DEFAULT_HTTP_PORT;
         if (ma_server_rec->addrs && ma_server_rec->addrs->host_addr &&
             ma_server_rec->addrs->host_addr->next == NULL) {
             ptr = apr_psprintf(pproc, "%pI", ma_server_rec->addrs->host_addr);
-        } else {
+        }
+        /* Use don't use any as local address too */
+        if (ptr == NULL || strncmp(ptr,"0.0.0.0", 7) == 0 || strncmp(ptr,"::",2) == 0) {
             if  ( ma_server_rec->port !=0 || ma_server_rec->port !=1)
                 port = ma_server_rec->port;
             ptr = apr_psprintf(pproc, "%s:%lu", ma_server_rec->server_hostname, port);
         }
-        rv = apr_parse_addr_port(&ma_advertise_srvs,
-                                 &ma_advertise_srvi,
-                                 &ma_advertise_srvp,
+        rv = apr_parse_addr_port(&mconf->ma_advertise_srvs,
+                                 &mconf->ma_advertise_srvi,
+                                 &mconf->ma_advertise_srvp,
                                  ptr, pproc);
-        if (rv != APR_SUCCESS || !ma_advertise_srvs ||
-                                 !ma_advertise_srvp) {
+        if (rv != APR_SUCCESS || !mconf->ma_advertise_srvs ||
+                                 !mconf->ma_advertise_srvp) {
             ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
                          "mod_advertise: Invalid ServerAdvertise Address %s",
                          ptr);
@@ -647,7 +662,7 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     }
 
     /* prevent X-Manager-Address: (null):0  */
-    if (!ma_advertise_srvs || !ma_advertise_srvp) {
+    if (!mconf->ma_advertise_srvs || !mconf->ma_advertise_srvp) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
                          "mod_advertise: ServerAdvertise Address or Port not defined, Advertise disabled!!!");
             return OK;
@@ -655,7 +670,7 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
 
     /* Create parent management thread */
     is_mp_running = 1;
-    rv = apr_thread_create(&tp, NULL, parent_thread, s, pconf);
+    rv = apr_thread_create(&tp, NULL, parent_thread, server, pconf);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_CRIT, rv, s,
                      "mod_advertise: parent apr_thread_create");
@@ -760,6 +775,36 @@ static void register_hooks(apr_pool_t *p)
 
 }
 
+/* Create a default conf structure */
+static void *create_advertise_server_config(apr_pool_t *p, server_rec *s)
+{
+    mod_advertise_config *mconf = apr_pcalloc(p, sizeof(*mconf));
+
+    /* Set default values */
+    mconf->ma_advertise_server  = NULL;
+    mconf->ma_advertise_adrs = MA_DEFAULT_GROUP;
+    mconf->ma_advertise_adsi = NULL;
+    mconf->ma_advertise_srvm = NULL;
+    mconf->ma_advertise_srvh = NULL;
+    mconf->ma_advertise_srvs = NULL;
+    mconf->ma_advertise_srvi = NULL;
+    mconf->ma_advertise_uuid = NULL;
+
+    mconf->ma_advertise_skey = NULL;
+
+    mconf->ma_bind_set  = 0;
+    mconf->ma_bind_adrs = NULL;
+    mconf->ma_bind_adsi = NULL;
+    mconf->ma_bind_port = 0;
+
+/* Advertise is by default turned off */
+    mconf->ma_advertise_port = MA_DEFAULT_ADVPORT;
+    mconf->ma_advertise_srvp = 0;
+    mconf->ma_advertise_mode = ma_advertise_on;
+    mconf->ma_advertise_freq = MA_DEFAULT_ADV_FREQ;
+
+    return mconf;
+}
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -772,8 +817,8 @@ module AP_MODULE_DECLARE_DATA advertise_module =
     STANDARD20_MODULE_STUFF,
     NULL,                    /* per-directory config creator                */
     NULL,                    /* dir config merger                           */
-    NULL,                    /* server config creator                       */
-    NULL,                    /* server config merger                        */
+    create_advertise_server_config,                    /* server config creator                       */
+    NULL,                     /* server config merger                        */
     cmd_table,               /* command table                               */
     register_hooks           /* set up other request processing hooks       */
 };
