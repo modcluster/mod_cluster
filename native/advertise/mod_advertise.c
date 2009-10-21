@@ -178,7 +178,8 @@ static const char *cmd_advertise_g(cmd_parms *cmd, void *dummy,
                                    const char *arg)
 {
     mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
-    if (mconf->ma_advertise_port && mconf->ma_advertise_port)
+    if (mconf->ma_advertise_port != MA_DEFAULT_ADVPORT &&
+        mconf->ma_advertise_adrs != MA_DEFAULT_GROUP)
         return "Duplicate AdvertiseGroup directives are not allowed";
 
     if (apr_parse_addr_port(&mconf->ma_advertise_adrs,
@@ -797,7 +798,6 @@ static void *create_advertise_server_config(apr_pool_t *p, server_rec *s)
     mconf->ma_bind_adsi = NULL;
     mconf->ma_bind_port = 0;
 
-/* Advertise is by default turned off */
     mconf->ma_advertise_port = MA_DEFAULT_ADVPORT;
     mconf->ma_advertise_srvp = 0;
     mconf->ma_advertise_mode = ma_advertise_on;
