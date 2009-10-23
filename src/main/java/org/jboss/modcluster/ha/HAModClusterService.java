@@ -945,6 +945,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             
             for (RpcResponse<ModClusterServiceStatus> response: responses)
             {
+               if (response == null) continue;
+               
                ClusterNode node = response.getSender();
                
                try
