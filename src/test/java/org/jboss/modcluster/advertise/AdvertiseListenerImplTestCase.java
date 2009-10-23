@@ -24,11 +24,13 @@ package org.jboss.modcluster.advertise;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
@@ -36,7 +38,7 @@ import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl;
 import org.jboss.modcluster.advertise.impl.MulticastSocketFactoryImpl;
-import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.junit.After;
 import org.junit.Before;
@@ -54,14 +56,14 @@ public class AdvertiseListenerImplTestCase
    private static final int ADVERTISE_PORT = 23364;
    private static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
    private static final DateFormat df = new SimpleDateFormat(RFC_822_FMT, Locale.US);
-   private static final String SERVER1 = "foo.bar.com";
-   private static final String SERVER2 = "bar.foo.com";
+   private static final String SERVER1 = "127.0.0.1";
+   private static final String SERVER2 = "127.0.1.1";
    private static final int SERVER_PORT = 8888;
    private static final String SERVER1_ADDRESS = String.format("%s:%d", SERVER1, SERVER_PORT);
    private static final String SERVER2_ADDRESS = String.format("%s:%d", SERVER2, SERVER_PORT);
    
    private MCMPHandler mcmpHandler = EasyMock.createStrictMock(MCMPHandler.class);
-   private MCMPHandlerConfiguration mcmpConfig = EasyMock.createMock(MCMPHandlerConfiguration.class);
+   private AdvertiseConfiguration config = EasyMock.createMock(AdvertiseConfiguration.class);
    private MulticastSocketFactory socketFactory = EasyMock.createMock(MulticastSocketFactory.class);
    
    private MulticastSocket socket;
@@ -71,16 +73,18 @@ public class AdvertiseListenerImplTestCase
    @Before
    public void setup() throws Exception
    {
-      EasyMock.expect(this.mcmpConfig.getAdvertiseGroupAddress()).andReturn(ADVERTISE_GROUP);
-      EasyMock.expect(this.mcmpConfig.getAdvertisePort()).andReturn(ADVERTISE_PORT);
-      EasyMock.expect(this.mcmpConfig.getAdvertiseSecurityKey()).andReturn(null);
+      EasyMock.expect(this.config.getAdvertiseThreadFactory()).andReturn(Executors.defaultThreadFactory());
+      EasyMock.expect(this.config.getAdvertiseGroupAddress()).andReturn(ADVERTISE_GROUP);
+      EasyMock.expect(this.config.getAdvertisePort()).andReturn(ADVERTISE_PORT);
+      EasyMock.expect(this.config.getAdvertiseSecurityKey()).andReturn(null);
+      EasyMock.expect(this.config.getAdvertiseInterface()).andReturn(null);
       
-      EasyMock.replay(this.mcmpConfig);
+      EasyMock.replay(this.config);
       
-      this.listener = new AdvertiseListenerImpl(this.mcmpHandler, this.mcmpConfig, this.socketFactory);
+      this.listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.socketFactory);
       
-      EasyMock.verify(this.mcmpConfig);
-      EasyMock.reset(this.mcmpConfig);
+      EasyMock.verify(this.config);
+      EasyMock.reset(this.config);
 
       this.groupAddress = InetAddress.getByName(ADVERTISE_GROUP);
       this.socket = new MulticastSocketFactoryImpl().createMulticastSocket(this.groupAddress, ADVERTISE_PORT);
@@ -113,6 +117,7 @@ public class AdvertiseListenerImplTestCase
       
       EasyMock.reset(this.socketFactory, this.mcmpHandler);
       
+      Capture<InetSocketAddress> capturedSocketAddress = new Capture<InetSocketAddress>();
       String date = df.format(new Date());
       
       StringBuilder data = new StringBuilder("HTTP/1.1 200 OK\r\n");
@@ -129,7 +134,7 @@ public class AdvertiseListenerImplTestCase
       byte[] buf = data.toString().getBytes();
       DatagramPacket packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
       
-      this.mcmpHandler.addProxy(SERVER1_ADDRESS);    
+      this.mcmpHandler.addProxy(EasyMock.capture(capturedSocketAddress));    
       
       EasyMock.replay(this.socketFactory, this.mcmpHandler);
       
@@ -146,6 +151,11 @@ public class AdvertiseListenerImplTestCase
       }
       
       EasyMock.verify(this.socketFactory, this.mcmpHandler);
+      
+      InetSocketAddress socketAddress = capturedSocketAddress.getValue();
+      Assert.assertEquals(SERVER1, socketAddress.getAddress().getHostAddress());
+      Assert.assertEquals(SERVER_PORT, socketAddress.getPort());
+      
       EasyMock.reset(this.socketFactory, this.mcmpHandler);
       
       EasyMock.replay(this.socketFactory, this.mcmpHandler);
@@ -181,6 +191,8 @@ public class AdvertiseListenerImplTestCase
       EasyMock.verify(this.socketFactory, this.mcmpHandler);
       EasyMock.reset(this.socketFactory, this.mcmpHandler);
       
+      capturedSocketAddress.reset();
+      
       data = new StringBuilder("HTTP/1.1 200 OK\r\n");
       data.append("Date: ");
       data.append(date);
@@ -212,7 +224,7 @@ public class AdvertiseListenerImplTestCase
       EasyMock.verify(this.socketFactory, this.mcmpHandler);
       EasyMock.reset(this.socketFactory, this.mcmpHandler);
       
-      this.mcmpHandler.addProxy(SERVER2_ADDRESS);    
+      this.mcmpHandler.addProxy(EasyMock.capture(capturedSocketAddress));    
       
       EasyMock.replay(this.socketFactory, this.mcmpHandler);
       
@@ -231,6 +243,11 @@ public class AdvertiseListenerImplTestCase
       }
       
       EasyMock.verify(this.socketFactory, this.mcmpHandler);
+      
+      socketAddress = capturedSocketAddress.getValue();
+      Assert.assertEquals(SERVER2, socketAddress.getAddress().getHostAddress());
+      Assert.assertEquals(SERVER_PORT, socketAddress.getPort());
+      
       EasyMock.reset(this.socketFactory, this.mcmpHandler);
       
       EasyMock.replay(this.socketFactory, this.mcmpHandler);

@@ -4,20 +4,36 @@
   beans are all "On Demand", i.e. that are not installed unless requested.
 -->
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
+
+  <!-- Entry point: catalina lifecycle listener -->
+  <bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter" mode="On Demand">
+    <constructor>
+      <parameter><inject bean="ModClusterService"/></parameter>
+    </constructor>
+  </bean>
   
-  <!-- The core HAModClusterService, for use in clustered environments -->
+  <!-- The core mod_cluster service -->
+  <bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand">
+    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)</annotation>
+    <constructor>
+      <parameter><inject bean="ModClusterConfig"/></parameter>
+      <parameter><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
+    </constructor>
+  </bean>
+        
+  <!-- The core mod_cluster service, implemented as an HA singleton -->
   <bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="HAPartition"/></parameter>
-      <parameter><inject bean="HAModClusterConfig"/></parameter>
+      <parameter><inject bean="ModClusterConfig"/></parameter>
       <parameter><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
+      <parameter><inject bean="HAPartition"/></parameter>
       <parameter><bean class="org.jboss.ha.singleton.HASingletonElectionPolicySimple"/></parameter>
     </constructor>
   </bean>
-
+  
   <!-- Configure this node's communication with the load balancer -->
-  <bean name="HAModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand">
+  <bean name="ModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand">
     
     <!-- Comma separated list of address:port listing the httpd servers
          where mod_cluster is running. -->
@@ -110,54 +126,6 @@
   </bean>
 
 
-  <!-- The core ModClusterService, for use in non-clustered environments -->
-  <bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand">
-    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
-    </constructor>
-    <!-- Comma delimited list of address:port listing the httpd servers
-         where mod_cluster is running. -->
-    <property name="proxyList">${jboss.modcluster.proxyList:}</property>
-    <!-- URL prefix to send with commands to mod_cluster.  Default is no prefix. -->
-    <!--property name="proxyURL"></property-->
-    
-    <!-- mod_advertise is a small httpd module that advertises the 
-         availability of httpd servers via multicast, allowing 
-         ModClusterService to discover the httpd front-end instead of
-         (or in addition to) having them defined in proxyList. -->
-    <!-- Whether to listen for advertise messages -->
-    <property name="advertise">true</property>
-    <!-- Multicast address on which to listen for advertisements -->
-    <property name="advertiseGroupAddress">${jboss.modcluster.advertise.address,jboss.partition.udpGroup:224.0.1.105}</property>
-    <!-- Port to listen to for advertisements -->
-    <property name="advertisePort">${jboss.modcluster.advertise.port:23364}</property>
-    
-    <!-- Comma delimited list of contexts that should *not* be auto-registered with httpd. -->
-    <!-- ROOT indicates the root context. -->
-    <!-- Context may be qualified by host using a colon, e.g. host1:context1 -->
-    <!-- If no host is defined, localhost is assumed. -->
-    <property name="excludedContexts">${jboss.modcluster.excludedContexts:ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console}</property>
-    
-    <!-- Security key the proxy is going to send with advertise messages. 
-         Default is none. -->
-    <!--property name="advertiseSecurityKey"></property-->
-    
-    <!-- Whether to use SSL to communicate with mod_cluster. Note this
-         has nothing to do with handling of https requests by JBoss Web -->
-    <property name="ssl">false</property>
-    
-    <!-- Configuration values for the load balancer itself (must be the
-         same on all nodes in the cluster). These will be passed to the 
-         load balancer. -->
-    <property name="stickySession">true</property>
-    <property name="stickySessionForce">false</property>
-    <property name="stickySessionRemove">false</property>
-    <property name="maxAttempts">-1</property>
-    <property name="workerTimeout">-1</property>
-  </bean>
-
-
   <!-- Alternative load balance factor providers -->
   
   <!-- Basic impl that returns a static load balance factor.
@@ -184,7 +152,7 @@
     </constructor>
   </bean>
   <!-- The system memory usage as ratio of used memory to total memory size -->
-  <!-- Requires com.sun.management.OperatingSystemMXBean -->
+  <!-- Requires com.sun.management.OperatingSystemMXBean, i.e. Sun or OpenJDK JVM -->
   <bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SystemMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
     <constructor>

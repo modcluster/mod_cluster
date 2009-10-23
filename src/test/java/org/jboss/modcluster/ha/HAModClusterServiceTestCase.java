@@ -21,30 +21,35 @@
  */
 package org.jboss.modcluster.ha;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.Collections;
-import java.util.Map;
+import java.util.Set;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
+import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.jboss.ha.framework.interfaces.ClusterNode;
 import org.jboss.ha.framework.interfaces.HAPartition;
 import org.jboss.ha.framework.interfaces.HASingletonElectionPolicy;
-import org.jboss.modcluster.ServerProvider;
+import org.jboss.ha.framework.server.EventFactory;
+import org.jboss.ha.framework.server.HAServiceEvent;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
+import org.jboss.modcluster.Server;
+import org.jboss.modcluster.advertise.AdvertiseListener;
+import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.config.ha.HAConfiguration;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
+import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
+import org.jboss.modcluster.mcmp.MCMPResponseParser;
 import org.jboss.modcluster.mcmp.MCMPServerState;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,24 +59,26 @@ import org.junit.Test;
  * @author Paul Ferraro
  *
  */
-@SuppressWarnings("boxing")
+@SuppressWarnings({"boxing"})
 public class HAModClusterServiceTestCase
 {
-   private HAPartition partition = EasyMock.createStrictMock(HAPartition.class);
-   private NodeConfiguration nodeConfig = EasyMock.createMock(NodeConfiguration.class);
-   private BalancerConfiguration balancerConfig = EasyMock.createMock(BalancerConfiguration.class);
-   private MCMPHandlerConfiguration mcmpConfig = EasyMock.createMock(MCMPHandlerConfiguration.class);
-   private HAConfiguration haConfig = EasyMock.createMock(HAConfiguration.class);
-   private MCMPHandler mcmpHandler = EasyMock.createStrictMock(MCMPHandler.class);
-   private HASingletonAwareResetRequestSource resetRequestSource = EasyMock.createStrictMock(HASingletonAwareResetRequestSource.class);
-   private ClusteredMCMPHandler clusteredMCMPHandler = EasyMock.createStrictMock(ClusteredMCMPHandler.class);
-   private LoadBalanceFactorProvider lbfProvider = EasyMock.createStrictMock(LoadBalanceFactorProvider.class);
-   private HASingletonElectionPolicy electionPolicy = EasyMock.createStrictMock(HASingletonElectionPolicy.class);
-   private ClusterNode node = EasyMock.createStrictMock(ClusterNode.class);
-   private LifecycleListener lifecycleListener = EasyMock.createStrictMock(LifecycleListener.class);
-   private MCMPRequestFactory requestFactory = EasyMock.createStrictMock(MCMPRequestFactory.class);
+   private final HAPartition partition = EasyMock.createStrictMock(HAPartition.class);
    @SuppressWarnings("unchecked")
-   private ServerProvider<Server> serverProvider = EasyMock.createStrictMock(ServerProvider.class);
+   private final EventFactory<HAServiceEvent> eventFactory = EasyMock.createStrictMock(EventFactory.class);
+   private final HAConfiguration haConfig = EasyMock.createMock(HAConfiguration.class);
+   private final HASingletonAwareResetRequestSource resetRequestSource = EasyMock.createStrictMock(HASingletonAwareResetRequestSource.class);
+   private final ClusteredMCMPHandler clusteredMCMPHandler = EasyMock.createStrictMock(ClusteredMCMPHandler.class);
+   private final HASingletonElectionPolicy electionPolicy = EasyMock.createStrictMock(HASingletonElectionPolicy.class);
+   private final ClusterNode node = EasyMock.createStrictMock(ClusterNode.class);
+   private final NodeConfiguration nodeConfig = EasyMock.createStrictMock(NodeConfiguration.class);
+   private final BalancerConfiguration balancerConfig = EasyMock.createStrictMock(BalancerConfiguration.class);
+   private final MCMPHandlerConfiguration mcmpConfig = EasyMock.createStrictMock(MCMPHandlerConfiguration.class);
+   private final MCMPHandler mcmpHandler = EasyMock.createStrictMock(MCMPHandler.class);
+   private final MCMPRequestFactory requestFactory = EasyMock.createStrictMock(MCMPRequestFactory.class);
+   private final MCMPResponseParser responseParser = EasyMock.createStrictMock(MCMPResponseParser.class);
+   private final LoadBalanceFactorProviderFactory lbfProviderFactory = EasyMock.createStrictMock(LoadBalanceFactorProviderFactory.class);
+   private final LoadBalanceFactorProvider lbfProvider = EasyMock.createStrictMock(LoadBalanceFactorProvider.class);
+   private final AdvertiseListenerFactory advertiseListenerFactory = EasyMock.createStrictMock(AdvertiseListenerFactory.class);
    
    private static final boolean MASTER_PER_DOMAIN = true;
    private static final String SERVICE_HA_NAME = "myservice";
@@ -89,89 +96,91 @@ public class HAModClusterServiceTestCase
       
       EasyMock.replay(this.mcmpConfig, this.nodeConfig, this.haConfig, this.partition);
       
-      this.service = new HAModClusterService(this.partition, this.nodeConfig, this.balancerConfig, this.mcmpConfig, this.haConfig, this.mcmpHandler, this.serverProvider, this.requestFactory, this.resetRequestSource, this.clusteredMCMPHandler, this.lifecycleListener, this.lbfProvider, this.electionPolicy);
+      this.service = new HAModClusterService(this.eventFactory, this.haConfig, this.nodeConfig, this.balancerConfig, this.mcmpConfig, this.lbfProviderFactory, this.partition, this.electionPolicy, this.requestFactory, this.responseParser, this.resetRequestSource, this.mcmpHandler, this.clusteredMCMPHandler, this.advertiseListenerFactory);
       this.service.setServiceHAName(SERVICE_HA_NAME);
       
       EasyMock.verify(this.mcmpConfig, this.nodeConfig, this.haConfig, this.partition);
       EasyMock.reset(this.mcmpConfig, this.nodeConfig, this.haConfig, this.partition);
    }
 
-   @Test
-   public void getServer()
+   public void init(Server server)
    {
-      Server server = EasyMock.createMock(Server.class);
-      
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      
-      EasyMock.replay(this.serverProvider);
-      
-      Server result = this.service.getServer();
-      
-      EasyMock.verify(this.serverProvider);
-      
-      Assert.assertSame(server, result);
+      try
+      {
+         InetAddress localAddress = InetAddress.getLocalHost();
+         String localHostName = localAddress.getHostAddress();
+         InetSocketAddress socketAddress = new InetSocketAddress(localAddress, 8000);
+         
+         AdvertiseListener listener = EasyMock.createStrictMock(AdvertiseListener.class);
+         
+         // Test advertise = false
+         EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(localHostName);
+         
+         this.clusteredMCMPHandler.init(Collections.singletonList(socketAddress));
+         
+         EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn(null);
+         
+         this.resetRequestSource.init(server, Collections.<String, Set<String>>emptyMap());
+
+         EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
+         
+         EasyMock.expect(this.mcmpConfig.getAdvertise()).andReturn(false);
+         
+         EasyMock.replay(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
+         
+         this.service.init(server);
+         
+         EasyMock.verify(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
+         EasyMock.reset(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
+      }
+      catch (UnknownHostException e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
    
    @Test
    public void addProxy()
    {
+      Capture<InetSocketAddress> capturedSocketAddress = new Capture<InetSocketAddress>();
+      
       String host = "127.0.0.1";
       int port = 0;
       
-      this.clusteredMCMPHandler.addProxy(host, port);
+      this.clusteredMCMPHandler.addProxy(EasyMock.capture(capturedSocketAddress));
       
       EasyMock.replay(this.clusteredMCMPHandler);
       
       this.service.addProxy(host, port);
       
       EasyMock.verify(this.clusteredMCMPHandler);
+      
+      InetSocketAddress socketAddress = capturedSocketAddress.getValue();
+      Assert.assertEquals(host, socketAddress.getAddress().getHostAddress());
+      Assert.assertEquals(port, socketAddress.getPort());
+      
       EasyMock.reset(this.clusteredMCMPHandler);
    }
    
    @Test
    public void removeProxy()
    {
+      Capture<InetSocketAddress> capturedSocketAddress = new Capture<InetSocketAddress>();
+      
       String host = "127.0.0.1";
       int port = 0;
       
-      this.clusteredMCMPHandler.removeProxy(host, port);
+      this.clusteredMCMPHandler.removeProxy(EasyMock.capture(capturedSocketAddress));
       
       EasyMock.replay(this.clusteredMCMPHandler);
       
       this.service.removeProxy(host, port);
       
       EasyMock.verify(this.clusteredMCMPHandler);
-      EasyMock.reset(this.clusteredMCMPHandler);
-   }
-   
-   @Test
-   public void getProxyConfiguration()
-   {
-      EasyMock.expect(this.clusteredMCMPHandler.getProxyConfiguration()).andReturn("configuration");
       
-      EasyMock.replay(this.clusteredMCMPHandler);
-      
-      String result = this.service.getProxyConfiguration();
-      
-      EasyMock.verify(this.clusteredMCMPHandler);
-      
-      Assert.assertEquals("configuration", result);
-      
-      EasyMock.reset(this.clusteredMCMPHandler);
-   }
-   
-   @Test
-   public void getProxyInfo()
-   {
-      EasyMock.expect(this.clusteredMCMPHandler.getProxyInfo()).andReturn("info");
-      
-      EasyMock.replay(this.clusteredMCMPHandler);
-      
-      String result = this.service.getProxyInfo();
-      
-      EasyMock.verify(this.clusteredMCMPHandler);
-      
-      Assert.assertEquals("info", result);
+      InetSocketAddress socketAddress = capturedSocketAddress.getValue();
+      Assert.assertEquals(host, socketAddress.getAddress().getHostAddress());
+      Assert.assertEquals(port, socketAddress.getPort());
       
       EasyMock.reset(this.clusteredMCMPHandler);
    }
@@ -206,56 +215,58 @@ public class HAModClusterServiceTestCase
    public void enable()
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      Service service = EasyMock.createStrictMock(Service.class);
+      
+      this.init(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
-      Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
       
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
-      EasyMock.expect(service.getContainer()).andReturn(engine);
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
 
       EasyMock.expect(this.requestFactory.createEnableRequest(engine)).andReturn(request);
       
-      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(emptyMap);
+      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.clusteredMCMPHandler.isProxyHealthOK()).andReturn(true);
       
-      EasyMock.replay(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine);
+      EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine);
       
       boolean result = this.service.enable();
       
-      EasyMock.verify(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine);
+      EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine);
       
       Assert.assertTrue(result);
+      
+      EasyMock.reset(this.requestFactory, this.clusteredMCMPHandler, server, engine);
    }
    
    @Test
    public void disable()
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      Service service = EasyMock.createStrictMock(Service.class);
+      
+      this.init(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
-      Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
       
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
-      EasyMock.expect(service.getContainer()).andReturn(engine);
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
       
       EasyMock.expect(this.requestFactory.createDisableRequest(engine)).andReturn(request);
       
-      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(emptyMap);
+      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.clusteredMCMPHandler.isProxyHealthOK()).andReturn(true);
       
-      EasyMock.replay(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine);
+      EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine);
       
       boolean result = this.service.disable();
       
-      EasyMock.verify(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine);
+      EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine);
       
       Assert.assertTrue(result);
+      
+      EasyMock.reset(this.requestFactory, this.clusteredMCMPHandler, server, engine);
    }
    
    @Test
@@ -265,32 +276,33 @@ public class HAModClusterServiceTestCase
       String path = "/context";
       
       Server server = EasyMock.createStrictMock(Server.class);
-      Service service = EasyMock.createStrictMock(Service.class);
+      
+      this.init(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
-      Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
       
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
-      EasyMock.expect(service.getContainer()).andReturn(engine);
-      EasyMock.expect(engine.findChild(hostName)).andReturn(host);
-      EasyMock.expect(host.findChild(path)).andReturn(context);
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+      EasyMock.expect(engine.findHost(hostName)).andReturn(host);
+      EasyMock.expect(host.findContext(path)).andReturn(context);
 
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(request);
       
-      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(emptyMap);
+      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.clusteredMCMPHandler.isProxyHealthOK()).andReturn(true);
       
-      EasyMock.replay(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine, host, context);
+      EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
       boolean result = this.service.enable(hostName, path);
       
-      EasyMock.verify(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine, host, context);
+      EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
       Assert.assertTrue(result);
+      
+      EasyMock.reset(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
    }
    
    @Test
@@ -300,58 +312,84 @@ public class HAModClusterServiceTestCase
       String path = "/context";
       
       Server server = EasyMock.createStrictMock(Server.class);
-      Service service = EasyMock.createStrictMock(Service.class);
+      
+      this.init(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
-      Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
       
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
-      EasyMock.expect(service.getContainer()).andReturn(engine);
-      EasyMock.expect(engine.findChild(hostName)).andReturn(host);
-      EasyMock.expect(host.findChild(path)).andReturn(context);
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+      EasyMock.expect(engine.findHost(hostName)).andReturn(host);
+      EasyMock.expect(host.findContext(path)).andReturn(context);
       
       EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(request);
       
-      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(emptyMap);
+      EasyMock.expect(this.clusteredMCMPHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.clusteredMCMPHandler.isProxyHealthOK()).andReturn(true);
       
-      EasyMock.replay(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine, host, context);
+      EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
       boolean result = this.service.disable(hostName, path);
       
-      EasyMock.verify(this.serverProvider, this.requestFactory, this.clusteredMCMPHandler, server, service, engine, host, context);
+      EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
       Assert.assertTrue(result);
+      
+      EasyMock.reset(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
    }
    
+/*
    @Test
-   public void lifecycleEvent()
+   public void getProxyConfiguration() throws Exception
    {
-      LifecycleEvent event = new LifecycleEvent(EasyMock.createMock(Lifecycle.class), Lifecycle.INIT_EVENT);
+      String configuration = "configuration";
       
-      this.lifecycleListener.lifecycleEvent(event);
+      // Test master use case
+      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      EasyMock.replay(this.lifecycleListener);
+      EasyMock.expect(this.localHandler.getProxyConfiguration()).andReturn(configuration);
       
-      this.service.lifecycleEvent(event);
+      EasyMock.replay(this.localHandler, this.singleton);
       
-      EasyMock.verify(this.lifecycleListener);
-      EasyMock.reset(this.lifecycleListener);
+      String result = this.handler.getProxyConfiguration();
+      
+      EasyMock.verify(this.localHandler, this.singleton);
+      
+      Assert.assertSame(configuration, result);
+      
+      EasyMock.reset(this.localHandler, this.singleton);
+      
+      
+      // Test non-master use case
+      String key = "key";
+      ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      RpcResponse<String> response1 = EasyMock.createMock(RpcResponse.class);
+      RpcResponse<String> response2 = EasyMock.createMock(RpcResponse.class);
+      ArrayList<RpcResponse<String>> responses = new ArrayList<RpcResponse<String>>(Arrays.asList(response1, response2));
+      
+      EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
+      
+      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
+      EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
+      
+      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("getProxyConfiguration"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      
+      EasyMock.expect(response1.getResult()).andReturn(configuration);
+      
+      EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
+      
+      result = this.handler.getProxyConfiguration();
+      
+      EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
+      
+      Assert.assertSame(configuration, result);
+      
+      EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
    }
    
-   @Test
-   public void createLoadBalanceFactorProvider()
-   {
-      LoadBalanceFactorProvider lbfProvider = this.service.createLoadBalanceFactorProvider();
-      
-      Assert.assertSame(this.lbfProvider, lbfProvider);
-   }
-   
-/*   
    @Test
    public void init() throws UnknownHostException
    {

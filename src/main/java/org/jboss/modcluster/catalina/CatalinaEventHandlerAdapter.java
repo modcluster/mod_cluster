@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2008, JBoss Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster;
+package org.jboss.modcluster.catalina;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
@@ -32,6 +32,7 @@ import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.jboss.modcluster.ContainerEventHandler;
 
 /**
  * Adapts lifecycle and container listener events to the {@link ContainerEventHandler} interface.
@@ -41,11 +42,11 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    /** Initialization flag. */
    private volatile boolean init = false;
 
-   private ContainerEventHandler<Server, Engine, Context> eventHandler;
+   private ContainerEventHandler eventHandler;
 
    // ----------------------------------------------------------- Constructors
 
-   public CatalinaEventHandlerAdapter(ContainerEventHandler<Server, Engine, Context> eventHandler)
+   public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler)
    {
       this.eventHandler = eventHandler;
    }
@@ -73,7 +74,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Deploying a webapp
             ((Lifecycle) child).addLifecycleListener(this);
-            this.eventHandler.addContext((Context) child);
+            this.eventHandler.add(new CatalinaContext((Context) child));
          }
          else if (container instanceof Engine)
          {
@@ -90,7 +91,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Undeploying a webapp
             ((Lifecycle) child).removeLifecycleListener(this);
-            this.eventHandler.removeContext((Context) child);
+            this.eventHandler.remove(new CatalinaContext((Context) child));
          }
          else if (container instanceof Engine)
          {
@@ -118,7 +119,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          if (source instanceof Context)
          {
             // Start a webapp
-            this.eventHandler.startContext((Context) source);
+            this.eventHandler.start(new CatalinaContext((Context) source));
          }
       }
       else if (type.equals(Lifecycle.AFTER_START_EVENT))
@@ -126,12 +127,13 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          if (source instanceof Server)
          {
             Server server = (Server) source;
+            CatalinaServer catalinaServer = new CatalinaServer(server);
             
-            this.eventHandler.init(server);
+            this.eventHandler.init(catalinaServer);
             
             this.addListeners(server);
 
-            this.eventHandler.startServer(server);
+            this.eventHandler.start(catalinaServer);
 
             this.init = true;
          }
@@ -141,7 +143,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          if (source instanceof Context)
          {
             // Stop a webapp
-            this.eventHandler.stopContext((Context) source);
+            this.eventHandler.stop(new CatalinaContext((Context) source));
          }
          else if (source instanceof Server)
          {
@@ -151,7 +153,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             
             this.removeListeners(server);
 
-            this.eventHandler.stopServer(server);
+            this.eventHandler.stop(new CatalinaServer(server));
 
             this.eventHandler.shutdown();
          }
@@ -160,7 +162,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       {
          if (this.init && (source instanceof Engine))
          {
-            this.eventHandler.status((Engine) source);
+            this.eventHandler.status(new CatalinaEngine((Engine) source));
          }
       }
    }

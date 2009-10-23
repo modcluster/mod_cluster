@@ -5,7 +5,7 @@
          description="Lifecycle listener for mod_cluster"
          domain="Catalina"
          group="Listener"
-         type="org.jboss.modcluster.ModClusterListener">
+         type="org.jboss.modcluster.catalina.ModClusterListener">
 
     <attribute name="className"
                description="Fully qualified class name of the managed object"

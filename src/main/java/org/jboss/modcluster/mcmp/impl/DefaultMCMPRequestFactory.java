@@ -21,17 +21,17 @@
  */
 package org.jboss.modcluster.mcmp.impl;
 
+import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.connector.Connector;
-import org.apache.coyote.ProtocolHandler;
-import org.apache.tomcat.util.IntrospectionUtils;
+import org.jboss.modcluster.Connector;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
@@ -44,10 +44,8 @@ import org.jboss.modcluster.mcmp.MCMPRequestType;
  */
 public class DefaultMCMPRequestFactory implements MCMPRequestFactory
 {
-   private static final Map<String, String> EMPTY_MAP = Collections.emptyMap();
-   
-   private final MCMPRequest infoRequest = new DefaultMCMPRequest(MCMPRequestType.INFO, false, null, EMPTY_MAP);
-   private final MCMPRequest dumpRequest = new DefaultMCMPRequest(MCMPRequestType.DUMP, true, null, EMPTY_MAP);
+   private final MCMPRequest infoRequest = new DefaultMCMPRequest(MCMPRequestType.INFO, false, null, Collections.<String, String>emptyMap());
+   private final MCMPRequest dumpRequest = new DefaultMCMPRequest(MCMPRequestType.DUMP, true, null, Collections.<String, String>emptyMap());
    
    /**
     * @{inheritDoc}
@@ -55,22 +53,17 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
     */
    public MCMPRequest createConfigRequest(Engine engine, NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig)
    {
-      Connector connector = Utils.findProxyConnector(engine.getService().findConnectors());
-      Map<String, String> parameters = new HashMap<String, String>();
+      Connector connector = engine.getProxyConnector();
+      Map<String, String> parameters = new TreeMap<String, String>();
 
-      ProtocolHandler handler = connector.getProtocolHandler();
-
-      boolean reverseConnection = Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "reverseConnection"));
-      boolean ssl = Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "SSLEnabled"));
-      boolean ajp = Utils.isAJP(connector);
-
-      if (reverseConnection)
+      if (connector.isReverse())
       {
          parameters.put("Reversed", "true");
       }
-      parameters.put("Host", Utils.getAddress(connector));
-      parameters.put("Port", "" + connector.getPort());
-      parameters.put("Type", ajp ? "ajp" : (ssl ? "https" : "http"));
+
+      parameters.put("Host", Utils.identifyHost(connector.getAddress()));
+      parameters.put("Port", String.valueOf(connector.getPort()));
+      parameters.put("Type", connector.getType().toString());
 
       // Other configuration parameters
       String domain = nodeConfig.getDomain();
@@ -145,7 +138,7 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
 
       return new DefaultMCMPRequest(MCMPRequestType.CONFIG, false, engine.getJvmRoute(), parameters);
    }
-
+   
    /**
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.apache.catalina.Context)
@@ -235,82 +228,91 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    {
       return this.infoRequest;
    }
+   
    /**
     * Returns a PING MCMPRequest.
     *
     * @param JvmRoute a <code>String</code> containing
     * the name of node (JVMRoute) or an url to PING
     */
-   public MCMPRequest createPingRequest(String JvmRoute)
+   public MCMPRequest createPingRequest(String jvmRoute)
    {
-      int protocolIndex = -1;
-      if (JvmRoute != null)
-         protocolIndex = JvmRoute.indexOf("://");
-      if (protocolIndex == -1)
-         return new DefaultMCMPRequest(MCMPRequestType.PING, false, JvmRoute, EMPTY_MAP);
-      else {
-         /* we have scheme://host[:port] */
-         String scheme = JvmRoute.substring(0,protocolIndex);
-         String port = "8009";
-         if (scheme.equals("https"))
-            port = "443";
-         else if (scheme.equals("http"))
-            port = "80";
+      return new DefaultMCMPRequest(MCMPRequestType.PING, false, jvmRoute, Collections.<String, String>emptyMap());
+   }
 
-         int hostIndex = JvmRoute.indexOf(":", protocolIndex+3);
-         String host = "localhost";
-         if (hostIndex != -1) {
-            port = JvmRoute.substring(hostIndex+1);
-            host = JvmRoute.substring(protocolIndex+3, hostIndex);
-         } else {
-            host = JvmRoute.substring(protocolIndex+3);
-         }
-         Map<String, String> parameters = new HashMap<String, String>();
-         parameters.put("Scheme", scheme);
-         parameters.put("Host", host);
-         parameters.put("Port", port);
-         return new DefaultMCMPRequest(MCMPRequestType.PING, false, null, parameters);
-         
+   @Override
+   public MCMPRequest createPingRequest(URI uri)
+   {
+      String scheme = uri.getScheme();
+      String host = uri.getHost();
+      int port = uri.getPort();
+      if (port < 0)
+      {
+         port = Connector.Type.valueOf(scheme.toUpperCase()).getDefaultPort();
       }
+      
+      Map<String, String> parameters = new TreeMap<String, String>();
+      parameters.put("Scheme", scheme);
+      parameters.put("Host", host);
+      parameters.put("Port", String.valueOf(port));
+      
+      return new DefaultMCMPRequest(MCMPRequestType.PING, false, null, parameters);
    }
 
    private MCMPRequest createRequest(MCMPRequestType type, Context context)
    {
-      return this.createRequest(type, Utils.getJvmRoute(context), Utils.getAliases(context), context.getPath());
+      Host host = context.getHost();
+      
+      return this.createContextRequest(type, host.getEngine().getJvmRoute(), host.getAliases(), context.getPath());
    }
    
    /**
     * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRequest(org.jboss.modcluster.mcmp.MCMPRequestType, java.lang.String, java.util.Set, java.lang.String)
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveContextRequest(java.lang.String, java.util.Set, java.lang.String)
     */
-   public MCMPRequest createRequest(MCMPRequestType type, String jvmRoute, Set<String> aliases, String path)
+   public MCMPRequest createRemoveContextRequest(String jvmRoute, Set<String> aliases, String path)
    {
-      Map<String, String> parameters = new HashMap<String, String>();
+      return this.createContextRequest(MCMPRequestType.REMOVE_APP, jvmRoute, aliases, path);
+   }
 
-      parameters.put("Context", "".equals(path) ? "/" : path);
-      
-      StringBuilder builder = new StringBuilder();
-      Iterator<String> hosts = aliases.iterator();
-      while (hosts.hasNext())
-      {
-         builder.append(hosts.next());
-         if (hosts.hasNext())
-         {
-            builder.append(',');
-         }
-      }
-      parameters.put("Alias", builder.toString());
+   private MCMPRequest createContextRequest(MCMPRequestType type, String jvmRoute, Set<String> aliases, String path)
+   {
+      Map<String, String> parameters = new TreeMap<String, String>();
+
+      parameters.put("Context", (path.length() == 0) ? "/" : path);
+      parameters.put("Alias", join(aliases, ','));
       
       return new DefaultMCMPRequest(type, false, jvmRoute, parameters);
    }
-
+   
    private MCMPRequest createRequest(MCMPRequestType type, Engine engine)
    {
-      return this.createRequest(type, engine.getJvmRoute());
+      return this.createEngineRequest(type, engine.getJvmRoute());
    }
 
-   private MCMPRequest createRequest(MCMPRequestType type, String jvmRoute)
+   private MCMPRequest createEngineRequest(MCMPRequestType type, String jvmRoute)
    {
-      return new DefaultMCMPRequest(type, true, jvmRoute, EMPTY_MAP);
+      return new DefaultMCMPRequest(type, true, jvmRoute, Collections.<String, String>emptyMap());
+   }
+   
+   @Override
+   public MCMPRequest createRemoveEngineRequest(String jvmRoute)
+   {
+      return this.createEngineRequest(MCMPRequestType.REMOVE_APP, jvmRoute);
+   }
+
+   private static String join(Iterable<String> collection, char delimiter)
+   {
+      StringBuilder builder = new StringBuilder();
+      Iterator<String> values = collection.iterator();
+      if (values.hasNext())
+      {
+         builder.append(values.next());
+      }
+      while (values.hasNext())
+      {
+         builder.append(delimiter).append(values.next());
+      }
+      return builder.toString();
    }
 }

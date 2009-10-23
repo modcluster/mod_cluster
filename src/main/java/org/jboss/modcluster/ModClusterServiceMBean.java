@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,6 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.modcluster;
+
+import java.net.InetSocketAddress;
+import java.util.Map;
+
+import org.jboss.modcluster.mcmp.MCMPRequestType;
 
 
 /**
@@ -61,25 +66,29 @@ public interface ModClusterServiceMBean
     *   context: 4 [/docs] vhost: 1 node: 1 status: 1
     *   context: 5 [/manager] vhost: 1 node: 1 status: 1
     *
-    * @return the proxy confguration
+    * Sends a {@link MCMPRequestType#DUMP DUMP} request to all proxies,
+    * concatentating their responses into a single string.
+    * 
+    * @return the configuration information from all the accessible proxies.
     */
-   public String getProxyConfiguration();
+   public Map<InetSocketAddress, String> getProxyConfiguration();
    
    /**
     * Retrieves the full proxy info message.
     *
-    *
-    * @return the proxy info confguration
+    * Sends a {@link MCMPRequestType#INFO INFO} request to all proxies,
+    * concatentating their responses into a single string.
+    * 
+    * @return the configuration information from all the accessible proxies.
     */
-   public String getProxyInfo();
-
+   public Map<InetSocketAddress, String> getProxyInfo();
+   
    /**
     * Ping a node from httpd.
     *
-    *
     * @return PING_RSP String.
     */
-   public String doProxyPing(String JvmRoute);
+   public Map<InetSocketAddress, String> ping(String jvmRoute);
 
    /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will

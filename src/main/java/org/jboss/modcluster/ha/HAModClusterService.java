@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.ha;
 
 import java.io.Serializable;
@@ -32,15 +31,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
-import org.apache.catalina.util.StringManager;
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.beans.metadata.api.model.FromContext;
 import org.jboss.ha.framework.interfaces.CachableMarshalledValue;
@@ -48,16 +41,18 @@ import org.jboss.ha.framework.interfaces.ClusterNode;
 import org.jboss.ha.framework.interfaces.DistributedReplicantManager;
 import org.jboss.ha.framework.interfaces.HAPartition;
 import org.jboss.ha.framework.interfaces.HASingletonElectionPolicy;
+import org.jboss.ha.framework.server.EventFactory;
 import org.jboss.ha.framework.server.HAServiceEvent;
 import org.jboss.ha.framework.server.HAServiceEventFactory;
 import org.jboss.ha.framework.server.HAServiceRpcHandler;
 import org.jboss.ha.framework.server.HASingletonImpl;
 import org.jboss.ha.framework.server.SimpleCachableMarshalledValue;
-import org.jboss.modcluster.Constants;
 import org.jboss.modcluster.ContainerEventHandler;
-import org.jboss.modcluster.CatalinaEventHandler;
-import org.jboss.modcluster.CatalinaEventHandlerAdapter;
-import org.jboss.modcluster.ServerProvider;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.ModClusterService;
+import org.jboss.modcluster.Server;
+import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerFactoryImpl;
@@ -74,388 +69,398 @@ import org.jboss.modcluster.ha.rpc.ModClusterServiceStatus;
 import org.jboss.modcluster.ha.rpc.PeerMCMPDiscoveryStatus;
 import org.jboss.modcluster.ha.rpc.ResetRequestSourceRpcHandler;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
+import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
+import org.jboss.modcluster.mcmp.MCMPResponseParser;
 import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
+import org.jboss.modcluster.mcmp.ResetRequestSource.VirtualHost;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
+import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 
-/**
- * A ModClusterService.
- * 
- * @author Brian Stansberry
- * @version $Revision$
- */
-public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
-   implements LifecycleListener, HAModClusterServiceMBean, ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState>, LoadBalanceFactorProviderFactory, ServerProvider<Server>
+public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider
 {
-   private static final Class<?>[] CLUSTER_STATUS_COMPLETE_TYPES = new Class[] { Map.class };
-   private static final Class<?>[] GET_CLUSTER_COORDINATOR_STATE_TYPES = new Class[] { Set.class };
+   static final Object[] NULL_ARGS = new Object[0];
+   static final Class<?>[] NULL_TYPES = new Class[0];
+   static final Class<?>[] PING_TYPES = new Class[] { String.class };
+   static final Class<?>[] CLUSTER_STATUS_COMPLETE_TYPES = new Class[] { Map.class };
+   static final Class<?>[] GET_CLUSTER_COORDINATOR_STATE_TYPES = new Class[] { Set.class };
    
-   // -----------------------------------------------------------------  Fields
+   // HAModClusterServiceMBean and ContainerEventHandler delegate
+   private final ClusteredModClusterService service;
+   private final HAServiceRpcHandler<HAServiceEvent> rpcHandler;
+   private final ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState> rpcStub = new RpcStub();
    
-   final MCMPHandler localHandler;
-   final MCMPRequestFactory requestFactory;
-   final ClusteredMCMPHandler clusteredHandler;
-   final HASingletonAwareResetRequestSource resetRequestSource;
-   final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new HashMap<ClusterNode, MCMPServerDiscoveryEvent>();
-   final ModClusterServiceDRMEntry drmEntry;
-   
-   /**
-    * The string manager for this package.
-    */
-   final StringManager sm = StringManager.getManager(Constants.Package);
-   
-   private final ServerProvider<Server> serverProvider;
-   private final LifecycleListener lifecycleListener;
-   private final LoadBalanceFactorProvider loadBalanceFactorProvider;
-   private final RpcHandler rpcHandler;
+   private final MCMPRequestFactory requestFactory;
+   private final MCMPResponseParser responseParser;
+   private final MCMPHandler localHandler;
+   private final ClusteredMCMPHandler clusteredHandler;
+   private final HASingletonAwareResetRequestSource resetRequestSource;
+   private final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new ConcurrentHashMap<ClusterNode, MCMPServerDiscoveryEvent>();
+   private final ModClusterServiceDRMEntry drmEntry;
    private final String domain;
    private final boolean masterPerDomain;
+   private final AtomicReference<Set<CachableMarshalledValue>> replicantView = new AtomicReference<Set<CachableMarshalledValue>>(Collections.<CachableMarshalledValue>emptySet());
 
-   private static final String NEW_LINE = "\r\n";
-   
+   volatile int processStatusFrequency = 1;
    volatile int latestLoad;
    volatile int statusCount = 0;
-   volatile int processStatusFrequency = 1;
-   
-   /**
-    * Create a new ClusterCoordinator.
-    * 
-    * @param partition   the partition of which we are a member
-    * @param config      our configuration
-    * @param loadFactorProvider source for local load balance statistics
-    */
-   public HAModClusterService(HAPartition partition,
-                               HAModClusterConfig config,
-                               LoadBalanceFactorProvider loadFactorProvider)
+
+   public HAModClusterService(HAModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider, HAPartition partition)
    {
-      this(partition, config, loadFactorProvider, null);
+      this(config, loadBalanceFactorProvider, partition, null);
    }
    
-   
-   /**
-    * Create a new ClusterCoordinator.
-    * 
-    * @param partition   the partition of which we are a member
-    * @param config      our configuration
-    * @param loadFactorProvider source for local load balance statistics
-    * @param singletonElector chooses the singleton master
-    */
-   public HAModClusterService(HAPartition partition,
-                               HAModClusterConfig config,
-                               LoadBalanceFactorProvider loadFactorProvider,
-                               HASingletonElectionPolicy electionPolicy)
+   public HAModClusterService(HAModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider, HAPartition partition, HASingletonElectionPolicy electionPolicy)
    {
       super(new HAServiceEventFactory());
       
-      assert partition != null          : this.sm.getString("modcluster.error.iae.null", "partition");
-      assert loadFactorProvider != null : this.sm.getString("modcluster.error.iae.null", "loadFactorProvider");
-      assert config != null             : this.sm.getString("modcluster.error.iae.null", "config is null");
-      
       this.setHAPartition(partition);
+      this.setElectionPolicy(electionPolicy);
       
-      this.loadBalanceFactorProvider = loadFactorProvider;
+      this.rpcHandler = new RpcHandler();
       this.requestFactory = new DefaultMCMPRequestFactory();
-      this.resetRequestSource = new HASingletonAwareResetRequestSourceImpl(config, config, this, this.requestFactory, this, this);
-      this.localHandler = new DefaultMCMPHandler(config, this.resetRequestSource, this.requestFactory);
+      this.responseParser = new DefaultMCMPResponseParser();
+      this.resetRequestSource = new HASingletonAwareResetRequestSourceImpl(config, config, requestFactory, this, this);
+      this.localHandler = new DefaultMCMPHandler(config, this.resetRequestSource, this.requestFactory, this.responseParser);
       this.clusteredHandler = new ClusteredMCMPHandlerImpl(this.localHandler, this, this);
       
-      ContainerEventHandler<Server, Engine, Context> eventHandler = new ClusteredCatalinaEventHandler(config, config, config, this.clusteredHandler, this.resetRequestSource, this.requestFactory, this, new AdvertiseListenerFactoryImpl());
-      
-      this.serverProvider = eventHandler;
-      this.lifecycleListener = new CatalinaEventHandlerAdapter(eventHandler);
-      
+      this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
+      this.service = new ClusteredModClusterService(config, config, config, new SimpleLoadBalanceFactorProviderFactory(loadBalanceFactorProvider), this.requestFactory, this.responseParser, this.resetRequestSource, this.clusteredHandler, new AdvertiseListenerFactoryImpl());
       this.domain = config.getDomain();
       this.masterPerDomain = config.isMasterPerDomain();
-      
-      this.setElectionPolicy(electionPolicy);
-      
-      this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
-      
-      this.rpcHandler = new RpcHandler();
    }
    
-   /**
-    * Create a new ClusterCoordinator using the given component parts.
-    * Only intended for use by test suites that may wish to inject
-    * mock components.
-    * 
-    * @param partition
-    * @param nodeConfig
-    * @param balancerConfig
-    * @param localHandler
-    * @param resetRequestSource
-    * @param clusteredHandler
-    * @param loadManager
-    * @param singletonElector
-    */
-   protected HAModClusterService(HAPartition partition,
-                                  NodeConfiguration nodeConfig,
-                                  BalancerConfiguration balancerConfig,
-                                  MCMPHandlerConfiguration mcmpConfig,
-                                  HAConfiguration haConfig,
-                                  MCMPHandler localHandler,
-                                  ServerProvider<Server> serverProvider,
-                                  MCMPRequestFactory requestFactory,
-                                  HASingletonAwareResetRequestSource resetRequestSource,
-                                  ClusteredMCMPHandler clusteredHandler,
-                                  LifecycleListener lifecycleListener,
-                                  LoadBalanceFactorProvider loadFactorProvider,
-                                  HASingletonElectionPolicy electionPolicy)
+   protected HAModClusterService(EventFactory<HAServiceEvent> eventFactory, HAConfiguration haConfig,
+         NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, 
+         LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, HAPartition partition, 
+         HASingletonElectionPolicy electionPolicy, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser,
+         HASingletonAwareResetRequestSource resetRequestSource, MCMPHandler localHandler, 
+         ClusteredMCMPHandler clusteredHandler, AdvertiseListenerFactory advertiseListenerFactory)
    {
-      super(new HAServiceEventFactory());
+      super(eventFactory);
       
       this.setHAPartition(partition);
-      
-      this.loadBalanceFactorProvider = loadFactorProvider;
-      this.localHandler = localHandler;
-      this.serverProvider = serverProvider;
-      this.requestFactory = requestFactory;
-      this.resetRequestSource = resetRequestSource;
-      this.clusteredHandler = clusteredHandler;
-      this.lifecycleListener = lifecycleListener;
-
-      this.domain = nodeConfig.getDomain();
-      this.masterPerDomain = haConfig.isMasterPerDomain();
-      
       this.setElectionPolicy(electionPolicy);
       
-      this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
-      
       this.rpcHandler = new RpcHandler();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ServerProvider#getServer()
-    */
-   public Server getServer()
-   {
-      return this.serverProvider.getServer();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.apache.catalina.LifecycleListener#lifecycleEvent(org.apache.catalina.LifecycleEvent)
-    */
-   public void lifecycleEvent(LifecycleEvent event)
-   {
-      this.lifecycleListener.lifecycleEvent(event);
-   }
-   
-   // -------------------------------------------------- ModClusterServiceMBean
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.load.LoadBalanceFactorProviderFactory#createLoadBalanceFactorProvider()
-    */
-   public LoadBalanceFactorProvider createLoadBalanceFactorProvider()
-   {
-      return this.loadBalanceFactorProvider;
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#addProxy(java.lang.String, int)
-    */
-   public void addProxy(String host, int port)
-   {
-      this.clusteredHandler.addProxy(host, port);
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#removeProxy(java.lang.String, int)
-    */
-   public void removeProxy(String host, int port)
-   {
-      this.clusteredHandler.removeProxy(host, port);
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
-    */
-   public String getProxyInfo()
-   {
-      return this.clusteredHandler.getProxyInfo();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
-    */
-   public String getProxyConfiguration()
-   {
-      return this.clusteredHandler.getProxyConfiguration();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#refresh()
-    */
-   public void refresh()
-   {
-      this.clusteredHandler.markProxiesInError();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
-    */
-   public void reset()
-   {
-      this.clusteredHandler.reset();
-   }
-   
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#disable()
-    */
-   public boolean disable()
-   {
-      for (Service service: this.serverProvider.getServer().findServices())
-      {
-         Engine engine = (Engine) service.getContainer();
-         // Send DISABLE-APP * request
-         MCMPRequest request = this.requestFactory.createDisableRequest(engine);
-         this.clusteredHandler.sendRequest(request);
-      }
+      this.requestFactory = requestFactory;
+      this.responseParser = responseParser;
+      this.resetRequestSource = resetRequestSource;
+      this.localHandler = localHandler;
+      this.clusteredHandler = clusteredHandler;
       
-      return this.clusteredHandler.isProxyHealthOK();
+      this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
+      this.service = new ClusteredModClusterService(nodeConfig, balancerConfig, mcmpConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource, clusteredHandler, advertiseListenerFactory);
+      this.domain = nodeConfig.getDomain();
+      this.masterPerDomain = haConfig.isMasterPerDomain();
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#enable()
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.ha.HAModClusterServiceMBean#getProcessStatusFrequency()
     */
-   public boolean enable()
-   {
-      for (Service service: this.serverProvider.getServer().findServices())
-      {
-         Engine engine = (Engine) service.getContainer();
-         // Send ENABLE-APP * request
-         MCMPRequest request = this.requestFactory.createEnableRequest(engine);
-         this.clusteredHandler.sendRequest(request);
-      }
-      
-      return this.clusteredHandler.isProxyHealthOK();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
-    */
-   public boolean disable(String host, String path)
-   {
-      Context context = Utils.getContext(Utils.getHost(this.serverProvider.getServer(), host), path);
-      
-      // Send DISABLE-APP /... request
-      MCMPRequest request = this.requestFactory.createDisableRequest(context);
-      this.clusteredHandler.sendRequest(request);
-      
-      return this.clusteredHandler.isProxyHealthOK();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
-    */
-   public boolean enable(String host, String path)
-   {
-      Context context = Utils.getContext(Utils.getHost(this.serverProvider.getServer(), host), path);
-
-      // Send ENABLE-APP /... request
-      MCMPRequest request = this.requestFactory.createEnableRequest(context);
-      this.clusteredHandler.sendRequest(request);
-      
-      return this.clusteredHandler.isProxyHealthOK();
-   }
-
-   public String doProxyPing(String JvmRoute)
-   {
-      MCMPRequest request = this.requestFactory.createPingRequest(JvmRoute);
-      Map<MCMPServerState, String> map = this.clusteredHandler.sendRequest(request);
-      if (map.isEmpty())
-         return null;
-
-      StringBuilder result = null;
-      Set entries = map.entrySet();
-      Iterator iterator = entries.iterator();
-      int i = 0;
-      while (iterator.hasNext()) {
-         Map.Entry entry = (Map.Entry)iterator.next();
-         MCMPServerState state = (MCMPServerState) entry.getKey();
-         if (state.getState() == MCMPServerState.State.OK) {
-            if (result == null)
-               result = new StringBuilder();
-            result.append("Proxy[").append(i).append("]: [").append(state.getAddress()).append(':').append(state.getPort()).append("]: ").append(NEW_LINE);
-            result.append(entry.getValue()).append(NEW_LINE);
-            i++;
-         }
-      }
-      if (result == null)
-         return null;
-      return result.toString();
-   }
-   
-   // ------------------------------------------------------------- Properties
-
-   public String getDomain()
-   {
-      return this.domain;
-   }
-   
+   @Override
    public int getProcessStatusFrequency()
    {
       return this.processStatusFrequency;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ha.HAModClusterServiceMBean#setProcessStatusFrequency(int)
+    */
+   @Override
    public void setProcessStatusFrequency(int processStatusFrequency)
    {
       this.processStatusFrequency = processStatusFrequency;
    }
 
-   // -------------------------------------------------------  Public Overrides
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
+    */
+   @Override
+   public int getLoadBalanceFactor()
+   {
+      return this.service.getLoadBalanceFactor();
+   }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#add(org.jboss.modcluster.Context)
+    */
+   @Override
+   public void add(Context context)
+   {
+      this.service.add(context);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#init(org.jboss.modcluster.Server)
+    */
+   @Override
+   public void init(Server server)
+   {
+      this.service.init(server);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#remove(org.jboss.modcluster.Context)
+    */
+   @Override
+   public void remove(Context context)
+   {
+      this.service.remove(context);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#shutdown()
+    */
+   @Override
+   public void shutdown()
+   {
+      this.service.shutdown();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Context)
+    */
+   @Override
+   public void start(Context context)
+   {
+      this.service.start(context);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Server)
+    */
+   @Override
+   public void start(Server server)
+   {
+      this.service.start(server);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#status(org.jboss.modcluster.Engine)
+    */
+   @Override
+   public void status(Engine engine)
+   {
+      this.service.status(engine);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Context)
+    */
+   @Override
+   public void stop(Context context)
+   {
+      this.service.stop(context);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Server)
+    */
+   @Override
+   public void stop(Server server)
+   {
+      this.service.stop(server);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#addProxy(java.lang.String, int)
+    */
+   @Override
+   public void addProxy(String host, int port)
+   {
+      this.service.addProxy(host, port);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#disable()
+    */
+   @Override
+   public boolean disable()
+   {
+      return this.service.disable();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
+    */
+   @Override
+   public boolean disable(String host, String path)
+   {
+      return this.service.disable(host, path);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
+    */
+   @Override
+   public Map<InetSocketAddress, String> ping(String jvmRoute)
+   {
+      return this.service.ping(jvmRoute);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#enable()
+    */
+   @Override
+   public boolean enable()
+   {
+      return this.service.enable();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
+    */
+   @Override
+   public boolean enable(String host, String path)
+   {
+      return this.service.enable(host, path);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
+    */
+   @Override
+   public Map<InetSocketAddress, String> getProxyConfiguration()
+   {
+      return this.service.getProxyConfiguration();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
+    */
+   @Override
+   public Map<InetSocketAddress, String> getProxyInfo()
+   {
+      return this.service.getProxyInfo();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#refresh()
+    */
+   @Override
+   public void refresh()
+   {
+      this.service.refresh();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#removeProxy(java.lang.String, int)
+    */
+   @Override
+   public void removeProxy(String host, int port)
+   {
+      this.service.removeProxy(host, port);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
+    */
+   @Override
+   public void reset()
+   {
+      this.service.reset();
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HASingletonImpl#startSingleton()
+    */
    @Override
    public void startSingleton()
    {
-      // Ensure we do a full status on the next event
       this.statusCount = this.processStatusFrequency - 1;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HASingletonImpl#partitionTopologyChanged(java.util.List, int, boolean)
+    */
+   @Override
+   protected void partitionTopologyChanged(List<?> newReplicants, int newViewId, boolean merge)
+   {
+      @SuppressWarnings("unchecked")
+      Set<CachableMarshalledValue> replicants = new HashSet<CachableMarshalledValue>((List<CachableMarshalledValue>) newReplicants);
+      Set<CachableMarshalledValue> oldReplicants = this.replicantView.getAndSet(replicants);
+      
+      super.partitionTopologyChanged(newReplicants, newViewId, merge);
+      
+      if (this.isMasterNode())
+      {
+         // Determine dead members
+         oldReplicants.removeAll(replicants);
+         
+         for (CachableMarshalledValue replicant: oldReplicants)
+         {
+            ModClusterServiceDRMEntry entry = this.extractDRMEntry(replicant);
+
+            for (String jvmRoute: entry.getJvmRoutes())
+            {
+               MCMPRequest request = this.requestFactory.createPingRequest(jvmRoute);
+               Map<MCMPServerState, String> responses = this.localHandler.sendRequest(request);
+
+               for (Map.Entry<MCMPServerState, String> response: responses.entrySet())
+               {
+                  MCMPServerState proxy = response.getKey();
+                  
+                  // If ping fails, send REMOVE_APP * on behalf of crashed member
+                  if ((proxy.getState() == MCMPServerState.State.OK) && !this.responseParser.parsePingResponse(response.getValue()))
+                  {
+                     log.info(Strings.ENGINE_REMOVE_CRASHED.getString(jvmRoute, proxy.getSocketAddress(), entry.getPeer()));
+                     
+                     this.localHandler.sendRequest(this.requestFactory.createRemoveEngineRequest(jvmRoute));
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HAServiceImpl#setServiceHAName(java.lang.String)
+    */
    @Override
    @Inject(fromContext = FromContext.NAME)
    public void setServiceHAName(String haName)
    {
       super.setServiceHAName(haName);
    }
-
-   // --------------------------------------------------------------  Protected
-
+   
    /**
-    * {@inheritDoc}
-    * 
-    * @return an inner class that allows us to avoid exposing RPC methods as
-    *         public methods of this class
-    */
-   @Override
-   protected HAServiceRpcHandler<HAServiceEvent> getRpcHandler()
-   {
-      return this.rpcHandler;
-   }
-
-   /**
-    * {@inheritDoc}
-    * 
-    * @returns the key used by DRM and the partition rpc handler mapping.
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HAServiceImpl#getHAServiceKey()
     */
    @Override
    public String getHAServiceKey()
@@ -466,56 +471,36 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
    }
    
    /**
-    * {@inheritDoc}
-    * 
-    * @return a {@link SimpleCachableMarshalledValue} containing a {@link ModClusterServiceDRMEntry}
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HASingletonImpl#getRpcHandler()
+    */
+   @Override
+   protected HAServiceRpcHandler<HAServiceEvent> getRpcHandler()
+   {
+      return this.rpcHandler;
+   }
+   
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HAServiceImpl#getReplicant()
     */
    @Override
    protected Serializable getReplicant()
    {
-      return this.createReplicant(this.drmEntry);
+      return new SimpleCachableMarshalledValue(this.drmEntry);
    }
-
+   
    /**
-    * @{inheritDoc}
-    * @see org.jboss.ha.framework.server.HAServiceImpl#replicantsChanged(java.lang.String, java.util.List, int, boolean)
-    */
-/*
-   @SuppressWarnings("unchecked")
-   @Override
-   public void replicantsChanged(String key, List newReplicants, int newViewId, boolean merge)
-   {
-      if (this.getHAServiceKey().equals(key))
-      {
-         this.partitionTopologyChanged(newReplicants, newViewId, merge);
-      }
-   }
-
-   private MCMPServerState getStatus(String node)
-   {
-      return null;
-   }
-*/   
-   /**
-    * {@inheritDoc}
-    * @return a list of cluster nodes from which to elect a new master
+    * {@inhericDoc}
+    * @see org.jboss.ha.framework.server.HASingletonImpl#getElectionCandidates()
     */
    @Override
    protected List<ClusterNode> getElectionCandidates()
    {
-      return this.narrowCandidateList(this.lookupDRMEntries());
+      return this.findMasterCandidates(this.lookupDRMEntries());
    }
    
-   /**
-    * Processes the candidate list, discarding those who don't match our domain nor the best
-    * candidate when it comes to the ability to communicate with proxies.
-    * 
-    * @param candidates the universe of possible candidates.
-    * @return a list of candidates with an equivalent ability to communicate
-    *         with proxies, or <code>null</code> if <code>candidates</code>
-    *         is <code>null</code>.
-    */
-   List<ClusterNode> narrowCandidateList(Collection<ModClusterServiceDRMEntry> candidates)
+   List<ClusterNode> findMasterCandidates(Collection<ModClusterServiceDRMEntry> candidates)
    {
       if (candidates == null) return null;
       
@@ -550,37 +535,32 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       
       return narrowed;
    }
-   
-   /**
-    * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#clusterStatusComplete(java.util.Map)
-    */
-   public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
+
+   List<ModClusterServiceDRMEntry> lookupDRMEntries()
    {
-      try
+      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
+      @SuppressWarnings("unchecked")
+      List<CachableMarshalledValue> values = drm.lookupReplicants(this.getHAServiceKey());
+      
+      if (values == null) return null;
+      
+      List<ModClusterServiceDRMEntry> entries = new ArrayList<ModClusterServiceDRMEntry>(values.size());
+      
+      for (CachableMarshalledValue value: values)
       {
-         this.callMethodOnPartition("clusterStatusComplete", new Object[] { statuses }, CLUSTER_STATUS_COMPLETE_TYPES);
+         entries.add(this.extractDRMEntry(value));
       }
-      catch (Exception e)
-      {
-         this.log.error(this.sm.getString("modcluster.error.status.complete"), e);
-      }
+      
+      return entries;
    }
 
-   /**
-    * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#getClusterCoordinatorState(java.util.Set)
-    */
-   public List<RpcResponse<ModClusterServiceStatus>> getClusterCoordinatorState(Set<MCMPServerState> masterList)
+   ModClusterServiceDRMEntry lookupLocalDRMEntry()
    {
-      try
-      {
-         return this.callMethodOnPartition("getClusterCoordinatorState", new Object[] { masterList }, GET_CLUSTER_COORDINATOR_STATE_TYPES);
-      }
-      catch (Exception e)
-      {
-         throw Utils.convertToUnchecked(e);
-      }
+      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
+      
+      return this.extractDRMEntry((CachableMarshalledValue) drm.lookupLocalReplicant(this.getHAServiceKey()));
    }
-   
+
    void updateLocalDRM(ModClusterServiceDRMEntry entry)
    {
       DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
@@ -595,51 +575,26 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       }
    }
 
-   @SuppressWarnings("unchecked")
-   List<ModClusterServiceDRMEntry> lookupDRMEntries()
-   {
-      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
-      List<CachableMarshalledValue> values = drm.lookupReplicants(this.getHAServiceKey());
-      
-      if (values == null) return null;
-      
-      List<ModClusterServiceDRMEntry> entries = new ArrayList<ModClusterServiceDRMEntry>(values.size());
-      
-      for (CachableMarshalledValue value: values)
-      {
-         entries.add(this.toDRMEntry(value));
-      }
-      
-      return entries;
-   }
-   
-   ModClusterServiceDRMEntry lookupLocalDRMEntry()
-   {
-      DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
-      
-      return this.toDRMEntry((CachableMarshalledValue) drm.lookupLocalReplicant(this.getHAServiceKey()));
-   }
-   
    private Serializable createReplicant(ModClusterServiceDRMEntry entry)
    {
       return new SimpleCachableMarshalledValue(entry);
    }
    
-   private ModClusterServiceDRMEntry toDRMEntry(CachableMarshalledValue value)
+   private ModClusterServiceDRMEntry extractDRMEntry(CachableMarshalledValue replicant)
    {
-      if (value == null) return null;
+      if (replicant == null) return null;
       
       try
       {
-         Object entry = value.get();
+         Object entry = replicant.get();
          
          // MODCLUSTER-88: This can happen if service was redeployed, and DRM contains objects from the obsolete classloader
          if (!(entry instanceof ModClusterServiceDRMEntry))
          {
             // Force re-deserialization w/current classloader
-            value.toByteArray();
+            replicant.toByteArray();
             
-            entry = value.get();
+            entry = replicant.get();
          }
          
          return (ModClusterServiceDRMEntry) entry;
@@ -649,33 +604,234 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          throw Utils.convertToUnchecked(e);
       }
    }
-
-   // ---------------------------------------------------------- Inner classes
    
    /**
-    * This is the object that gets invoked on via reflection by HAPartition.
+    * Client side stub of ModClusterServiceRpcHandler interface.
     */
-   @SuppressWarnings("synthetic-access")
+   class RpcStub implements ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState>
+   {
+      public RpcResponse<Map<InetSocketAddress, String>> getProxyConfiguration()
+      {
+         try
+         {
+            return this.invokeRpc("getProxyConfiguration", NULL_ARGS, NULL_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+
+      public RpcResponse<Map<InetSocketAddress, String>> getProxyInfo()
+      {
+         try
+         {
+            return this.invokeRpc("getProxyInfo", NULL_ARGS, NULL_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+
+      public RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute)
+      {
+         try
+         {
+            return this.invokeRpc("ping", new Object[] { jvmRoute }, PING_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+
+      @Override
+      public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
+      {
+         try
+         {
+            HAModClusterService.this.callMethodOnPartition("clusterStatusComplete", new Object[] { statuses }, CLUSTER_STATUS_COMPLETE_TYPES);
+         }
+         catch (Exception e)
+         {
+            HAModClusterService.this.log.error(Strings.ERROR_STATUS_COMPLETE.getString(), e);
+         }
+      }
+
+      @Override
+      public List<RpcResponse<ModClusterServiceStatus>> getClusterCoordinatorState(Set<MCMPServerState> masterList)
+      {
+         try
+         {
+            return HAModClusterService.this.callMethodOnPartition("getClusterCoordinatorState", new Object[] { masterList }, GET_CLUSTER_COORDINATOR_STATE_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+      
+      @SuppressWarnings("unchecked")
+      private <T> RpcResponse<T> invokeRpc(String methodName, Object[] args, Class<?>[] types) throws Exception
+      {
+         List<?> responses = HAModClusterService.this.getHAPartition().callMethodOnCluster(HAModClusterService.this.getHAServiceKey(), methodName, args, types, false, new RpcResponseFilter());
+         
+         Throwable thrown = null;
+         
+         for (Object obj : responses)
+         {
+            if (obj instanceof RpcResponse)
+            {
+               return (RpcResponse) obj;
+            }
+            else if (obj instanceof Throwable)
+            {
+               if (thrown == null)
+               {
+                  thrown = (Throwable) obj;
+               }
+            }
+            else
+            {
+               log.warn(Strings.ERROR_RPC_UNEXPECTED.getString(obj, methodName));
+            }
+         }
+         
+         if (thrown != null)
+         {
+            throw Utils.convertToUnchecked(thrown);
+         }
+         
+         throw new IllegalStateException(Strings.ERROR_RPC_NO_RESPONSE.getString(methodName));
+      }
+   }
+   
+   /**
+    * Remote skeleton for all rpc interfaces.
+    */
    protected class RpcHandler extends HASingletonImpl<HAServiceEvent>.RpcHandler implements ModClusterServiceRpcHandler<RpcResponse<ModClusterServiceStatus>, MCMPServer>, ClusteredMCMPHandlerRpcHandler, ResetRequestSourceRpcHandler<RpcResponse<List<MCMPRequest>>>
    {
-      private final HAModClusterService coord = HAModClusterService.this;
-      private final ClusterNode node = this.coord.getHAPartition().getClusterNode();
+      private final ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
       private final RpcResponse<Void> voidResponse = new DefaultRpcResponse<Void>(this.node);
       
-/*
-      public GroupRpcResponse getLocalAddress() throws IOException
+      @Override
+      public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
-         if (!this.coord.isMasterNode()) return null;
-         
-         return new InetAddressGroupRpcResponse(this.coord.getHAPartition().getClusterNode(), this.coord.localHandler.getLocalAddress());
+         ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
+         PeerMCMPDiscoveryStatus status = statuses.get(node);
+         if (status != null)
+         {
+            // Notify our handler that discovery events have been processed
+            HAModClusterService.this.clusteredHandler.discoveryEventsReceived(status);
+            
+            // Notify our handler that any reset requests have been processed
+            HAModClusterService.this.clusteredHandler.resetCompleted();
+            
+            ModClusterServiceDRMEntry previousStatus = HAModClusterService.this.lookupLocalDRMEntry();
+            if (!status.getMCMPServerStates().equals(previousStatus.getMCMPServerStates()))
+            {
+               try
+               {
+                  HAModClusterService.this.updateLocalDRM(new ModClusterServiceDRMEntry(node, status.getMCMPServerStates(), previousStatus.getJvmRoutes()));
+               }
+               catch (Exception e)
+               {
+                  HAModClusterService.this.log.error(Strings.ERROR_DRM.getString(), e);
+               }
+            }
+         }
       }
-*/
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#mcmpServerDiscoveryEvent(org.jboss.modcluster.ha.rpc.MCMPServerDiscoveryEvent)
-       */
+
+      @Override
+      public RpcResponse<ModClusterServiceStatus> getClusterCoordinatorState(Set<MCMPServer> masterList)
+      {
+         // TODO is this the correct response here?
+         if (HAModClusterService.this.isMasterNode()) return null;
+         
+         Set<MCMPServerState> ourStates = HAModClusterService.this.clusteredHandler.updateServersFromMasterNode(masterList);
+         
+         boolean needReset = HAModClusterService.this.clusteredHandler.isResetNecessary();
+         
+         Map<String, Set<ResetRequestSource.VirtualHost>> map = Collections.emptyMap();
+         List<MCMPRequest> resetRequests = needReset ? HAModClusterService.this.resetRequestSource.getLocalResetRequests(map) : null;
+         
+         List<MCMPServerDiscoveryEvent> events = HAModClusterService.this.clusteredHandler.getPendingDiscoveryEvents();
+         
+         DefaultRpcResponse<ModClusterServiceStatus> response = new DefaultRpcResponse<ModClusterServiceStatus>(this.node);
+         
+         response.setResult(new ModClusterServiceStatus(HAModClusterService.this.latestLoad, ourStates, events, resetRequests));
+         
+         if (needReset)
+         {
+            HAModClusterService.this.clusteredHandler.resetInitiated();
+         }
+         
+         return response;
+      }
+
+      @Override
+      public RpcResponse<Map<InetSocketAddress, String>> getProxyConfiguration()
+      {
+         if (!HAModClusterService.this.isMasterNode()) return null;
+         
+         DefaultRpcResponse<Map<InetSocketAddress, String>> response = new DefaultRpcResponse<Map<InetSocketAddress, String>>(this.node);
+         
+         response.setResult(HAModClusterService.this.getProxyConfiguration());
+         
+         return response;
+      }
+
+      @Override
+      public RpcResponse<Map<InetSocketAddress, String>> getProxyInfo()
+      {
+         if (!HAModClusterService.this.isMasterNode()) return null;
+         
+         DefaultRpcResponse<Map<InetSocketAddress, String>> response = new DefaultRpcResponse<Map<InetSocketAddress, String>>(this.node);
+         
+         response.setResult(HAModClusterService.this.getProxyInfo());
+         
+         return response;
+      }
+
+      @Override
+      public RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute)
+      {
+         if (!HAModClusterService.this.isMasterNode()) return null;
+         
+         DefaultRpcResponse<Map<InetSocketAddress, String>> response = new DefaultRpcResponse<Map<InetSocketAddress, String>>(this.node);
+         
+         response.setResult(HAModClusterService.this.ping(jvmRoute));
+         
+         return response;
+      }
+
+      @Override
+      public RpcResponse<Boolean> isProxyHealthOK()
+      {
+         if (!HAModClusterService.this.isMasterNode()) return null;
+         
+         DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
+         
+         response.setResult(Boolean.valueOf(HAModClusterService.this.localHandler.isProxyHealthOK()));
+         
+         return response;
+      }
+
+      @Override
+      public RpcResponse<Void> markProxiesInError()
+      {
+         if (!HAModClusterService.this.isMasterNode()) return null;
+         
+         HAModClusterService.this.localHandler.markProxiesInError();
+         
+         return this.voidResponse;
+      }
+
+      @Override
       public RpcResponse<Void> mcmpServerDiscoveryEvent(MCMPServerDiscoveryEvent event)
       {
-         if (!this.coord.isMasterNode()) return null;
+         if (!HAModClusterService.this.isMasterNode()) return null;
          
          synchronized (HAModClusterService.this.proxyChangeDigest)
          {
@@ -683,11 +839,11 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             
             if (event.isAddition())
             {
-               this.coord.localHandler.addProxy(socketAddress.getAddress(), socketAddress.getPort());
+               HAModClusterService.this.localHandler.addProxy(socketAddress);
             }
             else
             {
-               this.coord.localHandler.removeProxy(socketAddress.getAddress(), socketAddress.getPort());
+               HAModClusterService.this.localHandler.removeProxy(socketAddress);
             }
             
             HAModClusterService.this.proxyChangeDigest.put(event.getSender(), event);
@@ -695,202 +851,103 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             return this.voidResponse;
          }
       }
-      
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#getClusterCoordinatorState(java.util.Set)
-       */
-      public RpcResponse<ModClusterServiceStatus> getClusterCoordinatorState(Set<MCMPServer> masterList)
-      {
-         // TODO is this the correct response here?
-         if (this.coord.isMasterNode()) return null;
-         
-         Set<MCMPServerState> ourStates = this.coord.clusteredHandler.updateServersFromMasterNode(masterList);
-         
-         boolean needReset = this.coord.clusteredHandler.isResetNecessary();
-         
-         Map<String, Set<ResetRequestSource.VirtualHost>> map = Collections.emptyMap();
-         List<MCMPRequest> resetRequests = needReset ? this.coord.resetRequestSource.getLocalResetRequests(map) : null;
-         
-         List<MCMPServerDiscoveryEvent> events = this.coord.clusteredHandler.getPendingDiscoveryEvents();
-         
-         DefaultRpcResponse<ModClusterServiceStatus> response = new DefaultRpcResponse<ModClusterServiceStatus>(this.node);
-         
-         response.setResult(new ModClusterServiceStatus(this.coord.latestLoad, ourStates, events, resetRequests));
-         
-         if (needReset)
-         {
-            this.coord.clusteredHandler.resetInitiated();
-         }
-         
-         return response;
-      }
-      
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#clusterStatusComplete(java.util.Map)
-       */
-      public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
-      {
-         HAPartition partition = this.coord.getHAPartition();
-         ClusterNode cn = partition.getClusterNode();
-         PeerMCMPDiscoveryStatus status = statuses.get(cn);
-         if (status != null)
-         {
-            // Notify our handler that discovery events have been processed
-            this.coord.clusteredHandler.discoveryEventsReceived(status);
-            
-            // Notify our handler that any reset requests have been processed
-            this.coord.clusteredHandler.resetCompleted();
-            
-            ModClusterServiceDRMEntry previousStatus = this.coord.lookupLocalDRMEntry();
-            if (!status.equals(previousStatus))
-            {
-               try
-               {
-                  this.coord.updateLocalDRM(new ModClusterServiceDRMEntry(cn, status.getMCMPServerStates(), previousStatus.getJvmRoutes()));
-               }
-               catch (Exception e)
-               {
-                  this.coord.log.error(HAModClusterService.this.sm.getString("modcluster.error.drm"), e);
-               }
-            }
-         }
-      }
 
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#getProxyConfiguration()
-       */
-      public RpcResponse<String> getProxyConfiguration()
-      {
-         if (!this.coord.isMasterNode()) return null;
-         
-         DefaultRpcResponse<String> response = new DefaultRpcResponse<String>(this.node);
-         
-         response.setResult(this.coord.localHandler.getProxyConfiguration());
-         
-         return response;
-      }
-
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#getProxyInfo()
-       */
-      public RpcResponse<String> getProxyInfo()
-      {
-         if (!this.coord.isMasterNode()) return null;
-         
-         DefaultRpcResponse<String> response = new DefaultRpcResponse<String>(this.node);
-         
-         response.setResult(this.coord.localHandler.getProxyInfo());
-         
-         return response;
-      }
-
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#isProxyHealthOK()
-       */
-      public RpcResponse<Boolean> isProxyHealthOK()
-      {
-         if (!this.coord.isMasterNode()) return null;
-         
-         DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
-         
-         response.setResult(Boolean.valueOf(this.coord.localHandler.isProxyHealthOK()));
-         
-         return response;
-      }
-
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#markProxiesInError()
-       */
-      public RpcResponse<Void> markProxiesInError()
-      {
-         if (!this.coord.isMasterNode()) return null;
-         
-         this.coord.localHandler.markProxiesInError();
-         
-         return this.voidResponse;
-      }
-
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#reset()
-       */
+      @Override
       public RpcResponse<Void> reset()
       {
-         if (!this.coord.isMasterNode()) return null;
+         if (!HAModClusterService.this.isMasterNode()) return null;
          
-         this.coord.localHandler.reset();
+         HAModClusterService.this.localHandler.reset();
          
          return this.voidResponse;
       }
 
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#sendRequest(org.jboss.modcluster.mcmp.MCMPRequest)
-       */
+      @Override
       public RpcResponse<Map<MCMPServerState, String>> sendRequest(MCMPRequest request)
       {
-         if (!this.coord.isMasterNode()) return null;
+         if (!HAModClusterService.this.isMasterNode()) return null;
          
          DefaultRpcResponse<Map<MCMPServerState, String>> response = new DefaultRpcResponse<Map<MCMPServerState, String>>(this.node);
          
-         response.setResult(this.coord.localHandler.sendRequest(request));
+         response.setResult(HAModClusterService.this.localHandler.sendRequest(request));
          
          return response;
       }
 
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#sendRequests(java.util.List)
-       */
+      @Override
       public RpcResponse<Map<MCMPServerState, List<String>>> sendRequests(List<MCMPRequest> requests)
       {
-         if (!this.coord.isMasterNode()) return null;
+         if (!HAModClusterService.this.isMasterNode()) return null;
          
          DefaultRpcResponse<Map<MCMPServerState, List<String>>> response = new DefaultRpcResponse<Map<MCMPServerState, List<String>>>(this.node);
          
-         response.setResult(this.coord.localHandler.sendRequests(requests));
+         response.setResult(HAModClusterService.this.localHandler.sendRequests(requests));
          
          return response;
       }
-      
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ResetRequestSourceRpcHandler#getResetRequests()
-       */
-      public RpcResponse<List<MCMPRequest>> getResetRequests(Map<String, Set<ResetRequestSource.VirtualHost>> infoResponse)
+
+      @Override
+      public RpcResponse<List<MCMPRequest>> getResetRequests(Map<String, Set<VirtualHost>> infoResponse)
       {
          DefaultRpcResponse<List<MCMPRequest>> response = new DefaultRpcResponse<List<MCMPRequest>>(this.node);
-         response.setResult(this.coord.resetRequestSource.getLocalResetRequests(infoResponse));
+         response.setResult(HAModClusterService.this.resetRequestSource.getLocalResetRequests(infoResponse));
          return response;
       }
    }
    
-   @SuppressWarnings("synthetic-access")
-   private class ClusteredCatalinaEventHandler extends CatalinaEventHandler
+   /**
+    * ModClusterServiceMBean and ContainerEventHandler delegate
+    */
+   class ClusteredModClusterService extends ModClusterService
    {
-      private final HAModClusterService coord = HAModClusterService.this;
-      
-      /**
-       * Create a new ClusteredJBossWebEventHandler.
-       * 
-       * @param config
-       * @param loadFactorProvider
-       */
-      public ClusteredCatalinaEventHandler(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig,
-            MCMPHandlerConfiguration mcmpConfig, MCMPHandler clusteredHandler, ResetRequestSource source,
-            MCMPRequestFactory requestFactory, LoadBalanceFactorProviderFactory loadFactorProviderFactory,
-            AdvertiseListenerFactory listenerFactory)
+      public ClusteredModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, 
+            MCMPHandlerConfiguration mcmpConfig, LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, 
+            MCMPRequestFactory requestFactory, MCMPResponseParser responseParser, ResetRequestSource resetRequestSource, 
+            MCMPHandler mcmpHandler, AdvertiseListenerFactory advertiseListenerFactory)
       {
-         super(nodeConfig, balancerConfig, mcmpConfig, clusteredHandler, source, requestFactory, loadFactorProviderFactory, listenerFactory);
+         super(nodeConfig, balancerConfig, mcmpConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource, mcmpHandler, advertiseListenerFactory);
       }
 
       @Override
-      protected void config(Engine engine)
+      public Map<InetSocketAddress, String> getProxyConfiguration()
       {
-         this.config(engine, this.coord.localHandler);
+         if (HAModClusterService.this.isMasterNode())
+         {
+            return super.getProxyConfiguration();
+         }
+
+         return HAModClusterService.this.rpcStub.getProxyConfiguration().getResult();
+      }
+
+      @Override
+      public Map<InetSocketAddress, String> getProxyInfo()
+      {
+         if (HAModClusterService.this.isMasterNode())
+         {
+            return super.getProxyInfo();
+         }
+
+         return HAModClusterService.this.rpcStub.getProxyInfo().getResult();
+      }
+
+      @Override
+      public Map<InetSocketAddress, String> ping(String jvmRoute)
+      {
+         if (HAModClusterService.this.isMasterNode())
+         {
+            return super.ping(jvmRoute);
+         }
+
+         return HAModClusterService.this.rpcStub.ping(jvmRoute).getResult();
       }
       
       @Override
-      protected void jvmRouteEstablished(Engine engine)
+      protected void establishJvmRoute(Engine engine) throws Exception
       {
-         this.coord.drmEntry.addJvmRoute(engine.getJvmRoute());
-         this.coord.updateLocalDRM(this.coord.drmEntry);
+         super.establishJvmRoute(engine);
+         
+         HAModClusterService.this.drmEntry.addJvmRoute(engine.getJvmRoute());
+         HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
 
       @Override
@@ -898,8 +955,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       {
          super.removeAll(engine);
          
-         this.coord.drmEntry.removeJvmRoute(engine.getJvmRoute());
-         this.coord.updateLocalDRM(this.coord.drmEntry);
+         HAModClusterService.this.drmEntry.removeJvmRoute(engine.getJvmRoute());
+         HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
       
       @Override
@@ -907,55 +964,54 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
       {
          this.checkInit();
          
-         this.coord.log.debug(this.coord.sm.getString("modcluster.engine.status", engine.getName()));
+         this.log.debug(Strings.ENGINE_STATUS.getString(engine));
          
-         this.coord.latestLoad = this.getLoadBalanceFactor();
+         HAModClusterService.this.latestLoad = this.getLoadBalanceFactor();
          
-         if (this.coord.isMasterNode())
+         if (HAModClusterService.this.isMasterNode())
          {
-            this.coord.statusCount = (this.coord.statusCount + 1) % this.coord.processStatusFrequency;
+            HAModClusterService.this.statusCount = (HAModClusterService.this.statusCount + 1) % HAModClusterService.this.processStatusFrequency;
 
-            if (this.coord.statusCount == 0)
+            if (HAModClusterService.this.statusCount == 0)
             {
                this.updateClusterStatus();
             }
          }
       }
       
-      void updateClusterStatus()
+      private void updateClusterStatus()
       {
-         Set<MCMPServerState> masterList = null;
+         Set<MCMPServerState> masterStates = null;
          Map<ClusterNode, MCMPServerDiscoveryEvent> latestEvents = null;
          Map<ClusterNode, ModClusterServiceDRMEntry> nonresponsive = new HashMap<ClusterNode, ModClusterServiceDRMEntry>();
          Map<String, Integer> loadBalanceFactors = new HashMap<String, Integer>();
          Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses = new HashMap<ClusterNode, PeerMCMPDiscoveryStatus>();
          List<MCMPRequest> resetRequests = new ArrayList<MCMPRequest>();
-         HAPartition partition = this.coord.getHAPartition();
          boolean resync = false;
 
          do
          {
             resync = false;
             
-            this.coord.localHandler.status();
+            HAModClusterService.this.localHandler.status();
             
-            synchronized (this.coord.proxyChangeDigest)
+            synchronized (HAModClusterService.this.proxyChangeDigest)
             {
-               masterList = this.coord.localHandler.getProxyStates();
-               latestEvents = new HashMap<ClusterNode, MCMPServerDiscoveryEvent>(this.coord.proxyChangeDigest);
+               masterStates = HAModClusterService.this.localHandler.getProxyStates();
+               latestEvents = new HashMap<ClusterNode, MCMPServerDiscoveryEvent>(HAModClusterService.this.proxyChangeDigest);
             }
             
-            List<ModClusterServiceDRMEntry> replicants = this.coord.lookupDRMEntries();
+            List<ModClusterServiceDRMEntry> replicants = HAModClusterService.this.lookupDRMEntries();
             nonresponsive.clear();
             
             for (ModClusterServiceDRMEntry replicant: replicants)
             {
                nonresponsive.put(replicant.getPeer(), replicant);
             }
-            nonresponsive.remove(partition.getClusterNode());
+            nonresponsive.remove(HAModClusterService.this.getHAPartition().getClusterNode());
             
             // FIXME -- what about our own dropped discovery events if we just became master?
-            List<RpcResponse<ModClusterServiceStatus>> responses = this.coord.getClusterCoordinatorState(masterList);
+            List<RpcResponse<ModClusterServiceStatus>> responses = HAModClusterService.this.rpcStub.getClusterCoordinatorState(masterStates);
             
             // Gather up all the reset requests in one list
             // FIXME -- what about our own dropped requests if we just became master?
@@ -965,9 +1021,9 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             loadBalanceFactors.clear();
             
             // Add our own lbf - it is not returned via getClusterCoordinatorState(...)
-            for (String jvmRoute: this.coord.drmEntry.getJvmRoutes())
+            for (String jvmRoute: HAModClusterService.this.drmEntry.getJvmRoutes())
             {
-               loadBalanceFactors.put(jvmRoute, Integer.valueOf(this.coord.latestLoad));
+               loadBalanceFactors.put(jvmRoute, Integer.valueOf(HAModClusterService.this.latestLoad));
             }
             
             // Gather the info on who knows about what proxies
@@ -975,6 +1031,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
             
             for (RpcResponse<ModClusterServiceStatus> response: responses)
             {
+               if (response == null) continue;
+               
                ClusterNode node = response.getSender();
                
                try
@@ -991,11 +1049,11 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
                         InetSocketAddress socketAddress = event.getMCMPServer();
                         if (event.isAddition())
                         {
-                           this.coord.localHandler.addProxy(socketAddress.getAddress(), socketAddress.getPort());
+                           HAModClusterService.this.localHandler.addProxy(socketAddress);
                         }
                         else
                         {
-                           this.coord.localHandler.removeProxy(socketAddress.getAddress(), socketAddress.getPort());
+                           HAModClusterService.this.localHandler.removeProxy(socketAddress);
                         }
                         resync = true;
                      }
@@ -1024,7 +1082,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
                }
                catch (Exception e)
                {
-                  this.coord.log.warn(this.coord.sm.getString("modcluster.error.rpc.known", "getClusterCoordinatorState", node), e);
+                  this.log.warn(Strings.ERROR_RPC_KNOWN.getString("getClusterCoordinatorState", node), e);
                   
                   // Don't remove from nonresponsive list and we'll pass back an error
                   // status (null server list) to this peer
@@ -1049,49 +1107,47 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          // FIXME handle crashed members, gone from DRM
          
          // Advise the proxies of any reset requests
-         this.coord.localHandler.sendRequests(resetRequests);
+         HAModClusterService.this.localHandler.sendRequests(resetRequests);
          
          // Pass along the LBF values
          List<MCMPRequest> statusRequests = new ArrayList<MCMPRequest>();
          for (Map.Entry<String, Integer> entry: loadBalanceFactors.entrySet())
          {
-            statusRequests.add(this.coord.requestFactory.createStatusRequest(entry.getKey(), entry.getValue().intValue()));
+            statusRequests.add(HAModClusterService.this.requestFactory.createStatusRequest(entry.getKey(), entry.getValue().intValue()));
          }
 
-         this.coord.localHandler.sendRequests(statusRequests);
+         HAModClusterService.this.localHandler.sendRequests(statusRequests);
          
          // Advise the members the process is done and that they should update DRM
-         this.notifyClusterStatusComplete(masterList, statuses);
+         this.notifyClusterStatusComplete(masterStates, statuses);
       }
 
       private void notifyClusterStatusComplete(Set<MCMPServerState> masterList, Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
-         HAPartition partition = this.coord.getHAPartition();
-         
          // Determine who should update DRM first -- us or the rest of the nodes
          Set<ModClusterServiceDRMEntry> allStatuses = new HashSet<ModClusterServiceDRMEntry>(statuses.values());
-         ModClusterServiceDRMEntry ourCurrentStatus = this.coord.lookupLocalDRMEntry();
+         ModClusterServiceDRMEntry ourCurrentStatus = HAModClusterService.this.lookupLocalDRMEntry();
          allStatuses.add(ourCurrentStatus);
          
-         ClusterNode node = partition.getClusterNode();
+         ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
          
-         boolean othersFirst = this.coord.narrowCandidateList(allStatuses).contains(node);
-         ModClusterServiceDRMEntry newStatus = new ModClusterServiceDRMEntry(node, masterList, this.coord.drmEntry.getJvmRoutes());
-         boolean updated = !newStatus.equals(ourCurrentStatus);
+         boolean othersFirst = HAModClusterService.this.findMasterCandidates(allStatuses).contains(node);
+         ModClusterServiceDRMEntry newStatus = new ModClusterServiceDRMEntry(node, masterList, HAModClusterService.this.drmEntry.getJvmRoutes());
+         boolean updated = !newStatus.getMCMPServerStates().equals(ourCurrentStatus.getMCMPServerStates());
          
          if (othersFirst)
          {
-            this.coord.clusterStatusComplete(statuses);
+            HAModClusterService.this.rpcStub.clusterStatusComplete(statuses);
          }
          
          if (updated)
          {
-            this.coord.updateLocalDRM(newStatus);
+            HAModClusterService.this.updateLocalDRM(newStatus);
          }
          
          if (!othersFirst)
          {
-            this.coord.clusterStatusComplete(statuses);
+            HAModClusterService.this.rpcStub.clusterStatusComplete(statuses);
          }
       }
    }

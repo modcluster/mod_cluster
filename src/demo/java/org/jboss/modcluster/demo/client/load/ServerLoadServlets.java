@@ -102,14 +102,11 @@ public enum ServerLoadServlets
       this.servletPath = servletPath;
       if (params != null)
       {
-         List<ServerLoadParam> asList = Arrays.asList(params);
-         this.params = Collections.unmodifiableList(asList);
+         this.params = Collections.unmodifiableList(Arrays.asList(params));
       }
       else
       {
-         @SuppressWarnings("unchecked")
-         List<ServerLoadParam> unchecked = Collections.EMPTY_LIST;
-         this.params = unchecked;
+         this.params = Collections.emptyList();
       }
    }
 

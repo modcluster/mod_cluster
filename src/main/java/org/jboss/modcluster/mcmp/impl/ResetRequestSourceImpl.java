@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,19 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
-import org.jboss.modcluster.ServerProvider;
-import org.jboss.modcluster.Utils;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
+import org.jboss.modcluster.Server;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
-import org.jboss.modcluster.mcmp.MCMPRequestType;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
 
 /**
@@ -52,16 +47,15 @@ public class ResetRequestSourceImpl implements ResetRequestSource
 {
    private final NodeConfiguration nodeConfig;
    private final BalancerConfiguration balancerConfig;
-   private final ServerProvider<Server> serverProvider;
    private final MCMPRequestFactory requestFactory;
    
    private volatile Map<String, Set<String>> excludedContexts;
+   private volatile Server server;
    
-   public ResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, ServerProvider<Server> serverProvider, MCMPRequestFactory requestFactory)
+   public ResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPRequestFactory requestFactory)
    {
       this.nodeConfig = nodeConfig;
       this.balancerConfig = balancerConfig;
-      this.serverProvider = serverProvider;
       this.requestFactory = requestFactory;
    }
    
@@ -69,9 +63,10 @@ public class ResetRequestSourceImpl implements ResetRequestSource
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.ResetRequestSource#init(java.util.Map)
     */
-   public void init(Map<String, Set<String>> excludedContexts)
+   public void init(Server server, Map<String, Set<String>> excludedContexts)
    {
       this.excludedContexts = excludedContexts;
+      this.server = server;
    }
 
    /**
@@ -82,31 +77,22 @@ public class ResetRequestSourceImpl implements ResetRequestSource
    {
       List<MCMPRequest> requests = new ArrayList<MCMPRequest>();
       
-      Server server = this.serverProvider.getServer();
-      
-      if (server == null) return requests;
+      if (this.server == null) return requests;
       
       List<MCMPRequest> engineRequests = new LinkedList<MCMPRequest>();      
       
-      for (Service service: server.findServices())
+      for (Engine engine: this.server.getEngines())
       {
-         Engine engine = (Engine) service.getContainer();
-         
          engineRequests.add(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig));
 
-         Set<ResetRequestSource.VirtualHost> responseHosts = Collections.emptySet();
          String jvmRoute = engine.getJvmRoute();
+
+         Set<ResetRequestSource.VirtualHost> responseHosts = response.containsKey(jvmRoute) ? response.get(jvmRoute) : Collections.<ResetRequestSource.VirtualHost>emptySet();
          
-         if (response.containsKey(jvmRoute))
+         for (Host host: engine.getHosts())
          {
-            responseHosts = response.get(jvmRoute);
-         }
-         
-         for (Container child: engine.findChildren())
-         {
-            Host host = (Host) child;
             String hostName = host.getName();
-            Set<String> aliases = Utils.getAliases(host);
+            Set<String> aliases = host.getAliases();
             
             VirtualHost responseHost = null;
             
@@ -125,23 +111,19 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             if (responseHost != null)
             {
                responseAliases = responseHost.getAliases();
+               responseContexts = responseHost.getContexts();
                
                // If the host(or aliases) is missing - force full reset
                if (!aliases.equals(responseAliases))
                {
                   engineRequests.add(0, this.requestFactory.createRemoveRequest(engine));
                }
-               else
-               {
-                  responseContexts = responseHost.getContexts();
-               }
             }
             
             Set<String> obsoleteContexts = new HashSet<String>(responseContexts.keySet());
             
-            for (Container container: host.findChildren())
+            for (Context context: host.getContexts())
             {
-               Context context = (Context) container;
                String path = context.getPath();
                
                Set<String> excludedPaths = this.excludedContexts.get(hostName);
@@ -155,7 +137,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource
                
                ResetRequestSource.Status status = responseContexts.get(path);
                
-               if (Utils.isContextStarted(context))
+               if (context.isStarted())
                {
                   if (status != ResetRequestSource.Status.ENABLED)
                   {
@@ -184,7 +166,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource
                {
                   for (String context: obsoleteContexts)
                   {
-                     engineRequests.add(this.requestFactory.createRequest(MCMPRequestType.REMOVE_APP, jvmRoute, responseAliases, context));
+                     engineRequests.add(this.requestFactory.createRemoveContextRequest(jvmRoute, responseAliases, context));
                   }
                }
             }

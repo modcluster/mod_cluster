@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,7 +24,6 @@ package org.jboss.modcluster.load.metric.impl;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 
-import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.load.metric.LoadMetricSource;
 
 /**
@@ -35,7 +34,7 @@ import org.jboss.modcluster.load.metric.LoadMetricSource;
  */
 public class SessionLoadMetricSource extends MBeanQueryLoadMetricSource
 {
-   public static final String DEFAULT_PATTERN = Utils.defaultObjectNameDomain() + ":type=Manager,*";
+   public static final String DEFAULT_PATTERN = "jboss.web:type=Manager,*";
    
    /**
     * Create a new SessionLoadMetricSource.

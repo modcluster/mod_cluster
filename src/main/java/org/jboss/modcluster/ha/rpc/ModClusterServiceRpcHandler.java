@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,21 +21,26 @@
  */
 package org.jboss.modcluster.ha.rpc;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.ha.framework.interfaces.ClusterNode;
-import org.jboss.ha.framework.server.HAServiceEvent;
-import org.jboss.ha.framework.server.HAServiceRpcHandler;
 import org.jboss.modcluster.mcmp.MCMPServer;
 
 /**
  * @author Paul Ferraro
  *
  */
-public interface ModClusterServiceRpcHandler<T, S extends MCMPServer> extends HAServiceRpcHandler<HAServiceEvent>
+public interface ModClusterServiceRpcHandler<T, S extends MCMPServer>
 {
    void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses);
    
    T getClusterCoordinatorState(Set<S> masterList);
+   
+   RpcResponse<Map<InetSocketAddress, String>> getProxyConfiguration();
+
+   RpcResponse<Map<InetSocketAddress, String>> getProxyInfo();
+
+   RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute);
 }

@@ -68,7 +68,7 @@ public class MBeanQueryLoadMetricSourceTestCase
    {
       Capture<ObjectName> capturedName = new Capture<ObjectName>();
       
-      EasyMock.expect(this.server.queryNames(EasyMock.capture(capturedName), (QueryExp) EasyMock.isNull())).andReturn(Collections.EMPTY_SET);
+      EasyMock.expect(this.server.queryNames(EasyMock.capture(capturedName), (QueryExp) EasyMock.isNull())).andReturn(Collections.<ObjectName>emptySet());
       
       EasyMock.replay(this.server);
       

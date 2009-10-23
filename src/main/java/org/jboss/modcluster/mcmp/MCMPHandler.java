@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,10 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.mcmp;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -61,64 +59,33 @@ public interface MCMPHandler
    /**
     * Add a proxy to the list of those with which this handler communicates.
     * Communication does not begin until the next call to {@link #status()}.
-    * 
-    * @param address a string in the form hostname:port, where the hostname
-    *                portion is suitable for passing to <code>InetAddress.getByHost(...)</code>
-    */
-   void addProxy(String address);
-   
-   /**
-    * Add a proxy to the list of those with which this handler communicates.
-    * Communication does not begin until the next call to {@link #status()}.
-    * 
-    * @param host the hostname of the proxy; a string suitable for passing to 
-    *             <code>InetAddress.getByHost(...)</code> 
-    * @param port the port on which the proxy listens for MCMP requests
-    */
-   void addProxy(String host, int port);
-   
-   /**
-    * Add a proxy to the list of those with which this handler communicates.
-    * Communication does not begin until the next call to {@link #status()}.
     * <p>
     * Same as {@link #addProxy(InetAddress, int, boolean) addProxy(address, port, false}.
     * </p>
     * 
-    * @param address InetAddress on which the proxy listens for MCMP requests
-    * @param port  the port on which the proxy listens for MCMP requests
+    * @param socketAddress InetSocketAddress on which the proxy listens for MCMP requests
     */
-   void addProxy(InetAddress address, int port);
+   void addProxy(InetSocketAddress socketAddress);
    
    /**
     * Add a proxy to the list of those with which this handler communicates.
     * Communication does not begin until the next call to {@link #status()}.
     * 
-    * @param address InetAddress on which the proxy listens for MCMP requests
-    * @param port  the port on which the proxy listens for MCMP requests
+    * @param socketAddress InetSocketAddress on which the proxy listens for MCMP requests
     * @param established <code>true</code> if the proxy should be considered 
     *                    {@link MCMPServer#isEstablished() established},
     *                    <code>false</code> otherwise.
     */
-   void addProxy(InetAddress address, int port, boolean established);
+   void addProxy(InetSocketAddress socketAddress, boolean established);
    
    /**
     * Remove a proxy from the list of those with which this handler communicates.
     * Communication does not end until the next call to {@link #status()}.
     * 
-    * @param host the hostname of the proxy; a string suitable for passing to 
-    *             <code>InetAddress.getByHost(...)</code> 
-    * @param port the port on which the proxy listens for MCMP requests
+    * @param socketAddress InetSocketAddress on which the proxy listens for MCMP requests
     */
-   void removeProxy(String host, int port);
+   void removeProxy(InetSocketAddress socketAddress);
    
-   /**
-    * Remove a proxy from the list of those with which this handler communicates.
-    * Communication does not begin until the next call to {@link #status()}.
-    * 
-    * @param address InetAddress on which the proxy listens for MCMP requests
-    * @param port  the port on which the proxy listens for MCMP requests
-    */
-   void removeProxy(InetAddress address, int port);
    
    /**
     * Get the state of all proxies
@@ -152,42 +119,13 @@ public interface MCMPHandler
    boolean isProxyHealthOK();
    
    /**
-    * Attempts to determine the address via which this node communicates
-    * with the proxies.
-    * 
-    * @return the address, or <code>null</code> if it cannot be determined
-    * 
-    * @throws IOException
-    */
-   InetAddress getLocalAddress() throws IOException;
-   
-   /**
-    * Sends a {@link MCMPRequestType#DUMP DUMP} request to all proxies,
-    * concatentating their responses into a single string.
-    * 
-    * TODO wouldn't a List<String> be better? Let the caller concatenate if
-    * so desired.
-    * 
-    * @return the configuration information from all the accessible proxies.
-    */
-   String getProxyConfiguration();
-   
-   /**
-    * Sends a {@link MCMPRequestType#INFO INFO} request to all proxies,
-    * concatentating their responses into a single string.
-    * 
-    * @return the configuration information from all the accessible proxies.
-    */
-   String getProxyInfo();
-   
-   /**
     * Perform periodic processing. Update the list of proxies to reflect any
     * calls to <code>addProxy(...)</code> or <code>removeProxy(...)</code>.
     * Attempt to establish communication with any proxies whose state is
     * {@link MCMPServerState#ERROR ERROR}. If successful and a 
     * {@link ResetRequestSource} has been provided, update the proxy with the 
     * list of requests provided by the source.
+    * @return true, if load balance factor calculation should be performed, false if it should be skipped
     */
    void status();
-   
 }

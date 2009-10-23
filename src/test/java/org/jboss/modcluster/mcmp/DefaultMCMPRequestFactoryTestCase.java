@@ -21,16 +21,17 @@
  */
 package org.jboss.modcluster.mcmp;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.TreeSet;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Service;
-import org.apache.catalina.connector.Connector;
 import org.easymock.EasyMock;
+import org.jboss.modcluster.Connector;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
@@ -52,12 +53,10 @@ public class DefaultMCMPRequestFactoryTestCase
       Host host = EasyMock.createStrictMock(Host.class);      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getParent()).andReturn(engine);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(host.getEngine()).andReturn(engine);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("host");
-      EasyMock.expect(host.findAliases()).andReturn(new String[] { "alias1", "alias2" });
+      EasyMock.expect(host.getAliases()).andReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
       EasyMock.expect(context.getPath()).andReturn("/context");
       
       EasyMock.replay(context, host, engine);
@@ -75,7 +74,7 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertEquals(2, parameters.size());
       
       Assert.assertEquals("/context", parameters.get("Context"));
-      Assert.assertEquals("host,alias1,alias2", parameters.get("Alias"));
+      Assert.assertEquals("alias1,alias2", parameters.get("Alias"));
    }
    
    @Test
@@ -85,12 +84,10 @@ public class DefaultMCMPRequestFactoryTestCase
       Host host = EasyMock.createStrictMock(Host.class);      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getParent()).andReturn(engine);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(host.getEngine()).andReturn(engine);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("host");
-      EasyMock.expect(host.findAliases()).andReturn(new String[] { "alias1", "alias2" });
+      EasyMock.expect(host.getAliases()).andReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
       EasyMock.expect(context.getPath()).andReturn("/context");
       
       EasyMock.replay(context, host, engine);
@@ -108,7 +105,7 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertEquals(2, parameters.size());
       
       Assert.assertEquals("/context", parameters.get("Context"));
-      Assert.assertEquals("host,alias1,alias2", parameters.get("Alias"));
+      Assert.assertEquals("alias1,alias2", parameters.get("Alias"));
    }
    
    @Test
@@ -118,12 +115,10 @@ public class DefaultMCMPRequestFactoryTestCase
       Host host = EasyMock.createStrictMock(Host.class);      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getParent()).andReturn(engine);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(host.getEngine()).andReturn(engine);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("host");
-      EasyMock.expect(host.findAliases()).andReturn(new String[] { "alias1", "alias2" });
+      EasyMock.expect(host.getAliases()).andReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
       EasyMock.expect(context.getPath()).andReturn("/context");
       
       EasyMock.replay(context, host, engine);
@@ -141,7 +136,7 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertEquals(2, parameters.size());
       
       Assert.assertEquals("/context", parameters.get("Context"));
-      Assert.assertEquals("host,alias1,alias2", parameters.get("Alias"));
+      Assert.assertEquals("alias1,alias2", parameters.get("Alias"));
    }
    
    @Test
@@ -151,12 +146,10 @@ public class DefaultMCMPRequestFactoryTestCase
       Host host = EasyMock.createStrictMock(Host.class);      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getParent()).andReturn(engine);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(host.getEngine()).andReturn(engine);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
-      EasyMock.expect(context.getParent()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("host");
-      EasyMock.expect(host.findAliases()).andReturn(new String[] { "alias1", "alias2" });
+      EasyMock.expect(host.getAliases()).andReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
       EasyMock.expect(context.getPath()).andReturn("/context");
       
       EasyMock.replay(context, host, engine);
@@ -174,7 +167,7 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertEquals(2, parameters.size());
       
       Assert.assertEquals("/context", parameters.get("Context"));
-      Assert.assertEquals("host,alias1,alias2", parameters.get("Alias"));
+      Assert.assertEquals("alias1,alias2", parameters.get("Alias"));
    }
    
    @Test
@@ -196,13 +189,15 @@ public class DefaultMCMPRequestFactoryTestCase
    public void testCreateConfigRequest() throws Exception
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
-      Service service = EasyMock.createStrictMock(Service.class);
       NodeConfiguration nodeConfig = EasyMock.createStrictMock(NodeConfiguration.class);
       BalancerConfiguration balancerConfig = EasyMock.createStrictMock(BalancerConfiguration.class);
-      Connector connector = new Connector("AJP/1.3");
+      Connector connector = EasyMock.createStrictMock(Connector.class);
       
-      EasyMock.expect(engine.getService()).andReturn(service);
-      EasyMock.expect(service.findConnectors()).andReturn(new Connector[] { connector });
+      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
+      EasyMock.expect(connector.isReverse()).andReturn(true);
+      EasyMock.expect(connector.getAddress()).andReturn(InetAddress.getLocalHost());
+      EasyMock.expect(connector.getPort()).andReturn(100);
+      EasyMock.expect(connector.getType()).andReturn(Connector.Type.AJP);
       
       EasyMock.expect(nodeConfig.getDomain()).andReturn("domain");
       EasyMock.expect(nodeConfig.getFlushPackets()).andReturn(Boolean.TRUE);
@@ -221,11 +216,11 @@ public class DefaultMCMPRequestFactoryTestCase
       
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
-      EasyMock.replay(engine, service, nodeConfig, balancerConfig);
+      EasyMock.replay(engine, connector, nodeConfig, balancerConfig);
       
       MCMPRequest request = this.factory.createConfigRequest(engine, nodeConfig, balancerConfig);
       
-      EasyMock.verify(engine, service, nodeConfig, balancerConfig);
+      EasyMock.verify(engine, connector, nodeConfig, balancerConfig);
       
       Assert.assertSame(MCMPRequestType.CONFIG, request.getRequestType());
       Assert.assertFalse(request.isWildcard());
@@ -233,9 +228,10 @@ public class DefaultMCMPRequestFactoryTestCase
       
       Map<String, String> parameters = request.getParameters();
       
-      Assert.assertEquals(16, parameters.size());
-      Assert.assertEquals("127.0.0.1", parameters.get("Host"));
-      Assert.assertEquals("0", parameters.get("Port"));
+      Assert.assertEquals(17, parameters.size());
+      Assert.assertEquals("true", parameters.get("Reversed"));
+      Assert.assertEquals(InetAddress.getLocalHost().getHostAddress(), parameters.get("Host"));
+      Assert.assertEquals("100", parameters.get("Port"));
       Assert.assertEquals("ajp", parameters.get("Type"));
       Assert.assertEquals("domain", parameters.get("Domain"));
       Assert.assertEquals("On", parameters.get("flushpackets"));
@@ -332,18 +328,35 @@ public class DefaultMCMPRequestFactoryTestCase
    }
 
    @Test
-   public void testCreateRequest()
+   public void testCreateRemoveContextRequest()
    {
-      MCMPRequest request = this.factory.createRequest(MCMPRequestType.REMOVE_APP, "route", new LinkedHashSet<String>(Arrays.asList("alias1", "alias2")), "path");
+      String route = "route";
+      String path = "path";
+      
+      MCMPRequest request = this.factory.createRemoveContextRequest(route, new LinkedHashSet<String>(Arrays.asList("alias1", "alias2")), path);
       
       Assert.assertSame(MCMPRequestType.REMOVE_APP, request.getRequestType());
       Assert.assertFalse(request.isWildcard());
-      Assert.assertEquals("route", request.getJvmRoute());
+      Assert.assertSame(route, request.getJvmRoute());
       
       Map<String, String> parameters = request.getParameters();
       
       Assert.assertEquals(2, parameters.size());
       Assert.assertEquals("alias1,alias2", parameters.get("Alias"));
-      Assert.assertEquals("path", parameters.get("Context"));
+      Assert.assertSame(path, parameters.get("Context"));
+   }
+   
+   @Test
+   public void createRemoveEngineRequest()
+   {
+      String route = "route";
+      
+      MCMPRequest request = this.factory.createRemoveEngineRequest(route);
+      
+      Assert.assertSame(MCMPRequestType.REMOVE_APP, request.getRequestType());
+      Assert.assertTrue(request.isWildcard());
+      Assert.assertSame(route, request.getJvmRoute());
+      
+      Assert.assertTrue(request.getParameters().isEmpty());
    }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.config;
 
 /**
@@ -28,7 +27,7 @@ package org.jboss.modcluster.config;
  * @author Brian Stansberry
  *
  */
-public interface MCMPHandlerConfiguration extends SSLConfiguration
+public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseConfiguration
 {   
    /**
     * Proxy list, format "address:port,address:port".
@@ -49,27 +48,12 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration
     * SSL client cert usage to connect to the proxy.
     */
    boolean isSsl();
+      
+   String getExcludedContexts();
    
    /**
     * Receive advertisements from httpd proxies (default is to use advertisements
     * if the proxyList is not set).
     */
    Boolean getAdvertise();
-
-   /**
-    * Advertise group.
-    */
-   String getAdvertiseGroupAddress();
-
-   /**
-    * Advertise port.
-    */
-   int getAdvertisePort();
-
-   /**
-    * Advertise security key.
-    */
-   String getAdvertiseSecurityKey();
-   
-   String getExcludedContexts();
 }

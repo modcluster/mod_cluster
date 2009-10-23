@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.ha;
 
 import java.io.Serializable;
@@ -148,21 +147,14 @@ public class ModClusterServiceDRMEntry implements Serializable, Comparable<ModCl
    }
 
    @Override
-   public boolean equals(Object obj)
+   public boolean equals(Object object)
    {
-      if (this == obj)
-      {
-         return true;
-      }
+      if (object == this) return true;
+      if ((object == null) || !(object instanceof ModClusterServiceDRMEntry)) return false;
       
-      if (obj instanceof ModClusterServiceDRMEntry)
-      {
-         ModClusterServiceDRMEntry other = (ModClusterServiceDRMEntry) obj;
-         
-         return this.peer.equals(other.peer) && this.safeEquals(this.mcmpServerStates, other.mcmpServerStates);
-      }
+      ModClusterServiceDRMEntry entry = (ModClusterServiceDRMEntry) object;
       
-      return false;
+      return this.peer.equals(entry.peer);
    }
 
    @Override
@@ -181,10 +173,5 @@ public class ModClusterServiceDRMEntry implements Serializable, Comparable<ModCl
          builder.append(",states=").append(this.mcmpServerStates);
       }
       return builder.append("}").toString();
-   }
-
-   private boolean safeEquals(Object a, Object b)
-   {
-      return (a == b || (a != null && a.equals(b)));
    }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,7 +21,9 @@
  */
 package org.jboss.modcluster.advertise;
 
-import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import java.io.IOException;
+
+import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
@@ -30,5 +32,5 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
  */
 public interface AdvertiseListenerFactory
 {
-   public AdvertiseListener createListener(MCMPHandler handler, MCMPHandlerConfiguration config);
+   public AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException;
 }

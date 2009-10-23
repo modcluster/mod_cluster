@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,13 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.mcmp;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.modcluster.Server;
 
 /**
  * Source for a list of requests that should be sent to an httpd-side 
@@ -48,7 +49,7 @@ public interface ResetRequestSource
       Map<String, Status> getContexts();
    }
    
-   void init(Map<String, Set<String>> excludedContexts);
+   void init(Server server, Map<String, Set<String>> excludedContexts);
    
    /**
     * Gets a list of requests that should be sent to an httpd-side 

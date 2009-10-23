@@ -21,28 +21,28 @@
  */
 package org.jboss.modcluster;
 
-
 /**
- * @author Paul Ferraro
+ * Defines the generic container events to which mod_cluster will respond.
  *
+ * @author Paul Ferraro
  */
-public interface ContainerEventHandler<S, E, C> extends ServerProvider<S>
+public interface ContainerEventHandler
 {
-   void init(S server);
+   void init(Server server);
    
    void shutdown();
    
-   void addContext(C context);
+   void add(Context context);
 
-   void startContext(C context);
+   void start(Context context);
 
-   void stopContext(C context);
+   void stop(Context context);
 
-   void removeContext(C context);
+   void remove(Context context);
    
-   void status(E engine);
+   void status(Engine engine);
 
-   void startServer(S server);
+   void start(Server server);
    
-   void stopServer(S server);
+   void stop(Server server);
 }

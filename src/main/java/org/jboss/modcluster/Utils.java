@@ -1,35 +1,38 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.modcluster;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
-import org.apache.catalina.connector.Connector;
-import org.apache.catalina.util.StringManager;
-import org.apache.coyote.ProtocolHandler;
-import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.mcmp.MCMPHandler;
-import org.jboss.modcluster.mcmp.MCMPURLEncoder;
-import org.jboss.modcluster.mcmp.impl.MCMPJBURLEncoder;
-import org.jboss.modcluster.mcmp.impl.MCMPTCURLEncoder;
 
 public class Utils
 {
@@ -38,189 +41,9 @@ public class Utils
    private static final String HOST_CONTEXT_DELIMITER = ":";
    private static final String DEFAULT_HOST = "localhost";
    private static final int DEFAULT_PORT = 8000;
-   
+
    private static final Logger log = Logger.getLogger(Utils.class);
-
-   private static final StringManager sm = StringManager.getManager(Constants.Package);
-
-   private enum ServerType
-   {
-      JBOSSWEB, TOMCAT6
-   }
    
-   private static final ServerType serverType = getServerType();
-   
-   private static ServerType getServerType()
-   {
-      for (Method method: Context.class.getMethods())
-      {
-         if (method.getName().equals("isStarted") && (method.getParameterTypes().length == 0))
-         {
-            return ServerType.JBOSSWEB;
-         }
-      }
-      
-      return ServerType.TOMCAT6;
-   }
-
-   /**
-    * Find the most likely connector the proxy server should connect to, or
-    * accept connections from.
-    * 
-    * @param connectors
-    * @return
-    */
-   public static Connector findProxyConnector(Connector[] connectors)
-   {
-      int highestMaxThreads = 0;
-      Connector bestConnector = connectors[0];
-      
-      for (Connector connector: connectors)
-      {
-         /* Possible AJP protocol for the AJP connectors:
-          * protocol="org.apache.coyote.ajp.AjpProtocol"
-          * protocol="AJP/1.3"
-          */
-         if (isAJP(connector))
-         {
-            return connector;
-         }
-         
-         ProtocolHandler handler = connector.getProtocolHandler();
-         
-         if (Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "reverseConnection")))
-         {
-            return connector;
-         }
-         
-         int maxThreads = ((Integer) IntrospectionUtils.getProperty(handler, "maxThreads")).intValue();
-         
-         if (maxThreads > highestMaxThreads)
-         {
-            highestMaxThreads = maxThreads;
-            bestConnector = connector;
-         }
-      }
-      
-      // If no AJP connector and no reverse, return the connector with the most threads
-      return bestConnector;
-   }
-
-   public static boolean isAJP(Connector connector)
-   {
-      String protocol = connector.getProtocol();
-      
-      return protocol.startsWith("AJP") || protocol.startsWith("org.apache.coyote.ajp");
-   }
-   
-   /**
-    * Return the address on which the connector is bound.
-    * 
-    * @param connector
-    * @return
-    */
-   public static String getAddress(Connector connector)
-   {
-      Object address = IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-      
-      if (address == null) return "127.0.0.1";
-      
-      return (address instanceof InetAddress) ? ((InetAddress) address).getHostAddress() : (String) address;
-   }
-
-   /**
-    * Return the JvmRoute for the specified context.
-    * 
-    * @param context
-    * @return
-    */
-   public static String getJvmRoute(Context context)
-   {
-      return ((Engine) context.getParent().getParent()).getJvmRoute();
-   }
-   
-   /**
-    * Returns the aliases of the host of the specified context, including its host name
-    * 
-    * @param context
-    * @return a set of aliases, including the host name
-    */
-   public static Set<String> getAliases(Context context)
-   {
-      return getAliases((Host) context.getParent());
-   }
-
-   /**
-    * Returns the aliases of the specified host, including its name
-    * 
-    * @param host
-    * @return a set of aliases, including the host name
-    */
-   public static Set<String> getAliases(Host host)
-   {
-      String name = host.getName();
-      String[] aliases = host.findAliases();
-
-      if (aliases.length == 0) 
-      {
-         return Collections.singleton(name);
-      }
-      
-      Set<String> hosts = new LinkedHashSet<String>();
-      hosts.add(name);
-      hosts.addAll(Arrays.asList(aliases));
-      return hosts;
-   }
-
-   /**
-    * Check if the context is started.
-    * 
-    * @param context
-    * @return true if the context is started (or if we don't know) false otherwise.
-    */
-   public static boolean isContextStarted(Context context)
-   {
-      return (serverType == ServerType.TOMCAT6) ? true : context.isStarted();
-   }
-
-   /**
-    * MCMPURLEncoder factory
-    * @return the appropriate MCMPURLEncoder for this server
-    */
-   public static MCMPURLEncoder createMCMPURLEncoder()
-   {
-      return (serverType == ServerType.JBOSSWEB) ? new MCMPJBURLEncoder() : new MCMPTCURLEncoder();
-   }
-
-   public static String defaultObjectNameDomain()
-   {
-      return (serverType == ServerType.JBOSSWEB) ? "jboss.web" : "Catalina";
-   }
-   
-   public static void establishJvmRouteAndConnectorAddress(Engine engine, MCMPHandler mcmpHandler) throws IOException
-   {
-      Connector connector = findProxyConnector(engine.getService().findConnectors());
-      InetAddress localAddress = (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-      if ((engine.getJvmRoute() == null || localAddress == null) && !mcmpHandler.getProxyStates().isEmpty())
-      {
-         // Automagical JVM route (address + port + engineName)          
-         if (localAddress == null)
-         {
-            localAddress = mcmpHandler.getLocalAddress();
-            String hostAddress = (localAddress != null) ? localAddress.getHostAddress() : "127.0.0.1";
-            IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", hostAddress);
-            log.info(sm.getString("modcluster.util.address", hostAddress));
-         }
-         if (engine.getJvmRoute() == null)
-         {
-            String hostName = (localAddress != null) ? localAddress.getHostName() : "127.0.0.1";
-            String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
-            engine.setJvmRoute(jvmRoute);
-            log.info(sm.getString("modcluster.util.jvmRoute", engine.getName(), jvmRoute));
-         }
-      }
-   }
-
    /**
     * Analyzes the type of the given Throwable, handing it back if it is a
     * RuntimeException, wrapping it in a RuntimeException if it is a checked
@@ -276,26 +99,43 @@ public class Utils
          }
          catch (UnknownHostException e)
          {
-            log.error(sm.getString("modcluster.error.host.invalid", token), e);
+            log.error(Strings.ERROR_HOST_INVALID.getString(token), e);
          }
       }
 
       return proxies;
    }
 
+   public static String identifyHost(InetAddress address)
+   {
+      if ((address != null) && !address.isAnyLocalAddress())
+      {
+         return address.getHostAddress();
+      }
+      
+      try
+      {
+         return InetAddress.getLocalHost().getHostName();
+      }
+      catch (UnknownHostException e)
+      {
+         return "127.0.0.1";
+      }
+   }
+   
    private static InetSocketAddress parseSocketAddress(String addressPort, int defaultPort) throws UnknownHostException
    {
-      int pos = addressPort.indexOf(':');
-      boolean colonExists = (pos >= 0);
+      int colonPosition = addressPort.indexOf(':');
+      boolean colonExists = (colonPosition >= 0);
       
-      String address = colonExists ? addressPort.substring(0, pos) : addressPort;
-      int port = colonExists ? Integer.parseInt(addressPort.substring(pos + 1)) : defaultPort;
+      String address = colonExists ? addressPort.substring(0, colonPosition) : addressPort;
+      int port = colonExists ? Integer.parseInt(addressPort.substring(colonPosition + 1)) : defaultPort;
       
-      InetAddress inetAddress = (address != null) && (address.length() > 0) ? InetAddress.getByName(address) : null;
+      InetAddress inetAddress = (address != null) && (address.length() > 0) ? InetAddress.getByName(address) : InetAddress.getLocalHost();
       
       return new InetSocketAddress(inetAddress, port);
    }
-
+   
    public static Map<String, Set<String>> parseContexts(String contexts)
    {
       if (contexts == null) return Collections.emptyMap();
@@ -339,47 +179,6 @@ public class Utils
       }
       
       return map;
-   }
-   
-   public static Host findHost(Server server, String hostName)
-   {
-      String name = (hostName != null) ? hostName : DEFAULT_HOST;
-      
-      for (Service service: server.findServices())
-      {
-         Container host = service.getContainer().findChild(name);
-         
-         if (host != null)
-         {
-            return (Host) host;
-         }
-      }
-      
-      return null;
-   }
-
-   public static Host getHost(Server server, String hostName)
-   {
-      Host host = findHost(server, hostName);
-      
-      if (host == null)
-      {
-         throw new IllegalArgumentException(sm.getString("modcluster.error.host.notfound", hostName));
-      }
-      
-      return host;
-   }
-   
-   public static Context getContext(Host host, String path)
-   {
-      Container context = host.findChild(path);
-      
-      if (context == null)
-      {
-         throw new IllegalArgumentException(sm.getString("modcluster.error.context.notfound", host.getName(), path));
-      }
-      
-      return (Context) context;
    }
    
    private Utils()

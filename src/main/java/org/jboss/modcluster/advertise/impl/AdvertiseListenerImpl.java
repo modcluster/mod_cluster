@@ -1,25 +1,23 @@
 /*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- *  Copyright(c) 2008 Red Hat Middleware, LLC,
- *  and individual contributors as indicated by the @authors tag.
- *  See the copyright.txt in the distribution for a
- *  full listing of individual contributors.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library in the file COPYING.LIB;
- *  if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
- *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 package org.jboss.modcluster.advertise.impl;
 
@@ -27,9 +25,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -39,22 +35,22 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ThreadFactory;
 
 import net.jcip.annotations.GuardedBy;
 
-import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Constants;
+import org.jboss.modcluster.Strings;
+import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.MulticastSocketFactory;
-import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * Listens for Advertise messages from mod_cluster
  *
  * @author Mladen Turk
- *
  */
 public class AdvertiseListenerImpl implements AdvertiseListener
 {
@@ -69,24 +65,25 @@ public class AdvertiseListenerImpl implements AdvertiseListener
 
    volatile boolean listening = false;
    
-   int advertisePort = DEFAULT_PORT;
-   InetAddress groupAddress = null;
+   final int advertisePort;
+   final InetAddress groupAddress;
+   private final InetAddress socketInterface;
 
-   private MulticastSocketFactory socketFactory;
-   private MulticastSocket socket;
-
-   private boolean daemon = true;
-
-   private String securityKey = null;
+   private final ThreadFactory threadFactory;
+   private final MulticastSocketFactory socketFactory;
+   
+   private final String securityKey;
    MessageDigest md = null;
 
    final Map<String, AdvertisedServer> servers = new HashMap<String, AdvertisedServer>();
-   final MCMPHandler commHandler;
+   final MCMPHandler handler;
 
-   private AdvertiseListenerWorker workerThread;
-
-   /** The string manager for this package. */
-   private StringManager sm = StringManager.getManager(Constants.Package);
+   @GuardedBy("this")
+   private MulticastSocket socket;
+   @GuardedBy("this")
+   private AdvertiseListenerWorker worker;
+   @GuardedBy("this")
+   private Thread thread;
 
    private static void digestString(MessageDigest md, String s)
    {
@@ -114,88 +111,22 @@ public class AdvertiseListenerImpl implements AdvertiseListener
     * @param config our configuration 
     * @param socketFactory a multicast socket factory
     */
-   public AdvertiseListenerImpl(MCMPHandler commHandler, MCMPHandlerConfiguration config, MulticastSocketFactory socketFactory)
+   public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, MulticastSocketFactory socketFactory) throws IOException
    {
-      this.commHandler = commHandler;
+      this.handler = commHandler;
       this.socketFactory = socketFactory;
+      this.threadFactory = config.getAdvertiseThreadFactory();
       
-      try
-      {
-         this.setGroupAddress(config.getAdvertiseGroupAddress());
-         this.setAdvertisePort(config.getAdvertisePort());
-         this.setSecurityKey(config.getAdvertiseSecurityKey());
-      }
-      catch (IOException e)
-      {
-         log.error(this.sm.getString("modcluster.error.startListener"), e);
-      }
-      catch (NoSuchAlgorithmException e)
-      {
-         // Should never happen
-         log.error(this.sm.getString("modcluster.error.startListener"), e);
-      }
-   }
+      String groupAddress = config.getAdvertiseGroupAddress();
+      this.groupAddress = InetAddress.getByName((groupAddress != null) ? groupAddress : DEFAULT_GROUP);
 
-   /**
-    * The default is true - the control thread will be
-    * in daemon mode. If set to false, the control thread
-    * will not be daemon - and will keep the process alive.
-    */
-   public void setDaemon(boolean b)
-   {
-      this.daemon = b;
-   }
-
-   public boolean getDaemon()
-   {
-      return this.daemon;
-   }
-
-   /**
-    * Set Advertise security key
-    * @param key The key to use.<br/>
-    *      Security key must match the AdvertiseKey
-    *      on the advertised server.
-    */
-   public void setSecurityKey(String key) throws NoSuchAlgorithmException
-   {
-      this.securityKey = key;
-      if (this.md == null)
-      {
-         this.md = MessageDigest.getInstance("MD5");
-      }
-   }
-
-   /**
-    * Set Advertise port
-    * @param port The UDP port to use.
-    */
-   public void setAdvertisePort(int port)
-   {
+      int port = config.getAdvertisePort();
       this.advertisePort = (port > 0) ? port : DEFAULT_PORT;
-   }
-
-   public int getAdvertisePort()
-   {
-      return this.advertisePort;
-   }
-
-   /**
-    * Set Advertise Multicaset group address
-    * @param address The IP or host address to use.
-    * @throws UnknownHostException 
-    */
-   public void setGroupAddress(String address) throws UnknownHostException
-   {
-      this.groupAddress = InetAddress.getByName((address != null) ? address : DEFAULT_GROUP);
-   }
-
-   /**
-    * Get Advertise Multicaset group address
-    */
-   public String getGroupAddress()
-   {
-      return this.groupAddress.getHostAddress();
+      
+      this.securityKey = config.getAdvertiseSecurityKey();
+      
+      String advertiseInterface = config.getAdvertiseInterface();
+      this.socketInterface = (advertiseInterface != null) ? InetAddress.getByName(advertiseInterface) : null;
    }
 
    /**
@@ -234,6 +165,10 @@ public class AdvertiseListenerImpl implements AdvertiseListener
          
          // Limit socket send to localhost
          socket.setTimeToLive(0);
+         if (this.socketInterface != null)
+         {
+            socket.setInterface(this.socketInterface);
+         }
          socket.joinGroup(this.groupAddress);
 
          this.socket = socket;
@@ -248,15 +183,15 @@ public class AdvertiseListenerImpl implements AdvertiseListener
    {
       this.init();
       
-      if (this.workerThread == null)
+      if (this.worker == null)
       {
-         this.workerThread = new AdvertiseListenerWorker(this.socket);
-         this.workerThread.setDaemon(this.daemon);
-         this.workerThread.start();
+         this.worker = new AdvertiseListenerWorker(this.socket);
+         this.thread = this.threadFactory.newThread(this.worker);
+         this.thread.start();
          
          this.listening = true;
          
-         log.info(this.sm.getString("modcluster.advertise.start", this.groupAddress.getHostAddress(), String.valueOf(this.advertisePort)));
+         log.info(Strings.ADVERTISE_START.getString(this.groupAddress.getHostAddress(), String.valueOf(this.advertisePort)));
       }
    }
    
@@ -266,9 +201,9 @@ public class AdvertiseListenerImpl implements AdvertiseListener
     */
    public synchronized void pause()
    {
-      if (this.workerThread != null)
+      if (this.worker != null)
       {
-         this.workerThread.suspendWorker();
+         this.worker.suspendWorker();
          this.interruptDatagramReader();
       }
    }
@@ -279,9 +214,9 @@ public class AdvertiseListenerImpl implements AdvertiseListener
     */
    public synchronized void resume()
    {
-      if (this.workerThread != null)
+      if (this.worker != null)
       {
-         this.workerThread.resumeWorker();
+         this.worker.resumeWorker();
       }
    }
 
@@ -289,7 +224,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
    {
       if (this.socket == null) return;
       
-      DatagramPacket packet = this.workerThread.createInterruptPacket(this.groupAddress, this.advertisePort);
+      DatagramPacket packet = this.worker.createInterruptPacket(this.groupAddress, this.advertisePort);
       
       try
       {
@@ -310,14 +245,15 @@ public class AdvertiseListenerImpl implements AdvertiseListener
       // In case worker is paused
       this.resume();
       
-      if (this.workerThread != null)
+      if (this.thread != null)
       {
-         this.workerThread.interrupt();
+         this.thread.interrupt();
          
          // In case worker is stuck on socket.receive(...)
          this.interruptDatagramReader();
          
-         this.workerThread = null;
+         this.thread = null;
+         this.worker = null;
          
          this.listening = false;
       }
@@ -363,19 +299,26 @@ public class AdvertiseListenerImpl implements AdvertiseListener
       digestString(this.md, sequence);
       digestString(this.md, server);
       byte[] our = this.md.digest();
+      
       if (our.length != digest.length() / 2)
+      {
          return false;
+      }
 
-      byte[] dst = new byte[digest.length() / 2];
       int val = 0;
-      for (int i = 0;  i < digest.length(); i++)
+      for (int i = 0; i < digest.length(); i++)
       {
          int ch = digest.charAt(i);
-         if (i%2 == 0)
+         if (i % 2 == 0)
+         {
             val = ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
-         else {
-            val = val * 16 +  ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
-            if (our[i/2] != (byte) val) {
+         }
+         else
+         {
+            val = val * 16 + ((ch >= 'A') ? ((ch & 0xdf) - 'A') + 10 : (ch - '0'));
+            
+            if (our[i / 2] != (byte) val)
+            {
                return false;
             }
          }
@@ -395,7 +338,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
    }
 
    // ------------------------------------ AdvertiseListenerWorker Inner Class
-   class AdvertiseListenerWorker extends Thread
+   class AdvertiseListenerWorker implements Runnable
    {
       private final MulticastSocket socket;
       @GuardedBy("this")
@@ -440,7 +383,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
          byte[] buffer = new byte[512];
          
          // Loop until interrupted
-         while (!this.isInterrupted())
+         while (!Thread.currentThread().isInterrupted())
          {
             try
             {
@@ -551,7 +494,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
                      String proxy = server.getParameter(AdvertisedServer.MANAGER_ADDRESS);
                      if (proxy != null)
                      {
-                        AdvertiseListenerImpl.this.commHandler.addProxy(proxy);
+                        AdvertiseListenerImpl.this.handler.addProxy(Utils.parseSocketAddress(proxy));
                      }
                   }
                   else if (rc)
@@ -565,7 +508,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
             }
             catch (InterruptedException e)
             {
-               this.interrupt();
+               Thread.currentThread().interrupt();
             }
             catch (IOException e)
             {

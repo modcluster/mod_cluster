@@ -21,10 +21,11 @@
  */
 package org.jboss.modcluster.mcmp;
 
+import java.net.URI;
 import java.util.Set;
 
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 
@@ -56,7 +57,11 @@ public interface MCMPRequestFactory
 
    MCMPRequest createDumpRequest();
 
-   MCMPRequest createPingRequest(String JvmRoute);
+   MCMPRequest createPingRequest(String jvmRoute);
+
+   MCMPRequest createPingRequest(URI uri);
    
-   MCMPRequest createRequest(MCMPRequestType type, String jvmRoute, Set<String> aliases, String path);
+   MCMPRequest createRemoveContextRequest(String jvmRoute, Set<String> aliases, String path);
+   
+   MCMPRequest createRemoveEngineRequest(String jvmRoute);
 }

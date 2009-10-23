@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,10 +38,6 @@ public interface ClusteredMCMPHandlerRpcHandler
    RpcResponse<Map<MCMPServerState, List<String>>> sendRequests(List<MCMPRequest> requests);
    
    RpcResponse<Void> mcmpServerDiscoveryEvent(MCMPServerDiscoveryEvent event);
-   
-   RpcResponse<String> getProxyConfiguration();
-
-   RpcResponse<String> getProxyInfo();
 
    RpcResponse<Boolean> isProxyHealthOK();
 

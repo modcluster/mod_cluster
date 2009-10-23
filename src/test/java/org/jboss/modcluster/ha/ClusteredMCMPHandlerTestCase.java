@@ -21,10 +21,8 @@
  */
 package org.jboss.modcluster.ha;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,9 +36,9 @@ import org.jboss.ha.framework.interfaces.ClusterNode;
 import org.jboss.ha.framework.interfaces.HAPartition;
 import org.jboss.ha.framework.interfaces.HAServiceKeyProvider;
 import org.jboss.ha.framework.interfaces.HASingletonMBean;
-import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.ha.rpc.MCMPServerDiscoveryEvent;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
+import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPServer;
@@ -87,8 +85,11 @@ public class ClusteredMCMPHandlerTestCase
       // Test non-master case
       Capture<List<InetSocketAddress>> capturedList = new Capture<List<InetSocketAddress>>();
       Capture<Object[]> capturedEvents = new Capture<Object[]>();
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -138,29 +139,24 @@ public class ClusteredMCMPHandlerTestCase
    {
       MCMPServer server = EasyMock.createMock(MCMPServer.class);
       MCMPServerState state = EasyMock.createMock(MCMPServerState.class);
-      Set<MCMPServerState> states = Collections.emptySet();
       
-      InetAddress serverAddress = InetAddress.getLocalHost();
-      int serverPort = 0;
-      InetAddress stateAddress = InetAddress.getLocalHost();
-      int statePort = 1;
+      InetSocketAddress serverAddress = InetSocketAddress.createUnresolved("localhost", 1);
+      InetSocketAddress stateAddress = InetSocketAddress.createUnresolved("localhost", 1);
       
-      EasyMock.expect(server.getAddress()).andReturn(serverAddress);
-      EasyMock.expect(server.getPort()).andReturn(serverPort);
+      EasyMock.expect(server.getSocketAddress()).andReturn(serverAddress);
       EasyMock.expect(server.isEstablished()).andReturn(true);
       
-      this.localHandler.addProxy(serverAddress, serverPort, true);
+      this.localHandler.addProxy(EasyMock.same(serverAddress), EasyMock.eq(true));
       
       EasyMock.expect(this.localHandler.getProxyStates()).andReturn(Collections.singleton(state));
       
-      EasyMock.expect(state.getAddress()).andReturn(stateAddress);
-      EasyMock.expect(state.getPort()).andReturn(statePort);
+      EasyMock.expect(state.getSocketAddress()).andReturn(stateAddress);
       
-      this.localHandler.removeProxy(stateAddress, statePort);
+      this.localHandler.removeProxy(EasyMock.same(stateAddress));
       
       this.localHandler.status();
       
-      EasyMock.expect(this.localHandler.getProxyStates()).andReturn(states);
+      EasyMock.expect(this.localHandler.getProxyStates()).andReturn(Collections.<MCMPServerState>emptySet());
       
       EasyMock.replay(this.localHandler, this.singleton, server, state);
       
@@ -168,7 +164,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.verify(this.localHandler, this.singleton, server, state);
       
-      Assert.assertSame(states, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.localHandler, this.singleton, server, state);
    }
@@ -176,55 +172,27 @@ public class ClusteredMCMPHandlerTestCase
    @Test
    public void addProxy() throws Exception
    {
-      InetAddress address = InetAddress.getLocalHost();
-      int port = 0;
+      InetSocketAddress socketAddress = InetSocketAddress.createUnresolved("localhost", 8080);
       
-      // Test master use case
-      // Test MCMPHandler.addProxy(String)
+      // Test MCMPHandler.addProxy(InetSocketAddress)
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      this.localHandler.addProxy(address, port);
+      this.localHandler.addProxy(EasyMock.same(socketAddress));
       
       EasyMock.replay(this.localHandler, this.singleton);
       
-      this.handler.addProxy(address.getHostName() + ":" + port);
+      this.handler.addProxy(socketAddress);
       
       EasyMock.verify(this.localHandler, this.singleton);
       EasyMock.reset(this.localHandler, this.singleton);
       
       
-      // Test MCMPHandler.addProxy(String, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
-      
-      this.localHandler.addProxy(address, port);
-      
-      EasyMock.replay(this.localHandler, this.singleton);
-      
-      this.handler.addProxy(address.getHostName(), port);
-      
-      EasyMock.verify(this.localHandler, this.singleton);
-      EasyMock.reset(this.localHandler, this.singleton);
-      
-      
-      // Test MCMPHandler.addProxy(InetAddress, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
-      
-      this.localHandler.addProxy(address, port);
-      
-      EasyMock.replay(this.localHandler, this.singleton);
-      
-      this.handler.addProxy(address, port);
-      
-      EasyMock.verify(this.localHandler, this.singleton);
-      EasyMock.reset(this.localHandler, this.singleton);
-      
-      
-      // Test MCMPHandler.addProxy(InetAddress, int, boolean)
-      this.localHandler.addProxy(address, port, true);
+      // Test MCMPHandler.addProxy(InetSocketAddress, boolean)
+      this.localHandler.addProxy(EasyMock.same(socketAddress), EasyMock.eq(true));
       
       EasyMock.replay(this.localHandler);
       
-      this.handler.addProxy(address, port, true);
+      this.handler.addProxy(socketAddress, true);
       
       EasyMock.verify(this.localHandler);
       EasyMock.reset(this.localHandler);
@@ -234,11 +202,13 @@ public class ClusteredMCMPHandlerTestCase
       String key = "key";
       Capture<Object[]> capturedEvents = new Capture<Object[]>();
       ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
-      // Test MCMPHandler.addProxy(String)
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
@@ -253,7 +223,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
 
-      this.handler.addProxy(address.getHostName() + ":" + port);
+      this.handler.addProxy(socketAddress);
       
       EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
       
@@ -265,8 +235,7 @@ public class ClusteredMCMPHandlerTestCase
       MCMPServerDiscoveryEvent event = events.get(0);
       
       Assert.assertSame(node, event.getSender());
-      Assert.assertSame(address, event.getMCMPServer().getAddress());
-      Assert.assertEquals(port, event.getMCMPServer().getPort());
+      Assert.assertSame(socketAddress, event.getMCMPServer());
       Assert.assertTrue(event.isAddition());
       Assert.assertEquals(1, event.getEventIndex());
       
@@ -277,90 +246,12 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
       
       
-      // Test MCMPHandler.addProxy(String, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.partition.getClusterNode()).andReturn(node);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
-      
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2)));
-      
-      EasyMock.expect(response1.getResult()).andReturn(null);
-      
-      EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
-
-      this.handler.addProxy(address.getHostName(), port);
-      
-      EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      events = this.handler.getPendingDiscoveryEvents();
-      
-      Assert.assertNotNull(events);
-      Assert.assertEquals(2, events.size());
-      
-      event = events.get(1);
-      
-      Assert.assertSame(node, event.getSender());
-      Assert.assertSame(address, event.getMCMPServer().getAddress());
-      Assert.assertEquals(port, event.getMCMPServer().getPort());
-      Assert.assertTrue(event.isAddition());
-      Assert.assertEquals(2, event.getEventIndex());
-      
-      Assert.assertNotNull(capturedEvents.getValue());
-      Assert.assertEquals(1, capturedEvents.getValue().length);
-      Assert.assertSame(event, capturedEvents.getValue()[0]);
-      
-      EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      
-      // Test MCMPHandler.addProxy(InetAddress, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.partition.getClusterNode()).andReturn(node);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
-      
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2)));
-      
-      EasyMock.expect(response1.getResult()).andReturn(null);
-      
-      EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
-
-      this.handler.addProxy(address, port);
-      
-      EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      events = this.handler.getPendingDiscoveryEvents();
-      
-      Assert.assertNotNull(events);
-      Assert.assertEquals(3, events.size());
-      
-      event = events.get(2);
-      
-      Assert.assertSame(node, event.getSender());
-      Assert.assertSame(address, event.getMCMPServer().getAddress());
-      Assert.assertEquals(port, event.getMCMPServer().getPort());
-      Assert.assertTrue(event.isAddition());
-      Assert.assertEquals(3, event.getEventIndex());
-      
-      Assert.assertNotNull(capturedEvents.getValue());
-      Assert.assertEquals(1, capturedEvents.getValue().length);
-      Assert.assertSame(event, capturedEvents.getValue()[0]);
-      
-      EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      
       // Test MCMPHandler.addProxy(InetAddress, int, boolean)
-      this.localHandler.addProxy(address, port, true);
+      this.localHandler.addProxy(EasyMock.same(socketAddress), EasyMock.eq(true));
       
       EasyMock.replay(this.localHandler);
       
-      this.handler.addProxy(address, port, true);
+      this.handler.addProxy(socketAddress, true);
       
       EasyMock.verify(this.localHandler);
       EasyMock.reset(this.localHandler);
@@ -369,45 +260,31 @@ public class ClusteredMCMPHandlerTestCase
    @Test
    public void removeProxy() throws Exception
    {
-      InetAddress address = InetAddress.getLocalHost();
-      int port = 0;
+      InetSocketAddress socketAddress = InetSocketAddress.createUnresolved("localhost", 8080);
       
       // Test master use case
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      // Test MCMPHandler.removeProxy(String, int)
-      this.localHandler.removeProxy(address, port);
+      this.localHandler.removeProxy(EasyMock.same(socketAddress));
       
       EasyMock.replay(this.localHandler, this.singleton);
       
-      this.handler.removeProxy(address.getHostName(), port);
+      this.handler.removeProxy(socketAddress);
       
       EasyMock.verify(this.localHandler, this.singleton);
       EasyMock.reset(this.localHandler, this.singleton);
-      
-      
-      // Test MCMPHandler.removeProxy(InetAddress, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
-      
-      this.localHandler.removeProxy(address, port);
-      
-      EasyMock.replay(this.localHandler, this.singleton);
-      
-      this.handler.removeProxy(address, port);
-      
-      EasyMock.verify(this.localHandler, this.singleton);
-      EasyMock.reset(this.localHandler, this.singleton);
-      
       
       // Test non-master use case
       String key = "key";
       Capture<Object[]> capturedEvents = new Capture<Object[]>();
       ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
-      // Test MCMPHandler.removeProxy(String, int)
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
@@ -422,7 +299,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
 
-      this.handler.removeProxy(address.getHostName(), port);
+      this.handler.removeProxy(socketAddress);
       
       EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
       
@@ -434,49 +311,9 @@ public class ClusteredMCMPHandlerTestCase
       MCMPServerDiscoveryEvent event = events.get(0);
       
       Assert.assertSame(node, event.getSender());
-      Assert.assertSame(address, event.getMCMPServer().getAddress());
-      Assert.assertEquals(port, event.getMCMPServer().getPort());
+      Assert.assertSame(socketAddress, event.getMCMPServer());
       Assert.assertFalse(event.isAddition());
       Assert.assertEquals(1, event.getEventIndex());
-      
-      Assert.assertNotNull(capturedEvents.getValue());
-      Assert.assertEquals(1, capturedEvents.getValue().length);
-      Assert.assertSame(event, capturedEvents.getValue()[0]);
-      
-      EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      
-      // Test MCMPHandler.removeProxy(InetAddress, int)
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.partition.getClusterNode()).andReturn(node);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
-      
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
-      
-      EasyMock.expect(response1.getResult()).andReturn(null);
-      
-      EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
-
-      this.handler.removeProxy(address, port);
-      
-      EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      events = this.handler.getPendingDiscoveryEvents();
-      
-      Assert.assertNotNull(events);
-      Assert.assertEquals(2, events.size());
-      
-      event = events.get(1);
-      
-      Assert.assertSame(node, event.getSender());
-      Assert.assertSame(address, event.getMCMPServer().getAddress());
-      Assert.assertEquals(port, event.getMCMPServer().getPort());
-      Assert.assertFalse(event.isAddition());
-      Assert.assertEquals(2, event.getEventIndex());
       
       Assert.assertNotNull(capturedEvents.getValue());
       Assert.assertEquals(1, capturedEvents.getValue().length);
@@ -488,9 +325,7 @@ public class ClusteredMCMPHandlerTestCase
    @Test
    public void getProxyStates()
    {
-      Set<MCMPServerState> states = Collections.emptySet();
-      
-      EasyMock.expect(this.localHandler.getProxyStates()).andReturn(states);
+      EasyMock.expect(this.localHandler.getProxyStates()).andReturn(Collections.<MCMPServerState>emptySet());
       
       EasyMock.replay(this.localHandler);
       
@@ -498,75 +333,9 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.verify(this.localHandler);
       
-      Assert.assertSame(states, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.localHandler);
-   }
-   
-   @Test
-   public void getLocalAddress() throws UnknownHostException, IOException
-   {
-      InetAddress address = InetAddress.getLocalHost();
-      
-      EasyMock.expect(this.localHandler.getLocalAddress()).andReturn(address);
-      
-      EasyMock.replay(this.localHandler);
-      
-      InetAddress result = this.handler.getLocalAddress();
-      
-      EasyMock.verify(this.localHandler);
-      
-      Assert.assertSame(address, result);
-      
-      EasyMock.reset(this.localHandler);
-   }
-   
-   @Test
-   public void getProxyConfiguration() throws Exception
-   {
-      String configuration = "configuration";
-      
-      // Test master use case
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
-      
-      EasyMock.expect(this.localHandler.getProxyConfiguration()).andReturn(configuration);
-      
-      EasyMock.replay(this.localHandler, this.singleton);
-      
-      String result = this.handler.getProxyConfiguration();
-      
-      EasyMock.verify(this.localHandler, this.singleton);
-      
-      Assert.assertSame(configuration, result);
-      
-      EasyMock.reset(this.localHandler, this.singleton);
-      
-      
-      // Test non-master use case
-      String key = "key";
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
-      RpcResponse<String> response1 = EasyMock.createMock(RpcResponse.class);
-      RpcResponse<String> response2 = EasyMock.createMock(RpcResponse.class);
-      ArrayList<RpcResponse<String>> responses = new ArrayList<RpcResponse<String>>(Arrays.asList(response1, response2));
-      
-      EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
-      
-      EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
-      EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
-      
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("getProxyConfiguration"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
-      
-      EasyMock.expect(response1.getResult()).andReturn(configuration);
-      
-      EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      result = this.handler.getProxyConfiguration();
-      
-      EasyMock.verify(this.keyProvider, this.partition, this.singleton, response1, response2);
-      
-      Assert.assertSame(configuration, result);
-      
-      EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
    }
    
    @Test
@@ -590,9 +359,11 @@ public class ClusteredMCMPHandlerTestCase
       
       // Test non-master use case
       String key = "key";
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Boolean> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Boolean> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Boolean>> responses = new ArrayList<RpcResponse<Boolean>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -633,9 +404,11 @@ public class ClusteredMCMPHandlerTestCase
       
       // Test non-master use case
       String key = "key";
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -673,9 +446,11 @@ public class ClusteredMCMPHandlerTestCase
       
       // Test non-master use case
       String key = "key";
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -699,12 +474,11 @@ public class ClusteredMCMPHandlerTestCase
    public void sendRequest() throws Exception
    {
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
-      Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
       
       // Test master use case
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      EasyMock.expect(this.localHandler.sendRequest(EasyMock.same(request))).andReturn(emptyMap);
+      EasyMock.expect(this.localHandler.sendRequest(EasyMock.same(request))).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.replay(this.localHandler, this.singleton);
       
@@ -712,7 +486,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.verify(this.localHandler, this.singleton);
       
-      Assert.assertSame(emptyMap, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.localHandler, this.singleton);
       
@@ -720,10 +494,12 @@ public class ClusteredMCMPHandlerTestCase
       // Test non-master use case
       String key = "key";
       
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
       Capture<Object[]> captured = new Capture<Object[]>();
+      @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, String>> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, String>> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Map<MCMPServerState, String>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, String>>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -733,7 +509,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequest"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { MCMPRequest.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
-      EasyMock.expect(response1.getResult()).andReturn(emptyMap);
+      EasyMock.expect(response1.getResult()).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
       
@@ -744,7 +520,7 @@ public class ClusteredMCMPHandlerTestCase
       Assert.assertNotNull(captured.getValue());
       Assert.assertEquals(1, captured.getValue().length);
       Assert.assertSame(request, captured.getValue()[0]);
-      Assert.assertSame(emptyMap, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
    }
@@ -753,12 +529,11 @@ public class ClusteredMCMPHandlerTestCase
    public void sendRequests() throws Exception
    {
       List<MCMPRequest> requests = Collections.emptyList();
-      Map<MCMPServerState, List<String>> emptyMap = Collections.emptyMap();
       
       // Test master use case
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      EasyMock.expect(this.localHandler.sendRequests(EasyMock.same(requests))).andReturn(emptyMap);
+      EasyMock.expect(this.localHandler.sendRequests(EasyMock.same(requests))).andReturn(Collections.<MCMPServerState, List<String>>emptyMap());
       
       EasyMock.replay(this.localHandler, this.singleton);
       
@@ -766,7 +541,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.verify(this.localHandler, this.singleton);
       
-      Assert.assertSame(emptyMap, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.localHandler, this.singleton);
       
@@ -774,10 +549,12 @@ public class ClusteredMCMPHandlerTestCase
       // Test non-master use case
       String key = "key";
       
-      ClusterNode node = EasyMock.createMock(ClusterNode.class);
       Capture<Object[]> captured = new Capture<Object[]>();
+      @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, List<String>>> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, List<String>>> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
       ArrayList<RpcResponse<Map<MCMPServerState, List<String>>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, List<String>>>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
@@ -787,7 +564,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequests"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { List.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
-      EasyMock.expect(response1.getResult()).andReturn(emptyMap);
+      EasyMock.expect(response1.getResult()).andReturn(Collections.<MCMPServerState, List<String>>emptyMap());
       
       EasyMock.replay(this.keyProvider, this.partition, this.singleton, response1, response2);
       
@@ -798,7 +575,7 @@ public class ClusteredMCMPHandlerTestCase
       Assert.assertNotNull(captured.getValue());
       Assert.assertEquals(1, captured.getValue().length);
       Assert.assertSame(requests, captured.getValue()[0]);
-      Assert.assertSame(emptyMap, result);
+      Assert.assertTrue(result.isEmpty());
       
       EasyMock.reset(this.keyProvider, this.partition, this.singleton, response1, response2);
    }

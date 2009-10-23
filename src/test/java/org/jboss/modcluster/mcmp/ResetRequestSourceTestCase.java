@@ -21,19 +21,17 @@
  */
 package org.jboss.modcluster.mcmp;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.Context;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Server;
-import org.apache.catalina.Service;
 import org.easymock.EasyMock;
-import org.jboss.modcluster.ServerProvider;
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
+import org.jboss.modcluster.Server;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
@@ -49,68 +47,60 @@ public class ResetRequestSourceTestCase
    private final NodeConfiguration nodeConfig = EasyMock.createStrictMock(NodeConfiguration.class);
    private final BalancerConfiguration balancerConfig = EasyMock.createStrictMock(BalancerConfiguration.class);
    private final MCMPRequestFactory requestFactory = EasyMock.createStrictMock(MCMPRequestFactory.class);
-   @SuppressWarnings("unchecked")
-   private final ServerProvider<Server> serverProvider = EasyMock.createStrictMock(ServerProvider.class);
+   private final Server server = EasyMock.createStrictMock(Server.class);
+   
+   private ResetRequestSource source = new ResetRequestSourceImpl(this.nodeConfig, this.balancerConfig, this.requestFactory);
    
    @Test
    public void testGetResetRequestsNoServer()
    {
-      ResetRequestSource source = new ResetRequestSourceImpl(this.nodeConfig, this.balancerConfig, this.serverProvider, this.requestFactory);
+      EasyMock.replay(this.server);
+      
+      List<MCMPRequest> requests = source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
 
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(null);
-      
-      EasyMock.replay(this.serverProvider);
-      
-      Map<String, Set<ResetRequestSource.VirtualHost>> emptyResponseMap = Collections.emptyMap();
-      
-      List<MCMPRequest> requests = source.getResetRequests(emptyResponseMap);
-
-      EasyMock.verify(this.serverProvider);
+      EasyMock.verify(this.server);
       
       Assert.assertTrue(requests.isEmpty());
+      
+      EasyMock.reset(this.server);
    }
    
    @Test
    public void testGetResetRequests() throws Exception
    {
-      ResetRequestSource source = new ResetRequestSourceImpl(this.nodeConfig, this.balancerConfig, this.serverProvider, this.requestFactory);
+      EasyMock.replay(this.server);
       
-      Server server = EasyMock.createStrictMock(Server.class);
-      Service service = EasyMock.createStrictMock(Service.class);
+      this.source.init(this.server, Collections.<String, Set<String>>emptyMap());
+
+      EasyMock.verify(this.server);
+      EasyMock.reset(this.server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest configRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest contextRequest = EasyMock.createStrictMock(MCMPRequest.class);
-      Map<String, Set<String>> emptyContextMap = Collections.emptyMap();
       
-      source.init(emptyContextMap);
-
-      EasyMock.expect(this.serverProvider.getServer()).andReturn(server);
-      
-      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
-      EasyMock.expect(service.getContainer()).andReturn(engine);
+      EasyMock.expect(this.server.getEngines()).andReturn(Collections.singleton(engine));
       
       EasyMock.expect(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).andReturn(configRequest);
 
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
-      EasyMock.expect(engine.findChildren()).andReturn(new Container[] { host });
-      EasyMock.expect(host.getName()).andReturn("host").times(2);
-      EasyMock.expect(host.findAliases()).andReturn(new String[] { "alias1", "alias2" });
-      EasyMock.expect(host.findChildren()).andReturn(new Container[] { context });
+      EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
+      EasyMock.expect(host.getName()).andReturn("host");
+      EasyMock.expect(host.getAliases()).andReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
+      EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
       EasyMock.expect(context.getPath()).andReturn("/context");
       EasyMock.expect(context.isStarted()).andReturn(true);
       
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(contextRequest);
       
-      EasyMock.replay(this.serverProvider, server, this.requestFactory, service, engine, host, context, this.nodeConfig, this.balancerConfig);
+      EasyMock.replay(this.server, this.requestFactory, engine, host, context, this.nodeConfig, this.balancerConfig);
       
-      Map<String, Set<ResetRequestSource.VirtualHost>> emptyResponseMap = Collections.emptyMap();
+      List<MCMPRequest> requests = source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
       
-      List<MCMPRequest> requests = source.getResetRequests(emptyResponseMap);
-      
-      EasyMock.verify(this.serverProvider, server, this.requestFactory, service, engine, host, context, this.nodeConfig, this.balancerConfig);
+      EasyMock.verify(this.server, this.requestFactory, engine, host, context, this.nodeConfig, this.balancerConfig);
       
       Assert.assertEquals(2, requests.size());
       

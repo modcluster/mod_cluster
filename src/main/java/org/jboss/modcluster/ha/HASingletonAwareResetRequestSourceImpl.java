@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.ha;
 
 import java.util.Collections;
@@ -27,13 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.catalina.Server;
-import org.apache.catalina.util.StringManager;
 import org.jboss.ha.framework.interfaces.HAServiceKeyProvider;
 import org.jboss.ha.framework.interfaces.HASingletonMBean;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Constants;
-import org.jboss.modcluster.ServerProvider;
+import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
@@ -58,17 +54,12 @@ public class HASingletonAwareResetRequestSourceImpl extends ResetRequestSourceIm
    
    private static final Logger log = Logger.getLogger(HASingletonAwareResetRequestSourceImpl.class);
    
-   /**
-    * The string manager for this package.
-    */
-   private final StringManager sm = StringManager.getManager(Constants.Package);
-   
    private final HASingletonMBean singleton;
    private final ResetRequestSourceRpcHandler<List<RpcResponse<List<MCMPRequest>>>> rpcStub;
    
-   public HASingletonAwareResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, ServerProvider<Server> serverProvider, MCMPRequestFactory requestFactory, HASingletonMBean singleton, HAServiceKeyProvider serviceKeyProvider)
+   public HASingletonAwareResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPRequestFactory requestFactory, HASingletonMBean singleton, HAServiceKeyProvider serviceKeyProvider)
    {
-      super(nodeConfig, balancerConfig, serverProvider, requestFactory);
+      super(nodeConfig, balancerConfig, requestFactory);
       
       this.singleton = singleton;
       this.rpcStub = new RpcStub(serviceKeyProvider);
@@ -109,7 +100,7 @@ public class HASingletonAwareResetRequestSourceImpl extends ResetRequestSourceIm
          catch (RuntimeException e)
          {
             //FIXME what to do?
-            log.warn(this.sm.getString("modcluster.error.rpc.known", METHOD_NAME, response.getSender()), e);
+            log.warn(Strings.ERROR_RPC_KNOWN.getString(METHOD_NAME, response.getSender()), e);
          }
       }
    }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.ha;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,26 +34,24 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
-import org.apache.catalina.util.StringManager;
 import org.jboss.ha.framework.interfaces.HAServiceKeyProvider;
 import org.jboss.ha.framework.interfaces.HASingletonMBean;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Constants;
+import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler;
 import org.jboss.modcluster.ha.rpc.DefaultRpcResponse;
-import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.ha.rpc.MCMPServerDiscoveryEvent;
 import org.jboss.modcluster.ha.rpc.PeerMCMPDiscoveryStatus;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
-import org.jboss.modcluster.mcmp.AbstractMCMPHandler;
+import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
 
 @ThreadSafe
-public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements ClusteredMCMPHandler
+public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
 {
    static final Object[] NULL_ARGS = new Object[0];
    static final Class<?>[] NULL_TYPES = new Class[0];
@@ -82,11 +77,6 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
    private List<MCMPServerDiscoveryEvent> pendingDiscoveryEvents = new LinkedList<MCMPServerDiscoveryEvent>();
    
    private AtomicInteger discoveryEventIndex = new AtomicInteger();
-
-   /**
-    * The string manager for this package.
-    */
-   final StringManager sm = StringManager.getManager(Constants.Package);
    
    public ClusteredMCMPHandlerImpl(MCMPHandler localHandler, HASingletonMBean singleton, HAServiceKeyProvider serviceKeyProvider)
    {
@@ -139,14 +129,14 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
    {
       for (MCMPServer server : masterList)
       {
-         this.localHandler.addProxy(server.getAddress(), server.getPort(), server.isEstablished());
+         this.localHandler.addProxy(server.getSocketAddress(), server.isEstablished());
       }
       
       for (MCMPServer server : this.localHandler.getProxyStates())
       {
          if (!masterList.contains(server))
          {
-            this.localHandler.removeProxy(server.getAddress(), server.getPort());
+            this.localHandler.removeProxy(server.getSocketAddress());
          }
       }
       
@@ -188,15 +178,15 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetAddress, int)
     */
-   public void addProxy(InetAddress address, int port)
+   public void addProxy(InetSocketAddress socketAddress)
    {
       if (this.singleton.isMasterNode())
       {
-         this.localHandler.addProxy(address, port);
+         this.localHandler.addProxy(socketAddress);
       }
       else
       {
-         this.sendDiscoveryEventToPartition(address, port, true);
+         this.sendDiscoveryEventToPartition(socketAddress, true);
       }
    }
 
@@ -204,24 +194,24 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetAddress, int, boolean)
     */
-   public void addProxy(InetAddress address, int port, boolean established)
+   public void addProxy(InetSocketAddress socketAddress, boolean established)
    {
-      this.localHandler.addProxy(address, port, established);
+      this.localHandler.addProxy(socketAddress, established);
    }
    
    /**
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPHandler#removeProxy(java.net.InetAddress, int)
     */
-   public void removeProxy(InetAddress address, int port)
+   public void removeProxy(InetSocketAddress socketAddress)
    {
       if (this.singleton.isMasterNode())
       {
-         this.localHandler.removeProxy(address, port);
+         this.localHandler.removeProxy(socketAddress);
       }
       else
       {
-         this.sendDiscoveryEventToPartition(address, port, false);
+         this.sendDiscoveryEventToPartition(socketAddress, false);
       }
    }
 
@@ -235,34 +225,9 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPHandler#getLocalAddress()
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
     */
-   public InetAddress getLocalAddress() throws IOException
-   {
-      return this.localHandler.getLocalAddress();
-   }
-
-   public String getProxyConfiguration()
-   {
-      if (this.singleton.isMasterNode())
-      {
-         return this.localHandler.getProxyConfiguration();
-      }
-
-      return this.rpcStub.getProxyConfiguration().getResult();
-   }
-
-   public String getProxyInfo()
-   {
-      if (this.singleton.isMasterNode())
-      {
-         return this.localHandler.getProxyInfo();
-      }
-
-      return this.rpcStub.getProxyInfo().getResult();
-   }
-
    public void init(List<InetSocketAddress> initialProxies)
    {
       if (this.singleton.isMasterNode())
@@ -277,12 +242,16 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
          {
             for (InetSocketAddress proxy : initialProxies)
             {
-               this.sendDiscoveryEventToPartition(proxy.getAddress(), proxy.getPort(), true);
+               this.sendDiscoveryEventToPartition(proxy, true);
             }
          }
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#isProxyHealthOK()
+    */
    public boolean isProxyHealthOK()
    {
       if (this.singleton.isMasterNode())
@@ -293,6 +262,10 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       return this.rpcStub.isProxyHealthOK().getResult().booleanValue();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#markProxiesInError()
+    */
    public void markProxiesInError()
    {
       this.recordRequestFailure();
@@ -307,6 +280,10 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#reset()
+    */
    public void reset()
    {
       if (this.singleton.isMasterNode())
@@ -319,6 +296,10 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequest(org.jboss.modcluster.mcmp.MCMPRequest)
+    */
    public Map<MCMPServerState, String> sendRequest(MCMPRequest request)
    {
       if (this.singleton.isMasterNode())
@@ -338,6 +319,10 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequests(java.util.List)
+    */
    public Map<MCMPServerState, List<String>> sendRequests(List<MCMPRequest> requests)
    {
       if (this.singleton.isMasterNode())
@@ -357,20 +342,26 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       }
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#shutdown()
+    */
    public void shutdown()
    {
       this.localHandler.shutdown();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#status()
+    */
    public void status()
    {
-      log.warn(this.sm.getString("modcluster.error.status.unsupported"));
+      log.warn(Strings.ERROR_STATUS_UNSUPPORTED.getString());
    }
    
-   private void sendDiscoveryEventToPartition(InetAddress address, int port, boolean addition)
+   private void sendDiscoveryEventToPartition(InetSocketAddress socketAddress, boolean addition)
    {
-      InetSocketAddress socketAddress = new InetSocketAddress(address, port);
-      
       synchronized (this.pendingDiscoveryEvents)
       {
          // Ensure discovery event enters queue sequentially by index
@@ -385,8 +376,8 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
          catch (RuntimeException e)
          {
             // Just log it; we'll retry later
-            String msg = addition ? "modcluster.error.discovery.add" : "modcluster.error.discovery.remove";
-            log.error(this.sm.getString(msg, address, Integer.valueOf(port)), e);
+            Strings key = addition ? Strings.ERROR_DISCOVERY_ADD : Strings.ERROR_DISCOVERY_REMOVE;
+            log.error(key.getString(socketAddress), e);
          }
       }
    }
@@ -398,22 +389,6 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
    
    class RpcStub implements ClusteredMCMPHandlerRpcHandler
    {
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#getProxyConfiguration()
-       */
-      public RpcResponse<String> getProxyConfiguration()
-      {
-         return this.invokeRpc("getProxyConfiguration");
-      }
-
-      /**
-       * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#getProxyInfo()
-       */
-      public RpcResponse<String> getProxyInfo()
-      {
-         return this.invokeRpc("getProxyInfo");
-      }
-
       /**
        * @see org.jboss.modcluster.ha.rpc.ClusteredMCMPHandlerRpcHandler#isProxyHealthOK()
        */
@@ -515,7 +490,7 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
             }
             else
             {
-               log.warn(ClusteredMCMPHandlerImpl.this.sm.getString("modcluster.error.rpc.unexpected", obj, methodName));
+               log.warn(Strings.ERROR_RPC_UNEXPECTED.getString(obj, methodName));
             }
          }
          
@@ -523,8 +498,8 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
          {
             throw Utils.convertToUnchecked(thrown);
          }
-            
-         throw new IllegalStateException(ClusteredMCMPHandlerImpl.this.sm.getString("modcluster.error.rpc.noresp", methodName));
+         
+         throw new IllegalStateException(Strings.ERROR_RPC_NO_RESPONSE.getString(methodName));
       }
    }
 }

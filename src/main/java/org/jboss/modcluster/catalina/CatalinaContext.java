@@ -19,13 +19,59 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster;
+package org.jboss.modcluster.catalina;
+
+import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Host;
 
 /**
  * @author Paul Ferraro
- *
  */
-public interface ServerProvider<S>
+public class CatalinaContext implements Context
 {
-   S getServer();
+   private final org.apache.catalina.Context context;
+   private final Host host;
+   
+   public CatalinaContext(org.apache.catalina.Context context, Host host)
+   {
+      this.context = context;
+      this.host = host;
+   }
+   
+   public CatalinaContext(org.apache.catalina.Context context)
+   {
+      this.context = context;
+      this.host = new CatalinaHost((org.apache.catalina.Host) context.getParent());
+   }
+   
+   @Override
+   public Host getHost()
+   {
+      return this.host;
+   }
+
+   @Override
+   public String getPath()
+   {
+      return this.context.getPath();
+   }
+
+   @Override
+   public boolean isStarted()
+   {
+      try
+      {
+         return this.context.isStarted();
+      }
+      catch (NoSuchMethodError e)
+      {
+         return true;
+      }
+   }
+   
+   @Override
+   public String toString()
+   {
+      return this.context.getPath();
+   }
 }

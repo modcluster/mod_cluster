@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2006, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.mcmp.impl;
 
 import java.io.BufferedReader;
@@ -32,13 +31,12 @@ import java.io.ObjectOutput;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -52,38 +50,33 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.net.SocketFactory;
 
 import net.jcip.annotations.GuardedBy;
-import net.jcip.annotations.Immutable;
 import net.jcip.annotations.ThreadSafe;
 
-import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Constants;
-import org.jboss.modcluster.Utils;
+import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
-import org.jboss.modcluster.mcmp.AbstractMCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
+import org.jboss.modcluster.mcmp.MCMPResponseParser;
+import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
-import org.jboss.modcluster.mcmp.MCMPURLEncoder;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
 
 /**
  * Default implementation of {@link MCMPHandler}.
  * 
+ * @author Jean-Frederic Clere
  * @author Brian Stansberry
- * @version $Revision$
+ * @author Paul Ferraro
  */
 @ThreadSafe
-public class DefaultMCMPHandler extends AbstractMCMPHandler
+public class DefaultMCMPHandler implements MCMPHandler
 {
    private static final String NEW_LINE = "\r\n";
    
    protected static final Logger log = Logger.getLogger(DefaultMCMPHandler.class);
    
-   /** The string manager for this package. */
-   protected StringManager sm = StringManager.getManager(Constants.Package);
-
    // -------------------------------------------------------------- Constants
 
    // ----------------------------------------------------------------- Fields
@@ -92,6 +85,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
    /** Source for reset requests when we need to reset a proxy. */
    private final ResetRequestSource resetRequestSource;
    private final MCMPRequestFactory requestFactory;
+   private final MCMPResponseParser responseParser;
    
    private final ReadWriteLock proxiesLock = new ReentrantReadWriteLock();
    private final Lock addRemoveProxiesLock = new ReentrantLock();
@@ -110,14 +104,15 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
    
    /** Initialization completion flag */
    private volatile boolean init = false;
-
+   
    // -----------------------------------------------------------  Constructors
 
-   public DefaultMCMPHandler(MCMPHandlerConfiguration config, ResetRequestSource source, MCMPRequestFactory requestFactory)
+   public DefaultMCMPHandler(MCMPHandlerConfiguration config, ResetRequestSource source, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser)
    {
       this.resetRequestSource = source;
       this.config = config;
       this.requestFactory = requestFactory;
+      this.responseParser = responseParser;
    }
 
    // ------------------------------------------------------------  MCMPHandler
@@ -133,7 +128,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
          {
             for (InetSocketAddress initialProxy: initialProxies)
             {
-               this.addProxyInternal(initialProxy.getAddress(), initialProxy.getPort());
+               this.add(initialProxy);
             }
          }
    
@@ -167,14 +162,14 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       }
    }
 
-   public void addProxy(InetAddress address, int port)
+   public void addProxy(InetSocketAddress socketAddress)
    {
-      this.addProxyInternal(address, port);
+      this.add(socketAddress);
    }
 
-   private Proxy addProxyInternal(InetAddress address, int port)
+   private Proxy add(InetSocketAddress socketAddress)
    {
-      Proxy proxy = new Proxy(address, port, this.config);
+      Proxy proxy = new Proxy(socketAddress, this.config);
       
       this.addRemoveProxiesLock.lock();
       
@@ -216,15 +211,14 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       return proxy;
    }
 
-   public void addProxy(InetAddress address, int port, boolean established)
+   public void addProxy(InetSocketAddress socketAddress, boolean established)
    {
-      Proxy proxy = this.addProxyInternal(address, port);
-      proxy.setEstablished(established);
+      this.add(socketAddress).setEstablished(established);
    }
 
-   public void removeProxy(InetAddress address, int port)
+   public void removeProxy(InetSocketAddress socketAddress)
    {
-      Proxy proxy = new Proxy(address, port, this.config);
+      Proxy proxy = new Proxy(socketAddress, this.config);
       
       this.addRemoveProxiesLock.lock();
       
@@ -251,7 +245,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
          
          for (Proxy proxy: this.proxies)
          {
-            result.add(new MCMPServerStateImpl(proxy));
+            result.add(proxy);
          }
          
          return result;
@@ -306,119 +300,6 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
    }
 
    /**
-    * Retrieves the full proxy configuration. To be used through JMX or similar.
-    * 
-    *         response: HTTP/1.1 200 OK
-    *   response:
-    *   node: [1:1] JVMRoute: node1 Domain: [bla] Host: 127.0.0.1 Port: 8009 Type: ajp
-    *   host: 1 [] vhost: 1 node: 1
-    *   context: 1 [/] vhost: 1 node: 1 status: 1
-    *   context: 2 [/myapp] vhost: 1 node: 1 status: 1
-    *   context: 3 [/host-manager] vhost: 1 node: 1 status: 1
-    *   context: 4 [/docs] vhost: 1 node: 1 status: 1
-    *   context: 5 [/manager] vhost: 1 node: 1 status: 1
-    *
-    * @return the proxy confguration
-    */
-   public String getProxyConfiguration()
-   {
-      // Send DUMP * request
-      return this.getProxyMessage(this.requestFactory.createDumpRequest());
-   }
-
-   /**
-    * Do a PING using each proxy
-    *
-    * @return the proxy PING_RSP strings.
-    */
-   public String doProxyPing(String JvmRoute)
-   {
-      // Send PING * request
-      return this.getProxyMessage(this.requestFactory.createPingRequest(JvmRoute));
-   }
-   
-   /**
-    * Retrieves the full proxy info message.
-    *
-    * @return the proxy info confguration
-    */
-   public String getProxyInfo()
-   {
-      // Send INFO * request
-      return this.getProxyMessage(this.requestFactory.createInfoRequest());
-   }
-   
-   private String getProxyMessage(MCMPRequest request)
-   {
-      StringBuilder result = null;
-      
-      Lock lock = this.proxiesLock.readLock();
-      lock.lock();
-      
-      try
-      {
-         for (int i = 0; i < this.proxies.size(); ++i)
-         {
-            Proxy proxy = this.proxies.get(i);
-            String string = this.sendRequest(request, proxy);
-            
-            if (string != null)
-            {
-               if (result == null)
-               {
-                  result = new StringBuilder();
-               }
-               result.append("Proxy[").append(i).append("]: [").append(proxy.getAddress()).append(':').append(proxy.getPort()).append("]: ").append(NEW_LINE);
-               result.append(string).append(NEW_LINE);
-            }
-         }
-      }
-      finally
-      {
-         lock.unlock();
-      }
-      
-      return (result != null) ? result.toString() : null;
-   }
-   
-   public InetAddress getLocalAddress() throws IOException
-   {
-      IOException firstException = null;
-      
-      Lock lock = this.proxiesLock.readLock();
-      lock.lock();
-      
-      try
-      {
-         for (Proxy proxy: this.proxies)
-         {
-            try
-            {
-               return proxy.getLocalAddress();
-            }
-            catch (IOException e)
-            {
-               // Cache the exception in case no other connection works,
-               // but keep trying
-               if (firstException == null)
-               {
-                  firstException = e;
-               }
-            }
-         }
-      }
-      finally
-      {
-         lock.unlock();
-      }
-      
-      if (firstException != null) throw firstException;
-
-      // We get here if there are no proxies
-      return null;
-   }
-
-   /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
     * be refreshed. To be used through JMX or similar.
     */
@@ -451,10 +332,10 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
     */
    public synchronized void status()
    {
-      // Don't respond if not yet initialized
-      if (!this.init) return;
-      
-      this.status(true);
+      if (this.init)
+      {
+         this.status(true);
+      }
    }
    
    private void status(boolean sendResetRequests)
@@ -483,7 +364,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
    
                   if (sendResetRequests)
                   {
-                     Map<String, Set<ResetRequestSource.VirtualHost>> parsedResponse = this.parseInfoResponse(response);
+                     Map<String, Set<ResetRequestSource.VirtualHost>> parsedResponse = this.responseParser.parseInfoResponse(response);
                      
                      List<MCMPRequest> requests = this.resetRequestSource.getResetRequests(parsedResponse);
                      
@@ -499,184 +380,6 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          lock.unlock();
       }
-   }
-
-   private Map<String, Set<ResetRequestSource.VirtualHost>> parseInfoResponse(String response)
-   {
-      if (response == null) return Collections.emptyMap();
-
-      log.trace(response);
-      
-      // Map node id -> node name (i.e. jvm route)
-      Map<String, String> nodeMap = new HashMap<String, String>();
-      // Map node name -> vhost id -> virtual host
-      Map<String, Map<String, ResetRequestSource.VirtualHost>> virtualHostMap = new HashMap<String, Map<String, ResetRequestSource.VirtualHost>>();
-      
-      for (String line: response.split("\r\n|\r|\n"))
-      {
-         if (line.startsWith("Node:"))
-         {
-            String[] entries = line.split(",");
-            String nodeId = this.parseIds(entries[0])[0];
-            
-            // We can skip the first entry
-            for (int i = 1; i < entries.length; ++i)
-            {
-               String entry = entries[i];
-               int index = entry.indexOf(':');
-               
-               if (index < 0)
-               {
-                  throw new IllegalArgumentException(response);
-               }
-
-               String key = entry.substring(0, index).trim();
-               String value = entry.substring(index + 1).trim();
-               
-               if ("Name".equals(key))
-               {
-                  nodeMap.put(nodeId, value);
-                  virtualHostMap.put(value, new HashMap<String, ResetRequestSource.VirtualHost>());
-                  break;
-               }
-            }
-         }
-         else if (line.startsWith("Vhost:"))
-         {
-            String[] entries = line.split(",");
-            String[] ids = this.parseIds(entries[0]);
-            
-            if (ids.length != 3)
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            String node = nodeMap.get(ids[0]);
-            
-            if (node == null)
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            Map<String, ResetRequestSource.VirtualHost> hostMap = virtualHostMap.get(node);
-            String hostId = ids[1];
-
-            ResetRequestSource.VirtualHost host = hostMap.get(hostId);
-
-            if (host == null)
-            {
-               host = new VirtualHostImpl();
-               hostMap.put(hostId, host);
-            }
-            
-            for (int i = 1; i < entries.length; ++i)
-            {
-               String entry = entries[i];
-               int index = entry.indexOf(':');
-               
-               if (index < 0)
-               {
-                  throw new IllegalArgumentException(response);
-               }
-               
-               String key = entry.substring(0, index).trim();
-               String value = entry.substring(index + 1).trim();
-               
-               if ("Alias".equals(key))
-               {
-                  host.getAliases().add(value);
-                  break;
-               }
-            }
-         }
-         else if (line.startsWith("Context:"))
-         {
-            String[] entries = line.split(",");
-            String[] ids = this.parseIds(entries[0]);
-            
-            if (ids.length != 3)
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            String nodeId = ids[0];
-            String node = nodeMap.get(nodeId);
-            
-            if (node == null)
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            Map<String, ResetRequestSource.VirtualHost> hostMap = virtualHostMap.get(node);
-            String hostId = ids[1];
-
-            ResetRequestSource.VirtualHost host = hostMap.get(hostId);
-            
-            if (host == null)
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            String context = null;
-            ResetRequestSource.Status status = null;
-            
-            for (int i = 1; i < entries.length; ++i)
-            {
-               String entry = entries[i];
-               int index = entry.indexOf(':');
-               
-               if (index < 0)
-               {
-                  throw new IllegalArgumentException(response);
-               }
-
-               String key = entry.substring(0, index).trim();
-               String value = entry.substring(index + 1).trim();
-               
-               if ("Context".equals(key))
-               {
-                  context = value;
-               }
-               else if ("Status".equals(key))
-               {
-                  status = ResetRequestSource.Status.valueOf(value);
-               }
-            }
-            
-            if ((context == null) || (status == null))
-            {
-               throw new IllegalArgumentException(response);
-            }
-            
-            host.getContexts().put(context, status);
-         }
-      }
-      
-      Map<String, Set<ResetRequestSource.VirtualHost>> result = new HashMap<String, Set<ResetRequestSource.VirtualHost>>();
-      
-      for (Map.Entry<String, Map<String, ResetRequestSource.VirtualHost>> entry: virtualHostMap.entrySet())
-      {
-         result.put(entry.getKey(), new HashSet<ResetRequestSource.VirtualHost>(entry.getValue().values()));
-      }
-      
-      log.trace(result);
-      
-      return result;
-   }
-
-   private String[] parseIds(String entry)
-   {
-      int start = entry.indexOf('[') + 1;
-      int end = entry.indexOf(']');
-      
-      if (start >= end)
-      {
-         throw new IllegalArgumentException(entry);
-      }
-
-      String ids = entry.substring(start, end);
-      
-      return (ids.length() > 2) ? ids.split(":") : new String[] { ids };
    }
    
    /**
@@ -700,7 +403,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          for (Proxy proxy: this.proxies)
          {
-            map.put(new MCMPServerStateImpl(proxy), this.sendRequest(request, proxy));
+            map.put(proxy, this.sendRequest(request, proxy));
          }
       }
       finally
@@ -729,7 +432,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                list.add(this.sendRequest(request, proxy));
             }
             
-            map.put(new MCMPServerStateImpl(proxy), list);
+            map.put(proxy, list);
          }
       }
       finally
@@ -780,27 +483,32 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       }
    }
 
-   private String sendRequest(Proxy proxy, String command, char[] body, int length) throws IOException
+   private String sendRequest(Proxy proxy, String command, String body) throws IOException
    {
       Writer writer = proxy.getConnectionWriter();
       
-      writer.write(command);
-      writer.write(NEW_LINE);
+      writer.append(command).append(NEW_LINE);
             
-      writer.write("Content-Length: ");
-      writer.write(Integer.toString(length));
+      writer.append("Content-Length: ").append(String.valueOf(body.length())).append(NEW_LINE);
+      writer.append("User-Agent: ClusterListener/1.0").append(NEW_LINE);
+      writer.append("Connection: Keep-Alive").append(NEW_LINE);
       writer.write(NEW_LINE);
-      writer.write("User-Agent: ClusterListener/1.0");
-      writer.write(NEW_LINE);
-      writer.write("Connection: Keep-Alive");
-      writer.write(NEW_LINE);
-      writer.write(NEW_LINE);
-      writer.write(body, 0, length);
+      writer.write(body);
       writer.write(NEW_LINE);
       writer.flush();
    
       // Read the first response line and skip the rest of the HTTP header
       return proxy.getConnectionReader().readLine();
+   }
+   
+   private void appendParameter(Appendable appender, String name, String value, boolean more) throws IOException
+   {
+      appender.append(URLEncoder.encode(name, "UTF-8")).append('=').append(URLEncoder.encode(value, "UTF-8"));
+      
+      if (more)
+      {
+         appender.append('&');
+      }
    }
    
    private String sendRequest(MCMPRequest request, Proxy proxy)
@@ -811,7 +519,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
 
       if (log.isTraceEnabled())
       {
-         log.trace(this.sm.getString("modcluster.request", request, proxy));
+         log.trace(Strings.REQUEST_SEND.getString(request, proxy));
       }
 
       String command = request.getRequestType().getCommand();
@@ -819,14 +527,14 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       String jvmRoute = request.getJvmRoute();
       Map<String, String> parameters = request.getParameters();
 
-      MCMPURLEncoder encoder = Utils.createMCMPURLEncoder();
+      StringBuilder bodyBuilder = new StringBuilder();
 
       // First, encode the POST body
       try
       {
          if (jvmRoute != null)
          {
-            encoder.encodeParameter("JVMRoute", jvmRoute, !parameters.isEmpty());
+            this.appendParameter(bodyBuilder, "JVMRoute", jvmRoute, !parameters.isEmpty());
          }
          
          Iterator<Map.Entry<String, String>> entries = parameters.entrySet().iterator();
@@ -834,8 +542,8 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
          while (entries.hasNext())
          {
             Map.Entry<String, String> entry = entries.next();
-            
-            encoder.encodeParameter(entry.getKey(), entry.getValue(), entries.hasNext());
+
+            this.appendParameter(bodyBuilder, entry.getKey(), entry.getValue(), entries.hasNext());
          }
       }
       catch (IOException e)
@@ -846,32 +554,31 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
 
       // Then, connect to the proxy
       // Generate and write request
-      StringBuilder builder = new StringBuilder();
+      StringBuilder headBuilder = new StringBuilder();
       
-      builder.append(command).append(" ");
+      headBuilder.append(command).append(" ");
       
       String proxyURL = this.config.getProxyURL();
       
       if (proxyURL != null)
       {
-         builder.append(proxyURL);
+         headBuilder.append(proxyURL);
       }
       
-      if (builder.charAt(builder.length() - 1) != '/')
+      if (headBuilder.charAt(headBuilder.length() - 1) != '/')
       {
-         builder.append('/');
+         headBuilder.append('/');
       }
       
       if (wildcard)
       {
-         builder.append('*');
+         headBuilder.append('*');
       }
       
-      builder.append(" HTTP/1.0");
+      headBuilder.append(" HTTP/1.0");
 
-      String head = builder.toString();
-      int length = encoder.getLength();
-      char[] body = encoder.getBuffer();
+      String head = headBuilder.toString();
+      String body = bodyBuilder.toString();
       
       // Require exclusive access to proxy socket
       synchronized (proxy)
@@ -881,7 +588,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
             String line = null;
             try
             {
-               line = sendRequest(proxy, head, body, length);
+               line = sendRequest(proxy, head, body);
             }
             catch (IOException e)
             {
@@ -892,7 +599,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
             {
                // Retry failed read/write with fresh connection
                proxy.closeConnection();
-               line = sendRequest(proxy, head, body, length);
+               line = sendRequest(proxy, head, body);
             }
 
             BufferedReader reader = proxy.getConnectionReader();
@@ -941,7 +648,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                }
                catch (Exception e)
                {
-                  log.info(this.sm.getString("modcluster.error.parse", command), e);
+                  log.info(Strings.ERROR_HEADER_PARSE.getString(command), e);
                }
             }
    
@@ -963,12 +670,12 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                {
                   // Syntax error means the protocol is incorrect, which cannot be automatically fixed
                   proxy.setState(Proxy.State.DOWN);
-                  log.error(this.sm.getString("modcluster.error.syntax", command, proxy, errorType, message));
+                  log.error(Strings.ERROR_REQUEST_SYNTAX.getString(command, proxy, errorType, message));
                }
                else
                {
                   proxy.setState(Proxy.State.ERROR);
-                  log.error(this.sm.getString("modcluster.error.other", command, proxy, errorType, message));
+                  log.error(Strings.ERROR_REQUEST_SEND_OTHER.getString(command, proxy, errorType, message));
                }
             }
 
@@ -1005,7 +712,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
             // Log it only if we haven't done so already. Don't spam the log
             if (proxy.isIoExceptionLogged() == false)
             {
-               log.info(this.sm.getString("modcluster.error.io", command, proxy), e);
+               log.info(Strings.ERROR_REQUEST_SEND_IO.getString(command, proxy), e);
                proxy.setIoExceptionLogged(true);
             }
             
@@ -1026,40 +733,31 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
     * This class represents a front-end httpd server.
     */
    @ThreadSafe
-   private static class Proxy implements MCMPServerState
+   private static class Proxy implements MCMPServerState, Serializable
    {
-      /** The string manager for this package. */
-      private final StringManager sm = StringManager.getManager(Constants.Package);
-
-      private final InetAddress address;
-      private final int port;
-      private final int socketTimeout;
-      private final SocketFactory socketFactory;
+      /** The serialVersionUID */
+      private static final long serialVersionUID = 5219680414337319908L;
+      
+      private final InetSocketAddress socketAddress;
       
       private volatile State state = State.OK;
       private volatile boolean established;
-      private volatile boolean ioExceptionLogged;
+      
+      private transient final int socketTimeout;
+      private transient final SocketFactory socketFactory;
+      
+      private transient volatile boolean ioExceptionLogged;
 
       @GuardedBy("Proxy.this")
-      private volatile Socket socket = null;
+      private transient volatile Socket socket = null;
       @GuardedBy("Proxy.this")
-      private volatile BufferedReader reader = null;
+      private transient volatile BufferedReader reader = null;
       @GuardedBy("Proxy.this")
-      private volatile BufferedWriter writer = null;
+      private transient volatile BufferedWriter writer = null;
 
-      Proxy(InetAddress address, int port, MCMPHandlerConfiguration config)
+      Proxy(InetSocketAddress socketAddress, MCMPHandlerConfiguration config)
       {
-         if (address == null)
-         {
-            throw new IllegalArgumentException(this.sm.getString("modcluster.error.iae.null", "address"));
-         }
-         if (port <= 0)
-         {
-            throw new IllegalArgumentException(this.sm.getString("modcluster.error.iae.invalid", Integer.valueOf(port), "port"));
-         }
-
-         this.address = address;
-         this.port = port;
+         this.socketAddress = socketAddress;
          this.socketFactory = config.isSsl() ? new JSSESocketFactory(config) : SocketFactory.getDefault();
          this.socketTimeout = config.getSocketTimeout();
       }
@@ -1073,14 +771,9 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
 
       // ----------------------------------------------------------- MCMPServer
 
-      public InetAddress getAddress()
+      public InetSocketAddress getSocketAddress()
       {
-         return this.address;
-      }
-
-      public int getPort()
-      {
-         return this.port;
+         return this.socketAddress;
       }
 
       public boolean isEstablished()
@@ -1093,34 +786,23 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       @Override
       public String toString()
       {
-         StringBuilder builder = new StringBuilder();
-         
-         if (this.address != null)
-         {
-            builder.append(this.address.getHostAddress());
-         }
-         
-         return builder.append(':').append(this.port).toString();
+         return this.socketAddress.toString();
       }
 
       @Override
       public boolean equals(Object object)
       {
-         if (!(object instanceof Proxy)) return false;
+         if ((object == null) || !(object instanceof MCMPServer)) return false;
 
-         Proxy proxy = (Proxy) object;
-         InetAddress address = proxy.address;
+         MCMPServer proxy = (MCMPServer) object;
          
-         return (this.port == proxy.port) && ((this.address != null) && (address != null) ? this.address.equals(address) : this.address == address);
+         return this.socketAddress.equals(proxy.getSocketAddress());
       }
 
       @Override
       public int hashCode()
       {
-         int result = 17;
-         result += 23 * (this.address == null ? 0 : this.address.hashCode());
-         result += 23 * this.port;
-         return result;
+         return this.socketAddress.hashCode();
       }
 
       // -------------------------------------------------------------- Private
@@ -1129,7 +811,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          if (state == null)
          {
-            throw new IllegalArgumentException(this.sm.getString("modcluster.error.iae.null", "state"));
+            throw new IllegalArgumentException(Strings.ERROR_ARGUMENT_NULL.getString("state"));
          }
          
          this.state = state;
@@ -1139,12 +821,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          this.established = established;
       }
-      
-      InetAddress getLocalAddress() throws IOException
-      {
-         return this.getConnection().getLocalAddress();
-      }
-      
+     
       /**
        * Return a reader to the proxy.
        */
@@ -1152,7 +829,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          if ((this.socket == null) || this.socket.isClosed())
          {
-            this.socket = this.socketFactory.createSocket(this.address, this.port);
+            this.socket = this.socketFactory.createSocket(this.socketAddress.getAddress(), this.socketAddress.getPort());
             this.socket.setSoTimeout(this.socketTimeout);
          }
          return this.socket;
@@ -1236,82 +913,6 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       void setIoExceptionLogged(boolean ioErrorLogged)
       {
          this.ioExceptionLogged = ioErrorLogged;
-      }
-   }
-   
-   @Immutable
-   private static class MCMPServerStateImpl implements MCMPServerState, Serializable
-   {
-      /** The serialVersionUID */
-      private static final long serialVersionUID = 5219680414337319908L;
-
-      private final State state;
-      private final InetAddress address;
-      private final int port;
-      private final boolean established;
-
-      MCMPServerStateImpl(MCMPServerState source)
-      {
-         this.state = source.getState();
-         this.address = source.getAddress();
-         this.port = source.getPort();
-         this.established = source.isEstablished();
-      }
-
-      public State getState()
-      {
-         return this.state;
-      }
-
-      public InetAddress getAddress()
-      {
-         return this.address;
-      }
-
-      public int getPort()
-      {
-         return this.port;
-      }
-
-      public boolean isEstablished()
-      {
-         return this.established;
-      }
-
-      @Override
-      public boolean equals(Object obj)
-      {
-         if (this == obj) return true;
-
-         if (obj instanceof MCMPServerStateImpl)
-         {
-            MCMPServerStateImpl other = (MCMPServerStateImpl) obj;
-            return (this.port == other.port && this.address.equals(other.address) && this.state == other.state && this.established == other.established);
-         }
-         return false;
-      }
-
-      @Override
-      public int hashCode()
-      {
-         int result = 17;
-         result += 23 * (this.address == null ? 0 : this.address.hashCode());
-         result += 23 * this.port;
-         result += 23 * this.state.hashCode();
-         result += 23 * (this.established ? 0 : 1);
-         return result;
-      }
-
-      @Override
-      public String toString()
-      {
-         StringBuilder sb = new StringBuilder(this.getClass().getSimpleName());
-         sb.append("{address=").append(this.address);
-         sb.append(",port=").append(this.port);
-         sb.append(",state=").append(this.state);
-         sb.append(",established=").append(this.established);
-         sb.append("}");
-         return sb.toString();
       }
    }
    

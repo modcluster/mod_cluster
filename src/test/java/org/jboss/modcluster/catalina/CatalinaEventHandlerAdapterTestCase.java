@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster;
+package org.jboss.modcluster.catalina;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
@@ -31,36 +31,42 @@ import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.easymock.EasyMock;
+import org.jboss.modcluster.ContainerEventHandler;
+import org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter;
 import org.junit.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class JBossWebEventHandlerAdapterTestCase
+public class CatalinaEventHandlerAdapterTestCase
 {
-   @SuppressWarnings("unchecked")
-   private ContainerEventHandler<Server, Engine, Context> eventHandler = EasyMock.createStrictMock(ContainerEventHandler.class);
+   private ContainerEventHandler eventHandler = EasyMock.createStrictMock(ContainerEventHandler.class);
    
    private CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler);
 
    @Test
    public void deployWebApp()
    {
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       LifecycleContext context = EasyMock.createStrictMock(LifecycleContext.class);
-
+      
       ContainerEvent event = new ContainerEvent(host, Container.ADD_CHILD_EVENT, context);
       
       context.addLifecycleListener(this.adapter);
-      this.eventHandler.addContext(context);
       
-      EasyMock.replay(this.eventHandler, host, context);
+      EasyMock.expect(context.getParent()).andReturn(host);
+      EasyMock.expect(host.getParent()).andReturn(engine);
+      
+      this.eventHandler.add(EasyMock.isA(CatalinaContext.class));
+
+      EasyMock.replay(this.eventHandler, engine, host, context);
       
       this.adapter.containerEvent(event);
       
-      EasyMock.verify(this.eventHandler, host, context);
-      EasyMock.reset(this.eventHandler, host, context);
+      EasyMock.verify(this.eventHandler, engine, host, context);
+      EasyMock.reset(this.eventHandler, engine, host, context);
    }
 
    @Test
@@ -83,13 +89,18 @@ public class JBossWebEventHandlerAdapterTestCase
    @Test
    public void undeployWebApp()
    {
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       LifecycleContext context = EasyMock.createStrictMock(LifecycleContext.class);
 
       ContainerEvent event = new ContainerEvent(host, Container.REMOVE_CHILD_EVENT, context);
       
       context.removeLifecycleListener(this.adapter);
-      this.eventHandler.removeContext(context);
+      
+      EasyMock.expect(context.getParent()).andReturn(host);
+      EasyMock.expect(host.getParent()).andReturn(engine);
+      
+      this.eventHandler.remove(EasyMock.isA(CatalinaContext.class));
       
       EasyMock.replay(this.eventHandler, host, context);
       
@@ -119,18 +130,23 @@ public class JBossWebEventHandlerAdapterTestCase
    @Test
    public void startWebApp()
    {
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
       LifecycleContext context = EasyMock.createStrictMock(LifecycleContext.class);
       
       LifecycleEvent event = new LifecycleEvent(context, Lifecycle.START_EVENT);
       
-      this.eventHandler.startContext(context);
+      EasyMock.expect(context.getParent()).andReturn(host);
+      EasyMock.expect(host.getParent()).andReturn(engine);
       
-      EasyMock.replay(this.eventHandler);
+      this.eventHandler.start(EasyMock.isA(CatalinaContext.class));
+      
+      EasyMock.replay(this.eventHandler, engine, host, context);
       
       this.adapter.lifecycleEvent(event);
       
-      EasyMock.verify(this.eventHandler);
-      EasyMock.reset(this.eventHandler);
+      EasyMock.verify(this.eventHandler, engine, host, context);
+      EasyMock.reset(this.eventHandler, engine, host, context);
    }
    
    @Test
@@ -143,8 +159,7 @@ public class JBossWebEventHandlerAdapterTestCase
       LifecycleContainer childContainer = EasyMock.createStrictMock(LifecycleContainer.class);
       
       LifecycleEvent event = new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT);
-      
-      this.eventHandler.init(server);
+      this.eventHandler.init(EasyMock.isA(CatalinaServer.class));
       
       EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
       EasyMock.expect(service.getContainer()).andReturn(engine);
@@ -160,7 +175,7 @@ public class JBossWebEventHandlerAdapterTestCase
       
       childContainer.addLifecycleListener(this.adapter);
       
-      this.eventHandler.startServer(server);
+      this.eventHandler.start(EasyMock.isA(CatalinaServer.class));
       
       EasyMock.replay(this.eventHandler, server, service, engine, container, childContainer);
       
@@ -173,18 +188,23 @@ public class JBossWebEventHandlerAdapterTestCase
    @Test
    public void stopWebApp()
    {
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
       LifecycleContext context = EasyMock.createStrictMock(LifecycleContext.class);
       
       LifecycleEvent event = new LifecycleEvent(context, Lifecycle.BEFORE_STOP_EVENT);
       
-      this.eventHandler.stopContext(context);
+      EasyMock.expect(context.getParent()).andReturn(host);
+      EasyMock.expect(host.getParent()).andReturn(engine);
       
-      EasyMock.replay(this.eventHandler);
+      this.eventHandler.stop(EasyMock.isA(CatalinaContext.class));
+      
+      EasyMock.replay(this.eventHandler, engine, host, context);
       
       this.adapter.lifecycleEvent(event);
       
-      EasyMock.verify(this.eventHandler);
-      EasyMock.reset(this.eventHandler);
+      EasyMock.verify(this.eventHandler, engine, host, context);
+      EasyMock.reset(this.eventHandler, engine, host, context);
    }
    
    @Test
@@ -212,7 +232,7 @@ public class JBossWebEventHandlerAdapterTestCase
       
       childContainer.removeLifecycleListener(this.adapter);
       
-      this.eventHandler.stopServer(server);
+      this.eventHandler.stop(EasyMock.isA(CatalinaServer.class));
       this.eventHandler.shutdown();
       
       EasyMock.replay(this.eventHandler, server, service, engine, container, childContainer);
@@ -242,7 +262,7 @@ public class JBossWebEventHandlerAdapterTestCase
       this.startServer();
       
       // Test initialized
-      this.eventHandler.status(engine);
+      this.eventHandler.status(EasyMock.isA(CatalinaEngine.class));
       
       EasyMock.replay(this.eventHandler);
       

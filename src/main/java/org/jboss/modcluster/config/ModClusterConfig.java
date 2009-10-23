@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,8 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.config;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -47,10 +49,18 @@ public class ModClusterConfig
    public int getAdvertisePort() { return this.advertisePort; }
    public void setAdvertisePort(int advertisePort) { this.advertisePort = advertisePort; }
 
+   private String advertiseInterface = null;
+   public String getAdvertiseInterface() { return this.advertiseInterface; }
+   public void setAdvertiseInterface(String advertiseInterface) { this.advertiseInterface = advertiseInterface; }
+   
    private String advertiseSecurityKey = null;
    public String getAdvertiseSecurityKey() { return this.advertiseSecurityKey; }
    public void setAdvertiseSecurityKey(String advertiseSecurityKey) { this.advertiseSecurityKey = advertiseSecurityKey; }
 
+   private ThreadFactory advertiseThreadFactory = Executors.defaultThreadFactory();
+   public ThreadFactory getAdvertiseThreadFactory() { return this.advertiseThreadFactory; }
+   public void setAdvertiseThreadFactory(ThreadFactory advertiseThreadFactory) { this.advertiseThreadFactory = advertiseThreadFactory; }
+   
    private String proxyList = null;
    public String getProxyList() { return this.proxyList; }
    public void setProxyList(String proxyList) { this.proxyList = proxyList; }
