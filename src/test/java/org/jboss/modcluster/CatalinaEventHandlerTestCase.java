@@ -59,7 +59,7 @@ import org.junit.Test;
  *
  */
 @SuppressWarnings("boxing")
-public class DefaultJBossWebEventHandlerTestCase
+public class CatalinaEventHandlerTestCase
 {
    private final NodeConfiguration nodeConfig = EasyMock.createStrictMock(NodeConfiguration.class);
    private final BalancerConfiguration balancerConfig = EasyMock.createStrictMock(BalancerConfiguration.class);
@@ -690,8 +690,10 @@ public class DefaultJBossWebEventHandlerTestCase
       EasyMock.expect(engine.getService()).andReturn(service);
       EasyMock.expect(service.findConnectors()).andReturn(new Connector[] { connector });
       EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      Set<MCMPServerState> states = Collections.emptySet();
-      EasyMock.expect(this.mcmpHandler.getProxyStates()).andReturn(states);
+      EasyMock.expect(this.mcmpHandler.getLocalAddress()).andReturn(InetAddress.getByName("localhost"));
+      EasyMock.expect(engine.getName()).andReturn("engine");
+      
+      engine.setJvmRoute("localhost:0:engine");
       
       EasyMock.expect(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).andReturn(request);
       

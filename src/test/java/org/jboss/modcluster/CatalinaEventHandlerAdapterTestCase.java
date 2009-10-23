@@ -37,7 +37,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  *
  */
-public class JBossWebEventHandlerAdapterTestCase
+public class CatalinaEventHandlerAdapterTestCase
 {
    @SuppressWarnings("unchecked")
    private ContainerEventHandler<Server, Engine, Context> eventHandler = EasyMock.createStrictMock(ContainerEventHandler.class);
