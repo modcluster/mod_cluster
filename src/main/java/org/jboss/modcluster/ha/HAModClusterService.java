@@ -186,22 +186,25 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    }
 
    @Override
-   public void disableDomain()
+   public boolean disableDomain()
    {
-      this.rpcStub.disable(this.domain);
+      return this.conjoin(this.rpcStub.disable(this.domain));
    }
 
    @Override
-   public void enableDomain()
+   public boolean enableDomain()
    {
-      this.rpcStub.enable(this.domain);
+      return this.conjoin(this.rpcStub.enable(this.domain));
    }
 
    @Override
    public boolean stopDomain(long timeout, TimeUnit unit)
    {
-      List<RpcResponse<Boolean>> responses = this.rpcStub.stop(this.domain, timeout, unit);
-      
+      return this.conjoin(this.rpcStub.stop(this.domain, timeout, unit));
+   }
+
+   private boolean conjoin(List<RpcResponse<Boolean>> responses)
+   {
       boolean success = true;
       
       for (RpcResponse<Boolean> response: responses)
@@ -213,7 +216,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       
       return success;
    }
-
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
@@ -754,11 +757,11 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#disable(java.lang.String)
        */
       @Override
-      public void disable(String domain)
+      public List<RpcResponse<Boolean>> disable(String domain)
       {
          try
          {
-            HAModClusterService.this.callMethodOnPartition("disable", new Object[] { domain }, STRING_TYPES);
+            return HAModClusterService.this.callMethodOnPartition("disable", new Object[] { domain }, STRING_TYPES);
          }
          catch (Exception e)
          {
@@ -771,11 +774,11 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#enable(java.lang.String)
        */
       @Override
-      public void enable(String domain)
+      public List<RpcResponse<Boolean>> enable(String domain)
       {
          try
          {
-            HAModClusterService.this.callMethodOnPartition("enable", new Object[] { domain }, STRING_TYPES);
+            return HAModClusterService.this.callMethodOnPartition("enable", new Object[] { domain }, STRING_TYPES);
          }
          catch (Exception e)
          {
@@ -989,21 +992,29 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       }
 
       @Override
-      public void disable(String domain)
+      public RpcResponse<Boolean> disable(String domain)
       {
+         DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
+         
          if (this.sameDomain(domain))
          {
-            HAModClusterService.this.service.disable();
+            response.setResult(HAModClusterService.this.service.disable());
          }
+         
+         return response;
       }
 
       @Override
-      public void enable(String domain)
+      public RpcResponse<Boolean> enable(String domain)
       {
+         DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
+         
          if (this.sameDomain(domain))
          {
-            HAModClusterService.this.service.enable();
+            response.setResult(HAModClusterService.this.service.enable());
          }
+         
+         return response;
       }
 
       @Override

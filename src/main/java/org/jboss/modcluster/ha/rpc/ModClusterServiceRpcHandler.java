@@ -45,9 +45,9 @@ public interface ModClusterServiceRpcHandler<T, S extends MCMPServer, B>
 
    RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute);
    
-   void disable(String domain);
+   B disable(String domain);
    
-   void enable(String domain);
+   B enable(String domain);
    
    B stop(String domain, long timeout, TimeUnit unit);
 }

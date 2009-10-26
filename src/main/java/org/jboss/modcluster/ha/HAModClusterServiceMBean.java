@@ -33,13 +33,36 @@ import org.jboss.modcluster.ModClusterServiceMBean;
  */
 public interface HAModClusterServiceMBean extends HASingletonMBean, ModClusterServiceMBean
 {   
+   /**
+    * @return
+    */
    int getProcessStatusFrequency();
 
+   /**
+    * @param processStatusFrequency
+    */
    void setProcessStatusFrequency(int processStatusFrequency);
    
-   void disableDomain();
+   /**
+    * Disables all contexts on each node within the current domain.
+    * If the current domain is null, then all nodes are stopped.
+    * @return true, if disable was successful on all nodes
+    */
+   boolean disableDomain();
    
-   void enableDomain();
+   /**
+    * Enables all contexts on each node within the current domain.
+    * If the current domain is null, then all nodes are stopped.
+    * @return true, if enable was successful on all nodes
+    */
+   boolean enableDomain();
    
+   /**
+    * Gracefully stops all contexts on each node within the current domain.
+    * If the current domain is null, then all nodes are stopped.
+    * @param timeout the number of units of time for which to wait for all sessions to drain on a given node
+    * @param unit the unit of time represented by the timeout parameter
+    * @return true, if all contexts were stopped within the specified timeout, false otherwise.
+    */
    boolean stopDomain(long timeout, TimeUnit unit);
 }
