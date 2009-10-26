@@ -21,16 +21,11 @@
  */
 package org.jboss.modcluster.catalina;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import junit.framework.Assert;
 
 import org.apache.catalina.Manager;
-import org.apache.catalina.Session;
-import org.apache.catalina.SessionEvent;
-import org.apache.catalina.SessionListener;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
 import org.jboss.modcluster.Context;
@@ -111,104 +106,48 @@ public class CatalinaContextTestCase
    public void addSessionListener()
    {
       HttpSessionListener listener = EasyMock.createStrictMock(HttpSessionListener.class);
-      Manager manager = EasyMock.createStrictMock(Manager.class);
-      CatalinaSession session = EasyMock.createStrictMock(CatalinaSession.class);
-      Capture<SessionListener> capturedListener = new Capture<SessionListener>();
+      Capture<Object[]> capturedListeners = new Capture<Object[]>();
+      Object otherListener = new Object();
       
-      EasyMock.expect(this.context.getManager()).andReturn(manager);
-      EasyMock.expect(manager.findSessions()).andReturn(new Session[] { session });
-      session.addSessionListener(EasyMock.capture(capturedListener));
+      EasyMock.expect(this.context.getApplicationLifecycleListeners()).andReturn(new Object[] { otherListener });
+      this.context.setApplicationLifecycleListeners(EasyMock.capture(capturedListeners));
       
-      EasyMock.replay(this.context, manager, session);
+      EasyMock.replay(this.context);
       
       this.catalinaContext.addSessionListener(listener);
       
-      EasyMock.verify(this.context, manager, session);
+      EasyMock.verify(this.context);
       
-      SessionListener sessionListener = capturedListener.getValue();
+      Object[] listeners = capturedListeners.getValue();
       
-      EasyMock.reset(this.context, manager, session);
-
-      Capture<HttpSessionEvent> capturedEvent = new Capture<HttpSessionEvent>();
+      Assert.assertEquals(2, listeners.length);
+      Assert.assertSame(otherListener, listeners[0]);
+      Assert.assertSame(listener, listeners[1]);
       
-      listener.sessionCreated(EasyMock.capture(capturedEvent));
-      
-      EasyMock.replay(listener);
-      
-      sessionListener.sessionEvent(new SessionEvent(session, Session.SESSION_CREATED_EVENT, null));
-      
-      EasyMock.verify(listener);
-      
-      Assert.assertSame(session, capturedEvent.getValue().getSession());
-      
-      EasyMock.reset(listener);
-      capturedEvent.reset();
-      
-      listener.sessionDestroyed(EasyMock.capture(capturedEvent));
-      
-      EasyMock.replay(listener);
-      
-      sessionListener.sessionEvent(new SessionEvent(session, Session.SESSION_DESTROYED_EVENT, null));
-      
-      EasyMock.verify(listener);
-      
-      Assert.assertSame(session, capturedEvent.getValue().getSession());
-      
-      EasyMock.reset(listener);
+      EasyMock.reset(this.context);
    }
    
    @Test
    public void removeSessionListener()
    {
       HttpSessionListener listener = EasyMock.createStrictMock(HttpSessionListener.class);
-      Manager manager = EasyMock.createStrictMock(Manager.class);
-      CatalinaSession session = EasyMock.createStrictMock(CatalinaSession.class);
-      Capture<SessionListener> capturedListener = new Capture<SessionListener>();
+      Capture<Object[]> capturedListeners = new Capture<Object[]>();
+      Object otherListener = new Object();
       
-      EasyMock.expect(this.context.getManager()).andReturn(manager);
-      EasyMock.expect(manager.findSessions()).andReturn(new Session[] { session });
-      session.removeSessionListener(EasyMock.capture(capturedListener));
+      EasyMock.expect(this.context.getApplicationLifecycleListeners()).andReturn(new Object[] { otherListener, listener });
+      this.context.setApplicationLifecycleListeners(EasyMock.capture(capturedListeners));
       
-      EasyMock.replay(this.context, manager, session);
+      EasyMock.replay(this.context);
       
       this.catalinaContext.removeSessionListener(listener);
       
-      EasyMock.verify(this.context, manager, session);
+      EasyMock.verify(this.context);
       
-      SessionListener sessionListener = capturedListener.getValue();
+      Object[] listeners = capturedListeners.getValue();
       
-      EasyMock.reset(this.context, manager, session);
-
-      Capture<HttpSessionEvent> capturedEvent = new Capture<HttpSessionEvent>();
+      Assert.assertEquals(1, listeners.length);
+      Assert.assertSame(otherListener, listeners[0]);
       
-      listener.sessionCreated(EasyMock.capture(capturedEvent));
-      
-      EasyMock.replay(listener);
-      
-      sessionListener.sessionEvent(new SessionEvent(session, Session.SESSION_CREATED_EVENT, null));
-      
-      EasyMock.verify(listener);
-      
-      Assert.assertSame(session, capturedEvent.getValue().getSession());
-      
-      EasyMock.reset(listener);
-      capturedEvent.reset();
-      
-      listener.sessionDestroyed(EasyMock.capture(capturedEvent));
-      
-      EasyMock.replay(listener);
-      
-      sessionListener.sessionEvent(new SessionEvent(session, Session.SESSION_DESTROYED_EVENT, null));
-      
-      EasyMock.verify(listener);
-      
-      Assert.assertSame(session, capturedEvent.getValue().getSession());
-      
-      EasyMock.reset(listener);
-   }
-   
-   interface CatalinaSession extends Session, HttpSession
-   {
-      
+      EasyMock.reset(this.context);
    }
 }

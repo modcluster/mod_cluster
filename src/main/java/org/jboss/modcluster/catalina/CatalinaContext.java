@@ -21,13 +21,12 @@
  */
 package org.jboss.modcluster.catalina;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionEvent;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.servlet.http.HttpSessionListener;
 
-import org.apache.catalina.Session;
-import org.apache.catalina.SessionEvent;
-import org.apache.catalina.SessionListener;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Host;
 
@@ -85,22 +84,28 @@ public class CatalinaContext implements Context
    @Override
    public void addSessionListener(final HttpSessionListener listener)
    {
-      SessionListener listenerAdapter = new SessionListenerAdapter(listener);
-      
-      for (Session session: this.context.getManager().findSessions())
+      synchronized (this.context)
       {
-         session.addSessionListener(listenerAdapter);
+         Object[] listeners = this.context.getApplicationLifecycleListeners();
+         List<Object> listenerList = new ArrayList<Object>(listeners.length + 1);
+         
+         listenerList.addAll(Arrays.asList(listeners));
+         listenerList.add(listener);
+         
+         this.context.setApplicationLifecycleListeners(listenerList.toArray());
       }
    }
 
    @Override
    public void removeSessionListener(HttpSessionListener listener)
    {
-      SessionListener listenerAdapter = new SessionListenerAdapter(listener);
-      
-      for (Session session: this.context.getManager().findSessions())
+      synchronized (this.context)
       {
-         session.removeSessionListener(listenerAdapter);
+         List<Object> listenerList = new ArrayList<Object>(Arrays.asList(this.context.getApplicationLifecycleListeners()));
+
+         listenerList.remove(listener);
+         
+         this.context.setApplicationLifecycleListeners(listenerList.toArray());
       }
    }
 
@@ -108,48 +113,5 @@ public class CatalinaContext implements Context
    public String toString()
    {
       return this.context.getPath();
-   }
-   
-   private static class SessionListenerAdapter implements SessionListener
-   {
-      private final HttpSessionListener listener;
-      
-      SessionListenerAdapter(HttpSessionListener listener)
-      {
-         this.listener = listener;
-      }
-      
-      @Override
-      public void sessionEvent(SessionEvent event)
-      {
-         if (event.getType().equals(Session.SESSION_CREATED_EVENT))
-         {
-            this.listener.sessionCreated(this.adaptEvent(event));
-         }
-         else if (event.getType().equals(Session.SESSION_DESTROYED_EVENT))
-         {
-            this.listener.sessionDestroyed(this.adaptEvent(event));
-         }
-      }
-
-      private HttpSessionEvent adaptEvent(SessionEvent event)
-      {
-         return new HttpSessionEvent((HttpSession) event.getSession());
-      }
-      
-      public int hashCode()
-      {
-         return this.listener.hashCode();
-      }
-      
-      public boolean equals(Object object)
-      {
-         if (this == object) return true;
-         if ((object == null) || !(object instanceof SessionListenerAdapter)) return false;
-         
-         SessionListenerAdapter listener = (SessionListenerAdapter) object;
-         
-         return this.listener.equals(listener.listener);
-      }
    }
 }
