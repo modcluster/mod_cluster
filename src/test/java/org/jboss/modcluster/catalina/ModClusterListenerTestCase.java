@@ -25,6 +25,7 @@ import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
@@ -272,6 +273,38 @@ public class ModClusterListenerTestCase
       this.listener.reset();
       
       EasyMock.verify(this.mbean);
+      EasyMock.reset(this.mbean);
+   }
+   
+   @Test
+   public void gracefulStop()
+   {
+      EasyMock.expect(this.mbean.stop(10, TimeUnit.SECONDS)).andReturn(true);
+      
+      EasyMock.replay(this.mbean);
+      
+      boolean result = this.listener.stop(10, TimeUnit.SECONDS);
+      
+      EasyMock.verify(this.mbean);
+      
+      Assert.assertTrue(result);
+      
+      EasyMock.reset(this.mbean);
+   }
+   
+   @Test
+   public void gracefulStopContext()
+   {
+      EasyMock.expect(this.mbean.stop("host", "path", 10, TimeUnit.SECONDS)).andReturn(true);
+      
+      EasyMock.replay(this.mbean);
+      
+      boolean result = this.listener.stop("host", "path", 10, TimeUnit.SECONDS);
+      
+      EasyMock.verify(this.mbean);
+      
+      Assert.assertTrue(result);
+      
       EasyMock.reset(this.mbean);
    }
 }

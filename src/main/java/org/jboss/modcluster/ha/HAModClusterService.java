@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.beans.metadata.api.annotations.Inject;
@@ -391,6 +392,18 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    public void reset()
    {
       this.service.reset();
+   }
+
+   @Override
+   public boolean stop(long timeout, TimeUnit unit)
+   {
+      return this.service.stop(timeout, unit);
+   }
+
+   @Override
+   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   {
+      return this.service.stop(host, path, timeout, unit);
    }
 
    /**

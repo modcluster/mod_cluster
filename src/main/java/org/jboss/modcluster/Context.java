@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster;
 
+import javax.servlet.http.HttpSessionListener;
+
 
 public interface Context
 {
@@ -29,4 +31,10 @@ public interface Context
    String getPath();
    
    boolean isStarted();
+   
+   void addSessionListener(HttpSessionListener listener);
+   
+   void removeSessionListener(HttpSessionListener listener);
+   
+   int getActiveSessionCount();
 }

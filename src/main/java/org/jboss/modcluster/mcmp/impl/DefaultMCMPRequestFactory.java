@@ -202,6 +202,12 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(MCMPRequestType.STATUS, false, jvmRoute, Collections.singletonMap("Load", String.valueOf(lbf)));
    }
 
+   @Override
+   public MCMPRequest createStopRequest(Engine engine)
+   {
+      return this.createRequest(MCMPRequestType.STOP_APP, engine);
+   }
+
    /**
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.apache.catalina.Context)

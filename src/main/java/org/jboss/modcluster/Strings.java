@@ -46,6 +46,9 @@ public enum Strings
    DETECT_JVMROUTE("modcluster.detect.jvmRoute"),
    DEPRECATED("modcluster.deprecated"),
    ENGINE_REMOVE_CRASHED("modcluster.engine.removeCrashed"),
+   DRAIN_SESSIONS("modcluster.sessions.drain"),
+   DRAIN_SESSIONS_TIMEOUT("modcluster.sessions.drain.timeout"),
+   DRAIN_SESSIONS_WAIT("modcluster.sessions.drain.wait"),
    
    ERROR_ADDRESS_JVMROUTE("modcluster.error.addressJvmRoute"),
    ERROR_CONTEXT_NOT_FOUND("modcluster.error.context.notfound"),

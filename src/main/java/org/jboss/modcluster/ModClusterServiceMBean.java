@@ -23,6 +23,7 @@ package org.jboss.modcluster;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.modcluster.mcmp.MCMPRequestType;
 
@@ -71,7 +72,7 @@ public interface ModClusterServiceMBean
     * 
     * @return the configuration information from all the accessible proxies.
     */
-   public Map<InetSocketAddress, String> getProxyConfiguration();
+   Map<InetSocketAddress, String> getProxyConfiguration();
    
    /**
     * Retrieves the full proxy info message.
@@ -81,47 +82,67 @@ public interface ModClusterServiceMBean
     * 
     * @return the configuration information from all the accessible proxies.
     */
-   public Map<InetSocketAddress, String> getProxyInfo();
+   Map<InetSocketAddress, String> getProxyInfo();
    
    /**
     * Ping a node from httpd.
     *
     * @return PING_RSP String.
     */
-   public Map<InetSocketAddress, String> ping(String jvmRoute);
+   Map<InetSocketAddress, String> ping(String jvmRoute);
 
    /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
     * be refreshed.
     */
-   public void reset();
+   void reset();
 
    /**
     * Refresh configuration.
     */
-   public void refresh();
+   void refresh();
 
    /**
     * Disable all webapps for all engines.
     */
-   public boolean disable();
+   boolean disable();
 
    /**
     * Enable all webapps for all engines.
     */
-   public boolean enable();
+   boolean enable();
    
    /**
     * Disables the webapp with the specified host and context path.
     * @param hostName host name of the target webapp
     * @param contextPath context path of the target webapp
     */
-   public boolean disable(String hostName, String contextPath);
+   boolean disable(String hostName, String contextPath);
    
    /**
     * Enables the webapp with the specified host and context path.
     * @param hostName host name of the target webapp
     * @param contextPath context path of the target webapp
     */
-   public boolean enable(String hostName, String contextPath);
+   boolean enable(String hostName, String contextPath);
+   
+   /**
+    * Gracefully stops all web applications.
+    * <ol>
+    *  <li>Disables all web applications</li>
+    *  <li>Waits for all sessions to drain</li>
+    *  <li>Stops all web applications</li>
+    * </ol>
+    */
+   boolean stop(long timeout, TimeUnit unit);
+   
+   /**
+    * Gracefully stops a single web application.
+    * <ol>
+    *  <li>Disables the web application</li>
+    *  <li>Waits for all sessions to drain</li>
+    *  <li>Stops the web application</li>
+    * </ol>
+    */
+   boolean stop(String hostName, String contextPath, long timeout, TimeUnit unit);
 }

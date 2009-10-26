@@ -51,6 +51,8 @@ public interface MCMPRequestFactory
 
    MCMPRequest createDisableRequest(Engine engine);
 
+   MCMPRequest createStopRequest(Engine engine);
+
    MCMPRequest createRemoveRequest(Engine engine);
 
    MCMPRequest createInfoRequest();

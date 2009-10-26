@@ -30,6 +30,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.advertise.AdvertiseListener;
@@ -537,6 +541,136 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       return this.mcmpHandler.isProxyHealthOK();
    }
 
+   @Override
+   public boolean stop(long timeout, TimeUnit unit)
+   {
+      // Send DISABLE-APP * requests
+      for (Engine engine: this.server.getEngines())
+      {
+         this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(engine));
+      }
+
+      long start = System.currentTimeMillis();
+      long end = start + unit.toMillis(timeout);
+      
+      for (Engine engine: this.server.getEngines())
+      {
+         for (Host host: engine.getHosts())
+         {
+            for (Context context: host.getContexts())
+            {
+               if (!this.drainSessions(context, start, end))
+               {
+                  return false;
+               }
+            }
+         }
+      }
+
+      // Send STOP-APP * requests
+      for (Engine engine: this.server.getEngines())
+      {
+         this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(engine));
+      }
+
+      return true;
+   }
+
+   @Override
+   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   {      
+      Context context = this.findContext(this.findHost(host), path);
+      
+      this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(context));
+      
+      long start = System.currentTimeMillis();
+      
+      boolean success = this.drainSessions(context, start, start + unit.toMillis(timeout));
+      
+      if (success)
+      {
+         this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
+      }
+      
+      return success;
+   }
+
+   /*
+    * Returns true, when the active session count is 0; or false, after timeout.
+    */
+   private boolean drainSessions(final Context context, long start, long end)
+   {
+      int remainingSessions = context.getActiveSessionCount();
+      
+      // Short circuit if there are already no sessions
+      if (remainingSessions == 0) return true;
+         
+      HttpSessionListener listener = new HttpSessionListener()
+      {
+         @Override
+         public void sessionCreated(HttpSessionEvent event)
+         {
+            // Ignore
+         }
+
+         @Override
+         public void sessionDestroyed(HttpSessionEvent event)
+         {
+            synchronized (context)
+            {
+               context.notify();
+            }
+         }
+      };
+      
+      try
+      {
+         synchronized (context)
+         {
+            context.addSessionListener(listener);
+            
+            boolean noTimeout = (start >= end);
+            long current = System.currentTimeMillis();
+            long timeout = end - current;
+            
+            remainingSessions = context.getActiveSessionCount();
+            
+            while ((remainingSessions > 0) && (noTimeout || (timeout > 0)))
+            {
+               log.debug(Strings.DRAIN_SESSIONS_WAIT.getString(context, remainingSessions));
+               
+               context.wait(noTimeout ? 0 : timeout);
+               
+               current = System.currentTimeMillis();
+               timeout = end - current;
+               remainingSessions = context.getActiveSessionCount();
+            }
+         }
+         
+         boolean success = (remainingSessions == 0);
+         long seconds = TimeUnit.MILLISECONDS.toSeconds((success ? System.currentTimeMillis() : end) - start);
+         
+         if (success)
+         {
+            log.info(Strings.DRAIN_SESSIONS.getString(context, seconds));
+         }
+         else
+         {
+            log.warn(Strings.DRAIN_SESSIONS_TIMEOUT.getString(context, seconds));
+         }
+         
+         return success;
+      }
+      catch (InterruptedException e)
+      {
+         return false;
+      }
+      finally
+      {
+         context.removeSessionListener(listener);
+      }
+   }
+   
    private Host findHost(String name)
    {
       for (Engine engine: this.server.getEngines())

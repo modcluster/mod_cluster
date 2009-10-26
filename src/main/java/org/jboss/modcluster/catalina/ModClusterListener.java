@@ -24,6 +24,7 @@ package org.jboss.modcluster.catalina;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -303,5 +304,17 @@ public class ModClusterListener extends ModClusterConfig
    public void reset()
    {
       this.service.reset();
+   }
+
+   @Override
+   public boolean stop(long timeout, TimeUnit unit)
+   {
+      return this.service.stop(timeout, unit);
+   }
+
+   @Override
+   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   {
+      return this.service.stop(host, path, timeout, unit);
    }
 }
