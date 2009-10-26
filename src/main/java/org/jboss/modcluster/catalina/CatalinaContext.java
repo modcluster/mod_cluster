@@ -89,8 +89,8 @@ public class CatalinaContext implements Context
          Object[] listeners = this.context.getApplicationLifecycleListeners();
          List<Object> listenerList = new ArrayList<Object>(listeners.length + 1);
          
-         listenerList.addAll(Arrays.asList(listeners));
          listenerList.add(listener);
+         listenerList.addAll(Arrays.asList(listeners));
          
          this.context.setApplicationLifecycleListeners(listenerList.toArray());
       }
