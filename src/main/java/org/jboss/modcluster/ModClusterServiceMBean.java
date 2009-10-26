@@ -69,7 +69,7 @@ public interface ModClusterServiceMBean
     * Sends a {@link MCMPRequestType#DUMP DUMP} request to all proxies,
     * returning the responses grouped by proxy address.
     * 
-    * @return the configuration information from all the accessible proxies.
+    * @return a map of DUMP_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> getProxyConfiguration();
    
@@ -79,14 +79,15 @@ public interface ModClusterServiceMBean
     * Sends an {@link MCMPRequestType#INFO INFO} request to all proxies,
     * returning the responses grouped by proxy address.
     * 
-    * @return the configuration information from all the accessible proxies.
+    * @return a map of INFO_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> getProxyInfo();
    
    /**
     * Ping a node from httpd.
-    *
     * returning the PING_RSP grouped by proxy address.
+    * 
+    * @return a map of PING_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> ping(String jvmRoute);
 
@@ -103,21 +104,26 @@ public interface ModClusterServiceMBean
 
    /**
     * Disable all webapps for all engines.
+    * @return true, if all proxies are responding normally, false otherwise
     */
    boolean disable();
 
    /**
     * Enable all webapps for all engines.
+    * @return true, if all proxies are responding normally, false otherwise
     */
    boolean enable();
    
    /**
-    * Gracefully stops all web applications.
+    * Attempts to gracefully stops all web applications, within the specified timeout.
     * <ol>
-    *  <li>Disables all web applications</li>
+    *  <li>Disables all contexts</li>
     *  <li>Waits for all sessions to drain</li>
-    *  <li>Stops all web applications</li>
+    *  <li>Stops all contexts</li>
     * </ol>
+    * @param timeout number of units of time for which to wait for sessions to drain. Negative or zero timeout value will wait forever.
+    * @param unit unit of time represented in timeout parameter
+    * @return true, if all contexts stopped successfully, false if sessions fail to drain before specified timeout.
     */
    boolean stop(long timeout, TimeUnit unit);
    
@@ -125,6 +131,7 @@ public interface ModClusterServiceMBean
     * Disables the webapp with the specified host and context path.
     * @param hostName host name of the target webapp
     * @param contextPath context path of the target webapp
+    * @return true, if all proxies are responding normally, false otherwise
     */
    boolean disableContext(String hostName, String contextPath);
    
@@ -132,16 +139,20 @@ public interface ModClusterServiceMBean
     * Enables the webapp with the specified host and context path.
     * @param hostName host name of the target webapp
     * @param contextPath context path of the target webapp
+    * @return true, if all proxies are responding normally, false otherwise
     */
    boolean enableContext(String hostName, String contextPath);
    
    /**
-    * Gracefully stops a single web application.
+    * Attempts to gracefully stops a single web application, within the specified timeout.
     * <ol>
-    *  <li>Disables the web application</li>
-    *  <li>Waits for all sessions to drain</li>
-    *  <li>Stops the web application</li>
+    *  <li>Disables the specified context</li>
+    *  <li>Waits for all sessions for the specified context to drain</li>
+    *  <li>Stops the specified context</li>
     * </ol>
+    * @param timeout number of units of time for which to wait for sessions to drain. Negative or zero timeout value will wait forever.
+    * @param unit unit of time represented in timeout parameter
+    * @return true, if the specified context was stopped successfully, false if sessions fail to drain before specified timeout.
     */
    boolean stopContext(String hostName, String contextPath, long timeout, TimeUnit unit);
 }
