@@ -90,14 +90,15 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
 {
    static final Object[] NULL_ARGS = new Object[0];
    static final Class<?>[] NULL_TYPES = new Class[0];
-   static final Class<?>[] PING_TYPES = new Class[] { String.class };
+   static final Class<?>[] STRING_TYPES = new Class[] { String.class };
+   static final Class<?>[] STOP_TYPES = new Class[] { String.class, Long.TYPE, TimeUnit.class };
    static final Class<?>[] CLUSTER_STATUS_COMPLETE_TYPES = new Class[] { Map.class };
    static final Class<?>[] GET_CLUSTER_COORDINATOR_STATE_TYPES = new Class[] { Set.class };
    
    // HAModClusterServiceMBean and ContainerEventHandler delegate
    private final ClusteredModClusterService service;
    private final HAServiceRpcHandler<HAServiceEvent> rpcHandler;
-   private final ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState> rpcStub = new RpcStub();
+   private final ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState, List<RpcResponse<Boolean>>> rpcStub = new RpcStub();
    
    private final MCMPRequestFactory requestFactory;
    private final MCMPResponseParser responseParser;
@@ -182,6 +183,35 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    public void setProcessStatusFrequency(int processStatusFrequency)
    {
       this.processStatusFrequency = processStatusFrequency;
+   }
+
+   @Override
+   public void disableDomain(String domain)
+   {
+      this.rpcStub.disable(domain);
+   }
+
+   @Override
+   public void enableDomain(String domain)
+   {
+      this.rpcStub.enable(domain);
+   }
+
+   @Override
+   public boolean stopDomain(String domain, long timeout, TimeUnit unit)
+   {
+      List<RpcResponse<Boolean>> responses = this.rpcStub.stop(domain, timeout, unit);
+      
+      boolean success = true;
+      
+      for (RpcResponse<Boolean> response: responses)
+      {
+         Boolean result = response.getResult();
+         
+         success &= ((result == null) || result.booleanValue());
+      }
+      
+      return success;
    }
 
    /**
@@ -621,7 +651,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    /**
     * Client side stub of ModClusterServiceRpcHandler interface.
     */
-   class RpcStub implements ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState>
+   class RpcStub implements ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState, List<RpcResponse<Boolean>>>
    {
       public RpcResponse<Map<InetSocketAddress, String>> getProxyConfiguration()
       {
@@ -651,7 +681,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       {
          try
          {
-            return this.invokeRpc("ping", new Object[] { jvmRoute }, PING_TYPES);
+            return this.invokeRpc("ping", new Object[] { jvmRoute }, STRING_TYPES);
          }
          catch (Exception e)
          {
@@ -718,12 +748,63 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          
          throw new IllegalStateException(Strings.ERROR_RPC_NO_RESPONSE.getString(methodName));
       }
+
+      /**
+       * {@inhericDoc}
+       * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#disable(java.lang.String)
+       */
+      @Override
+      public void disable(String domain)
+      {
+         try
+         {
+            HAModClusterService.this.callMethodOnPartition("disable", new Object[] { domain }, STRING_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+
+      /**
+       * {@inhericDoc}
+       * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#enable(java.lang.String)
+       */
+      @Override
+      public void enable(String domain)
+      {
+         try
+         {
+            HAModClusterService.this.callMethodOnPartition("enable", new Object[] { domain }, STRING_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
+
+      /**
+       * {@inhericDoc}
+       * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#stop(java.lang.String)
+       */
+      @Override
+      public List<RpcResponse<Boolean>> stop(String domain, long timeout, TimeUnit unit)
+      {
+         try
+         {
+            return HAModClusterService.this.callMethodOnPartition("stop", new Object[] { domain, Long.valueOf(timeout), unit }, STOP_TYPES);
+         }
+         catch (Exception e)
+         {
+            throw Utils.convertToUnchecked(e);
+         }
+      }
    }
    
    /**
     * Remote skeleton for all rpc interfaces.
     */
-   protected class RpcHandler extends HASingletonImpl<HAServiceEvent>.RpcHandler implements ModClusterServiceRpcHandler<RpcResponse<ModClusterServiceStatus>, MCMPServer>, ClusteredMCMPHandlerRpcHandler, ResetRequestSourceRpcHandler<RpcResponse<List<MCMPRequest>>>
+   protected class RpcHandler extends HASingletonImpl<HAServiceEvent>.RpcHandler implements ModClusterServiceRpcHandler<RpcResponse<ModClusterServiceStatus>, MCMPServer, RpcResponse<Boolean>>, ClusteredMCMPHandlerRpcHandler, ResetRequestSourceRpcHandler<RpcResponse<List<MCMPRequest>>>
    {
       private final ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
       private final RpcResponse<Void> voidResponse = new DefaultRpcResponse<Void>(this.node);
@@ -904,6 +985,37 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       {
          DefaultRpcResponse<List<MCMPRequest>> response = new DefaultRpcResponse<List<MCMPRequest>>(this.node);
          response.setResult(HAModClusterService.this.resetRequestSource.getLocalResetRequests(infoResponse));
+         return response;
+      }
+
+      @Override
+      public void disable(String domain)
+      {
+         if (HAModClusterService.this.domain.equals(domain))
+         {
+            HAModClusterService.this.service.disable();
+         }
+      }
+
+      @Override
+      public void enable(String domain)
+      {
+         if (HAModClusterService.this.domain.equals(domain))
+         {
+            HAModClusterService.this.service.enable();
+         }
+      }
+
+      @Override
+      public RpcResponse<Boolean> stop(String domain, long timeout, TimeUnit unit)
+      {
+         DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
+         
+         if (HAModClusterService.this.domain.equals(domain))
+         {
+            response.setResult(HAModClusterService.this.service.stop(timeout, unit));
+         }
+         
          return response;
       }
    }

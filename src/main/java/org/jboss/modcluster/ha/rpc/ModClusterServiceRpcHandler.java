@@ -24,6 +24,7 @@ package org.jboss.modcluster.ha.rpc;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.ha.framework.interfaces.ClusterNode;
 import org.jboss.modcluster.mcmp.MCMPServer;
@@ -32,7 +33,7 @@ import org.jboss.modcluster.mcmp.MCMPServer;
  * @author Paul Ferraro
  *
  */
-public interface ModClusterServiceRpcHandler<T, S extends MCMPServer>
+public interface ModClusterServiceRpcHandler<T, S extends MCMPServer, B>
 {
    void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses);
    
@@ -43,4 +44,10 @@ public interface ModClusterServiceRpcHandler<T, S extends MCMPServer>
    RpcResponse<Map<InetSocketAddress, String>> getProxyInfo();
 
    RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute);
+   
+   void disable(String domain);
+   
+   void enable(String domain);
+   
+   B stop(String domain, long timeout, TimeUnit unit);
 }

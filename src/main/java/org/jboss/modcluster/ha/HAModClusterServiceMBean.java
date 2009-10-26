@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster.ha;
 
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.ha.framework.interfaces.HASingletonMBean;
 import org.jboss.modcluster.ModClusterServiceMBean;
 
@@ -34,4 +36,10 @@ public interface HAModClusterServiceMBean extends HASingletonMBean, ModClusterSe
    int getProcessStatusFrequency();
 
    void setProcessStatusFrequency(int processStatusFrequency);
+   
+   void disableDomain(String domain);
+   
+   void enableDomain(String domain);
+   
+   boolean stopDomain(String domain, long timeout, TimeUnit unit);
 }
