@@ -34,6 +34,8 @@ import junit.textui.TestRunner;
 
 import java.lang.Exception;
 import java.net.Socket;
+import java.net.InetSocketAddress;
+import java.util.Map;
 
 import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
@@ -204,7 +206,11 @@ public class Maintest extends TestCase {
             result = jcluster.doProxyPing(JvmRoute);
         } else {
             org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
-            result = pcluster.doProxyPing(JvmRoute);
+            Map<InetSocketAddress, String> map = pcluster.ping(JvmRoute);
+            if (map.isEmpty())
+                return null;
+            String results[] = (String []) map.values().toArray();
+            result = results[0];
         }
         return result;
     }
@@ -236,7 +242,11 @@ public class Maintest extends TestCase {
             result = jcluster.getProxyInfo();
         } else {
             org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
-            result = pcluster.getProxyInfo();
+            Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
+            if (map.isEmpty())
+                return null;
+            String results[] = (String []) map.values().toArray();
+            result = results[0];
         }
         return result;
     }
