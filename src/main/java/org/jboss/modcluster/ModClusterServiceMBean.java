@@ -57,7 +57,6 @@ public interface ModClusterServiceMBean
    /**
     * Retrieves the full proxy configuration.
     * 
-    *         response: HTTP/1.1 200 OK
     *   response:
     *   node: [1:1] JVMRoute: node1 Domain: [bla] Host: 127.0.0.1 Port: 8009 Type: ajp
     *   host: 1 [] vhost: 1 node: 1
@@ -68,7 +67,7 @@ public interface ModClusterServiceMBean
     *   context: 5 [/manager] vhost: 1 node: 1 status: 1
     *
     * Sends a {@link MCMPRequestType#DUMP DUMP} request to all proxies,
-    * concatentating their responses into a single string.
+    * returning the responses grouped by proxy address.
     * 
     * @return the configuration information from all the accessible proxies.
     */
@@ -77,8 +76,8 @@ public interface ModClusterServiceMBean
    /**
     * Retrieves the full proxy info message.
     *
-    * Sends a {@link MCMPRequestType#INFO INFO} request to all proxies,
-    * concatentating their responses into a single string.
+    * Sends an {@link MCMPRequestType#INFO INFO} request to all proxies,
+    * returning the responses grouped by proxy address.
     * 
     * @return the configuration information from all the accessible proxies.
     */
@@ -87,7 +86,7 @@ public interface ModClusterServiceMBean
    /**
     * Ping a node from httpd.
     *
-    * @return PING_RSP String.
+    * returning the PING_RSP grouped by proxy address.
     */
    Map<InetSocketAddress, String> ping(String jvmRoute);
 
