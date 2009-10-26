@@ -296,7 +296,7 @@ public class HAModClusterServiceTestCase
       
       EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
-      boolean result = this.service.enable(hostName, path);
+      boolean result = this.service.enableContext(hostName, path);
       
       EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
@@ -332,7 +332,7 @@ public class HAModClusterServiceTestCase
       
       EasyMock.replay(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       
-      boolean result = this.service.disable(hostName, path);
+      boolean result = this.service.disableContext(hostName, path);
       
       EasyMock.verify(this.requestFactory, this.clusteredMCMPHandler, server, engine, host, context);
       

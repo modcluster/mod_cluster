@@ -17,8 +17,13 @@
                type="javax.management.ObjectName"/>
 
     <attribute name="proxyConfiguration"
-               description="Get the mod_cluster configuration"
-               type="java.lang.String"
+               description="Get the mod_cluster configuration, per proxy"
+               type="java.util.Map"
+               writeable="false"/>
+
+    <attribute name="proxyInfo"
+               description="Get information about what is registered with each mod_cluster, per proxy"
+               type="java.util.Map"
                writeable="false"/>
     
     <attribute name="proxyList"
@@ -103,20 +108,8 @@
                description="Disable all webapps for all engines"
                impact="ACTION"
                returnType="boolean"/>
- 
-    <operation name="enable"
-               description="Enable a single webapp"
-               impact="ACTION"
-               returnType="boolean">
-      <parameter name="hostName"
-                 description="Host name of the target webapp"
-                 type="java.lang.String"/>
-      <parameter name="contextPath"
-                 description="Context path of the webapp"
-                 type="java.lang.String"/>
-    </operation>
     
-    <operation name="disable"
+    <operation name="disableContext"
                description="Disable a single webapp"
                impact="ACTION"
                returnType="boolean">
@@ -133,6 +126,48 @@
                impact="ACTION"
                returnType="boolean"/>
  
+    <operation name="enableContext"
+               description="Enable a single webapp"
+               impact="ACTION"
+               returnType="boolean">
+      <parameter name="hostName"
+                 description="Host name of the target webapp"
+                 type="java.lang.String"/>
+      <parameter name="contextPath"
+                 description="Context path of the webapp"
+                 type="java.lang.String"/>
+    </operation>
+
+    <operation name="stop"
+               description="Gracefully stops all webapps for all engines"
+               impact="ACTION"
+               returnType="boolean">
+      <parameter name="timeout"
+                 description="Session draining timeout"
+                 type="long"/>
+      <parameter name="unit"
+                 description="Time unit of the timeout parameter"
+                 type="java.util.concurrent.TimeUnit"/>
+    </operation>
+    
+    <operation name="stopContext"
+               description="Gracefully stops a single webapp"
+               impact="ACTION"
+               returnType="boolean">
+      <parameter name="hostName"
+                 description="Host name of the target webapp"
+                 type="java.lang.String"/>
+      <parameter name="contextPath"
+                 description="Context path of the webapp"
+                 type="java.lang.String"/>
+      <parameter name="timeout"
+                 description="Session draining timeout"
+                 type="long"/>
+      <parameter name="unit"
+                 description="Time unit of the timeout parameter"
+                 type="java.util.concurrent.TimeUnit"/>
+    </operation>
+    
     <operation name="addProxy"
                description="Add a proxy"
                impact="ACTION"

@@ -112,20 +112,6 @@ public interface ModClusterServiceMBean
    boolean enable();
    
    /**
-    * Disables the webapp with the specified host and context path.
-    * @param hostName host name of the target webapp
-    * @param contextPath context path of the target webapp
-    */
-   boolean disable(String hostName, String contextPath);
-   
-   /**
-    * Enables the webapp with the specified host and context path.
-    * @param hostName host name of the target webapp
-    * @param contextPath context path of the target webapp
-    */
-   boolean enable(String hostName, String contextPath);
-   
-   /**
     * Gracefully stops all web applications.
     * <ol>
     *  <li>Disables all web applications</li>
@@ -136,6 +122,20 @@ public interface ModClusterServiceMBean
    boolean stop(long timeout, TimeUnit unit);
    
    /**
+    * Disables the webapp with the specified host and context path.
+    * @param hostName host name of the target webapp
+    * @param contextPath context path of the target webapp
+    */
+   boolean disableContext(String hostName, String contextPath);
+   
+   /**
+    * Enables the webapp with the specified host and context path.
+    * @param hostName host name of the target webapp
+    * @param contextPath context path of the target webapp
+    */
+   boolean enableContext(String hostName, String contextPath);
+   
+   /**
     * Gracefully stops a single web application.
     * <ol>
     *  <li>Disables the web application</li>
@@ -143,5 +143,5 @@ public interface ModClusterServiceMBean
     *  <li>Stops the web application</li>
     * </ol>
     */
-   boolean stop(String hostName, String contextPath, long timeout, TimeUnit unit);
+   boolean stopContext(String hostName, String contextPath, long timeout, TimeUnit unit);
 }

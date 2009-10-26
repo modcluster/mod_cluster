@@ -130,11 +130,11 @@ public class ModClusterListenerTestCase
       String host = "host";
       String context = "context";
       
-      EasyMock.expect(this.mbean.disable(host, context)).andReturn(true);
+      EasyMock.expect(this.mbean.disableContext(host, context)).andReturn(true);
       
       EasyMock.replay(this.mbean);
       
-      boolean result = this.listener.disable(host, context);
+      boolean result = this.listener.disableContext(host, context);
       
       EasyMock.verify(this.mbean);
       
@@ -185,11 +185,11 @@ public class ModClusterListenerTestCase
       String host = "host";
       String context = "context";
       
-      EasyMock.expect(this.mbean.enable(host, context)).andReturn(true);
+      EasyMock.expect(this.mbean.enableContext(host, context)).andReturn(true);
       
       EasyMock.replay(this.mbean);
       
-      boolean result = this.listener.enable(host, context);
+      boolean result = this.listener.enableContext(host, context);
       
       EasyMock.verify(this.mbean);
       
@@ -295,11 +295,11 @@ public class ModClusterListenerTestCase
    @Test
    public void gracefulStopContext()
    {
-      EasyMock.expect(this.mbean.stop("host", "path", 10, TimeUnit.SECONDS)).andReturn(true);
+      EasyMock.expect(this.mbean.stopContext("host", "path", 10, TimeUnit.SECONDS)).andReturn(true);
       
       EasyMock.replay(this.mbean);
       
-      boolean result = this.listener.stop("host", "path", 10, TimeUnit.SECONDS);
+      boolean result = this.listener.stopContext("host", "path", 10, TimeUnit.SECONDS);
       
       EasyMock.verify(this.mbean);
       

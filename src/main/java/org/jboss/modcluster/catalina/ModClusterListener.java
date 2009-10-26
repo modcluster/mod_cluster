@@ -253,9 +253,9 @@ public class ModClusterListener extends ModClusterConfig
    }
 
    @Override
-   public boolean disable(String hostName, String contextPath)
+   public boolean disableContext(String hostName, String contextPath)
    {
-      return this.service.disable(hostName, contextPath);
+      return this.service.disableContext(hostName, contextPath);
    }
 
    @Override
@@ -271,9 +271,9 @@ public class ModClusterListener extends ModClusterConfig
    }
 
    @Override
-   public boolean enable(String hostName, String contextPath)
+   public boolean enableContext(String hostName, String contextPath)
    {
-      return this.service.enable(hostName, contextPath);
+      return this.service.enableContext(hostName, contextPath);
    }
 
    @Override
@@ -313,8 +313,8 @@ public class ModClusterListener extends ModClusterConfig
    }
 
    @Override
-   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {
-      return this.service.stop(host, path, timeout, unit);
+      return this.service.stopContext(host, path, timeout, unit);
    }
 }

@@ -37,9 +37,9 @@ public interface HAModClusterServiceMBean extends HASingletonMBean, ModClusterSe
 
    void setProcessStatusFrequency(int processStatusFrequency);
    
-   void disableDomain(String domain);
+   void disableDomain();
    
-   void enableDomain(String domain);
+   void enableDomain();
    
-   boolean stopDomain(String domain, long timeout, TimeUnit unit);
+   boolean stopDomain(long timeout, TimeUnit unit);
 }

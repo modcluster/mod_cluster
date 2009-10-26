@@ -507,7 +507,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     * @{inheritDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
     */
-   public boolean disable(String host, String path)
+   public boolean disableContext(String host, String path)
    {
       if (this.server == null)
       {
@@ -526,7 +526,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     * @{inheritDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
     */
-   public boolean enable(String host, String path)
+   public boolean enableContext(String host, String path)
    {
       if (this.server == null)
       {
@@ -577,7 +577,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    @Override
-   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {      
       Context context = this.findContext(this.findHost(host), path);
       

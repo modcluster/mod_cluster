@@ -186,21 +186,21 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    }
 
    @Override
-   public void disableDomain(String domain)
+   public void disableDomain()
    {
-      this.rpcStub.disable(domain);
+      this.rpcStub.disable(this.domain);
    }
 
    @Override
-   public void enableDomain(String domain)
+   public void enableDomain()
    {
-      this.rpcStub.enable(domain);
+      this.rpcStub.enable(this.domain);
    }
 
    @Override
-   public boolean stopDomain(String domain, long timeout, TimeUnit unit)
+   public boolean stopDomain(long timeout, TimeUnit unit)
    {
-      List<RpcResponse<Boolean>> responses = this.rpcStub.stop(domain, timeout, unit);
+      List<RpcResponse<Boolean>> responses = this.rpcStub.stop(this.domain, timeout, unit);
       
       boolean success = true;
       
@@ -339,9 +339,9 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
     */
    @Override
-   public boolean disable(String host, String path)
+   public boolean disableContext(String host, String path)
    {
-      return this.service.disable(host, path);
+      return this.service.disableContext(host, path);
    }
 
    /**
@@ -369,9 +369,9 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
     */
    @Override
-   public boolean enable(String host, String path)
+   public boolean enableContext(String host, String path)
    {
-      return this.service.enable(host, path);
+      return this.service.enableContext(host, path);
    }
 
    /**
@@ -431,9 +431,9 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    }
 
    @Override
-   public boolean stop(String host, String path, long timeout, TimeUnit unit)
+   public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {
-      return this.service.stop(host, path, timeout, unit);
+      return this.service.stopContext(host, path, timeout, unit);
    }
 
    /**
@@ -991,7 +991,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       @Override
       public void disable(String domain)
       {
-         if (HAModClusterService.this.domain.equals(domain))
+         if (this.sameDomain(domain))
          {
             HAModClusterService.this.service.disable();
          }
@@ -1000,7 +1000,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       @Override
       public void enable(String domain)
       {
-         if (HAModClusterService.this.domain.equals(domain))
+         if (this.sameDomain(domain))
          {
             HAModClusterService.this.service.enable();
          }
@@ -1011,12 +1011,17 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       {
          DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
          
-         if (HAModClusterService.this.domain.equals(domain))
+         if (this.sameDomain(domain))
          {
             response.setResult(HAModClusterService.this.service.stop(timeout, unit));
          }
          
          return response;
+      }
+      
+      private boolean sameDomain(String domain)
+      {
+         return (HAModClusterService.this.domain != null) ? HAModClusterService.this.domain.equals(domain) : (domain == null);
       }
    }
    

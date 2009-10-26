@@ -345,7 +345,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
-      boolean result = this.service.enable(hostName, path);
+      boolean result = this.service.enableContext(hostName, path);
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
@@ -381,7 +381,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
-      boolean result = this.service.disable(hostName, path);
+      boolean result = this.service.disableContext(hostName, path);
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
@@ -1227,7 +1227,7 @@ public class ModClusterServiceTestCase
          
          thread.start();
          
-         boolean result = this.service.stop(hostName, contextPath, 0, TimeUnit.SECONDS);
+         boolean result = this.service.stopContext(hostName, contextPath, 0, TimeUnit.SECONDS);
          
          thread.interrupt();
          thread.join();
@@ -1259,7 +1259,7 @@ public class ModClusterServiceTestCase
          
          EasyMock.replay(this.requestFactory, this.mcmpHandler, server, engine, host, context);
          
-         result = this.service.stop(hostName, contextPath, 1, TimeUnit.SECONDS);
+         result = this.service.stopContext(hostName, contextPath, 1, TimeUnit.SECONDS);
          
          EasyMock.verify(this.requestFactory, this.mcmpHandler, server, engine, host, context);
          
