@@ -245,8 +245,8 @@ public class Maintest extends TestCase {
             Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
             if (map.isEmpty())
                 return null;
-            String results[] = (String []) map.values().toArray();
-            result = results[0];
+            Object results[] = map.values().toArray();
+            result = (String) results[0];
         }
         return result;
     }
