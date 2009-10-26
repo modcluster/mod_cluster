@@ -121,8 +121,8 @@ public class CatalinaContextTestCase
       Object[] listeners = capturedListeners.getValue();
       
       Assert.assertEquals(2, listeners.length);
-      Assert.assertSame(otherListener, listeners[0]);
-      Assert.assertSame(listener, listeners[1]);
+      Assert.assertSame(listener, listeners[0]);
+      Assert.assertSame(otherListener, listeners[1]);
       
       EasyMock.reset(this.context);
    }
