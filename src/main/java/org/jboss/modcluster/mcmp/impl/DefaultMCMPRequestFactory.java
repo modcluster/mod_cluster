@@ -202,6 +202,10 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(MCMPRequestType.STATUS, false, jvmRoute, Collections.singletonMap("Load", String.valueOf(lbf)));
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.jboss.modcluster.Engine)
+    */
    public MCMPRequest createStopRequest(Engine engine)
    {
       return this.createRequest(MCMPRequestType.STOP_APP, engine);
@@ -233,18 +237,29 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    {
       return this.infoRequest;
    }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest()
+    */
+   public MCMPRequest createPingRequest()
+   {
+      return this.createPingRequest((String) null);
+   }
    
    /**
-    * Returns a PING MCMPRequest.
-    *
-    * @param JvmRoute a <code>String</code> containing
-    * the name of node (JVMRoute) or an url to PING
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.lang.String)
     */
    public MCMPRequest createPingRequest(String jvmRoute)
    {
       return new DefaultMCMPRequest(MCMPRequestType.PING, false, jvmRoute, Collections.<String, String>emptyMap());
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.net.URI)
+    */
    public MCMPRequest createPingRequest(URI uri)
    {
       String scheme = uri.getScheme();
@@ -299,6 +314,10 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(type, true, jvmRoute, Collections.<String, String>emptyMap());
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveEngineRequest(java.lang.String)
+    */
    public MCMPRequest createRemoveEngineRequest(String jvmRoute)
    {
       return this.createEngineRequest(MCMPRequestType.REMOVE_APP, jvmRoute);
