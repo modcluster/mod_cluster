@@ -1024,7 +1024,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.ping(jvmRoute).getResult();
       }
       
-      protected void establishJvmRoute(Engine engine) throws Exception
+      protected void establishJvmRoute(Engine engine)
       {
          super.establishJvmRoute(engine);
          

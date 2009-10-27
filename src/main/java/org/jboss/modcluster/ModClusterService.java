@@ -241,7 +241,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    /*
     * If needed, create automagical JVM route (address + port + engineName)
     */
-   protected void establishJvmRoute(Engine engine) throws Exception
+   protected void establishJvmRoute(Engine engine)
    {
       if (engine.getJvmRoute() == null)
       {
