@@ -35,7 +35,6 @@ import junit.textui.TestRunner;
 import java.lang.Exception;
 import java.net.Socket;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.util.Map;
 
 import org.apache.catalina.ServerFactory;
