@@ -22,6 +22,8 @@
 package org.jboss.modcluster.mcmp;
 
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -47,7 +49,7 @@ public class DefaultMCMPRequestFactoryTestCase
    private MCMPRequestFactory factory = new DefaultMCMPRequestFactory();
    
    @Test
-   public void testCreateEnableRequestContext()
+   public void createEnableRequestContext()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);      
@@ -78,7 +80,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateDisableRequestContext()
+   public void createDisableRequestContext()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);      
@@ -109,7 +111,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateStopRequest()
+   public void createStopRequest()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);      
@@ -140,7 +142,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateRemoveRequestContext()
+   public void createRemoveRequestContext()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);      
@@ -171,7 +173,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateStatusRequest()
+   public void createStatusRequest()
    {
       MCMPRequest request = this.factory.createStatusRequest("route", 10);
       
@@ -186,7 +188,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateConfigRequest() throws Exception
+   public void createConfigRequest() throws Exception
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
       NodeConfiguration nodeConfig = EasyMock.createStrictMock(NodeConfiguration.class);
@@ -249,7 +251,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateInfoRequest()
+   public void createInfoRequest()
    {
       MCMPRequest request = this.factory.createInfoRequest();
       
@@ -260,7 +262,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateDumpRequest()
+   public void createDumpRequest()
    {
       MCMPRequest request = this.factory.createDumpRequest();
       
@@ -271,7 +273,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateDisableRequestEngine()
+   public void createDisableRequestEngine()
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
 
@@ -290,7 +292,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateEnableRequestEngine()
+   public void createEnableRequestEngine()
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
 
@@ -309,7 +311,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
    
    @Test
-   public void testCreateRemoveRequestEngine()
+   public void createRemoveRequestEngine()
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
 
@@ -328,7 +330,7 @@ public class DefaultMCMPRequestFactoryTestCase
    }
 
    @Test
-   public void testCreateRemoveContextRequest()
+   public void createRemoveContextRequest()
    {
       String route = "route";
       String path = "path";
@@ -358,5 +360,47 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertSame(route, request.getJvmRoute());
       
       Assert.assertTrue(request.getParameters().isEmpty());
+   }
+   
+   @Test
+   public void createPingRequest()
+   {
+      MCMPRequest request = this.factory.createPingRequest();
+      
+      Assert.assertSame(MCMPRequestType.PING, request.getRequestType());
+      Assert.assertFalse(request.isWildcard());
+      Assert.assertNull(request.getJvmRoute());
+      Assert.assertTrue(request.getParameters().isEmpty());
+   }
+   
+   @Test
+   public void createJvmRoutePingRequest()
+   {
+      String jvmRoute = "route";
+      
+      MCMPRequest request = this.factory.createPingRequest(jvmRoute);
+      
+      Assert.assertSame(MCMPRequestType.PING, request.getRequestType());
+      Assert.assertFalse(request.isWildcard());
+      Assert.assertSame(jvmRoute, request.getJvmRoute());
+      Assert.assertTrue(request.getParameters().isEmpty());
+   }
+   
+   @Test
+   public void createURIPingRequest() throws URISyntaxException
+   {
+      URI uri = new URI("ajp://localhost:8009");
+      
+      MCMPRequest request = this.factory.createPingRequest(uri);
+      
+      Assert.assertSame(MCMPRequestType.PING, request.getRequestType());
+      Assert.assertFalse(request.isWildcard());
+      Assert.assertNull(request.getJvmRoute());
+      
+      Map<String, String> parameters = request.getParameters();
+      Assert.assertEquals(3, parameters.size());
+      Assert.assertEquals("ajp", parameters.get("Scheme"));
+      Assert.assertEquals("localhost", parameters.get("Host"));
+      Assert.assertEquals("8009", parameters.get("Port"));
    }
 }
