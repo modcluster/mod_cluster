@@ -32,17 +32,26 @@ import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
 
 /**
+ * {@link Engine} implementation that wraps a {@link org.apache.catalina.Context}.
  * @author Paul Ferraro
  */
 public class CatalinaEngine implements Engine
 {
    private final org.apache.catalina.Engine engine;
    
+   /**
+    * Constructs a new CatalinaEngine that wraps the specified catalina engine
+    * @param engine a catalina engine
+    */
    public CatalinaEngine(org.apache.catalina.Engine engine)
    {
       this.engine = engine;
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#getHosts()
+    */
    public Iterable<Host> getHosts()
    {
       final Iterator<Container> children = Arrays.asList(this.engine.findChildren()).iterator();
@@ -74,21 +83,37 @@ public class CatalinaEngine implements Engine
       };
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#getJvmRoute()
+    */
    public String getJvmRoute()
    {
       return this.engine.getJvmRoute();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#setJvmRoute(java.lang.String)
+    */
    public void setJvmRoute(String jvmRoute)
    {
       this.engine.setJvmRoute(jvmRoute);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#getName()
+    */
    public String getName()
    {
       return this.engine.getName();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#getProxyConnector()
+    */
    public Connector getProxyConnector()
    {
       org.apache.catalina.connector.Connector[] connectors = this.engine.getService().findConnectors();
@@ -124,6 +149,10 @@ public class CatalinaEngine implements Engine
       return bestConnector;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Engine#findHost(java.lang.String)
+    */
    public Host findHost(String name)
    {
       org.apache.catalina.Host host = (org.apache.catalina.Host) this.engine.findChild(name);
@@ -131,6 +160,10 @@ public class CatalinaEngine implements Engine
       return (host != null) ? new CatalinaHost(host, this) : null;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see java.lang.Object#toString()
+    */
    public String toString()
    {
       return this.engine.getName();

@@ -46,6 +46,10 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
 
    // ----------------------------------------------------------- Constructors
 
+   /**
+    * Constructs a new CatalinaEventHandlerAdapter using the specified event handler.
+    * @param eventHandler an event hadnler
+    */
    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler)
    {
       this.eventHandler = eventHandler;
@@ -56,11 +60,11 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    // ---------------------------------------------- LifecycleListener Methods
 
    /**
+    * {@inhericDoc}
     * Acknowledge the occurrence of the specified event.
     * Note: Will never be called when the listener is associated to a Server,
     * since it is not a Container.
-    *
-    * @param event ContainerEvent that has occurred
+    * @see org.apache.catalina.ContainerListener#containerEvent(org.apache.catalina.ContainerEvent)
     */
    public void containerEvent(ContainerEvent event)
    {
@@ -105,9 +109,9 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    }
 
    /**
+    * {@inhericDoc}
     * Primary entry point for startup and shutdown events.
-    *
-    * @param event The event that has occurred
+    * @see org.apache.catalina.LifecycleListener#lifecycleEvent(org.apache.catalina.LifecycleEvent)
     */
    public void lifecycleEvent(LifecycleEvent event)
    {

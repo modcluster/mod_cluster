@@ -21,17 +21,49 @@
  */
 package org.jboss.modcluster;
 
+/**
+ * SPI for a servlet engine.
+ * 
+ * @author Paul Ferraro
+ */
 public interface Engine
 {
+   /**
+    * The name of this engine.
+    * @return the engine name
+    */
    String getName();
    
+   /**
+    * The hosts associated with this engine.
+    * @return the engine's hosts.
+    */
    Iterable<Host> getHosts();
    
+   /**
+    * The connector to which this engine uses to communicate with its proxies.
+    * @return the connector used by mod_cluster
+    */
    Connector getProxyConnector();
    
+   /**
+    * The jvm route of this servlet engine.
+    * This uniquely identifies this node within the proxy.
+    * @return the servlet engine's jvm route
+    */
    String getJvmRoute();
    
+   /**
+    * Set this jvm route for this servlet engine.
+    * Used to create a reasonable default value, if no explicit route is defined.
+    * @param jvmRoute a unique jvm route.
+    */
    void setJvmRoute(String jvmRoute);
    
+   /**
+    * Returns the host identified by the specified host name.
+    * @param name the host name
+    * @return a servlet engine host
+    */
    Host findHost(String name);
 }

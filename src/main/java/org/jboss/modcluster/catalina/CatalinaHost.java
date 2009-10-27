@@ -32,23 +32,39 @@ import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
 
+/**
+ * {@link Host} implementation that wraps a {@link org.apache.catalina.Host}.
+ * @author Paul Ferraro
+ */
 public class CatalinaHost implements Host
 {
    private final org.apache.catalina.Host host;
    private final Engine engine;
    
+   /**
+    * Constructs a new CatalinaHost wrapping the specified catalina host.
+    * @param host a catalina host
+    * @param engine the parent container
+    */
    public CatalinaHost(org.apache.catalina.Host host, Engine engine)
    {
       this.host = host;
       this.engine = engine;
    }
    
+   /**
+    * Constructs a new CatalinaHost wrapping the specified catalina host.
+    * @param host a catalina host
+    */
    public CatalinaHost(org.apache.catalina.Host host)
    {
-      this.host = host;
-      this.engine = new CatalinaEngine((org.apache.catalina.Engine) host.getParent());
+      this(host, new CatalinaEngine((org.apache.catalina.Engine) host.getParent()));
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Host#getAliases()
+    */
    public Set<String> getAliases()
    {
       String name = this.host.getName();
@@ -71,6 +87,10 @@ public class CatalinaHost implements Host
       return hosts;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Host#getContexts()
+    */
    public Iterable<Context> getContexts()
    {
       final Iterator<Container> children = Arrays.asList(this.host.findChildren()).iterator();
@@ -102,16 +122,28 @@ public class CatalinaHost implements Host
       };
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Host#getEngine()
+    */
    public Engine getEngine()
    {
       return this.engine;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Host#getName()
+    */
    public String getName()
    {
       return this.host.getName();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Host#findContext(java.lang.String)
+    */
    public Context findContext(String path)
    {
       org.apache.catalina.Context context = (org.apache.catalina.Context) this.host.findChild(path);
@@ -119,6 +151,10 @@ public class CatalinaHost implements Host
       return (context != null) ? new CatalinaContext(context, this) : null;
    }
    
+   /**
+    * {@inhericDoc}
+    * @see java.lang.Object#toString()
+    */
    public String toString()
    {
       return this.host.getName();

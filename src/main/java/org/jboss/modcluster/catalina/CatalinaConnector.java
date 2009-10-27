@@ -29,27 +29,44 @@ import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Utils;
 
 /**
+ * {@link Connector} implementation that wraps a {@link org.apache.catalina.connector.Connector}.
  * @author Paul Ferraro
  */
 public class CatalinaConnector implements Connector
 {
    private final org.apache.catalina.connector.Connector connector;
    
+   /**
+    * Constructs a new CatalinaConnector wrapping the specified catalina connector.
+    * @param connector the catalina connector
+    */
    public CatalinaConnector(org.apache.catalina.connector.Connector connector)
    {
       this.connector = connector;
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Connector#getAddress()
+    */
    public InetAddress getAddress()
    {
       return (InetAddress) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Connector#getPort()
+    */
    public int getPort()
    {
       return this.connector.getPort();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Connector#getType()
+    */
    public Type getType()
    {
       if (isAJP(this.connector)) return Type.AJP;
@@ -59,16 +76,29 @@ public class CatalinaConnector implements Connector
       return Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "SSLEnabled")) ? Type.HTTPS : Type.HTTP;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Connector#isReverse()
+    */
    public boolean isReverse()
    {
       return Boolean.TRUE.equals(IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "reverseConnection"));
    }
    
+   /**
+    * {@inhericDoc}
+    * @see java.lang.Object#toString()
+    */
    public String toString()
    {
       return this.getType() + "://" + Utils.identifyHost(this.getAddress()) + ":" + this.connector.getPort();
    }
 
+   /**
+    * Indicates whether or not the specified connector use the AJP protocol.
+    * @param connector a connector
+    * @return true, if the specified connector is AJP, false otherwise
+    */
    public static boolean isAJP(org.apache.catalina.connector.Connector connector)
    {
       String protocol = connector.getProtocol();

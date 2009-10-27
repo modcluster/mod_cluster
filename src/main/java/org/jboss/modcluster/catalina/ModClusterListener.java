@@ -49,7 +49,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
 
 /**
- * Non-clustered mod_cluster lifecycle listener for use in JBoss Web standalone.
+ * Non-clustered mod_cluster lifecycle listener for use in JBoss Web standalone and Tomcat.
  * @author Paul Ferraro
  */
 public class ModClusterListener extends ModClusterConfig
@@ -88,6 +88,9 @@ public class ModClusterListener extends ModClusterConfig
    private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
    private double capacity = LoadMetric.DEFAULT_CAPACITY;
 
+   /**
+    * Constructs a new ModClusterListener
+    */
    public ModClusterListener()
    {
       ModClusterService service = new ModClusterService(this, this);
@@ -192,6 +195,10 @@ public class ModClusterListener extends ModClusterConfig
       return this.loadMetricClass;
    }
 
+   /**
+    * Sets the class of the desired load metric
+    * @param loadMetricClass a class implementing {@link LoadMetric}
+    */
    public void setLoadMetricClass(Class<? extends LoadMetric<? extends LoadContext>> loadMetricClass)
    {
       this.loadMetricClass = loadMetricClass;
@@ -206,6 +213,10 @@ public class ModClusterListener extends ModClusterConfig
       return this.decayFactor;
    }
 
+   /**
+    * Sets the factor by which the contribution of historical load values to the load factor calculation should exponentially decay.
+    * @param decayFactor a positive number
+    */
    public void setLoadDecayFactor(int decayFactor)
    {
       this.decayFactor = decayFactor;
@@ -220,6 +231,10 @@ public class ModClusterListener extends ModClusterConfig
       return this.history;
    }
 
+   /**
+    * Sets the number of historic load values used when calculating the load factor.
+    * @param history
+    */
    public void setLoadHistory(int history)
    {
       this.history = history;
@@ -234,71 +249,127 @@ public class ModClusterListener extends ModClusterConfig
       return this.capacity;
    }
 
+   /**
+    * Sets the capacity (i.e. maximum expected value) of the load values returned by the load metric specified by {@link #getLoadMetricClass()}
+    * @param capacity a load capacity
+    */
    public void setLoadMetricCapacity(double capacity)
    {
       this.capacity = capacity;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#addProxy(java.lang.String, int)
+    */
    public void addProxy(String host, int port)
    {
       this.service.addProxy(host, port);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#disable()
+    */
    public boolean disable()
    {
       return this.service.disable();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#disableContext(java.lang.String, java.lang.String)
+    */
    public boolean disableContext(String hostName, String contextPath)
    {
       return this.service.disableContext(hostName, contextPath);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
+    */
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
       return this.service.ping(jvmRoute);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#enable()
+    */
    public boolean enable()
    {
       return this.service.enable();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#enableContext(java.lang.String, java.lang.String)
+    */
    public boolean enableContext(String hostName, String contextPath)
    {
       return this.service.enableContext(hostName, contextPath);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
+    */
    public Map<InetSocketAddress, String> getProxyConfiguration()
    {
       return this.service.getProxyConfiguration();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
+    */
    public Map<InetSocketAddress, String> getProxyInfo()
    {
       return this.service.getProxyInfo();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#refresh()
+    */
    public void refresh()
    {
       this.service.refresh();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#removeProxy(java.lang.String, int)
+    */
    public void removeProxy(String host, int port)
    {
       this.service.removeProxy(host, port);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
+    */
    public void reset()
    {
       this.service.reset();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#stop(long, java.util.concurrent.TimeUnit)
+    */
    public boolean stop(long timeout, TimeUnit unit)
    {
       return this.service.stop(timeout, unit);
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#stopContext(java.lang.String, java.lang.String, long, java.util.concurrent.TimeUnit)
+    */
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {
       return this.service.stopContext(host, path, timeout, unit);

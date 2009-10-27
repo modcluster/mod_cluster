@@ -24,14 +24,14 @@ package org.jboss.modcluster;
 import java.net.InetAddress;
 
 /**
- * Abstraction for a servlet engine connector
+ * SPI for a servlet engine connector
  * 
  * @author Paul Ferraro
  */
 public interface Connector
 {
    /**
-    * Indicates the connector type.
+    * Indicates the type of a connector.
     */
    enum Type
    {
@@ -44,22 +44,47 @@ public interface Connector
          this.defaultPort = defaultPort;
       }
       
+      /**
+       * Indicates the default port for this type of connector
+       * @return a valid port number
+       */
       public int getDefaultPort()
       {
          return this.defaultPort;
       }
       
+      /**
+       * {@inhericDoc}
+       * @see java.lang.Enum#toString()
+       */
       public String toString()
       {
          return this.name().toLowerCase();
       }
    };
 
+   /**
+    * Indicates whether the endpoint of this connector uses a reverse connection to httpd.
+    * A reverse connection uses a normal socket connection, instead of the traditional server socket.
+    * @return true, if the endpoint uses a reverse connection, false otherwise
+    */
    boolean isReverse();
    
+   /**
+    * Indicates the type of this connector
+    * @return a connector type
+    */
    Type getType();
    
+   /**
+    * Returns the address on which this connector operates
+    * @return an address
+    */
    InetAddress getAddress();
    
+   /**
+    * Returns the port on which this connector operates
+    * @return a port number
+    */
    int getPort();
 }

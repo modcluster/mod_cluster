@@ -31,6 +31,7 @@ import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Host;
 
 /**
+ * {@link Context} implementation that wraps a {@link org.apache.catalina.Context}.
  * @author Paul Ferraro
  */
 public class CatalinaContext implements Context
@@ -38,28 +39,48 @@ public class CatalinaContext implements Context
    private final org.apache.catalina.Context context;
    private final Host host;
    
+   /**
+    * Constructs a new CatalinaContext wrapping the specified context.
+    * @param context the catalina context
+    * @param host the parent container
+    */
    public CatalinaContext(org.apache.catalina.Context context, Host host)
    {
       this.context = context;
       this.host = host;
    }
    
+   /**
+    * Constructs a new CatalinaContext wrapping the specified context.
+    * @param context the catalina context
+    */
    public CatalinaContext(org.apache.catalina.Context context)
    {
-      this.context = context;
-      this.host = new CatalinaHost((org.apache.catalina.Host) context.getParent());
+      this(context, new CatalinaHost((org.apache.catalina.Host) context.getParent()));
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#getHost()
+    */
    public Host getHost()
    {
       return this.host;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#getPath()
+    */
    public String getPath()
    {
       return this.context.getPath();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#isStarted()
+    */
    public boolean isStarted()
    {
       try
@@ -72,11 +93,19 @@ public class CatalinaContext implements Context
       }
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#getActiveSessionCount()
+    */
    public int getActiveSessionCount()
    {
       return this.context.getManager().getActiveSessions();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#addSessionListener(javax.servlet.http.HttpSessionListener)
+    */
    public void addSessionListener(final HttpSessionListener listener)
    {
       synchronized (this.context)
@@ -91,6 +120,10 @@ public class CatalinaContext implements Context
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Context#removeSessionListener(javax.servlet.http.HttpSessionListener)
+    */
    public void removeSessionListener(HttpSessionListener listener)
    {
       synchronized (this.context)
@@ -103,6 +136,10 @@ public class CatalinaContext implements Context
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see java.lang.Object#toString()
+    */
    public String toString()
    {
       return this.context.getPath();

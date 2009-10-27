@@ -28,15 +28,27 @@ import org.apache.catalina.Service;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Server;
 
+/**
+ * {@link Server} implementation that wraps a {@link org.apache.catalina.Server}.
+ * @author Paul Ferraro
+ */
 public class CatalinaServer implements Server
 {
    private final org.apache.catalina.Server server;
    
+   /**
+    * Constructs a new CatalinaServer wrapping the specified catalina server.
+    * @param host a catalina server
+    */
    public CatalinaServer(org.apache.catalina.Server server)
    {
       this.server = server;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.Server#getEngines()
+    */
    public Iterable<Engine> getEngines()
    {
       final Iterator<Service> services = Arrays.asList(this.server.findServices()).iterator();
@@ -68,6 +80,10 @@ public class CatalinaServer implements Server
       };
    }
    
+   /**
+    * {@inhericDoc}
+    * @see java.lang.Object#toString()
+    */
    public String toString()
    {
       return this.server.getClass().getName();

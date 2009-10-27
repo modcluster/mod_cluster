@@ -25,6 +25,8 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 /**
+ * Enumeration of externalized exception and log messages.
+ * 
  * @author Paul Ferraro
  */
 public enum Strings

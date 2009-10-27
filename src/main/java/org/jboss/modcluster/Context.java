@@ -23,7 +23,10 @@ package org.jboss.modcluster;
 
 import javax.servlet.http.HttpSessionListener;
 
-
+/**
+ * SPI for a web application context.
+ * @author Paul Ferraro
+ */
 public interface Context
 {
    Host getHost();

@@ -21,7 +21,16 @@
  */
 package org.jboss.modcluster;
 
+/**
+ * SPI for a web application server.
+ * 
+ * @author Paul Ferraro
+ */
 public interface Server
 {
+   /**
+    * Returns the servlet engines associated with this server.
+    * @return the server's engines
+    */
    Iterable<Engine> getEngines();
 }
