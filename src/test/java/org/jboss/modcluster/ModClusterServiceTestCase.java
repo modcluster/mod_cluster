@@ -24,6 +24,7 @@ package org.jboss.modcluster;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Map;
@@ -211,19 +212,19 @@ public class ModClusterServiceTestCase
    public void ping()
    {
       InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 8080);
-      String jvmRoute = "info";
       String pingResult = "OK";
       
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
-      EasyMock.expect(this.requestFactory.createPingRequest(jvmRoute)).andReturn(request);
+      // Test null parameter
+      EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
       EasyMock.expect(state.getSocketAddress()).andReturn(address);
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      Map<InetSocketAddress, String> result = this.service.ping(jvmRoute);
+      Map<InetSocketAddress, String> result = this.service.ping(null);
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
@@ -231,6 +232,60 @@ public class ModClusterServiceTestCase
       Assert.assertSame(pingResult, result.get(address));
       
       EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);
+      
+      // Test empty parameter
+      EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
+      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
+      EasyMock.expect(state.getSocketAddress()).andReturn(address);
+      
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
+      
+      result = this.service.ping("");
+      
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
+      
+      Assert.assertEquals(1, result.size());
+      Assert.assertSame(pingResult, result.get(address));
+      
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);
+      
+      // Test url parameter
+      Capture<URI> capturedURI = new Capture<URI>();
+      
+      EasyMock.expect(this.requestFactory.createPingRequest(EasyMock.capture(capturedURI))).andReturn(request);
+      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
+      EasyMock.expect(state.getSocketAddress()).andReturn(address);
+      
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
+      
+      result = this.service.ping("ajp://127.0.0.1:8009");
+      
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
+      
+      URI uri = capturedURI.getValue();
+      Assert.assertEquals("ajp", uri.getScheme());
+      Assert.assertEquals("127.0.0.1", uri.getHost());
+      Assert.assertEquals(8009, uri.getPort());
+      Assert.assertEquals(1, result.size());
+      Assert.assertSame(pingResult, result.get(address));
+      
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);
+      
+      // Test non-url parameter
+      EasyMock.expect(this.requestFactory.createPingRequest("route")).andReturn(request);
+      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
+      EasyMock.expect(state.getSocketAddress()).andReturn(address);
+      
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
+      
+      result = this.service.ping("route");
+      
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
+      
+      Assert.assertEquals(1, result.size());
+      Assert.assertSame(pingResult, result.get(address));
+      
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);      
    }
    
    @Test
@@ -960,10 +1015,15 @@ public class ModClusterServiceTestCase
       // Test initialized
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
 
+      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
+      EasyMock.expect(connector.getAddress()).andReturn(InetAddress.getByName("0.0.0.0"));
+      EasyMock.expect(this.mcmpHandler.getLocalAddress()).andReturn(address);
+      
+      connector.setAddress(address);
+      
       EasyMock.expect(engine.getJvmRoute()).andReturn(null);
       EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
       EasyMock.expect(connector.getAddress()).andReturn(address);
-      
       EasyMock.expect(connector.getPort()).andReturn(6666);
       EasyMock.expect(engine.getName()).andReturn("engine");
       
