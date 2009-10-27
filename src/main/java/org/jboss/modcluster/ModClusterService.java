@@ -399,6 +399,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
+    */
    public Map<InetSocketAddress, String> getProxyConfiguration()
    {
       // Send DUMP * request
@@ -406,9 +410,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
    
    /**
-    * Retrieves the full proxy info message.
-    *
-    * @return the proxy info confguration
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
     */
    public Map<InetSocketAddress, String> getProxyInfo()
    {
@@ -417,27 +420,34 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    /**
-    * Do a PING using each proxy
-    *
-    * @return the proxy PING_RSP strings.
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
     */
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
-      // Send PING * request
-      int protocolIndex = -1;
-      URI url = null;
-      if (jvmRoute != null)
-         protocolIndex = jvmRoute.indexOf("://");
-      if (protocolIndex == -1)
-         return this.getProxyResults(this.requestFactory.createPingRequest(jvmRoute));
-      else {
-         try {
-            url = new URI(jvmRoute);
-         } catch (URISyntaxException ex) {
-            return this.getProxyResults(this.requestFactory.createPingRequest((String)null));
-         }
-         return this.getProxyResults(this.requestFactory.createPingRequest(url));
+      MCMPRequest request = null;
+      
+      if ((jvmRoute == null) || (jvmRoute.length() == 0))
+      {
+         request = this.requestFactory.createPingRequest();
       }
+      else if (!jvmRoute.contains("://"))
+      {
+         request = this.requestFactory.createPingRequest(jvmRoute);
+      }
+      else
+      {
+         try
+         {
+            request = this.requestFactory.createPingRequest(new URI(jvmRoute));
+         }
+         catch (URISyntaxException e)
+         {
+            throw new IllegalArgumentException(e);
+         }
+      }
+      
+      return this.getProxyResults(request);
    }
    
    private Map<InetSocketAddress, String> getProxyResults(MCMPRequest request)
@@ -555,6 +565,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       return this.mcmpHandler.isProxyHealthOK();
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#stop(long, java.util.concurrent.TimeUnit)
+    */
    public boolean stop(long timeout, TimeUnit unit)
    {
       // Send DISABLE-APP * requests
@@ -589,6 +603,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       return true;
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#stopContext(java.lang.String, java.lang.String, long, java.util.concurrent.TimeUnit)
+    */
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {      
       Context context = this.findContext(this.findHost(host), path);
