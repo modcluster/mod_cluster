@@ -86,7 +86,16 @@ public interface ModClusterServiceMBean
    /**
     * Ping a node from httpd.
     * returning the PING_RSP grouped by proxy address.
-    * 
+    * Behavior of ping is determined by the supplied parameter:
+    * <dl>
+    *  <dt>null</dt>
+    *  <dd>determines whether each proxy is accessible and healthy</dd>
+    *  <dt>a url of the form: protocol://host:port</dt>
+    *  <dd>determines whether a node (not necessarily configured) with the matching connector is accessible from each proxy</dd>
+    *  <dt>a non-url</dt>
+    *  <dd>determines whether the node configured with the specified jvm route is accessible from each proxy</dd>
+    * </ul>
+    * @param jvmRoute a jvm route, a url, or null
     * @return a map of PING_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> ping(String jvmRoute);
