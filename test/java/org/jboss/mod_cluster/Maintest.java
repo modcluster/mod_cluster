@@ -35,6 +35,7 @@ import junit.textui.TestRunner;
 import java.lang.Exception;
 import java.net.Socket;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Map;
 
 import org.apache.catalina.ServerFactory;
@@ -209,17 +210,19 @@ public class Maintest extends TestCase {
             Map<InetSocketAddress, String> map = pcluster.ping(JvmRoute);
             if (map.isEmpty())
                 return null;
-            String results[] = (String []) map.values().toArray();
-            result = results[0];
+            Object results[] = map.values().toArray();
+            result = (String ) results[0];
         }
         return result;
     }
     /* Analyse the PING-RSP message: Type=PING-RSP&State=OK&id=1 */
     static boolean checkProxyPing(String result) {
         String [] records = result.split("\n");
-        if (records.length != 3)
-            return false;
-        String [] results = records[1].split("&");
+        String [] results = null;
+        if (records.length == 3)
+            results = records[1].split("&");
+        else
+            results = result.split("&");
         int ret = 0;
         for (int j=0; j<results.length; j++) {
             String [] data = results[j].split("=");
@@ -249,6 +252,31 @@ public class Maintest extends TestCase {
             result = (String) results[0];
         }
         return result;
+    }
+    static String  getProxyAddress(LifecycleListener lifecycle) {
+        String proxy = null;
+        if (isJBossWEB) {
+            ClusterListener jcluster = (ClusterListener) lifecycle;
+            String result = jcluster.getProxyInfo();
+            String [] records = result.split("\n");
+            String [] results = records[0].split(": \\[.*\\/");
+            if (results.length >=2 ) {
+                records = results[1].split("\\]");
+                proxy = records[0];
+            } else {
+                /* We get something unexpected */
+                System.out.println(results);
+            }
+        } else {
+            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
+            if (!map.isEmpty()) {
+                Object results[] = map.keySet().toArray();;
+                InetSocketAddress result = (InetSocketAddress) results[0];
+                proxy = result.getHostName() + ":" + result.getPort();
+            }
+        }
+        return proxy;
     }
     /* Check that the nodes are returned by the INFO command */
     static boolean checkProxyInfo(LifecycleListener lifecycle, String [] nodes) {

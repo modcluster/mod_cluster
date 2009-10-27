@@ -81,19 +81,9 @@ public class Testmod_cluster_manager extends TestCase {
         String proxy = null;
         int tries = 0;
         while (proxy == null && tries<60) {
-            String result = Maintest.getProxyInfo(cluster);
-            if (result != null) {
-                String [] records = result.split("\n");
-                String [] results = records[0].split(": \\[.*\\/");
-                if (results.length >=2 ) {
-                    records = results[1].split("\\]");
-                    proxy = records[0];
-                    break; // Done.
-                } else {
-                    /* We get something unexpected */
-                    System.out.println(result);
-                }
-            }
+            proxy = Maintest.getProxyAddress(cluster);
+            if (proxy != null)
+                break;
             try {
                 Thread me = Thread.currentThread();
                 me.sleep(5000);
