@@ -54,6 +54,11 @@ public class CatalinaConnector implements Connector
       return (InetAddress) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
    }
 
+   public void setAddress(InetAddress address)
+   {
+      IntrospectionUtils.setProperty(this.connector.getProtocolHandler(), "address", address.getHostAddress());
+   }
+
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.Connector#getPort()

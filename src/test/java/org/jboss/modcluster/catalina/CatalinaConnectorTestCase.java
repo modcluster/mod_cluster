@@ -21,6 +21,7 @@
  */
 package org.jboss.modcluster.catalina;
 
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.tomcat.util.IntrospectionUtils;
@@ -85,5 +86,21 @@ public class CatalinaConnectorTestCase
       Assert.assertFalse(this.ajpConnector.isReverse());
       Assert.assertFalse(this.httpConnector.isReverse());
       Assert.assertFalse(this.httpsConnector.isReverse());
+   }
+   
+   @Test
+   public void setAddress() throws UnknownHostException
+   {
+      Assert.assertNull(this.ajpConnector.getAddress());
+      this.ajpConnector.setAddress(InetAddress.getByName("127.0.0.1"));
+      Assert.assertEquals("127.0.0.1", this.ajpConnector.getAddress().getHostAddress());
+      
+      Assert.assertNull(this.httpConnector.getAddress());
+      this.httpConnector.setAddress(InetAddress.getByName("127.0.0.1"));
+      Assert.assertEquals("127.0.0.1", this.httpConnector.getAddress().getHostAddress());
+      
+      Assert.assertNull(this.httpsConnector.getAddress());
+      this.httpsConnector.setAddress(InetAddress.getByName("127.0.0.1"));
+      Assert.assertEquals("127.0.0.1", this.httpsConnector.getAddress().getHostAddress());
    }
 }

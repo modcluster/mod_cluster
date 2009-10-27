@@ -83,6 +83,13 @@ public interface Connector
    InetAddress getAddress();
    
    /**
+    * Sets the address on which this connector operates.
+    * Used to set an explicit connector address if it undefined or defined as any address.
+    * @param address a network interface address
+    */
+   void setAddress(InetAddress address);
+   
+   /**
     * Returns the port on which this connector operates
     * @return a port number
     */
