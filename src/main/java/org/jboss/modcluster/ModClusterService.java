@@ -239,7 +239,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
       catch (Exception e)
       {
-         e.printStackTrace();
          this.mcmpHandler.markProxiesInError();
          
          this.log.info(Strings.ERROR_ADDRESS_JVMROUTE.getString(), e);
