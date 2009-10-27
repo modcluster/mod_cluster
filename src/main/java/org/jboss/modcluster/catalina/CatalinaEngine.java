@@ -43,26 +43,22 @@ public class CatalinaEngine implements Engine
       this.engine = engine;
    }
    
-   @Override
    public Iterable<Host> getHosts()
    {
       final Iterator<Container> children = Arrays.asList(this.engine.findChildren()).iterator();
       
       final Iterator<Host> hosts = new Iterator<Host>()
       {
-         @Override
          public boolean hasNext()
          {
             return children.hasNext();
          }
 
-         @Override
          public Host next()
          {
             return new CatalinaHost((org.apache.catalina.Host) children.next(), CatalinaEngine.this);
          }
 
-         @Override
          public void remove()
          {
             children.remove();
@@ -71,7 +67,6 @@ public class CatalinaEngine implements Engine
       
       return new Iterable<Host>()
       {
-         @Override
          public Iterator<Host> iterator()
          {
             return hosts;
@@ -79,25 +74,21 @@ public class CatalinaEngine implements Engine
       };
    }
 
-   @Override
    public String getJvmRoute()
    {
       return this.engine.getJvmRoute();
    }
 
-   @Override
    public void setJvmRoute(String jvmRoute)
    {
       this.engine.setJvmRoute(jvmRoute);
    }
 
-   @Override
    public String getName()
    {
       return this.engine.getName();
    }
 
-   @Override
    public Connector getProxyConnector()
    {
       org.apache.catalina.connector.Connector[] connectors = this.engine.getService().findConnectors();
@@ -133,7 +124,6 @@ public class CatalinaEngine implements Engine
       return bestConnector;
    }
 
-   @Override
    public Host findHost(String name)
    {
       org.apache.catalina.Host host = (org.apache.catalina.Host) this.engine.findChild(name);
@@ -141,7 +131,6 @@ public class CatalinaEngine implements Engine
       return (host != null) ? new CatalinaHost(host, this) : null;
    }
 
-   @Override
    public String toString()
    {
       return this.engine.getName();

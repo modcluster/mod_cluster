@@ -40,19 +40,16 @@ public class CatalinaConnector implements Connector
       this.connector = connector;
    }
    
-   @Override
    public InetAddress getAddress()
    {
       return (InetAddress) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
    }
 
-   @Override
    public int getPort()
    {
       return this.connector.getPort();
    }
 
-   @Override
    public Type getType()
    {
       if (isAJP(this.connector)) return Type.AJP;
@@ -62,13 +59,11 @@ public class CatalinaConnector implements Connector
       return Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "SSLEnabled")) ? Type.HTTPS : Type.HTTP;
    }
 
-   @Override
    public boolean isReverse()
    {
       return Boolean.TRUE.equals(IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "reverseConnection"));
    }
    
-   @Override
    public String toString()
    {
       return this.getType() + "://" + Utils.identifyHost(this.getAddress()) + ":" + this.connector.getPort();

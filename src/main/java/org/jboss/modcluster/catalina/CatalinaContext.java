@@ -50,19 +50,16 @@ public class CatalinaContext implements Context
       this.host = new CatalinaHost((org.apache.catalina.Host) context.getParent());
    }
    
-   @Override
    public Host getHost()
    {
       return this.host;
    }
 
-   @Override
    public String getPath()
    {
       return this.context.getPath();
    }
 
-   @Override
    public boolean isStarted()
    {
       try
@@ -75,13 +72,11 @@ public class CatalinaContext implements Context
       }
    }
    
-   @Override
    public int getActiveSessionCount()
    {
       return this.context.getManager().getActiveSessions();
    }
 
-   @Override
    public void addSessionListener(final HttpSessionListener listener)
    {
       synchronized (this.context)
@@ -96,7 +91,6 @@ public class CatalinaContext implements Context
       }
    }
 
-   @Override
    public void removeSessionListener(HttpSessionListener listener)
    {
       synchronized (this.context)
@@ -109,7 +103,6 @@ public class CatalinaContext implements Context
       }
    }
 
-   @Override
    public String toString()
    {
       return this.context.getPath();

@@ -45,7 +45,6 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser
     * {@inhericDoc}
     * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parseInfoResponse(java.lang.String)
     */
-   @Override
    public Map<String, Set<VirtualHost>> parseInfoResponse(String response)
    {
       if (response == null) return Collections.emptyMap();
@@ -228,7 +227,6 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser
     * {@inhericDoc}
     * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parsePingResponse(java.lang.String)
     */
-   @Override
    public boolean parsePingResponse(String response)
    {
       if (response == null) return false;

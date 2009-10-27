@@ -202,7 +202,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(MCMPRequestType.STATUS, false, jvmRoute, Collections.singletonMap("Load", String.valueOf(lbf)));
    }
 
-   @Override
    public MCMPRequest createStopRequest(Engine engine)
    {
       return this.createRequest(MCMPRequestType.STOP_APP, engine);
@@ -246,7 +245,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(MCMPRequestType.PING, false, jvmRoute, Collections.<String, String>emptyMap());
    }
 
-   @Override
    public MCMPRequest createPingRequest(URI uri)
    {
       String scheme = uri.getScheme();
@@ -301,7 +299,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       return new DefaultMCMPRequest(type, true, jvmRoute, Collections.<String, String>emptyMap());
    }
    
-   @Override
    public MCMPRequest createRemoveEngineRequest(String jvmRoute)
    {
       return this.createEngineRequest(MCMPRequestType.REMOVE_APP, jvmRoute);

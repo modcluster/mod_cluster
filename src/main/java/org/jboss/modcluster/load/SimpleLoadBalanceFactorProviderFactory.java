@@ -31,7 +31,6 @@ public class SimpleLoadBalanceFactorProviderFactory implements LoadBalanceFactor
       this.provider = provider;
    }
    
-   @Override
    public LoadBalanceFactorProvider createLoadBalanceFactorProvider()
    {
       return this.provider;

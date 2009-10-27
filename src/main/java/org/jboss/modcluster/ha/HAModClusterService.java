@@ -169,7 +169,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inheritDoc}
     * @see org.jboss.modcluster.ha.HAModClusterServiceMBean#getProcessStatusFrequency()
     */
-   @Override
    public int getProcessStatusFrequency()
    {
       return this.processStatusFrequency;
@@ -179,25 +178,21 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ha.HAModClusterServiceMBean#setProcessStatusFrequency(int)
     */
-   @Override
    public void setProcessStatusFrequency(int processStatusFrequency)
    {
       this.processStatusFrequency = processStatusFrequency;
    }
 
-   @Override
    public boolean disableDomain()
    {
       return this.conjoin(this.rpcStub.disable(this.domain));
    }
 
-   @Override
    public boolean enableDomain()
    {
       return this.conjoin(this.rpcStub.enable(this.domain));
    }
 
-   @Override
    public boolean stopDomain(long timeout, TimeUnit unit)
    {
       return this.conjoin(this.rpcStub.stop(this.domain, timeout, unit));
@@ -221,7 +216,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
     */
-   @Override
    public int getLoadBalanceFactor()
    {
       return this.service.getLoadBalanceFactor();
@@ -231,7 +225,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#add(org.jboss.modcluster.Context)
     */
-   @Override
    public void add(Context context)
    {
       this.service.add(context);
@@ -241,7 +234,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#init(org.jboss.modcluster.Server)
     */
-   @Override
    public void init(Server server)
    {
       this.service.init(server);
@@ -251,7 +243,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#remove(org.jboss.modcluster.Context)
     */
-   @Override
    public void remove(Context context)
    {
       this.service.remove(context);
@@ -261,7 +252,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#shutdown()
     */
-   @Override
    public void shutdown()
    {
       this.service.shutdown();
@@ -271,7 +261,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Context)
     */
-   @Override
    public void start(Context context)
    {
       this.service.start(context);
@@ -281,7 +270,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Server)
     */
-   @Override
    public void start(Server server)
    {
       this.service.start(server);
@@ -291,7 +279,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#status(org.jboss.modcluster.Engine)
     */
-   @Override
    public void status(Engine engine)
    {
       this.service.status(engine);
@@ -301,7 +288,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Context)
     */
-   @Override
    public void stop(Context context)
    {
       this.service.stop(context);
@@ -311,7 +297,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Server)
     */
-   @Override
    public void stop(Server server)
    {
       this.service.stop(server);
@@ -321,7 +306,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#addProxy(java.lang.String, int)
     */
-   @Override
    public void addProxy(String host, int port)
    {
       this.service.addProxy(host, port);
@@ -331,7 +315,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#disable()
     */
-   @Override
    public boolean disable()
    {
       return this.service.disable();
@@ -341,7 +324,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
     */
-   @Override
    public boolean disableContext(String host, String path)
    {
       return this.service.disableContext(host, path);
@@ -351,7 +333,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
     */
-   @Override
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
       return this.service.ping(jvmRoute);
@@ -361,7 +342,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#enable()
     */
-   @Override
    public boolean enable()
    {
       return this.service.enable();
@@ -371,7 +351,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
     */
-   @Override
    public boolean enableContext(String host, String path)
    {
       return this.service.enableContext(host, path);
@@ -381,7 +360,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
     */
-   @Override
    public Map<InetSocketAddress, String> getProxyConfiguration()
    {
       return this.service.getProxyConfiguration();
@@ -391,7 +369,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
     */
-   @Override
    public Map<InetSocketAddress, String> getProxyInfo()
    {
       return this.service.getProxyInfo();
@@ -401,7 +378,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#refresh()
     */
-   @Override
    public void refresh()
    {
       this.service.refresh();
@@ -411,7 +387,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#removeProxy(java.lang.String, int)
     */
-   @Override
    public void removeProxy(String host, int port)
    {
       this.service.removeProxy(host, port);
@@ -421,19 +396,16 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
     */
-   @Override
    public void reset()
    {
       this.service.reset();
    }
 
-   @Override
    public boolean stop(long timeout, TimeUnit unit)
    {
       return this.service.stop(timeout, unit);
    }
 
-   @Override
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {
       return this.service.stopContext(host, path, timeout, unit);
@@ -443,7 +415,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HASingletonImpl#startSingleton()
     */
-   @Override
    public void startSingleton()
    {
       this.statusCount = this.processStatusFrequency - 1;
@@ -453,7 +424,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HASingletonImpl#partitionTopologyChanged(java.util.List, int, boolean)
     */
-   @Override
    protected void partitionTopologyChanged(List<?> newReplicants, int newViewId, boolean merge)
    {
       @SuppressWarnings("unchecked")
@@ -497,7 +467,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HAServiceImpl#setServiceHAName(java.lang.String)
     */
-   @Override
    @Inject(fromContext = FromContext.NAME)
    public void setServiceHAName(String haName)
    {
@@ -508,7 +477,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HAServiceImpl#getHAServiceKey()
     */
-   @Override
    public String getHAServiceKey()
    {
       String name = this.getServiceHAName();
@@ -520,7 +488,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HASingletonImpl#getRpcHandler()
     */
-   @Override
    protected HAServiceRpcHandler<HAServiceEvent> getRpcHandler()
    {
       return this.rpcHandler;
@@ -530,7 +497,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HAServiceImpl#getReplicant()
     */
-   @Override
    protected Serializable getReplicant()
    {
       return new SimpleCachableMarshalledValue(this.drmEntry);
@@ -540,7 +506,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
     * {@inhericDoc}
     * @see org.jboss.ha.framework.server.HASingletonImpl#getElectionCandidates()
     */
-   @Override
    protected List<ClusterNode> getElectionCandidates()
    {
       return this.findMasterCandidates(this.lookupDRMEntries());
@@ -692,7 +657,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
-      @Override
       public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
          try
@@ -705,7 +669,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
-      @Override
       public List<RpcResponse<ModClusterServiceStatus>> getClusterCoordinatorState(Set<MCMPServerState> masterList)
       {
          try
@@ -756,7 +719,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#disable(java.lang.String)
        */
-      @Override
       public List<RpcResponse<Boolean>> disable(String domain)
       {
          try
@@ -773,7 +735,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#enable(java.lang.String)
        */
-      @Override
       public List<RpcResponse<Boolean>> enable(String domain)
       {
          try
@@ -790,7 +751,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#stop(java.lang.String)
        */
-      @Override
       public List<RpcResponse<Boolean>> stop(String domain, long timeout, TimeUnit unit)
       {
          try
@@ -812,7 +772,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       private final ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
       private final RpcResponse<Void> voidResponse = new DefaultRpcResponse<Void>(this.node);
       
-      @Override
       public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
          ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
@@ -840,7 +799,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
-      @Override
       public RpcResponse<ModClusterServiceStatus> getClusterCoordinatorState(Set<MCMPServer> masterList)
       {
          // TODO is this the correct response here?
@@ -867,7 +825,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Map<InetSocketAddress, String>> getProxyConfiguration()
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -879,7 +836,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Map<InetSocketAddress, String>> getProxyInfo()
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -891,7 +847,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Map<InetSocketAddress, String>> ping(String jvmRoute)
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -903,7 +858,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Boolean> isProxyHealthOK()
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -915,7 +869,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Void> markProxiesInError()
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -925,7 +878,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return this.voidResponse;
       }
 
-      @Override
       public RpcResponse<Void> mcmpServerDiscoveryEvent(MCMPServerDiscoveryEvent event)
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -949,7 +901,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
-      @Override
       public RpcResponse<Void> reset()
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -959,7 +910,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return this.voidResponse;
       }
 
-      @Override
       public RpcResponse<Map<MCMPServerState, String>> sendRequest(MCMPRequest request)
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -971,7 +921,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Map<MCMPServerState, List<String>>> sendRequests(List<MCMPRequest> requests)
       {
          if (!HAModClusterService.this.isMasterNode()) return null;
@@ -983,7 +932,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<List<MCMPRequest>> getResetRequests(Map<String, Set<VirtualHost>> infoResponse)
       {
          DefaultRpcResponse<List<MCMPRequest>> response = new DefaultRpcResponse<List<MCMPRequest>>(this.node);
@@ -991,7 +939,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Boolean> disable(String domain)
       {
          DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
@@ -1004,7 +951,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Boolean> enable(String domain)
       {
          DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
@@ -1017,7 +963,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return response;
       }
 
-      @Override
       public RpcResponse<Boolean> stop(String domain, long timeout, TimeUnit unit)
       {
          DefaultRpcResponse<Boolean> response = new DefaultRpcResponse<Boolean>(this.node);
@@ -1049,7 +994,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          super(nodeConfig, balancerConfig, mcmpConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource, mcmpHandler, advertiseListenerFactory);
       }
 
-      @Override
       public Map<InetSocketAddress, String> getProxyConfiguration()
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1060,7 +1004,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.getProxyConfiguration().getResult();
       }
 
-      @Override
       public Map<InetSocketAddress, String> getProxyInfo()
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1071,7 +1014,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.getProxyInfo().getResult();
       }
 
-      @Override
       public Map<InetSocketAddress, String> ping(String jvmRoute)
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1082,7 +1024,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.ping(jvmRoute).getResult();
       }
       
-      @Override
       protected void establishJvmRoute(Engine engine) throws Exception
       {
          super.establishJvmRoute(engine);
@@ -1091,7 +1032,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
 
-      @Override
       protected void removeAll(Engine engine)
       {
          super.removeAll(engine);
@@ -1100,7 +1040,6 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
       
-      @Override
       public void status(Engine engine)
       {
          this.checkInit();

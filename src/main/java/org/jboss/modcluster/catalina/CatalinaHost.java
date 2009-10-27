@@ -49,7 +49,6 @@ public class CatalinaHost implements Host
       this.engine = new CatalinaEngine((org.apache.catalina.Engine) host.getParent());
    }
    
-   @Override
    public Set<String> getAliases()
    {
       String name = this.host.getName();
@@ -72,26 +71,22 @@ public class CatalinaHost implements Host
       return hosts;
    }
 
-   @Override
    public Iterable<Context> getContexts()
    {
       final Iterator<Container> children = Arrays.asList(this.host.findChildren()).iterator();
       
       final Iterator<Context> contexts = new Iterator<Context>()
       {
-         @Override
          public boolean hasNext()
          {
             return children.hasNext();
          }
 
-         @Override
          public Context next()
          {
             return new CatalinaContext((org.apache.catalina.Context) children.next(), CatalinaHost.this);
          }
 
-         @Override
          public void remove()
          {
             children.remove();
@@ -100,7 +95,6 @@ public class CatalinaHost implements Host
       
       return new Iterable<Context>()
       {
-         @Override
          public Iterator<Context> iterator()
          {
             return contexts;
@@ -108,19 +102,16 @@ public class CatalinaHost implements Host
       };
    }
 
-   @Override
    public Engine getEngine()
    {
       return this.engine;
    }
 
-   @Override
    public String getName()
    {
       return this.host.getName();
    }
 
-   @Override
    public Context findContext(String path)
    {
       org.apache.catalina.Context context = (org.apache.catalina.Context) this.host.findChild(path);
@@ -128,7 +119,6 @@ public class CatalinaHost implements Host
       return (context != null) ? new CatalinaContext(context, this) : null;
    }
    
-   @Override
    public String toString()
    {
       return this.host.getName();

@@ -376,7 +376,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener
        * The background thread that listens for incoming Advertise packets
        * and hands them off to an appropriate AdvertiseEvent handler.
        */
-      @Override
       public void run()
       {
          DateFormat dateFormat = new SimpleDateFormat(RFC_822_FMT, Locale.US);

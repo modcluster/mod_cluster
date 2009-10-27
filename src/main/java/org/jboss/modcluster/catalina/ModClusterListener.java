@@ -136,7 +136,6 @@ public class ModClusterListener extends ModClusterConfig
     * {@inheritDoc}
     * @see org.apache.catalina.LifecycleListener#lifecycleEvent(org.apache.catalina.LifecycleEvent)
     */
-   @Override
    public void lifecycleEvent(LifecycleEvent event)
    {
       this.listener.lifecycleEvent(event);
@@ -240,79 +239,66 @@ public class ModClusterListener extends ModClusterConfig
       this.capacity = capacity;
    }
 
-   @Override
    public void addProxy(String host, int port)
    {
       this.service.addProxy(host, port);
    }
 
-   @Override
    public boolean disable()
    {
       return this.service.disable();
    }
 
-   @Override
    public boolean disableContext(String hostName, String contextPath)
    {
       return this.service.disableContext(hostName, contextPath);
    }
 
-   @Override
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
       return this.service.ping(jvmRoute);
    }
 
-   @Override
    public boolean enable()
    {
       return this.service.enable();
    }
 
-   @Override
    public boolean enableContext(String hostName, String contextPath)
    {
       return this.service.enableContext(hostName, contextPath);
    }
 
-   @Override
    public Map<InetSocketAddress, String> getProxyConfiguration()
    {
       return this.service.getProxyConfiguration();
    }
 
-   @Override
    public Map<InetSocketAddress, String> getProxyInfo()
    {
       return this.service.getProxyInfo();
    }
 
-   @Override
    public void refresh()
    {
       this.service.refresh();
    }
 
-   @Override
    public void removeProxy(String host, int port)
    {
       this.service.removeProxy(host, port);
    }
 
-   @Override
    public void reset()
    {
       this.service.reset();
    }
 
-   @Override
    public boolean stop(long timeout, TimeUnit unit)
    {
       return this.service.stop(timeout, unit);
    }
 
-   @Override
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {
       return this.service.stopContext(host, path, timeout, unit);

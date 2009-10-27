@@ -37,26 +37,22 @@ public class CatalinaServer implements Server
       this.server = server;
    }
 
-   @Override
    public Iterable<Engine> getEngines()
    {
       final Iterator<Service> services = Arrays.asList(this.server.findServices()).iterator();
       
       final Iterator<Engine> engines = new Iterator<Engine>()
       {
-         @Override
          public boolean hasNext()
          {
             return services.hasNext();
          }
 
-         @Override
          public Engine next()
          {
             return new CatalinaEngine((org.apache.catalina.Engine) services.next().getContainer());
          }
 
-         @Override
          public void remove()
          {
             services.remove();
@@ -65,7 +61,6 @@ public class CatalinaServer implements Server
       
       return new Iterable<Engine>()
       {
-         @Override
          public Iterator<Engine> iterator()
          {
             return engines;

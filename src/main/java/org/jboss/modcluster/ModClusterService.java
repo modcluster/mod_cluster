@@ -347,7 +347,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), this.getLoadBalanceFactor()));
    }
    
-   @Override
    public int getLoadBalanceFactor()
    {
       return this.loadBalanceFactorProvider.getLoadBalanceFactor();
@@ -541,7 +540,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       return this.mcmpHandler.isProxyHealthOK();
    }
 
-   @Override
    public boolean stop(long timeout, TimeUnit unit)
    {
       // Send DISABLE-APP * requests
@@ -576,7 +574,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       return true;
    }
 
-   @Override
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
    {      
       Context context = this.findContext(this.findHost(host), path);
@@ -607,13 +604,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          
       HttpSessionListener listener = new HttpSessionListener()
       {
-         @Override
          public void sessionCreated(HttpSessionEvent event)
          {
             // Ignore
          }
 
-         @Override
          public void sessionDestroyed(HttpSessionEvent event)
          {
             synchronized (context)
