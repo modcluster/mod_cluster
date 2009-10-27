@@ -21,6 +21,7 @@
  */
 package org.jboss.modcluster.mcmp;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -128,4 +129,10 @@ public interface MCMPHandler
     * @return true, if load balance factor calculation should be performed, false if it should be skipped
     */
    void status();
+
+   /**
+    * Return interface on which mod_cluster will communicate with proxies.
+    * @return a network interface address
+    */
+   InetAddress getLocalAddress() throws IOException;
 }

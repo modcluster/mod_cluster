@@ -26,7 +26,6 @@ import java.net.InetAddress;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.Connector;
-import org.jboss.modcluster.Utils;
 
 /**
  * {@link Connector} implementation that wraps a {@link org.apache.catalina.connector.Connector}.
@@ -100,7 +99,8 @@ public class CatalinaConnector implements Connector
     */
    public String toString()
    {
-      return this.getType() + "://" + Utils.identifyHost(this.getAddress()) + ":" + this.connector.getPort();
+      InetAddress address = this.getAddress();
+      return this.getType() + "://" + ((address != null) ? address.getHostAddress() : "<undefined>") + ":" + this.connector.getPort();
    }
 
    /**

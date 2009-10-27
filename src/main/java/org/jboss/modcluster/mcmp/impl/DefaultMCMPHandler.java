@@ -31,6 +31,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
@@ -338,6 +339,47 @@ public class DefaultMCMPHandler implements MCMPHandler
       }
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#getLocalAddress()
+    */
+   public InetAddress getLocalAddress() throws IOException
+   {
+      IOException firstException = null;
+      
+      Lock lock = this.proxiesLock.readLock();
+      lock.lock();
+      
+      try
+      {
+         for (Proxy proxy: this.proxies)
+         {
+            try
+            {
+               return proxy.getLocalAddress();
+            }
+            catch (IOException e)
+            {
+               // Cache the exception in case no other connection works,
+               // but keep trying
+               if (firstException == null)
+               {
+                  firstException = e;
+               }
+            }
+         }
+      }
+      finally
+      {
+         lock.unlock();
+      }
+      
+      if (firstException != null) throw firstException;
+
+      // We get here if there are no proxies
+      return null;
+   }
+
    private void status(boolean sendResetRequests)
    {
       this.processPendingDiscoveryEvents();
@@ -859,6 +901,11 @@ public class DefaultMCMPHandler implements MCMPHandler
          return this.writer;
       }
 
+      InetAddress getLocalAddress() throws IOException
+      {
+         return this.getConnection().getLocalAddress();
+      }
+      
       /**
        * Close connection.
        */

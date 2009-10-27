@@ -32,7 +32,6 @@ import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
-import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.MCMPRequest;
@@ -61,7 +60,7 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
          parameters.put("Reversed", "true");
       }
 
-      parameters.put("Host", Utils.identifyHost(connector.getAddress()));
+      parameters.put("Host", connector.getAddress().getHostAddress());
       parameters.put("Port", String.valueOf(connector.getPort()));
       parameters.put("Type", connector.getType().toString());
 

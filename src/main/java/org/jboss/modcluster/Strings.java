@@ -46,6 +46,7 @@ public enum Strings
    SHUTDOWN("modcluster.shutdown"),
    SINGLETON_IGNORE_STOP("modcluster.singleton.ignorestop"),
    DETECT_JVMROUTE("modcluster.detect.jvmRoute"),
+   DETECT_CONNECTOR_ADDRESS("modcluster.detect.connectorAddress"),
    DEPRECATED("modcluster.deprecated"),
    ENGINE_REMOVE_CRASHED("modcluster.engine.removeCrashed"),
    DRAIN_SESSIONS("modcluster.sessions.drain"),

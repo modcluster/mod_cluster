@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster.ha;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -360,6 +362,15 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
       log.warn(Strings.ERROR_STATUS_UNSUPPORTED.getString());
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#getLocalAddress()
+    */
+   public InetAddress getLocalAddress() throws IOException
+   {
+      return this.localHandler.getLocalAddress();
+   }
+
    private void sendDiscoveryEventToPartition(InetSocketAddress socketAddress, boolean addition)
    {
       synchronized (this.pendingDiscoveryEvents)

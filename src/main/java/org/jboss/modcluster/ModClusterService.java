@@ -230,6 +230,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
       try
       {
+         this.establishConnectorAddress(engine);
          this.establishJvmRoute(engine);
          
          MCMPRequest request = this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig);
@@ -238,9 +239,26 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
       catch (Exception e)
       {
-         mcmpHandler.markProxiesInError();
+         e.printStackTrace();
+         this.mcmpHandler.markProxiesInError();
          
          this.log.info(Strings.ERROR_ADDRESS_JVMROUTE.getString(), e);
+      }
+   }
+   
+   protected void establishConnectorAddress(Engine engine) throws IOException
+   {
+      Connector connector = engine.getProxyConnector();
+      InetAddress address = connector.getAddress();
+      
+      if ((address == null) || address.isAnyLocalAddress())
+      {
+         InetAddress localAddress = this.mcmpHandler.getLocalAddress();
+         InetAddress connectorAddress = (localAddress != null) ? localAddress : InetAddress.getLocalHost();
+         
+         connector.setAddress(connectorAddress);
+         
+         this.log.info(Strings.DETECT_CONNECTOR_ADDRESS.getString(engine, connectorAddress.getHostAddress()));
       }
    }
    
@@ -254,7 +272,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       {
          Connector connector = engine.getProxyConnector();
          
-         String jvmRoute = Utils.identifyHost(connector.getAddress()) + ":" + connector.getPort() + ":" + engine.getName();
+         String jvmRoute = connector.getAddress().getHostAddress() + ":" + connector.getPort() + ":" + engine.getName();
          
          engine.setJvmRoute(jvmRoute);
          

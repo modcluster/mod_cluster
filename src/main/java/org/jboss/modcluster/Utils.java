@@ -105,23 +105,6 @@ public class Utils
 
       return proxies;
    }
-
-   public static String identifyHost(InetAddress address)
-   {
-      if ((address != null) && !address.isAnyLocalAddress())
-      {
-         return address.getHostAddress();
-      }
-      
-      try
-      {
-         return InetAddress.getLocalHost().getHostName();
-      }
-      catch (UnknownHostException e)
-      {
-         return "127.0.0.1";
-      }
-   }
    
    private static InetSocketAddress parseSocketAddress(String addressPort, int defaultPort) throws UnknownHostException
    {
