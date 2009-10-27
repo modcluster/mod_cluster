@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.net.URISyntaxException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -422,7 +424,20 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
       // Send PING * request
-      return this.getProxyResults(this.requestFactory.createPingRequest(jvmRoute));
+      int protocolIndex = -1;
+      URI url = null;
+      if (jvmRoute != null)
+         protocolIndex = jvmRoute.indexOf("://");
+      if (protocolIndex == -1)
+         return this.getProxyResults(this.requestFactory.createPingRequest(jvmRoute));
+      else {
+         try {
+            url = new URI(jvmRoute);
+         } catch (URISyntaxException ex) {
+            return this.getProxyResults(this.requestFactory.createPingRequest((String)null));
+         }
+         return this.getProxyResults(this.requestFactory.createPingRequest(url));
+      }
    }
    
    private Map<InetSocketAddress, String> getProxyResults(MCMPRequest request)
