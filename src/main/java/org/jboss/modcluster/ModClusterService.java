@@ -195,8 +195,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    /**
-    * Send commands to the front end server associated with the shutdown of the
-    * node.
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Server)
     */
    public void stop(Server server)
    {
@@ -218,6 +218,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
+   /**
+    * Configures the specified engine.
+    * Sets suitable jvm route, if none specified.
+    * Sends CONFIG request.
+    * @param engine
+    */
    protected void config(Engine engine)
    {
       log.debug(Strings.ENGINE_CONFIG.getString(engine));
@@ -238,8 +244,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
-   /*
+   /**
     * If needed, create automagical JVM route (address + port + engineName)
+    * @param engine
     */
    protected void establishJvmRoute(Engine engine)
    {
@@ -255,6 +262,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#add(org.jboss.modcluster.Context)
+    */
    public void add(Context context)
    {
       this.checkInit();
@@ -273,6 +284,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Context)
+    */
    public void start(Context context)
    {
       this.checkInit();
@@ -288,6 +303,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Context)
+    */
    public void stop(Context context)
    {
       this.checkInit();
@@ -303,6 +322,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#remove(org.jboss.modcluster.Context)
+    */
    public void remove(Context context)
    {
       this.checkInit();
@@ -323,6 +346,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * Sends REMOVE-APP *, if engine was initialized
+    * @param engine
+    */
    protected void removeAll(Engine engine)
    {
       // JVMRoute can be null here if nothing was ever initialized
@@ -337,6 +364,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
 
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ContainerEventHandler#status(org.jboss.modcluster.Engine)
+    */
    public void status(Engine engine)
    {
       this.checkInit();
@@ -349,6 +380,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), this.getLoadBalanceFactor()));
    }
    
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
+    */
    public int getLoadBalanceFactor()
    {
       return this.loadBalanceFactorProvider.getLoadBalanceFactor();
@@ -469,8 +504,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    /**
-    * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
-    * be refreshed. To be used through JMX or similar.
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
     */
    public void reset()
    {
@@ -626,7 +661,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    /*
-    * Returns true, when the active session count is 0; or false, after timeout.
+    * Returns true, when the active session count reaches 0; or false, after timeout.
     */
    private boolean drainSessions(final Context context, long start, long end)
    {
@@ -691,6 +726,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
       catch (InterruptedException e)
       {
+         Thread.currentThread().interrupt();
          return false;
       }
       finally
