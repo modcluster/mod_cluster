@@ -12,8 +12,8 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>target/mod-cluster.sar</directory>
-      <outputDirectory>mod-cluster.sar</outputDirectory>
+      <directory>target/mod_cluster.sar</directory>
+      <outputDirectory>mod_cluster.sar</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>target/demo</directory>
