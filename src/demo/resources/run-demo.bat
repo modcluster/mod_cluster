@@ -1,5 +1,5 @@
 # TODO Make this dynamic as it is in the shell script
-set "CP=.\lib\mod-cluster-demo.jar;.\lib\jcommon.jar;.\lib\jfreechart.jar"
+set "CP=.\lib\mod_cluster-demo.jar;.\lib\jcommon.jar;.\lib\jfreechart.jar"
 
 set "OPTS=-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=31"
 

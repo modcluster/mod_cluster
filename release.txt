@@ -14,7 +14,7 @@ expat:v:1.95.8|cluster:t:mod_cluster/1.0.0.GA
 mod_cluster is a new httpd-based load balancer for use with JBoss AS, JBoss Web, and Tomcat.
 
 Get it here:
-http://www.jboss.org/mod_cluster/downloads/mod-cluster/
+http://www.jboss.org/mod_cluster/downloads/latest/
 
 Change log:
 http://www.jboss.org/mod_cluster/changelog.html

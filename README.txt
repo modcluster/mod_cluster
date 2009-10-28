@@ -1,4 +1,4 @@
-mod-cluster
+mod_cluster
 ===========
 
 Instructions
@@ -6,7 +6,7 @@ Instructions
 
 JBoss AS
 
-1. Copy the exploded sar "mod-cluster.sar" directory into the deploy directory
+1. Copy the exploded sar "mod_cluster.sar" directory into the deploy directory
    of a JBoss server profile.
 2. Modify the server.xml within jbossweb.sar and add a clustered mode engine
    listener as documented here:
@@ -15,7 +15,7 @@ JBoss AS
 
 JBoss Web
 
-1. Copy the jar file contained in the mod-cluster.sar directory into the lib
+1. Copy the jar file contained in the mod_cluster.sar directory into the lib
    directory of your JBoss Web installation.
 2. Copy the following dependency jars into the same lib directory:
 

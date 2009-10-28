@@ -22,7 +22,7 @@
   <property name="demo.output.classes" location="${demo.output}/classes"/>
   <property name="demo.output.client" location="${demo.output}/client"/>
   <property name="demo.output.server" location="${demo.output}/server"/>
-  <property name="demo.client.jar" value="mod-cluster-demo.jar"></property>
+  <property name="demo.client.jar" value="mod_cluster-demo.jar"></property>
   <property name="demo.server.war" value="load-demo.war"></property>
   <property name="demo.dependencies.lib" location="${module.output}/dependencies/lib"></property>
     

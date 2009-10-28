@@ -46,6 +46,6 @@
          <include name="jboss-logging-jdk.jar"/>
   	    </fileset>
   	  </copy>
-     <copy tofile="${out.lib}/mod-cluster.jar" file="${target.dir}/${mod-cluster.jar.name}.jar"/>
+     <copy tofile="${out.lib}/mod_cluster.jar" file="${target.dir}/${mod_cluster.jar.name}.jar"/>
   </target>
 </project>

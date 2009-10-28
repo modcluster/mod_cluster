@@ -98,7 +98,7 @@
   <property name="location.dependencies.lib.org.jboss.logging:jboss-logging-spi" value="${location.dependencies.lib}/jboss-logging-spi.jar" />
   <property name="location.apache.httpd" value="/usr/sbin"/>
   <property name="location.apache.serverroot" value="${user.home}/httpd"/>
-  <property name="location.apache.config" value="conf/mod-cluster-httpd.conf"/>
+  <property name="location.apache.config" value="conf/mod_cluster-httpd.conf"/>
   
   <path id="server.taskdef.classpath">
     <pathelement path="${location.dependencies.lib.jboss-test:jboss-test}"/>
@@ -111,7 +111,7 @@
   <import file="${location.dependencies.unpacked.jboss-test:jboss.test}/server-config.xml" />
 
   <!-- Module name(s) & version -->
-  <property name="module.name" value="mod-cluster" />
+  <property name="module.name" value="mod_cluster" />
   <property name="module.Name" value="JBoss Testsuite" />
   <property name="module.version" value="DEV" />
   <property name="module.source" value="${basedir}/src" />
@@ -127,7 +127,7 @@
   <property name="build.reports" value="${module.output}/reports"/>
   <property name="build.testlog" value="${module.output}/log"/>
   
-  <!-- Define common JVM Arguments for all mod-cluster JBossAS Runtimes -->
+  <!-- Define common JVM Arguments for all mod_cluster JBossAS Runtimes -->
   <property name="mod_cluster.jboss.jvmargs" value="-Xms128m -Xmx512m -XX:MaxPermSize=256m -Dorg.jboss.resolver.warning=true -Djava.net.preferIPv4Stack=true -Dresolve.dns=false" />
 
   <property name="junit.timeout" value="300000"/>
@@ -137,28 +137,28 @@
   -->
   <server:config javaHome="${env.JAVA_HOME}" jbossHome="${jboss.dist}" udpGroup="${udpGroup}">
 
-    <server name="mod-cluster-0" host="${node0}">
+    <server name="mod_cluster-0" host="${node0}">
       <jvmarg value="${mod_cluster.jboss.jvmargs}" />
       <sysproperty key="java.endorsed.dirs" value="${jboss.dist}/lib/endorsed" />
       <sysproperty key="jgroups.udp.ip_ttl" value="${jbosstest.udp.ip_ttl}" />
       <sysproperty key="jboss.messaging.ServerPeerID" value="0" />
     </server>
 
-    <server name="mod-cluster-1" host="${node1}">
+    <server name="mod_cluster-1" host="${node1}">
       <jvmarg value="${mod_cluster.jboss.jvmargs}" />
       <sysproperty key="java.endorsed.dirs" value="${jboss.dist}/lib/endorsed" />
       <sysproperty key="jgroups.udp.ip_ttl" value="${jbosstest.udp.ip_ttl}" />
       <sysproperty key="jboss.messaging.ServerPeerID" value="1" />
     </server>
 
-    <server name="mod-cluster-2" host="${node2}">
+    <server name="mod_cluster-2" host="${node2}">
       <jvmarg value="${mod_cluster.jboss.jvmargs}" />
       <sysproperty key="java.endorsed.dirs" value="${jboss.dist}/lib/endorsed" />
       <sysproperty key="jgroups.udp.ip_ttl" value="${jbosstest.udp.ip_ttl}" />
       <sysproperty key="jboss.messaging.ServerPeerID" value="2" />
     </server>
 
-    <server name="mod-cluster-3" host="${node3}">
+    <server name="mod_cluster-3" host="${node3}">
       <jvmarg value="${mod_cluster.jboss.jvmargs}" />
       <sysproperty key="java.endorsed.dirs" value="${jboss.dist}/lib/endorsed" />
       <sysproperty key="jgroups.udp.ip_ttl" value="${jbosstest.udp.ip_ttl}" />
@@ -213,7 +213,7 @@
     <attribute name="location" default="/usr/sbin"/>
     <attribute name="action-type" default="start"/>
     <attribute name="server-root"/>
-    <attribute name="config" default="conf/mod-cluster-httpd.conf"/>
+    <attribute name="config" default="conf/mod_cluster-httpd.conf"/>
     <attribute name="failonerror" default="true"/>
      
     <sequential>
@@ -288,9 +288,9 @@
     </condition>
     
     <echo message="Setting up httpd config in ${location.apache.serverroot}"/>
-    <create-httpd server-root="${location.apache.serverroot}" newconf-src="mod-cluster-httpd"/>
+    <create-httpd server-root="${location.apache.serverroot}" newconf-src="mod_cluster-httpd"/>
     
-    <create-config baseconf="all" newconf="mod-cluster-0" newconf-src="mod-cluster-jbossas">         
+    <create-config baseconf="all" newconf="mod_cluster-0" newconf-src="mod_cluster-jbossas">         
       <patternset id="jboss.server.all.includes">
         <include name="conf/**" />
         <include name="deploy/**" />
@@ -300,11 +300,11 @@
       </patternset>        
     </create-config>
     
-    <copy todir="${jboss.dist}/server/mod-cluster-0/deploy">
-      <fileset dir="${location.target}/mod-cluster.sar"></fileset>
+    <copy todir="${jboss.dist}/server/mod_cluster-0/deploy">
+      <fileset dir="${location.target}/mod_cluster.sar"></fileset>
     </copy>
     
-    <create-config baseconf="all" newconf="mod-cluster-1" newconf-src="mod-cluster-jbossas">        
+    <create-config baseconf="all" newconf="mod_cluster-1" newconf-src="mod_cluster-jbossas">        
       <patternset id="jboss.server.all.includes">
         <include name="conf/**" />
         <include name="deploy/**" />
@@ -314,16 +314,16 @@
       </patternset>
     </create-config>
     
-    <copy todir="${jboss.dist}/server/mod-cluster-1/deploy">
-      <fileset dir="${location.target}/mod-cluster.sar"></fileset>
+    <copy todir="${jboss.dist}/server/mod_cluster-1/deploy">
+      <fileset dir="${location.target}/mod_cluster.sar"></fileset>
     </copy>
     
     <!--httpd location="${location.apache.httpd}" server-root="${location.apache.serverroot}" 
            config="${location.apache.config}" action-type="start" /-->  
     
     
-    <server:start name="mod-cluster-0" />
-    <!--server:start name="mod-cluster-1" /-->
+    <server:start name="mod_cluster-0" />
+    <!--server:start name="mod_cluster-1" /-->
     
     <echo message="Nodes have started, waiting for cluster to stablize..." />
 
@@ -335,8 +335,8 @@
       <param name="tests-clustering-unit.failure.property" value="${apache.integration.junit.failure.property}"/>
     </antcall>
 
-    <server:stop name="mod-cluster-0" />
-    <!--server:stop name="mod-cluster-1" /-->
+    <server:stop name="mod_cluster-0" />
+    <!--server:stop name="mod_cluster-1" /-->
 
     <!--httpd location="${location.apache.httpd}" server-root="${location.apache.serverroot}" 
            config="${location.apache.config}" action-type="stop" /-->
@@ -425,8 +425,8 @@
       <param name="cluster.includes.refid" value="one.test.includes" />
       <param name="jboss-junit-configuration" value="${jboss-junit-configuration}" />
       <param name="jbosstest.cluster.web.cache.config" value="standard-session-cache" />
-      <param name="jbosstest.cluster.node0.config" value="mod-cluster-0" />
-      <param name="jbosstest.cluster.node1.config" value="mod-cluster-1" />
+      <param name="jbosstest.cluster.node0.config" value="mod_cluster-0" />
+      <param name="jbosstest.cluster.node1.config" value="mod_cluster-1" />
     </antcall>
 
   </target>

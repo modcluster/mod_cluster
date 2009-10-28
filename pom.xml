@@ -318,8 +318,8 @@
                 <configuration>
                   <artifactItems>
                     <artifactItem>
-                      <groupId>org.jboss.native</groupId>
-                      <artifactId>mod-cluster</artifactId>
+                      <groupId>org.jboss.mod_cluster</groupId>
+                      <artifactId>mod_cluster</artifactId>
                     </artifactItem>
                   </artifactItems>
                   <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
@@ -347,7 +347,7 @@
               
                     <!-- Create the JBossWeb-Tomcat install structure -->
                     <ant antfile="build-jbossweb.xml" target="all">
-                       <property name="mod-cluster.jar.name" value="${project.build.finalName}" />
+                       <property name="mod_cluster.jar.name" value="${project.build.finalName}" />
                     </ant>
                 
                     <!-- Execute the demo that require httpd -->
