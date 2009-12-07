@@ -217,14 +217,14 @@ public class ModClusterServiceTestCase
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
-      // Test null parameter
+      // Test no parameter
       EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
       EasyMock.expect(state.getSocketAddress()).andReturn(address);
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      Map<InetSocketAddress, String> result = this.service.ping(null);
+      Map<InetSocketAddress, String> result = this.service.ping();
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
@@ -233,39 +233,18 @@ public class ModClusterServiceTestCase
       
       EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);
       
-      // Test empty parameter
-      EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
+      // Test url scheme, host and port
+      
+      EasyMock.expect(this.requestFactory.createPingRequest("ajp", "127.0.0.1", 8009)).andReturn(request);
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
       EasyMock.expect(state.getSocketAddress()).andReturn(address);
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      result = this.service.ping("");
+      result = this.service.ping("ajp", "127.0.0.1", 8009);
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
-      Assert.assertEquals(1, result.size());
-      Assert.assertSame(pingResult, result.get(address));
-      
-      EasyMock.reset(this.mcmpHandler, this.requestFactory, state, request);
-      
-      // Test url parameter
-      Capture<URI> capturedURI = new Capture<URI>();
-      
-      EasyMock.expect(this.requestFactory.createPingRequest(EasyMock.capture(capturedURI))).andReturn(request);
-      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, pingResult));
-      EasyMock.expect(state.getSocketAddress()).andReturn(address);
-      
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
-      
-      result = this.service.ping("ajp://127.0.0.1:8009");
-      
-      EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
-      
-      URI uri = capturedURI.getValue();
-      Assert.assertEquals("ajp", uri.getScheme());
-      Assert.assertEquals("127.0.0.1", uri.getHost());
-      Assert.assertEquals(8009, uri.getPort());
       Assert.assertEquals(1, result.size());
       Assert.assertSame(pingResult, result.get(address));
       

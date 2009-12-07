@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import java.net.URI;
 import java.util.Set;
 
 import org.jboss.modcluster.Context;
@@ -141,7 +140,7 @@ public interface MCMPRequestFactory
     * @param uri specifies the protocol, host, and port of the connector on the target node
     * @return an MCMP request
     */
-   MCMPRequest createPingRequest(URI uri);
+   MCMPRequest createPingRequest(String scheme, String host, int port);
    
    /**
     * Create a REMOVE-APP request using the specified jvm route, aliases, and context path.

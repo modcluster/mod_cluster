@@ -128,19 +128,17 @@ public class TestPing extends TestCase {
         }
 
         // Ping using url
-        String url = "ajp://localhost:8011";
-        result = Maintest.doProxyPing(cluster, url);
+        result = Maintest.doProxyPing(cluster, "ajp", "localhost", 8011);
         if (result == null)
            fail("Maintest.doProxyPing failed");
         if (!Maintest.checkProxyPing(result))
-           fail("doProxyPing on " + url + " have failed");
+           fail("doProxyPing on " + "ajp://localhost:8011" + " have failed");
         // Try a not existing node.
-        url = "ajp://localhost:8012";
-        result = Maintest.doProxyPing(cluster, url);
+        result = Maintest.doProxyPing(cluster, "ajp", "localhost", 8012);
         if (result == null)
            fail("Maintest.doProxyPing failed");
         if (Maintest.checkProxyPing(result))
-           fail("doProxyPing on " + url + " should have failed");
+           fail("doProxyPing on " + "ajp://localhost:8012" + " should have failed");
         // Try a timeout node.
         try {
         ServerSocket sock = new ServerSocket(8012);
@@ -154,12 +152,11 @@ public class TestPing extends TestCase {
         if (tries == 20) {
             fail("can't find proxy");
         }
-        url = "ajp://localhost:8012";
-        result = Maintest.doProxyPing(cluster, url);
+        result = Maintest.doProxyPing(cluster, "ajp", "localhost", 8012);
         if (result == null)
            fail("Maintest.doProxyPing failed");
         if (Maintest.checkProxyPing(result))
-           fail("doProxyPing on " + url + " should have failed");
+           fail("doProxyPing on " + "ajp://localhost:8012" + " should have failed");
 
         // Stop the jboss and remove the services.
         try {

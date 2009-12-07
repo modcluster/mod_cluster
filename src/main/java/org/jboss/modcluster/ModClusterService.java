@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.net.URISyntaxException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -473,32 +471,29 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
    /**
     * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping()
+    */
+   public Map<InetSocketAddress, String> ping()
+   {
+      MCMPRequest request = this.requestFactory.createPingRequest();
+      return this.getProxyResults(request); 
+   }
+   /**
+    * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
     */
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
-      MCMPRequest request = null;
-      
-      if ((jvmRoute == null) || (jvmRoute.length() == 0))
-      {
-         request = this.requestFactory.createPingRequest();
-      }
-      else if (!jvmRoute.contains("://"))
-      {
-         request = this.requestFactory.createPingRequest(jvmRoute);
-      }
-      else
-      {
-         try
-         {
-            request = this.requestFactory.createPingRequest(new URI(jvmRoute));
-         }
-         catch (URISyntaxException e)
-         {
-            throw new IllegalArgumentException(e);
-         }
-      }
-      
+      MCMPRequest request = this.requestFactory.createPingRequest(jvmRoute);
+      return this.getProxyResults(request);
+   }
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String, java.lang.String, int)
+    */
+   public Map<InetSocketAddress, String> ping(String scheme, String host, int port)
+   {
+      MCMPRequest request = this.requestFactory.createPingRequest(scheme, host, port);
       return this.getProxyResults(request);
    }
    

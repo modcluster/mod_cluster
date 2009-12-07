@@ -257,18 +257,10 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
 
    /**
     * {@inhericDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.net.URI)
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.lang.String, java.lang.String, int)
     */
-   public MCMPRequest createPingRequest(URI uri)
+   public MCMPRequest createPingRequest(String scheme, String host, int port)
    {
-      String scheme = uri.getScheme();
-      String host = uri.getHost();
-      int port = uri.getPort();
-      if (port < 0)
-      {
-         port = Connector.Type.valueOf(scheme.toUpperCase()).getDefaultPort();
-      }
-      
       Map<String, String> parameters = new TreeMap<String, String>();
       parameters.put("Scheme", scheme);
       parameters.put("Host", host);

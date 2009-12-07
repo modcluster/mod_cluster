@@ -389,9 +389,7 @@ public class DefaultMCMPRequestFactoryTestCase
    @Test
    public void createURIPingRequest() throws URISyntaxException
    {
-      URI uri = new URI("ajp://localhost:8009");
-      
-      MCMPRequest request = this.factory.createPingRequest(uri);
+      MCMPRequest request = this.factory.createPingRequest("ajp", "localhost", 8009);
       
       Assert.assertSame(MCMPRequestType.PING, request.getRequestType());
       Assert.assertFalse(request.isWildcard());

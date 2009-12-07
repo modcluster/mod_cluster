@@ -82,23 +82,34 @@ public interface ModClusterServiceMBean
     * @return a map of INFO_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> getProxyInfo();
+
+   /**
+    * Ping httpd.
+    * determines whether each proxy is accessible and healthy.
+    * returning the PING_RSP grouped by proxy address.
+    * @return a map of PING_RSP responses, grouped by proxy
+    */
+   Map<InetSocketAddress, String> ping();
    
    /**
     * Ping a node from httpd.
     * returning the PING_RSP grouped by proxy address.
-    * Behavior of ping is determined by the supplied parameter:
-    * <dl>
-    *  <dt>null</dt>
-    *  <dd>determines whether each proxy is accessible and healthy</dd>
-    *  <dt>a url of the form: protocol://host:port</dt>
-    *  <dd>determines whether a node (not necessarily configured) with the matching connector is accessible from each proxy</dd>
-    *  <dt>a non-url</dt>
-    *  <dd>determines whether the node configured with the specified jvm route is accessible from each proxy</dd>
-    * </ul>
-    * @param jvmRoute a jvm route, a url, or null
+    * determines whether the node configured with the specified jvm route is accessible from each proxy
+    * returning the PING_RSP grouped by proxy address.
+    * @param jvmRoute a jvm route.
     * @return a map of PING_RSP responses, grouped by proxy
     */
    Map<InetSocketAddress, String> ping(String jvmRoute);
+
+   /**
+    * Ping a node defined protocol, host and port from httpd.
+    * determines whether a node (not necessarily configured) with the matching connector is accessible from each proxy
+    * @param scheme (ajp, http or https)
+    * @param hostname (name or ip of a the host)
+    * @param port
+    * @return a map of PING_RSP responses, grouped by proxy
+    */
+   Map<InetSocketAddress, String> ping(String scheme, String hostname, int port);
 
    /**
     * Reset a DOWN connection to the proxy up to ERROR, where the configuration will

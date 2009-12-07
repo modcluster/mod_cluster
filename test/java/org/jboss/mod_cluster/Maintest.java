@@ -214,6 +214,21 @@ public class Maintest extends TestCase {
         }
         return result;
     }
+    static String doProxyPing(LifecycleListener lifecycle, String scheme, String host, int port) {
+        String result = null;
+        if (isJBossWEB) {
+            ClusterListener jcluster = (ClusterListener) lifecycle;
+            result = jcluster.doProxyPing(scheme, host, port);
+        } else {
+            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            Map<InetSocketAddress, String> map = pcluster.ping(scheme, host, port);
+            if (map.isEmpty())
+                return null;
+            Object results[] = map.values().toArray();
+            result = (String ) results[0];
+        }
+        return result;
+    }
     /* Analyse the PING-RSP message: Type=PING-RSP&State=OK&id=1 */
     static boolean checkProxyPing(String result) {
         String [] records = result.split("\n");
