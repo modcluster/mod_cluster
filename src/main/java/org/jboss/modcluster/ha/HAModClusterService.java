@@ -331,11 +331,29 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
 
    /**
     * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping()
+    */
+   public Map<InetSocketAddress, String> ping()
+   {
+      return this.service.ping();
+   }
+
+   /**
+    * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
     */
    public Map<InetSocketAddress, String> ping(String jvmRoute)
    {
       return this.service.ping(jvmRoute);
+   }
+
+   /**
+    * {@inhericDoc}
+    * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String, java.lang.String, int)
+    */
+   public Map<InetSocketAddress, String> ping(String scheme, String hostname, int port)
+   {
+      return this.service.ping(scheme, hostname, port);
    }
 
    /**
