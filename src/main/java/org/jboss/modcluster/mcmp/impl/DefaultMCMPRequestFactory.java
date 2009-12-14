@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster.mcmp.impl;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -243,7 +242,7 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
     */
    public MCMPRequest createPingRequest()
    {
-      return this.createPingRequest((String) null);
+      return new DefaultMCMPRequest(MCMPRequestType.PING, false, null, Collections.<String, String>emptyMap());
    }
    
    /**
