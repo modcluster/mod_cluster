@@ -125,19 +125,6 @@
     <url-pattern>/cpu</url-pattern>
   </servlet-mapping>
   
-  <servlet>
-    <servlet-name>threads</servlet-name>
-    <servlet-class>org.jboss.modcluster.demo.servlet.ThreadCountLoadServlet</servlet-class>
-    <init-param>
-      <param-name>count</param-name>
-      <param-value>50</param-value>
-    </init-param>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>threads</servlet-name>
-    <url-pattern>/threads</url-pattern>
-  </servlet-mapping>
-  
   <session-config>
     <session-timeout>1</session-timeout>
   </session-config>
