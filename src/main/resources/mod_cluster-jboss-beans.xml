@@ -17,10 +17,10 @@
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)</annotation>
     <constructor>
       <parameter><inject bean="ModClusterConfig"/></parameter>
-      <parameter><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
+      <parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
     </constructor>
   </bean>
-        
+  
   <!-- The core mod_cluster service, implemented as an HA singleton -->
   <bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)</annotation>
