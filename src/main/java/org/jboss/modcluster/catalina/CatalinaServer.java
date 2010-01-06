@@ -80,6 +80,22 @@ public class CatalinaServer implements Server
       };
    }
    
+   @Override
+   public boolean equals(Object object)
+   {
+      if ((object == null) || !(object instanceof CatalinaServer)) return false;
+      
+      CatalinaServer server = (CatalinaServer) object;
+      
+      return this.server == server.server;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.server.hashCode();
+   }
+
    /**
     * {@inhericDoc}
     * @see java.lang.Object#toString()

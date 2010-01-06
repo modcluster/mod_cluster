@@ -136,6 +136,22 @@ public class CatalinaContext implements Context
       }
    }
 
+   @Override
+   public boolean equals(Object object)
+   {
+      if ((object == null) || !(object instanceof CatalinaContext)) return false;
+      
+      CatalinaContext context = (CatalinaContext) object;
+      
+      return this.context == context.context;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.context.hashCode();
+   }
+
    /**
     * {@inhericDoc}
     * @see java.lang.Object#toString()

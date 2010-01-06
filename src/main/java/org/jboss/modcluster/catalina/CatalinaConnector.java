@@ -93,6 +93,22 @@ public class CatalinaConnector implements Connector
       return Boolean.TRUE.equals(IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "reverseConnection"));
    }
    
+   @Override
+   public boolean equals(Object object)
+   {
+      if ((object == null) || !(object instanceof CatalinaConnector)) return false;
+      
+      CatalinaConnector connector = (CatalinaConnector) object;
+      
+      return this.connector == connector.connector;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.connector.hashCode();
+   }
+
    /**
     * {@inhericDoc}
     * @see java.lang.Object#toString()

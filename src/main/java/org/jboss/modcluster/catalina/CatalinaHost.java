@@ -151,6 +151,22 @@ public class CatalinaHost implements Host
       return (context != null) ? new CatalinaContext(context, this) : null;
    }
    
+   @Override
+   public boolean equals(Object object)
+   {
+      if ((object == null) || !(object instanceof CatalinaHost)) return false;
+      
+      CatalinaHost host = (CatalinaHost) object;
+      
+      return this.host == host.host;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.host.hashCode();
+   }
+
    /**
     * {@inhericDoc}
     * @see java.lang.Object#toString()

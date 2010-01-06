@@ -160,6 +160,22 @@ public class CatalinaEngine implements Engine
       return (host != null) ? new CatalinaHost(host, this) : null;
    }
 
+   @Override
+   public boolean equals(Object object)
+   {
+      if ((object == null) || !(object instanceof CatalinaEngine)) return false;
+      
+      CatalinaEngine engine = (CatalinaEngine) object;
+      
+      return this.engine == engine.engine;
+   }
+
+   @Override
+   public int hashCode()
+   {
+      return this.engine.hashCode();
+   }
+
    /**
     * {@inhericDoc}
     * @see java.lang.Object#toString()
