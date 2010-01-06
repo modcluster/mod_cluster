@@ -74,7 +74,7 @@ static char *ma_advertise_skey = NULL;
 static int   ma_bind_set  = 0;
 static char *ma_bind_adrs = NULL;
 static char *ma_bind_adsi = NULL;
-static apr_port_t ma_bind_port = 0;
+static apr_port_t ma_bind_port = MA_DEFAULT_ADVPORT;
 
 static ma_advertise_srv_t  ma_advs_server;
 
