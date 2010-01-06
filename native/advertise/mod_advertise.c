@@ -796,7 +796,7 @@ static void *create_advertise_server_config(apr_pool_t *p, server_rec *s)
     mconf->ma_bind_set  = 0;
     mconf->ma_bind_adrs = NULL;
     mconf->ma_bind_adsi = NULL;
-    mconf->ma_bind_port = 0;
+    mconf->ma_bind_port = MA_DEFAULT_ADVPORT;
 
     mconf->ma_advertise_port = MA_DEFAULT_ADVPORT;
     mconf->ma_advertise_srvp = 0;
