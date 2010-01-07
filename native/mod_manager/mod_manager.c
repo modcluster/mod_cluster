@@ -1329,7 +1329,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
      * and update the worker status and load factor acccording to the test result.
      */
     ap_set_content_type(r, "text/plain");
-    ap_rprintf(r, "Type=STATUS-RSP&JVMRoute=%,*s", sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute);
+    ap_rprintf(r, "Type=STATUS-RSP&JVMRoute=%.*s", sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute);
 
     if (isnode_up(r, node->mess.id, Load) != OK)
         ap_rprintf(r, "&State=NOTOK");
