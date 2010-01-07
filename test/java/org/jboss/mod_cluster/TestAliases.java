@@ -55,7 +55,7 @@ public class TestAliases extends TestCase {
         LifecycleListener cluster = null;
         System.out.println("TestAliases Started");
         try {
-            String [] Aliases = new String[2];
+            String [] Aliases = new String[10];
             /* HOSTALIASZ is 40 that should be enough */
             Aliases[0] = "alias0";
             Aliases[1] = "alias1";
