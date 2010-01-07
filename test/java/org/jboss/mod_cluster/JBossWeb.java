@@ -98,8 +98,7 @@ public class JBossWeb extends Embedded {
         copyFiles(in, ou);
     }
 
-    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
-
+    public JBossWeb(String route, String host, boolean nat, String webapp, String[] Aliases) throws IOException {
         // Copy native tree...
         if (nat) {
             copyNativeDir(route);
@@ -150,6 +149,11 @@ public class JBossWeb extends Embedded {
         stdhost.setDeployXML(true);
         stdhost.setConfigClass("org.apache.catalina.startup.ContextConfig");
         stdhost.setUnpackWARs(true);
+        if (Aliases != null && Aliases.length>0) {
+            for (int j = 0; j < Aliases.length; j++) {
+                stdhost.addAlias(Aliases[j]);    
+            }
+        }
         HostConfig hostConfig = new HostConfig();
         stdhost.addLifecycleListener(hostConfig);
         baseEngine.addChild( baseHost );
@@ -187,6 +191,9 @@ public class JBossWeb extends Embedded {
     }
     public JBossWeb(String route, String host, String webapp) throws IOException {
         this(route, host, false, webapp);
+    }
+    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
+        this(route, host, nat, webapp, null);
     }
 
 
