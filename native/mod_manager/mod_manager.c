@@ -877,9 +877,9 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         balancerinfo_t *ou;
         if (get_balancer(balancerstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "balancer: [%d] Name: %s Sticky: %d [%s]/[%s] remove: %d force: %d Timeout: %d Maxtry: %d\n",
-                   id[i], ou->balancer, ou->StickySession,
-                   ou->StickySessionCookie, ou->StickySessionPath,
+        ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d Maxtry: %d\n",
+                   id[i], sizeof(ou->balancer), ou->balancer, ou->StickySession,
+                   sizeof(ou->StickySessionCookie), ou->StickySessionCookie, sizeof(ou->StickySessionPath), ou->StickySessionPath,
                    ou->StickySessionRemove, ou->StickySessionForce, ou->Timeout,
                    ou->Maxattempts);
     }
@@ -891,9 +891,14 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         nodeinfo_t *ou;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "node: [%d:%d],Balancer: %s,JVMRoute: %s,Domain: [%s],Host: %s,Port: %s,Type: %s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
-                   id[i], ou->mess.id, ou->mess.balancer, ou->mess.JVMRoute, ou->mess.Domain,
-                   ou->mess.Host, ou->mess.Port, ou->mess.Type,
+        ap_rprintf(r, "node: [%d:%d],Balancer: %.*s,JVMRoute: %.*s,Domain: [%.*s],Host: %.*s,Port: %.*s,Type: %.*s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
+                   id[i], ou->mess.id,
+                   sizeof(ou->mess.balancer), ou->mess.balancer,
+                   sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                   sizeof(ou->mess.Domain), ou->mess.Domain,
+                   sizeof(ou->mess.Host), ou->mess.Host,
+                   sizeof(ou->mess.Port), ou->mess.Port,
+                   sizeof(ou->mess.Type), ou->mess.Type,
                    ou->mess.flushpackets, ou->mess.flushwait/1000, (int) apr_time_sec(ou->mess.ping), ou->mess.smax,
                    (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
     }
@@ -905,7 +910,7 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "host: %d [%s] vhost: %d node: %d\n", id[i], ou->host, ou->vhost,
+        ap_rprintf(r, "host: %d [%.*s] vhost: %d node: %d\n", id[i], sizeof(ou->host), ou->host, ou->vhost,
                   ou->node);
     }
 
@@ -916,7 +921,8 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         contextinfo_t *ou;
         if (get_context(contextstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "context: %d [%s] vhost: %d node: %d status: %d\n", id[i], ou->context,
+        ap_rprintf(r, "context: %d [%.*s] vhost: %d node: %d status: %d\n", id[i],
+                   sizeof(ou->context), ou->context,
                    ou->vhost, ou->node,
                    ou->status);
     }
@@ -942,9 +948,14 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         char *flushpackets;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "Node: [%d],Name: %s,Balancer: %s,Domain: %s,Host: %s,Port: %s,Type: %s",
-                   id[i], ou->mess.JVMRoute, ou->mess.balancer, ou->mess.Domain,
-                   ou->mess.Host, ou->mess.Port, ou->mess.Type);
+        ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,Domain: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
+                   id[i],
+                   sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                   sizeof(ou->mess.balancer), ou->mess.balancer,
+                   sizeof(ou->mess.Domain), ou->mess.Domain,
+                   sizeof(ou->mess.Host), ou->mess.Host,
+                   sizeof(ou->mess.Port), ou->mess.Port,
+                   sizeof(ou->mess.Type), ou->mess.Type);
         flushpackets = "Off";
         switch (ou->mess.flushpackets) {
             case flush_on:
@@ -971,8 +982,8 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "Vhost: [%d:%d:%d], Alias: %s\n",
-                   ou->node, ou->vhost, id[i], ou->host);
+        ap_rprintf(r, "Vhost: [%d:%d:%d], Alias: %.*s\n",
+                   ou->node, ou->vhost, id[i], sizeof(ou->host), ou->host);
     }
 
     /* Process the Contexts */
@@ -996,9 +1007,9 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
                 status = "STOPPED";
                 break;
         }
-        ap_rprintf(r, "Context: [%d:%d:%d], Context: %s, Status: %s\n",
+        ap_rprintf(r, "Context: [%d:%d:%d], Context: %.*s, Status: %s\n",
                    ou->node, ou->vhost, id[i],
-                   ou->context,
+                   sizeof(ou->context), ou->context,
                    status);
     }
     return NULL;
@@ -1136,9 +1147,16 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
 
     /* Read the ID of the virtual host corresponding to the first Alias */
     hostinfo.node = node->mess.id;
-    if (vhost->host != NULL)
-        strcpy(hostinfo.host, vhost->host);
-    else
+    if (vhost->host != NULL) {
+        char *s = hostinfo.host;
+        int j = 1;
+        strncpy(hostinfo.host, vhost->host, sizeof(hostinfo.host));
+        while (*s != ',' && j<sizeof(hostinfo.host)) {
+           j++;
+           s++;
+        }
+        *s = '\0';
+    } else
         hostinfo.host[0] = '\0';
 
     hostinfo.id = 0;
@@ -1151,6 +1169,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         /* If the Host doesn't exist yet create it */
         insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid);
         hostinfo.id = 0;
+        hostinfo.node = node->mess.id;
         if (vhost->host != NULL)
             strcpy(hostinfo.host, vhost->host);
         else
@@ -1259,7 +1278,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
      * and update the worker status and load factor acccording to the test result.
      */
     ap_set_content_type(r, "text/plain");
-    ap_rprintf(r, "Type=STATUS-RSP&JVMRoute=%s", nodeinfo.mess.JVMRoute);
+    ap_rprintf(r, "Type=STATUS-RSP&JVMRoute=%.*s", sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute);
 
     if (isnode_up(r, node->mess.id, Load) != OK)
         ap_rprintf(r, "&State=NOTOK");
@@ -1412,7 +1431,11 @@ static int manager_trans(request_rec *r)
 /* Create the commands that are possible on the context */
 static char*context_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
 {
-    char *raw = apr_pstrcat(r->pool, "JVMRoute=", JVMRoute, "&Alias=", Alias, "&Context=", ou->context, NULL);
+    char context[sizeof(ou->context)+1];
+    char *raw;
+    context[sizeof(ou->context)] = '\0';
+    strncpy(context, ou->context, sizeof(ou->context));
+    raw = apr_pstrcat(r->pool, "JVMRoute=", JVMRoute, "&Alias=", Alias, "&Context=", context, NULL);
     return raw;
 }
 static void context_command_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
@@ -1481,7 +1504,7 @@ static void manager_info_contexts(request_rec *r, int node, int host, char *Alia
                 status = "STOPPED";
                 break;
         }
-        ap_rprintf(r, "%s, Status: %s ", ou->context, status);
+        ap_rprintf(r, "%.*s, Status: %s ", sizeof(ou->context), ou->context, status);
         context_command_string(r, ou, Alias, JVMRoute);
         ap_rprintf(r, "\n");
     }
@@ -1514,7 +1537,7 @@ static void manager_info_hosts(request_rec *r, int node, char *JVMRoute)
             ap_rprintf(r, "<pre>");
             vhost = ou->vhost;
         }
-        ap_rprintf(r, "%s\n", ou->host);
+        ap_rprintf(r, "%.*s\n", sizeof(ou->host), ou->host);
     }
     ap_rprintf(r, "</pre>");
 
@@ -1534,7 +1557,7 @@ static void manager_sessionid(request_rec *r)
         sessionidinfo_t *ou;
         if (get_sessionid(sessionidstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "id: %s route: %s\n", ou->sessionid, ou->JVMRoute);
+        ap_rprintf(r, "id: %.*s route: %.*s\n", sizeof(ou->sessionid), ou->sessionid, sizeof(ou->JVMRoute), ou->JVMRoute);
     }
     ap_rprintf(r, "</pre>");
 
@@ -1556,7 +1579,10 @@ static void manager_domain(request_rec *r)
         domaininfo_t *ou;
         if (get_domain(domainstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "dom: %s route: %s balancer: %s\n", ou->domain, ou->JVMRoute, ou->balancer);
+        ap_rprintf(r, "dom: %.*s route: %.*s balancer: %.*s\n",
+                   sizeof(ou->domain), ou->domain,
+                   sizeof(ou->JVMRoute), ou->JVMRoute,
+                   sizeof(ou->balancer), ou->balancer);
     }
     ap_rprintf(r, "</pre>");
 
@@ -1806,20 +1832,24 @@ static int manager_info(request_rec *r)
         nodeinfo_t *ou = &nodes[i];
 
         if (strcmp(domain, ou->mess.Domain) != 0) {
-            ap_rprintf(r, "<h1> Domain %s: ", ou->mess.Domain);
+            ap_rprintf(r, "<h1> Domain %.*s: ", sizeof(ou->mess.Domain), ou->mess.Domain);
             domain = ou->mess.Domain;
             domain_command_string(r, ENABLED, domain);
             domain_command_string(r, DISABLED, domain);
             ap_rprintf(r, "</h1>\n");
         }
-        ap_rprintf(r, "<h1> Node %s (%s://%s:%s): </h1>\n",
-                   ou->mess.JVMRoute, ou->mess.Type, ou->mess.Host, ou->mess.Port);
+        ap_rprintf(r, "<h1> Node %.*s (%.*s://%.*s:%.*s): </h1>\n",
+                   sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                   sizeof(ou->mess.Type), ou->mess.Type,
+                   sizeof(ou->mess.Host), ou->mess.Host,
+                   sizeof(ou->mess.Port), ou->mess.Port);
 
         node_command_string(r, ENABLED, ou->mess.JVMRoute);
         node_command_string(r, DISABLED, ou->mess.JVMRoute);
         ap_rprintf(r, "<br/>\n");
 
-        ap_rprintf(r, "Balancer: %s,Domain: %s", ou->mess.balancer, ou->mess.Domain);
+        ap_rprintf(r, "Balancer: %.*s,Domain: %.*s", sizeof(ou->mess.balancer), ou->mess.balancer,
+                   sizeof(ou->mess.Domain), ou->mess.Domain);
 
         flushpackets = "Off";
         switch (ou->mess.flushpackets) {
