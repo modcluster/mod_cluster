@@ -218,7 +218,7 @@ public class Maintest extends TestCase {
         String result = null;
         if (isJBossWEB) {
             ClusterListener jcluster = (ClusterListener) lifecycle;
-            result = jcluster.doProxyPing(scheme, host, port);
+            result = jcluster.doProxyPing(scheme + "://" + host + String.valueOf(port));
         } else {
             org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.ping(scheme, host, port);
