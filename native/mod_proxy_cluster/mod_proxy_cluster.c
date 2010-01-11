@@ -470,7 +470,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
 
         if (!balancer && (creat_bal == CREAT_NONE ||
-            creat_bal == CREAT_ROOT && s!=main_server)) {
+            (creat_bal == CREAT_ROOT && s!=main_server))) {
             s = s->next;
             continue;
         }
