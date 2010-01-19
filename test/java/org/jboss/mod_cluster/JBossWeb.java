@@ -46,6 +46,8 @@ import org.apache.catalina.LifecycleListener;
 
 public class JBossWeb extends Embedded {
 
+    private String route = null;
+
     private void copyFile(File in, File out) throws IOException {
         FileInputStream fis  = new FileInputStream(in);
         FileOutputStream fos = new FileOutputStream(out);
@@ -106,6 +108,7 @@ public class JBossWeb extends Embedded {
 
         setCatalinaBase(route);
         setCatalinaHome(route);
+        this.route = route;
 
         //Create an Engine
         Engine baseEngine = createEngine();
@@ -170,9 +173,16 @@ public class JBossWeb extends Embedded {
         addEngine( baseEngine );
         baseEngine.setService(this);
         this.setName(host + "Engine" + route);
+        setRedirectStreams(false);
     }
     void AddContext(String path, String docBase) {
+        File fd = new File ( route + "/webapps/" + docBase);
+        fd.mkdirs();
+        docBase = fd.getAbsolutePath();
+
         Context context = createContext(path, docBase);
+        context.setIgnoreAnnotations(true);
+        context.setPrivileged(true);
         Engine engine = (Engine) getContainer();
         Container[] containers = engine.findChildren();
         for (int j = 0; j < containers.length; j++) {
