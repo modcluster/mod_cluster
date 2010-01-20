@@ -276,6 +276,7 @@ cat >> "$file.new" <<EOF
     MaxKeepAliveRequests 0
     ServerAdvertise on http://@IP@:6666
     AdvertiseFrequency 5
+    AdvertiseSecurityKey secret
     AdvertiseGroup @ADVIP@:23364
 
     <Location /mod_cluster_manager>

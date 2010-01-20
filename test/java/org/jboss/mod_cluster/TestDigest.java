@@ -42,7 +42,9 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestDigest extends TestCase {
 
-    /* Test that the sessions are really sticky */
+    /* Test Digest that is working
+     * That needs something like AdvertiseSecurityKey secret in httpd.conf
+     */
     public void testDigest() {
 
         boolean clienterror = false;

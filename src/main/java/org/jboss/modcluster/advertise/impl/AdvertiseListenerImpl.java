@@ -27,6 +27,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -124,6 +125,14 @@ public class AdvertiseListenerImpl implements AdvertiseListener
       this.advertisePort = (port > 0) ? port : DEFAULT_PORT;
       
       this.securityKey = config.getAdvertiseSecurityKey();
+      if (this.securityKey != null && this.md == null)
+      {
+         try {
+            this.md = MessageDigest.getInstance("MD5");
+         } catch (NoSuchAlgorithmException ex) {
+            throw new IOException("can't create MD: NoSuchAlgorithmException");
+         }
+      }
       
       String advertiseInterface = config.getAdvertiseInterface();
       this.socketInterface = (advertiseInterface != null) ? InetAddress.getByName(advertiseInterface) : null;
@@ -290,7 +299,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
    {
       if (this.md == null) return true;
       if (this.securityKey == null) return true; // Not set: No used
-      
+
       this.md.reset();
       digestString(this.md, this.securityKey);
       byte[] ssalt = this.md.digest();

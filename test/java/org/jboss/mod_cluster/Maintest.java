@@ -98,6 +98,10 @@ public class Maintest extends TestCase {
             System.gc();
             suite.addTest(new TestSuite(TestContexts.class));
             System.gc();
+            suite.addTest(new TestSuite(TestAliases.class));
+            System.gc();
+            suite.addTest(new TestSuite(TestDigest.class));
+            System.gc();
             /* XXX The JBWEB_117 tests are not really related to mod_cluster
              * Run them one by one using ant one -Dtest=test
             suite.addTest(new TestSuite(TestJBWEB_117.class));
