@@ -1081,6 +1081,9 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
             int j;
             int sizecontext = context_storage->get_max_size_context();
             int *contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
+            int *root =  apr_palloc(r->pool, sizeof(int)*sizevhost);
+            int froot = 0;
+            int hasnonroot = 0;
 
             /* Check the virtual host */
             if (use_alias) {
@@ -1111,8 +1114,14 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
 
                 /* check for /context[/] in the URL */
                 len = strlen(context->context);
+                if (len==1 && context->context[0] == '/' && froot<sizevhost) {
+                    root[froot] = contexts[j];
+                    froot++;
+                    continue;
+                }
                 if (strncmp(r->uri, context->context, len) == 0) {
-                    if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
+                    if (r->uri[len] == '\0' || r->uri[len] == '/') {
+                        hasnonroot = 1;
                         /* Check status */
                         switch (context->status)
                         {
@@ -1133,7 +1142,30 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
                     }
                 } 
             }
-        
+            /* Check ROOT contexts at last */
+            if (hasnonroot)
+                continue;
+            for (j=0; j<froot; j++) {
+                contextinfo_t *context;
+                context_storage->read_context(root[j], &context);
+                /* Check status */
+                switch (context->status)
+                {
+                  case ENABLED: 
+                        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                                 "get_balancer_by_node found context %s", context->context);
+                    return node->mess.balancer;
+                    break;
+                  case DISABLED:
+                    /* Only the request with sessionid ok for it */
+                    if (hassession_byname(r, node->mess.balancer, conf, NULL)) {
+                        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                                     "get_balancer_by_node found (DISABLED) context %s", context->context);
+                        return node->mess.balancer;
+                    }
+                    break;
+                }
+            }
         }
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
