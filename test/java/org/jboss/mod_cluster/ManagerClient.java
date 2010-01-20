@@ -106,26 +106,22 @@ public class  ManagerClient {
                 }
                 bm.releaseConnection();
         }
-        public void disable(String string) throws Exception {
-            String DURL = URL + "?nonce=" + nonce + "&Cmd=DISABLE-APP&Range=NODE&JVMRoute=" + string;
-            GetMethod gm = new GetMethod(DURL);
-            try {
-                httpResponseCode = httpClient.executeMethod(gm);
-
-                if (httpResponseCode == 200) {
-                    gm.releaseConnection();
-                    return;
-                }
-            } catch (HttpException e) {
-                    System.out.println("error: " + e);
-                    throw(e);
-            }
-            gm.releaseConnection();
-            throw(new Exception("Reponse notok"));
-
+        /*
+         * Disable a Node
+         */
+        public void disable(String node) throws Exception {
+            String DURL = URL + "?nonce=" + nonce + "&Cmd=DISABLE-APP&Range=NODE&JVMRoute=" + node;
+            DoCmd(DURL);
         }
-        public String getProxyInfo() throws Exception {
-            String DURL = URL + "?nonce=" + nonce + "&Cmd=INFO&Range=ALL";
+        /* Disable a Context */
+        public void disable(String node, String host, String context) throws Exception {
+            String DURL = URL + "?nonce=" + nonce + "&Cmd=DISABLE-APP&Range=CONTEXT&JVMRoute=" + node +
+                          "&Alias=" + host +
+                          "&Context=" + context;
+            DoCmd(DURL);
+        }
+ 
+        private String DoCmd(String DURL) throws Exception {
             GetMethod gm = new GetMethod(DURL);
             try {
                 httpResponseCode = httpClient.executeMethod(gm);
@@ -142,5 +138,9 @@ public class  ManagerClient {
             gm.releaseConnection();
             throw(new Exception("Reponse notok"));
 
+        }
+        public String getProxyInfo() throws Exception {
+            String DURL = URL + "?nonce=" + nonce + "&Cmd=INFO&Range=ALL";
+            return DoCmd(DURL);
         }
 }
