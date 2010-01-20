@@ -199,6 +199,23 @@ public class Maintest extends TestCase {
 
         return lifecycle;
     }
+    /* ping httpd */
+    static String doProxyPing(LifecycleListener lifecycle) {
+        String result = null;
+        if (isJBossWEB) {
+            ClusterListener jcluster = (ClusterListener) lifecycle;
+            result = jcluster.doProxyPing(null);
+        } else {
+            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            Map<InetSocketAddress, String> map = pcluster.ping();
+            if (map.isEmpty())
+                return null;
+            Object results[] = map.values().toArray();
+            result = (String ) results[0];
+        }
+        return result;
+    }
+    /* ping a node (via JVmRoute). */
     static String doProxyPing(LifecycleListener lifecycle, String JvmRoute) {
         String result = null;
         if (isJBossWEB) {
@@ -381,7 +398,7 @@ public class Maintest extends TestCase {
         String result = null;
         int tries = 0;
         while (result == null && tries<maxtries) {
-            result = Maintest.doProxyPing(cluster, null);
+            result = doProxyPing(cluster);
             if (result != null) {
                 if (Maintest.checkProxyPing(result))
                     break; // Done
