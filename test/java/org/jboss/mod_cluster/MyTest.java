@@ -49,7 +49,7 @@ public class MyTest extends HttpServlet {
         out.println("<body bgcolor=\"white\">");
         out.println("<head>");
 
-        String title = "Test servlet";
+        String title = request.getContextPath() + "/Test servlet";
         out.println("<title>" + title + "</title>");
         out.println("</head>");
         out.println("<body>");
