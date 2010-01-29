@@ -281,6 +281,11 @@ public class CatalinaEventHandler implements ContainerEventHandler<Server, Engin
          MCMPRequest request = this.requestFactory.createStopRequest(context);
          
          this.mcmpHandler.sendRequest(request);
+         Thread thr = Thread.currentThread();
+         try {
+            thr.sleep(5000); // Time for requests being processed.
+         } catch(Exception ex) {
+         }
       }
    }
 
