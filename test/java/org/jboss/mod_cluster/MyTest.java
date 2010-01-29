@@ -54,7 +54,8 @@ public class MyTest extends HttpServlet {
         out.println("</head>");
         out.println("<body>");
 
-        out.println("<h3>" + title + "</h3>");
+        out.println("<h3> request.getContextPath(): " + request.getContextPath() + "</h3>");
+        out.println("<h3> request.getQueryString(): " + request.getQueryString() + "</h3>");
 	
         out.println("</body>");
         out.println("</html>");
