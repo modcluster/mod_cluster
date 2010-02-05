@@ -201,7 +201,7 @@
   <bean name="RequestCountLoadMetric" class="org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=RequestCountLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="RequestProcessorLoadMetricSource"/></parameter>
+      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
       <!--parameter>requestCount</parameter-->
     </constructor>
     <!-- This metric requires an explicit capacity, e.g. maximum capacity of 1000 requests/sec -->
@@ -212,7 +212,7 @@
   <bean name="ReceiveTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ReceiveTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="RequestProcessorLoadMetricSource"/></parameter>
+      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
       <!--parameter>bytesReceived</parameter-->
     </constructor>
     <!-- This metric requires an explicit capacity, e.g. max capacity of 1024 KB/s -->
@@ -222,7 +222,7 @@
   <bean name="SendTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SendTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="RequestProcessorLoadMetricSource"/></parameter>
+      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
       <!--parameter>bytesSent</parameter-->
     </constructor>
     <!-- This metric requires an explicit capacity, e.g. max capacity of 512 KB/s -->
