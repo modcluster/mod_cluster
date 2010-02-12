@@ -56,6 +56,16 @@ public class MyTest extends HttpServlet {
 
         out.println("<h3> request.getContextPath(): " + request.getContextPath() + "</h3>");
         out.println("<h3> request.getQueryString(): " + request.getQueryString() + "</h3>");
+
+        String test = request.getParameter("test");
+        if (test.equalsIgnoreCase("timeout")) {
+            Thread me = Thread.currentThread();
+            try {
+                me.sleep(15000);
+            } catch(Exception e) {
+                throw new ServletException("sleep interrupted");
+            }
+        }
 	
         out.println("</body>");
         out.println("</html>");
