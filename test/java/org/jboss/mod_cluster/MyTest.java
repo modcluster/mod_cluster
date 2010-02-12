@@ -54,6 +54,16 @@ public class MyTest extends HttpServlet {
         out.println("</head>");
         out.println("<body>");
 
+        String test = request.getParameter("test");
+        if (test.equalsIgnoreCase("timeout")) {
+            Thread me = Thread.currentThread();
+            try {
+                me.sleep(15000);
+            } catch(Exception e) {
+                throw new ServletException("sleep interrupted");
+            }
+        }
+
         out.println("<h3>" + title + "</h3>");
 	
         out.println("</body>");
