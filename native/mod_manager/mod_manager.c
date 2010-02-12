@@ -87,7 +87,7 @@
 #define MHOSTUI "MEM: Can't update or insert host alias"
 
 /* Protocol version supported */
-#define VERSION_PROTOCOL "0.0.0"
+#define VERSION_PROTOCOL "0.1.0"
 
 /* Internal substitution for node commands */
 #define NODE_COMMAND "/NODE_COMMAND"
