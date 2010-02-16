@@ -221,6 +221,25 @@ static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, ap_slotmem_callback_fn_t *f
     }
     return APR_NOTFOUND;
 }
+/* Lock the file lock (between processes) and then the mutex */
+static apr_status_t ap_slotmem_lock(ap_slotmem_t *s)
+{
+    apr_status_t rv;
+    rv = apr_file_lock(s->global_lock, APR_FLOCK_EXCLUSIVE);
+    if (rv != APR_SUCCESS)
+        return rv;
+    rv = apr_thread_mutex_lock(globalmutex_lock);
+    if (rv != APR_SUCCESS)
+        apr_file_unlock(s->global_lock);
+    return rv;
+}
+static apr_status_t ap_slotmem_unlock(ap_slotmem_t *s)
+{
+    apr_thread_mutex_unlock(globalmutex_lock);
+    return(apr_file_unlock(s->global_lock));
+}
+
+/* Create the whole slotmem array */
 static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_size_t item_size, int item_num, int persist, apr_pool_t *pool)
 {
     char *ptr;
@@ -257,8 +276,19 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
         fname = "anonymous";
     }
 
-    /* first try to attach to existing shared memory */
+    /* create the lock file and the global mutex */
     res = (ap_slotmem_t *) apr_pcalloc(globalpool, sizeof(ap_slotmem_t));
+    filename = apr_pstrcat(pool, fname , ".lock", NULL);
+    rv = apr_file_open(&res->global_lock, filename, APR_WRITE|APR_CREATE, APR_OS_DEFAULT, globalpool);
+    if (rv != APR_SUCCESS) {
+        return rv;
+    }
+    if (globalmutex_lock == NULL)
+        apr_thread_mutex_create(&globalmutex_lock, APR_THREAD_MUTEX_DEFAULT, globalpool);
+    /* lock for creation */
+    ap_slotmem_lock(res);
+
+    /* first try to attach to existing shared memory */
     if (name) {
         rv = apr_shm_attach(&res->shm, fname, globalpool);
     }
@@ -270,6 +300,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
         if (apr_shm_size_get(res->shm) != nbytes) {
             apr_shm_detach(res->shm);
             res->shm = NULL;
+            ap_slotmem_unlock(res);
             return APR_EINVAL;
         }
         ptr = apr_shm_baseaddr_get(res->shm);
@@ -277,19 +308,29 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
         if (desc.item_size != item_size || desc.item_num != item_num) {
             apr_shm_detach(res->shm);
             res->shm = NULL;
+            ap_slotmem_unlock(res);
             return APR_EINVAL;
         }
         ptr = ptr +  sizeof(desc);
     }
     else  {
         if (name) {
-            apr_shm_remove(fname, globalpool);
-            rv = apr_shm_create(&res->shm, nbytes, fname, globalpool);
+            int try = 0;
+            rv = APR_EEXIST;
+            while (rv == APR_EEXIST && try<5) {
+                rv = apr_shm_remove(fname, globalpool);
+                rv = apr_shm_create(&res->shm, nbytes, fname, globalpool);
+                if (rv == APR_EEXIST) {
+                     sleep(1);
+                }
+                try++;
+            }
         }
         else {
             rv = apr_shm_create(&res->shm, nbytes, NULL, globalpool);
         }
         if (rv != APR_SUCCESS) {
+            ap_slotmem_unlock(res);
             return rv;
         }
         if (name) {
@@ -316,13 +357,6 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
             restore_slotmem(ptr, fname, item_size, item_num, pool);
     }
 
-    /* create the lock */
-    filename = apr_pstrcat(pool, fname , ".lock", NULL);
-    rv = apr_file_open(&res->global_lock, filename, APR_WRITE|APR_CREATE, APR_OS_DEFAULT, globalpool);
-    if (rv != APR_SUCCESS) {
-        return rv;
-    }
-
     /* For the chained slotmem stuff */
     res->name = apr_pstrdup(globalpool, fname);
     res->ident = (int *) ptr;
@@ -339,6 +373,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
     }
 
     *new = res;
+    ap_slotmem_unlock(res);
     return APR_SUCCESS;
 }
 static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_size_t *item_size, int *item_num, apr_pool_t *pool)
@@ -444,23 +479,6 @@ static apr_status_t ap_slotmem_mem(ap_slotmem_t *score, int id, void**mem)
     return APR_SUCCESS;
 }
 
-/* Lock the file lock (between processes) and then the mutex */
-static apr_status_t ap_slotmem_lock(ap_slotmem_t *s)
-{
-    apr_status_t rv;
-    rv = apr_file_lock(s->global_lock, APR_FLOCK_EXCLUSIVE);
-    if (rv != APR_SUCCESS)
-        return rv;
-    rv = apr_thread_mutex_lock(globalmutex_lock);
-    if (rv != APR_SUCCESS)
-        apr_file_unlock(s->global_lock);
-    return rv;
-}
-static apr_status_t ap_slotmem_unlock(ap_slotmem_t *s)
-{
-    apr_thread_mutex_unlock(globalmutex_lock);
-    return(apr_file_unlock(s->global_lock));
-}
 static apr_status_t ap_slotmem_alloc(ap_slotmem_t *score, int *item_id, void**mem)
 {
     int ff;
