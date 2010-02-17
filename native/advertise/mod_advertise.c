@@ -50,9 +50,9 @@ module AP_MODULE_DECLARE_DATA advertise_module;
 /*
  * Server private data
  */
-static int        ma_generation     = 0;
-static apr_time_t ma_child_started  = 0;
+#if defined(WIN32)
 static pid_t      ma_parent_pid     = -1;
+#endif
 
 /* Global (really) */
 
@@ -108,7 +108,6 @@ static volatile int is_mp_created = 0;
  * Server global data
  */
 typedef struct ma_global_data_t {
-    int           generation;
     unsigned char ssalt[APR_MD5_DIGESTSIZE];
     apr_uuid_t    suuid;
     char          srvid[APR_UUID_FORMATTED_LENGTH + 2];
@@ -592,18 +591,15 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     }
 #endif
     ma_server_rec = server; 
-    if (!magd->generation) {
-        /* Favor dynamic configuration */
-        if (mconf->ma_advertise_skey) {
-            apr_md5_ctx_t mc;
-            apr_md5_init(&mc);
-            apr_md5_update(&mc, mconf->ma_advertise_skey, strlen(mconf->ma_advertise_skey));
-            apr_md5_final(magd->ssalt, &mc);
-        }
-        apr_uuid_get(&magd->suuid);
-        magd->srvid[0] = '/';
-        apr_uuid_format(&magd->srvid[1], &magd->suuid);
+    if (mconf->ma_advertise_skey) {
+        apr_md5_ctx_t mc;
+        apr_md5_init(&mc);
+        apr_md5_update(&mc, mconf->ma_advertise_skey, strlen(mconf->ma_advertise_skey));
+        apr_md5_final(magd->ssalt, &mc);
     }
+    apr_uuid_get(&magd->suuid);
+    magd->srvid[0] = '/';
+    apr_uuid_format(&magd->srvid[1], &magd->suuid);
     if (!mconf->ma_advertise_srvh)
         mconf->ma_advertise_srvh = magd->srvid;
     /* Check if we have advertise set */
@@ -686,16 +682,9 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     apr_pool_cleanup_register(magd->cpool, magd, pconfig_cleanup,
                               apr_pool_cleanup_null);
 
-    if (magd->generation++) {
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, s,
-                     "Advertise reinitialized for process %" APR_PID_T_FMT,
-                     getpid());
-    }
-    else {
-        ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, s,
-                     "Advertise initialized for process %" APR_PID_T_FMT,
-                     getpid());
-    }
+    ap_log_error(APLOG_MARK, APLOG_NOTICE, 0, s,
+                 "Advertise initialized for process %" APR_PID_T_FMT,
+                 getpid());
 
     apr_pool_cleanup_register(magd->ppool, magd, process_cleanup,
                               apr_pool_cleanup_null);
