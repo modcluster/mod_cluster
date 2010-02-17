@@ -58,7 +58,7 @@ public class MyTest extends HttpServlet {
         out.println("<h3> request.getQueryString(): " + request.getQueryString() + "</h3>");
 
         String test = request.getParameter("test");
-        if (test.equalsIgnoreCase("timeout")) {
+        if (test !=null && test.equalsIgnoreCase("timeout")) {
             Thread me = Thread.currentThread();
             try {
                 me.sleep(15000);
