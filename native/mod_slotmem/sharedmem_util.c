@@ -321,7 +321,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
                 rv = apr_shm_remove(fname, globalpool);
                 rv = apr_shm_create(&res->shm, nbytes, fname, globalpool);
                 if (rv == APR_EEXIST) {
-                     sleep(1);
+                     apr_sleep(apr_time_from_sec(1));
                 }
                 try++;
             }
