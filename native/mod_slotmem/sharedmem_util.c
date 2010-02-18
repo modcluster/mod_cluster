@@ -221,17 +221,25 @@ static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, ap_slotmem_callback_fn_t *f
     }
     return APR_NOTFOUND;
 }
-#include <stdarg.h>
-void myprintf(const char *format, ...)
+/* Lock the file lock (between processes) and then the mutex */
+static apr_status_t ap_slotmem_lock(ap_slotmem_t *s)
 {
-    FILE *fd;
-    va_list ap;
-    va_start(ap, format);
-    fd = fopen("/tmp/toto.txt", "a");
-    vfprintf(fd, format, ap);
-    fclose(fd);
-    va_end(ap);
+    apr_status_t rv;
+    rv = apr_file_lock(s->global_lock, APR_FLOCK_EXCLUSIVE);
+    if (rv != APR_SUCCESS)
+        return rv;
+    rv = apr_thread_mutex_lock(globalmutex_lock);
+    if (rv != APR_SUCCESS)
+        apr_file_unlock(s->global_lock);
+    return rv;
 }
+static apr_status_t ap_slotmem_unlock(ap_slotmem_t *s)
+{
+    apr_thread_mutex_unlock(globalmutex_lock);
+    return(apr_file_unlock(s->global_lock));
+}
+
+/* Create the whole slotmem array */
 static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_size_t item_size, int item_num, int persist, apr_pool_t *pool)
 {
     char *ptr;
@@ -283,7 +291,6 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
     /* first try to attach to existing shared memory */
     if (name) {
         rv = apr_shm_attach(&res->shm, fname, globalpool);
-        myprintf("apr_shm_attach: on %s : %d\n", fname, rv);
     }
     else {
         rv = APR_EINVAL;
@@ -314,7 +321,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
                 rv = apr_shm_remove(fname, globalpool);
                 rv = apr_shm_create(&res->shm, nbytes, fname, globalpool);
                 if (rv == APR_EEXIST) {
-                     apr_sleep(apr_time_from_sec(1));
+                     sleep(1);
                 }
                 try++;
             }
