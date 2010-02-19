@@ -1128,6 +1128,7 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
                           case ENABLED: 
                                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                          "get_balancer_by_node found context %s", context->context);
+                            apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
                             return node->mess.balancer;
                             break;
                           case DISABLED:
@@ -1135,6 +1136,7 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
                             if (hassession_byname(r, node->mess.balancer, conf, NULL)) {
                                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                              "get_balancer_by_node found (DISABLED) context %s", context->context);
+                                apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
                                 return node->mess.balancer;
                             }
                             break;
@@ -1152,8 +1154,9 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
                 switch (context->status)
                 {
                   case ENABLED: 
-                        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                                 "get_balancer_by_node found context %s", context->context);
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "get_balancer_by_node found context %s", context->context);
+                    apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
                     return node->mess.balancer;
                     break;
                   case DISABLED:
@@ -1161,6 +1164,7 @@ static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server
                     if (hassession_byname(r, node->mess.balancer, conf, NULL)) {
                         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                      "get_balancer_by_node found (DISABLED) context %s", context->context);
+                        apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
                         return node->mess.balancer;
                     }
                     break;
@@ -2258,6 +2262,18 @@ void remove_session_route(request_rec *r, const char *name)
 }
 
 /*
+ * Update the context active request counter
+ */
+static void upd_context_count(const char *id, int val)
+{
+    int ident = atoi(id);
+    contextinfo_t *context;
+    if (context_storage->read_context(ident, &context) == APR_SUCCESS) {
+        context->nbrequests = context->nbrequests + val;
+    }
+}
+
+/*
  * Find a worker for mod_proxy logic
  */
 static int proxy_cluster_pre_request(proxy_worker **worker,
@@ -2272,6 +2288,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     const char *domain = NULL;
     int failoverdomain = 0;
     apr_status_t rv;
+    proxy_cluster_helper *helper;
+    const char *context_id;
 
     *worker = NULL;
 #if HAVE_CLUSTER_EX_DEBUG
@@ -2300,10 +2318,14 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             runtime = (proxy_worker *)(*balancer)->workers->elts;
             for (i = 0; i < (*balancer)->workers->nelts; i++, runtime++) {
                 if (runtime->name && strcmp(worker_name, runtime->name) == 0) {
-                    proxy_cluster_helper *helper;
                     helper = (proxy_cluster_helper *) (runtime)->opaque;
                     if (helper->count_active>0)
                         helper->count_active--;
+                    /* Ajust the context counter here too */
+                    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+                    if (context_id && *context_id) {
+                       upd_context_count(context_id, -1);
+                    }
                 }
             }
         }
@@ -2363,12 +2385,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         }
     }
 
-    /* Mark the worker used for the cleanup logic */
-    if (*worker) {
-        proxy_cluster_helper *helper;
-        helper = (proxy_cluster_helper *) (*worker)->opaque;
-        helper->count_active++;
-    }
     if ((rv = PROXY_THREAD_UNLOCK(*balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
                      "proxy: CLUSTER: (%s). Unlock failed for pre_request",
@@ -2411,6 +2427,16 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
     (*worker)->s->busy++;
 
+    /* Mark the worker used for the cleanup logic */
+    helper = (proxy_cluster_helper *) (*worker)->opaque;
+    helper->count_active++;
+
+    /* Also mark the context here note that find_best_worker set BALANCER_CONTEXT_ID */
+    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+    if (context_id && *context_id) {
+       upd_context_count(context_id, 1);
+    }
+
     /*
      * get_route_balancer already fills all of the notes and some subprocess_env
      * but not all.
@@ -2449,10 +2475,16 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     char *cookie = NULL;
     const char *sticky;
     char *oroute;
+    const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
 
     /* mark the work as not use */
     helper = (proxy_cluster_helper *) worker->opaque;
     helper->count_active--;
+    /* Ajust the context counter here too */
+    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+    if (context_id && *context_id) {
+       upd_context_count(context_id, -1);
+    }
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,

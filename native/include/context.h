@@ -58,6 +58,7 @@ struct contextinfo {
     int vhost;        /* id of the correspond virtual host in hosts table */
     int node;         /* id of the correspond node in nodes table */
     int status;       /* status: ENABLED/DISABLED/STOPPED */
+    int nbrequests;   /* number of request been processed */
 
     apr_time_t updatetime; /* time of last received message */ 
     int id;           /* id in table */

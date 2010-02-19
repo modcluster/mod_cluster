@@ -86,7 +86,8 @@ static apr_status_t insert_update(void* mem, void **data, int id, apr_pool_t *po
     contextinfo_t *ou = (contextinfo_t *)mem;
     if (strcmp(in->context, ou->context) == 0 &&
                in->vhost == ou->vhost && in->node == ou->node) {
-        memcpy(ou, in, sizeof(contextinfo_t));
+        /* We don't update nbrequests it belongs to mod_proxy_cluster logic */
+        ou->status = in->status;
         ou->id = id;
         ou->updatetime = apr_time_sec(apr_time_now());
         *data = ou;
@@ -113,6 +114,7 @@ apr_status_t insert_update_context(mem_t *s, contextinfo_t *context)
     }
     memcpy(ou, context, sizeof(contextinfo_t));
     ou->id = ident;
+    ou->nbrequests = 0;
     ou->updatetime = apr_time_sec(apr_time_now());
 
     return APR_SUCCESS;

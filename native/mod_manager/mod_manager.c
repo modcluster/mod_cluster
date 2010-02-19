@@ -87,7 +87,7 @@
 #define MHOSTUI "MEM: Can't update or insert host alias"
 
 /* Protocol version supported */
-#define VERSION_PROTOCOL "0.1.0"
+#define VERSION_PROTOCOL "0.2.0"
 
 /* Internal substitution for node commands */
 #define NODE_COMMAND "/NODE_COMMAND"
@@ -1241,6 +1241,24 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
             hostinfo.id = host->id;
             remove_host(hoststatsmem, &hostinfo);
         }
+    } else if (status == STOPPED) {
+        /* insert_update_contexts in fact makes that vhost->context corresponds only to the first context... */
+        contextinfo_t in;
+        contextinfo_t *ou;
+        in.id = 0;
+        strncpy(in.context, vhost->context, sizeof(in.context));
+        in.vhost = host->vhost;
+        in.node = node->mess.id;
+        ou = read_context(contextstatsmem, &in);
+        if (ou != NULL) {
+            ap_set_content_type(r, "text/plain");
+            ap_rprintf(r, "Type=STOP-APP-RSP&JvmRoute=%.*s&Alias=%.*s&Context=%.*s&Requests=%d",
+                       (int) sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute,
+                       (int) sizeof(vhost->host), vhost->host,
+                       (int) sizeof(vhost->context), vhost->context,
+                       ou->nbrequests);
+            ap_rprintf(r, "\n");
+        }
     }
     return NULL;
 }
@@ -1645,7 +1663,7 @@ static void manager_info_contexts(request_rec *r, int node, int host, char *Alia
                 status = "STOPPED";
                 break;
         }
-        ap_rprintf(r, "%.*s, Status: %s ", (int) sizeof(ou->context), ou->context, status);
+        ap_rprintf(r, "%.*s, Status: %s Request: %d ", (int) sizeof(ou->context), ou->context, status, ou->nbrequests);
         context_command_string(r, ou, Alias, JVMRoute);
         ap_rprintf(r, "\n");
     }

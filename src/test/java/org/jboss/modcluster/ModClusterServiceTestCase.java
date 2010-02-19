@@ -1069,6 +1069,7 @@ public class ModClusterServiceTestCase
 
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
       EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
+      EasyMock.expect(context.isStarted()).andReturn(false);
 
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);

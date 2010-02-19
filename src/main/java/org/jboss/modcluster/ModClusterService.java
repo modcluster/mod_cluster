@@ -208,6 +208,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          {
             for (Context context: host.getContexts())
             {
+               if (context.isStarted())
+                  this.stop(context);
                this.remove(context);
             }
          }
@@ -329,11 +331,29 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       if (!this.exclude(context))
       {
          this.log.debug(Strings.CONTEXT_STOP.getString(context, context.getHost()));
+
+         // Wait until all requests have been done.
+         boolean on = true;
+         while (on) {
+            // Send STOP-APP and read the STOP-APP-RSP.
+            MCMPRequest request = this.requestFactory.createStopRequest(context);
    
-         // Send STOP-APP
-         MCMPRequest request = this.requestFactory.createStopRequest(context);
-         
-         this.mcmpHandler.sendRequest(request);
+            Map<MCMPServerState, String> responses = this.mcmpHandler.sendRequest(request);
+            if (responses.isEmpty())
+               return; // Nothing we can do...
+            Object results[] = responses.values().toArray();
+            int nrequests = 0;
+            for (int i=0; i<results.length; i++) {
+               int ind = ((String) results[i]).indexOf("&Requests=");
+               if (ind > 0) {
+                  String res = ((String) results[i]).substring(ind+10);
+                  res = res.substring(0, res.length()-1);
+                  nrequests = nrequests + Integer.parseInt(res);
+               }
+            }
+            if (nrequests == 0)
+               on = false;
+         }
       }
    }
 
