@@ -49,7 +49,7 @@ public class TestPingTimeout extends TestCase {
      * /testtest
      * Using the servlet MyTest (in ROOT).
      */
-    public void testQuery() {
+    public void testPingTimeout() {
 
         boolean clienterror = false;
         server = Maintest.getServer();
