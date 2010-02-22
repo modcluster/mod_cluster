@@ -500,7 +500,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     }
 
     /* prevent other threads using it */
-    worker->s->status = worker->s->status |= PROXY_WORKER_IN_ERROR;
+    worker->s->status |= PROXY_WORKER_IN_ERROR;
 
     /* apr_reslist_acquired_count */
     i = 0;
