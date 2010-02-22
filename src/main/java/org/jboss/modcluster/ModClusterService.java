@@ -344,6 +344,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             Object results[] = responses.values().toArray();
             int nrequests = 0;
             for (int i=0; i<results.length; i++) {
+               if (results[i] == null)
+                  continue;
                int ind = ((String) results[i]).indexOf("&Requests=");
                if (ind > 0) {
                   String res = ((String) results[i]).substring(ind+10);
