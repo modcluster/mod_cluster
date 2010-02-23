@@ -342,6 +342,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             if (responses.isEmpty())
                return; // Nothing we can do...
             Object results[] = responses.values().toArray();
+            if (results.length == 0)
+               return; // Nothing we can do...
             int nrequests = 0;
             for (int i=0; i<results.length; i++) {
                if (results[i] == null)
