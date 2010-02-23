@@ -187,6 +187,7 @@ public class Maintest extends TestCase {
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
+            jcluster.setNodeTimeout(20000);
             if (advertiseSecurityKey != null)
                 jcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = jcluster;
@@ -199,6 +200,7 @@ public class Maintest extends TestCase {
             pcluster.setStickySession(stickySession);
             pcluster.setStickySessionRemove(stickySessionRemove);
             pcluster.setStickySessionForce(stickySessionForce);
+            pcluster.setNodeTimeout(20000);
             if (advertiseSecurityKey != null)
                 pcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = pcluster;
@@ -344,14 +346,28 @@ public class Maintest extends TestCase {
             String [] results = records[i].split(",");
             /* result[0] should be Node: [n] */
             String [] data = results[0].split(": ");
+
             if ("Node".equals(data[0])) {
                 if (n == null)
                     return false; /* we shouldn't have a node */
+
+                /* Look for the "Load: " */
+                boolean nodeok = false;
+                for (int j=0; j<results.length; j++) {
+                    int id = results[j].indexOf("Load: ");
+                    if (id >= 0) {
+                        String res = results[j].substring(6);
+                        if (Integer.parseInt(res) > 0) {
+                            nodeok = true;
+                            break;
+                        }
+                    }
+                }
                 /* result[1] should be Name: node_name */
                 data = results[1].split(": ");
                 for (int j=0; j<nodes.length; j++) {
                     if (nodes[j].equals(data[1])) {
-                        n[j] = true; /* found it */
+                        n[j] = nodeok; /* found it */
                     }
                 }
             }
@@ -384,6 +400,7 @@ public class Maintest extends TestCase {
         }
         return ret;
     }
+    /* Wait until the node is in the ok status (load>0). */
     static  boolean TestForNodes(LifecycleListener lifecycle, String [] nodes) {
         int countinfo = 0;
         while ((!Maintest.checkProxyInfo(lifecycle, nodes)) && countinfo < 20) {
