@@ -127,6 +127,7 @@ public class TestStickyForce extends TestCase {
                 fail("can't stop connector");
             }
             /* wait until the connector has stopped */
+            countinfo = 0;
             while (Maintest.testPort(port) && countinfo < 20) {
                 try {
                     Thread.sleep(3000);
@@ -135,6 +136,8 @@ public class TestStickyForce extends TestCase {
                 }
                 countinfo++;
             }
+            if (countinfo == 20)
+                fail("can't stop connector");
         }
 
         // Run a test on it. (it waits until httpd as received the nodes information).
