@@ -252,9 +252,14 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             }
             return APR_SUCCESS; /* Done Already existing */
         }
-        ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
-                     "Created: can't reuse worker for %s", url);
-        return APR_EGENERAL;
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
+                     "Created: can't reuse worker as it for %s cleaning...", url);
+        if ((*worker)->cp->pool) {
+            apr_pool_destroy((*worker)->cp->pool);
+            (*worker)->cp->pool = NULL;
+
+        }
+        reuse = 1;
     }
 
     /* Get the shared memory for this worker */
