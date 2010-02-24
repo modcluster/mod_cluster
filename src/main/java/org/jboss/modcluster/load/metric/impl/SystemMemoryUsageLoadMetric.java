@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
- * {@link LoadMetric} implementation that uses {@link com.sun.management.OperatingSystemMXBean}
+ * {@link LoadMetric} implementation that uses com.sun.management.OperatingSystemMXBean
  * to determine system memory usage.
  * 
  * @author Paul Ferraro
