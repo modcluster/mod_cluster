@@ -39,6 +39,7 @@ import org.jboss.ha.framework.interfaces.HASingletonMBean;
 import org.jboss.modcluster.ha.rpc.MCMPServerDiscoveryEvent;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
 import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
+import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPServer;
@@ -54,6 +55,7 @@ import org.junit.Test;
 public class ClusteredMCMPHandlerTestCase
 {
    private MCMPHandler localHandler = EasyMock.createStrictMock(MCMPHandler.class);
+   private MCMPConnectionListener connectionListener = EasyMock.createStrictMock(MCMPConnectionListener.class);
    private HAServiceKeyProvider keyProvider = EasyMock.createStrictMock(HAServiceKeyProvider.class);
    private HAPartition partition = EasyMock.createStrictMock(HAPartition.class);
    private HASingletonMBean singleton = EasyMock.createStrictMock(HASingletonMBean.class);
@@ -73,11 +75,11 @@ public class ClusteredMCMPHandlerTestCase
       // Test master case
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
-      this.localHandler.init(list);
+      this.localHandler.init(list, this.connectionListener);
       
       EasyMock.replay(this.localHandler, this.singleton, this.keyProvider, this.partition);
       
-      this.handler.init(list);
+      this.handler.init(list, this.connectionListener);
       
       EasyMock.verify(this.localHandler, this.singleton, this.keyProvider, this.partition);
       EasyMock.reset(this.localHandler, this.singleton, this.keyProvider, this.partition);
@@ -94,7 +96,7 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
-      this.localHandler.init(EasyMock.capture(capturedList));
+      this.localHandler.init(EasyMock.capture(capturedList), EasyMock.same(this.connectionListener));
       
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.partition.getClusterNode()).andReturn(node);
@@ -108,8 +110,9 @@ public class ClusteredMCMPHandlerTestCase
       
       EasyMock.replay(this.localHandler, this.singleton, this.keyProvider, this.partition, response1, response2);
       
-      this.handler.init(list);
+      this.handler.init(list, this.connectionListener);
       
+      EasyMock.verify(this.localHandler, this.singleton, this.keyProvider, this.partition, response1, response2);
       
       Assert.assertNotNull(capturedList.getValue());
       Assert.assertTrue(capturedList.getValue().isEmpty());

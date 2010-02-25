@@ -46,6 +46,7 @@ import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
@@ -57,7 +58,7 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 
-public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider
+public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener
 {
    protected final Logger log = Logger.getLogger(this.getClass());
    
@@ -70,7 +71,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    private final AdvertiseListenerFactory listenerFactory;
    private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
    
-   private volatile Server server = null;
+   private volatile boolean established = false;
+   private volatile Server server;
    
    private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
    private volatile AdvertiseListener advertiseListener;
@@ -122,7 +124,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       
       List<InetSocketAddress> initialProxies = Utils.parseProxies(this.mcmpConfig.getProxyList());
       
-      this.mcmpHandler.init(initialProxies);
+      this.mcmpHandler.init(initialProxies, this);
       
       this.excludedContextPaths = Utils.parseContexts(this.mcmpConfig.getExcludedContexts());
 
@@ -174,19 +176,20 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void start(Server server)
    {
-      this.checkInit();
-
       this.log.debug(Strings.SERVER_START.getString());
       
-      for (Engine engine: server.getEngines())
+      if (this.established)
       {
-         this.config(engine);
-         
-         for (Host host: engine.getHosts())
+         for (Engine engine: server.getEngines())
          {
-            for (Context context: host.getContexts())
+            this.config(engine);
+            
+            for (Host host: engine.getHosts())
             {
-               this.add(context);
+               for (Context context: host.getContexts())
+               {
+                  this.add(context);
+               }
             }
          }
       }
@@ -198,29 +201,32 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void stop(Server server)
    {
-      this.checkInit();
-
       this.log.debug(Strings.SERVER_STOP.getString());
       
-      for (Engine engine: server.getEngines())
+      if (this.established)
       {
-         for (Host host: engine.getHosts())
+         for (Engine engine: server.getEngines())
          {
-            for (Context context: host.getContexts())
+            for (Host host: engine.getHosts())
             {
-               if (context.isStarted())
-                  this.stop(context);
-               this.remove(context);
+               for (Context context: host.getContexts())
+               {
+                  if (context.isStarted())
+                  {
+                     this.stop(context);
+                  }
+                  
+                  this.remove(context);
+               }
             }
+            
+            this.removeAll(engine);
          }
-         
-         this.removeAll(engine);
       }
    }
    
    /**
     * Configures the specified engine.
-    * Sets suitable jvm route, if none specified.
     * Sends CONFIG request.
     * @param engine
     */
@@ -230,9 +236,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
       try
       {
-         this.establishConnectorAddress(engine);
-         this.establishJvmRoute(engine);
-         
          MCMPRequest request = this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig);
          
          this.mcmpHandler.sendRequest(request);
@@ -245,28 +248,43 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
-   protected void establishConnectorAddress(Engine engine) throws IOException
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#isEstablished()
+    */
+   public boolean isEstablished()
    {
-      Connector connector = engine.getProxyConnector();
-      InetAddress address = connector.getAddress();
-      
-      if ((address == null) || address.isAnyLocalAddress())
-      {
-         InetAddress localAddress = this.mcmpHandler.getLocalAddress();
-         InetAddress connectorAddress = (localAddress != null) ? localAddress : InetAddress.getLocalHost();
-         
-         connector.setAddress(connectorAddress);
-         
-         this.log.info(Strings.DETECT_CONNECTOR_ADDRESS.getString(engine, connectorAddress.getHostAddress()));
-      }
+      return this.established;
    }
    
    /**
-    * If needed, create automagical JVM route (address + port + engineName)
-    * @param engine
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#connectionEstablished(java.net.InetAddress)
     */
+   public void connectionEstablished(InetAddress localAddress)
+   {
+      for (Engine engine: this.server.getEngines())
+      {
+         Connector connector = engine.getProxyConnector();
+         InetAddress address = connector.getAddress();
+         
+         // Set connector address
+         if ((address == null) || address.isAnyLocalAddress())
+         {
+            connector.setAddress(localAddress);
+            
+            this.log.info(Strings.DETECT_CONNECTOR_ADDRESS.getString(engine, localAddress.getHostAddress()));
+         }
+         
+         this.establishJvmRoute(engine);
+      }
+      
+      this.established = true;
+   }
+
    protected void establishJvmRoute(Engine engine)
    {
+      // Create default jvmRoute if none was specified
       if (engine.getJvmRoute() == null)
       {
          Connector connector = engine.getProxyConnector();
@@ -278,16 +296,14 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          this.log.info(Strings.DETECT_JVMROUTE.getString(engine, jvmRoute));
       }
    }
-
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#add(org.jboss.modcluster.Context)
     */
    public void add(Context context)
    {
-      this.checkInit();
-
-      if (!this.exclude(context))
+      if (this.established && !this.exclude(context))
       {
          // Send ENABLE-APP if state is started
          if (context.isStarted())
@@ -307,9 +323,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void start(Context context)
    {
-      this.checkInit();
-
-      if (!this.exclude(context))
+      if (this.established && !this.exclude(context))
       {
          this.log.debug(Strings.CONTEXT_START.getString(context, context.getHost()));
    
@@ -326,9 +340,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void stop(Context context)
    {
-      this.checkInit();
-
-      if (!this.exclude(context))
+      if (this.established && !this.exclude(context))
       {
          this.log.debug(Strings.CONTEXT_STOP.getString(context, context.getHost()));
 
@@ -367,21 +379,13 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void remove(Context context)
    {
-      this.checkInit();
-
-      if (!this.exclude(context))
+      if (this.established && !this.exclude(context))
       {
-         Host host = context.getHost();
+         this.log.debug(Strings.CONTEXT_DISABLE.getString(context, context.getHost()));
          
-         // JVMRoute can be null here if nothing was ever initialized
-         if (host.getEngine().getJvmRoute() != null)
-         {
-            this.log.debug(Strings.CONTEXT_DISABLE.getString(context, host));
-            
-            MCMPRequest request = this.requestFactory.createRemoveRequest(context);
-            
-            this.mcmpHandler.sendRequest(request);
-         }
+         MCMPRequest request = this.requestFactory.createRemoveRequest(context);
+         
+         this.mcmpHandler.sendRequest(request);
       }
    }
 
@@ -391,16 +395,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    protected void removeAll(Engine engine)
    {
-      // JVMRoute can be null here if nothing was ever initialized
-      if (engine.getJvmRoute() != null)
-      {
-         this.log.debug(Strings.ENGINE_STOP.getString(engine));
+      this.log.debug(Strings.ENGINE_STOP.getString(engine));
 
-         // Send REMOVE-APP * request
-         MCMPRequest request = this.requestFactory.createRemoveRequest(engine);
-         
-         this.mcmpHandler.sendRequest(request);
-      }
+      // Send REMOVE-APP * request
+      MCMPRequest request = this.requestFactory.createRemoveRequest(engine);
+      
+      this.mcmpHandler.sendRequest(request);
    }
 
    /**
@@ -409,14 +409,15 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void status(Engine engine)
    {
-      this.checkInit();
-
       this.log.debug(Strings.ENGINE_STATUS.getString(engine));
 
       this.mcmpHandler.status();
 
-      // Send STATUS request
-      this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), this.getLoadBalanceFactor()));
+      if (this.established)
+      {
+         // Send STATUS request
+         this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), this.getLoadBalanceFactor()));
+      }
    }
    
    /**
@@ -426,14 +427,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    public int getLoadBalanceFactor()
    {
       return this.loadBalanceFactorProvider.getLoadBalanceFactor();
-   }
-
-   protected void checkInit()
-   {
-      if (this.server == null)
-      {
-         throw new IllegalStateException(Strings.ERROR_UNINITIALIZED.getString());
-      }
    }
    
    private boolean exclude(Context context)
@@ -502,6 +495,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       MCMPRequest request = this.requestFactory.createPingRequest();
       return this.getProxyResults(request); 
    }
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
@@ -511,6 +505,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       MCMPRequest request = this.requestFactory.createPingRequest(jvmRoute);
       return this.getProxyResults(request);
    }
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String, java.lang.String, int)
@@ -523,6 +518,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    
    private Map<InetSocketAddress, String> getProxyResults(MCMPRequest request)
    {
+      if (!this.established) return Collections.emptyMap();
+      
       Map<MCMPServerState, String> responses = this.mcmpHandler.sendRequest(request);
 
       if (responses.isEmpty()) return Collections.emptyMap();
@@ -545,7 +542,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void reset()
    {
-      this.mcmpHandler.reset();
+      if (this.established)
+      {
+         this.mcmpHandler.reset();
+      }
    }
 
    /**
@@ -554,8 +554,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void refresh()
    {
-      // Set as error, and the periodic event will refresh the configuration
-      this.mcmpHandler.markProxiesInError();
+      if (this.established)
+      {
+         // Set as error, and the periodic event will refresh the configuration
+         this.mcmpHandler.markProxiesInError();
+      }
    }
 
    /**
@@ -564,10 +567,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public boolean disable()
    {
-      if (this.server == null)
-      {
-         throw new IllegalStateException(Strings.ERROR_UNINITIALIZED.getString());
-      }
+      if (!this.established) return false;
       
       for (Engine engine: this.server.getEngines())
       {
@@ -584,10 +584,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public boolean enable()
    {
-      if (this.server == null)
-      {
-         throw new IllegalStateException(Strings.ERROR_UNINITIALIZED.getString());
-      }
+      if (!this.established) return false;
       
       for (Engine engine: this.server.getEngines())
       {
@@ -604,10 +601,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public boolean disableContext(String host, String path)
    {
-      if (this.server == null)
-      {
-         throw new IllegalStateException(Strings.ERROR_UNINITIALIZED.getString());
-      }
+      if (!this.established) return false;
       
       Context context = this.findContext(this.findHost(host), path);
       
@@ -623,10 +617,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public boolean enableContext(String host, String path)
    {
-      if (this.server == null)
-      {
-         throw new IllegalStateException(Strings.ERROR_UNINITIALIZED.getString());
-      }
+      if (!this.established) return false;
       
       Context context = this.findContext(this.findHost(host), path);
       
@@ -642,6 +633,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public boolean stop(long timeout, TimeUnit unit)
    {
+      if (!this.established) return false;
+      
       // Send DISABLE-APP * requests
       for (Engine engine: this.server.getEngines())
       {
@@ -679,7 +672,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     * @see org.jboss.modcluster.ModClusterServiceMBean#stopContext(java.lang.String, java.lang.String, long, java.util.concurrent.TimeUnit)
     */
    public boolean stopContext(String host, String path, long timeout, TimeUnit unit)
-   {      
+   {
+      if (!this.established) return false;
+      
       Context context = this.findContext(this.findHost(host), path);
       
       this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(context));

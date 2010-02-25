@@ -22,6 +22,7 @@
 package org.jboss.modcluster.ha;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -74,6 +75,7 @@ import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
@@ -86,7 +88,7 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 
-public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider
+public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener
 {
    static final Object[] NULL_ARGS = new Object[0];
    static final Class<?>[] NULL_TYPES = new Class[0];
@@ -104,7 +106,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    private final MCMPResponseParser responseParser;
    private final MCMPHandler localHandler;
    private final ClusteredMCMPHandler clusteredHandler;
-   private final HASingletonAwareResetRequestSource resetRequestSource;
+   private final ResetRequestSource resetRequestSource;
    private final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new ConcurrentHashMap<ClusterNode, MCMPServerDiscoveryEvent>();
    private final ModClusterServiceDRMEntry drmEntry;
    private final String domain;
@@ -130,7 +132,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       this.rpcHandler = new RpcHandler();
       this.requestFactory = new DefaultMCMPRequestFactory();
       this.responseParser = new DefaultMCMPResponseParser();
-      this.resetRequestSource = new HASingletonAwareResetRequestSourceImpl(config, config, requestFactory, this, this);
+      this.resetRequestSource = new ClusteredResetRequestSource(config, config, requestFactory, this, this);
       this.localHandler = new DefaultMCMPHandler(config, this.resetRequestSource, this.requestFactory, this.responseParser);
       this.clusteredHandler = new ClusteredMCMPHandlerImpl(this.localHandler, this, this);
       
@@ -144,7 +146,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, 
          LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, HAPartition partition, 
          HASingletonElectionPolicy electionPolicy, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser,
-         HASingletonAwareResetRequestSource resetRequestSource, MCMPHandler localHandler, 
+         ResetRequestSource resetRequestSource, MCMPHandler localHandler, 
          ClusteredMCMPHandler clusteredHandler, AdvertiseListenerFactory advertiseListenerFactory)
    {
       super(eventFactory);
@@ -212,6 +214,24 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       return success;
    }
    
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#isEstablished()
+    */
+   public boolean isEstablished()
+   {
+      return this.service.isEstablished();
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#connectionEstablished(java.net.InetAddress)
+    */
+   public void connectionEstablished(InetAddress localAddress)
+   {
+      this.service.connectionEstablished(localAddress);
+   }
+
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
@@ -826,8 +846,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          
          boolean needReset = HAModClusterService.this.clusteredHandler.isResetNecessary();
          
-         Map<String, Set<ResetRequestSource.VirtualHost>> map = Collections.emptyMap();
-         List<MCMPRequest> resetRequests = needReset ? HAModClusterService.this.resetRequestSource.getLocalResetRequests(map) : null;
+         List<MCMPRequest> resetRequests = needReset ? HAModClusterService.this.resetRequestSource.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap()) : null;
          
          List<MCMPServerDiscoveryEvent> events = HAModClusterService.this.clusteredHandler.getPendingDiscoveryEvents();
          
@@ -953,7 +972,12 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       public RpcResponse<List<MCMPRequest>> getResetRequests(Map<String, Set<VirtualHost>> infoResponse)
       {
          DefaultRpcResponse<List<MCMPRequest>> response = new DefaultRpcResponse<List<MCMPRequest>>(this.node);
-         response.setResult(HAModClusterService.this.resetRequestSource.getLocalResetRequests(infoResponse));
+         
+         if (HAModClusterService.this.isEstablished())
+         {
+            response.setResult(HAModClusterService.this.resetRequestSource.getResetRequests(infoResponse));
+         }
+         
          return response;
       }
 
@@ -1012,6 +1036,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          super(nodeConfig, balancerConfig, mcmpConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource, mcmpHandler, advertiseListenerFactory);
       }
 
+      @Override
       public Map<InetSocketAddress, String> getProxyConfiguration()
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1022,6 +1047,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.getProxyConfiguration().getResult();
       }
 
+      @Override
       public Map<InetSocketAddress, String> getProxyInfo()
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1032,6 +1058,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.getProxyInfo().getResult();
       }
 
+      @Override
       public Map<InetSocketAddress, String> ping(String jvmRoute)
       {
          if (HAModClusterService.this.isMasterNode())
@@ -1042,6 +1069,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          return HAModClusterService.this.rpcStub.ping(jvmRoute).getResult();
       }
       
+      @Override
       protected void establishJvmRoute(Engine engine)
       {
          super.establishJvmRoute(engine);
@@ -1050,6 +1078,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
 
+      @Override
       protected void removeAll(Engine engine)
       {
          super.removeAll(engine);
@@ -1058,13 +1087,15 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          HAModClusterService.this.updateLocalDRM(HAModClusterService.this.drmEntry);
       }
       
+      @Override
       public void status(Engine engine)
       {
-         this.checkInit();
-         
          this.log.debug(Strings.ENGINE_STATUS.getString(engine));
          
-         HAModClusterService.this.latestLoad = this.getLoadBalanceFactor();
+         if (this.isEstablished())
+         {
+            HAModClusterService.this.latestLoad = this.getLoadBalanceFactor();
+         }
          
          if (HAModClusterService.this.isMasterNode())
          {

@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster.ha;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,17 +46,17 @@ import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
  * 
  * @author Brian Stansberry
  */
-public class HASingletonAwareResetRequestSourceImpl extends ResetRequestSourceImpl implements HASingletonAwareResetRequestSource
+public class ClusteredResetRequestSource extends ResetRequestSourceImpl
 {
    static final String METHOD_NAME = "getResetRequests";
    static final Class<?>[] TYPES = new Class[] { Map.class };
    
-   private static final Logger log = Logger.getLogger(HASingletonAwareResetRequestSourceImpl.class);
+   private static final Logger log = Logger.getLogger(ClusteredResetRequestSource.class);
    
    private final HASingletonMBean singleton;
    private final ResetRequestSourceRpcHandler<List<RpcResponse<List<MCMPRequest>>>> rpcStub;
    
-   public HASingletonAwareResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPRequestFactory requestFactory, HASingletonMBean singleton, HAServiceKeyProvider serviceKeyProvider)
+   public ClusteredResetRequestSource(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPRequestFactory requestFactory, HASingletonMBean singleton, HAServiceKeyProvider serviceKeyProvider)
    {
       super(nodeConfig, balancerConfig, requestFactory);
       
@@ -66,43 +65,34 @@ public class HASingletonAwareResetRequestSourceImpl extends ResetRequestSourceIm
    }
    
    @Override
-   public List<MCMPRequest> getResetRequests(Map<String, Set<VirtualHost>> response)
+   public List<MCMPRequest> getResetRequests(Map<String, Set<VirtualHost>> infoResponse)
    {
+      List<MCMPRequest> resets = super.getResetRequests(infoResponse);
+      
       if (this.singleton.isMasterNode())
       {
-         List<MCMPRequest> resets = this.getLocalResetRequests(response);
-         this.addRemoteRequests(resets, response);
-         return resets;
-      }
-
-      return Collections.emptyList();
-   }
-
-   /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.ha.HASingletonAwareResetRequestSource#getLocalResetRequests()
-    */
-   public List<MCMPRequest> getLocalResetRequests(Map<String, Set<VirtualHost>> response)
-   {
-      return super.getResetRequests(response);
-   }
-   
-   private void addRemoteRequests(List<MCMPRequest> resets, Map<String, Set<VirtualHost>> resp)
-   {
-      List<RpcResponse<List<MCMPRequest>>> responses = this.rpcStub.getResetRequests(resp);
-      
-      for (RpcResponse<List<MCMPRequest>> response : responses)
-      {
-         try
+         List<RpcResponse<List<MCMPRequest>>> responses = this.rpcStub.getResetRequests(infoResponse);
+         
+         for (RpcResponse<List<MCMPRequest>> response : responses)
          {
-            resets.addAll(response.getResult());
-         }
-         catch (RuntimeException e)
-         {
-            //FIXME what to do?
-            log.warn(Strings.ERROR_RPC_KNOWN.getString(METHOD_NAME, response.getSender()), e);
+            try
+            {
+               List<MCMPRequest> result = response.getResult();
+               
+               if (result != null)
+               {
+                  resets.addAll(result);
+               }
+            }
+            catch (RuntimeException e)
+            {
+               //FIXME what to do?
+               log.warn(Strings.ERROR_RPC_KNOWN.getString(METHOD_NAME, response.getSender()), e);
+            }
          }
       }
+
+      return resets;
    }
 
    private static class RpcStub implements ResetRequestSourceRpcHandler<List<RpcResponse<List<MCMPRequest>>>>

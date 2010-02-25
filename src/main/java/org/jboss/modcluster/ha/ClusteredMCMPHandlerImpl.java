@@ -21,8 +21,6 @@
  */
 package org.jboss.modcluster.ha;
 
-import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -47,6 +45,7 @@ import org.jboss.modcluster.ha.rpc.MCMPServerDiscoveryEvent;
 import org.jboss.modcluster.ha.rpc.PeerMCMPDiscoveryStatus;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
 import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
+import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPServer;
@@ -230,15 +229,15 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
     * {@inhericDoc}
     * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
     */
-   public void init(List<InetSocketAddress> initialProxies)
+   public void init(List<InetSocketAddress> initialProxies, MCMPConnectionListener listener)
    {
       if (this.singleton.isMasterNode())
       {
-         this.localHandler.init(initialProxies);
+         this.localHandler.init(initialProxies, listener);
       }
       else
       {
-         this.localHandler.init(new ArrayList<InetSocketAddress>());
+         this.localHandler.init(new ArrayList<InetSocketAddress>(), listener);
          
          if (initialProxies != null)
          {
@@ -360,15 +359,6 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
    public void status()
    {
       log.warn(Strings.ERROR_STATUS_UNSUPPORTED.getString());
-   }
-   
-   /**
-    * {@inhericDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPHandler#getLocalAddress()
-    */
-   public InetAddress getLocalAddress() throws IOException
-   {
-      return this.localHandler.getLocalAddress();
    }
 
    private void sendDiscoveryEventToPartition(InetSocketAddress socketAddress, boolean addition)

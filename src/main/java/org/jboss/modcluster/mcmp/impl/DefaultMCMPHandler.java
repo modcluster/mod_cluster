@@ -43,6 +43,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -56,6 +57,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
@@ -63,6 +65,7 @@ import org.jboss.modcluster.mcmp.MCMPResponseParser;
 import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
+import org.jboss.modcluster.mcmp.MCMPServerState.State;
 
 /**
  * Default implementation of {@link MCMPHandler}.
@@ -103,12 +106,14 @@ public class DefaultMCMPHandler implements MCMPHandler
    @GuardedBy("addRemoveProxiesLock")
    private final List<Proxy> removeProxies = new ArrayList<Proxy>();
    
-   /** Initialization completion flag */
+   private final AtomicBoolean established = new AtomicBoolean(false);
+   private volatile MCMPConnectionListener connectionListener;
    private volatile boolean init = false;
    
    // -----------------------------------------------------------  Constructors
 
-   public DefaultMCMPHandler(MCMPHandlerConfiguration config, ResetRequestSource source, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser)
+   public DefaultMCMPHandler(MCMPHandlerConfiguration config, ResetRequestSource source,
+         MCMPRequestFactory requestFactory, MCMPResponseParser responseParser)
    {
       this.resetRequestSource = source;
       this.config = config;
@@ -118,31 +123,41 @@ public class DefaultMCMPHandler implements MCMPHandler
 
    // ------------------------------------------------------------  MCMPHandler
 
-   public void init(List<InetSocketAddress> initialProxies)
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
+    */
+   public void init(List<InetSocketAddress> initialProxies, MCMPConnectionListener connectionListener)
    {
-      Lock lock = this.proxiesLock.writeLock();
-      lock.lock();
+      this.connectionListener = connectionListener;
       
-      try
+      if (initialProxies != null)
       {
-         if (initialProxies != null)
+         Lock lock = this.proxiesLock.writeLock();
+         lock.lock();
+         
+         try
          {
             for (InetSocketAddress initialProxy: initialProxies)
             {
                this.add(initialProxy);
             }
+
+            this.status(false);
          }
-   
-         this.status(false);
-      }
-      finally
-      {
-         lock.unlock();
+         finally
+         {
+            lock.unlock();
+         }
       }
       
       this.init = true;
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#shutdown()
+    */
    public void shutdown()
    {
       this.init = false;
@@ -163,6 +178,10 @@ public class DefaultMCMPHandler implements MCMPHandler
       }
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress)
+    */
    public void addProxy(InetSocketAddress socketAddress)
    {
       this.add(socketAddress);
@@ -212,11 +231,19 @@ public class DefaultMCMPHandler implements MCMPHandler
       return proxy;
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress, boolean)
+    */
    public void addProxy(InetSocketAddress socketAddress, boolean established)
    {
       this.add(socketAddress).setEstablished(established);
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#removeProxy(java.net.InetSocketAddress)
+    */
    public void removeProxy(InetSocketAddress socketAddress)
    {
       Proxy proxy = new Proxy(socketAddress, this.config);
@@ -233,6 +260,10 @@ public class DefaultMCMPHandler implements MCMPHandler
       }
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#getProxyStates()
+    */
    public Set<MCMPServerState> getProxyStates()
    {
       Lock lock = this.proxiesLock.readLock();
@@ -257,6 +288,10 @@ public class DefaultMCMPHandler implements MCMPHandler
       }
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#isProxyHealthOK()
+    */
    public boolean isProxyHealthOK()
    {
       Lock lock = this.proxiesLock.readLock();
@@ -279,6 +314,10 @@ public class DefaultMCMPHandler implements MCMPHandler
       }
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#markProxiesInError()
+    */
    public void markProxiesInError()
    {
       Lock lock = this.proxiesLock.readLock();
@@ -301,8 +340,8 @@ public class DefaultMCMPHandler implements MCMPHandler
    }
 
    /**
-    * Reset a DOWN connection to the proxy up to ERROR, where the configuration will
-    * be refreshed. To be used through JMX or similar.
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#reset()
     */
    public void reset()
    {
@@ -326,64 +365,25 @@ public class DefaultMCMPHandler implements MCMPHandler
    }
 
    /**
-    * Send a periodic status request. If in error state, the listener will attempt to refresh
-    * the configuration on the front end server.
-    * 
-    * @param engine
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#status()
     */
    public synchronized void status()
    {
-      if (this.init)
-      {
+   	  if (this.init)
+   	  {
+         this.processPendingDiscoveryEvents();
+      
          this.status(true);
       }
    }
-   
+
    /**
-    * {@inhericDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPHandler#getLocalAddress()
+    * Send a periodic status request.
+    * @param sendResetRequests if enabled, when in error state, the listener will attempt to refresh the configuration on the front end server
     */
-   public InetAddress getLocalAddress() throws IOException
-   {
-      IOException firstException = null;
-      
-      Lock lock = this.proxiesLock.readLock();
-      lock.lock();
-      
-      try
-      {
-         for (Proxy proxy: this.proxies)
-         {
-            try
-            {
-               return proxy.getLocalAddress();
-            }
-            catch (IOException e)
-            {
-               // Cache the exception in case no other connection works,
-               // but keep trying
-               if (firstException == null)
-               {
-                  firstException = e;
-               }
-            }
-         }
-      }
-      finally
-      {
-         lock.unlock();
-      }
-      
-      if (firstException != null) throw firstException;
-
-      // We get here if there are no proxies
-      return null;
-   }
-
    private void status(boolean sendResetRequests)
    {
-      this.processPendingDiscoveryEvents();
-
       Lock lock = this.proxiesLock.readLock();
       lock.lock();
       
@@ -400,10 +400,12 @@ public class DefaultMCMPHandler implements MCMPHandler
    
                if (proxy.getState() == Proxy.State.OK)
                {
-                  // We recovered above; if we get another IOException
-                  // we should log it
-                  proxy.setIoExceptionLogged(false);
-   
+                  // Only notify connection listener once
+                  if (this.established.compareAndSet(false, true))
+                  {
+                     this.connectionListener.connectionEstablished(proxy.getLocalAddress());
+                  }
+                  
                   if (sendResetRequests)
                   {
                      Map<String, Set<ResetRequestSource.VirtualHost>> parsedResponse = this.responseParser.parseInfoResponse(response);
@@ -425,14 +427,8 @@ public class DefaultMCMPHandler implements MCMPHandler
    }
    
    /**
-    * Send HTTP request, with the specified list of parameters. If an IO error occurs, the error state will
-    * be set. If the front end server reports an error, will mark as error Proxy.State. Other unexpected exceptions
-    * will be thrown and the error state will be set.
-    * 
-    * @param command
-    * @param wildcard
-    * @param parameters
-    * @return the response body as a String; null if in error state or a normal error occurs
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequest(org.jboss.modcluster.mcmp.MCMPRequest)
     */
    public Map<MCMPServerState, String> sendRequest(MCMPRequest request)
    {
@@ -456,6 +452,10 @@ public class DefaultMCMPHandler implements MCMPHandler
       return map;
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequests(java.util.List)
+    */
    public Map<MCMPServerState, List<String>> sendRequests(List<MCMPRequest> requests)
    {
       Map<MCMPServerState, List<String>> map = new HashMap<MCMPServerState, List<String>>();
@@ -744,6 +744,11 @@ public class DefaultMCMPHandler implements MCMPHandler
                contentLength -= bytes;
             }
 
+            if (proxy.getState() == State.OK)
+            {
+               proxy.setIoExceptionLogged(false);
+            }
+            
             return result.toString();
          }
          catch (IOException e)
@@ -783,12 +788,13 @@ public class DefaultMCMPHandler implements MCMPHandler
       private final InetSocketAddress socketAddress;
       
       private volatile State state = State.OK;
-      private volatile boolean established;
+      private volatile boolean established = false;
       
       private transient final int socketTimeout;
       private transient final SocketFactory socketFactory;
       
-      private transient volatile boolean ioExceptionLogged;
+      private transient volatile boolean ioExceptionLogged = false;
+      private transient volatile InetAddress localAddress = null;
 
       @GuardedBy("Proxy.this")
       private transient volatile Socket socket = null;
@@ -873,6 +879,7 @@ public class DefaultMCMPHandler implements MCMPHandler
          {
             this.socket = this.socketFactory.createSocket(this.socketAddress.getAddress(), this.socketAddress.getPort());
             this.socket.setSoTimeout(this.socketTimeout);
+            this.localAddress = this.socket.getLocalAddress();
          }
          return this.socket;
       }
@@ -901,9 +908,9 @@ public class DefaultMCMPHandler implements MCMPHandler
          return this.writer;
       }
 
-      InetAddress getLocalAddress() throws IOException
+      InetAddress getLocalAddress()
       {
-         return this.getConnection().getLocalAddress();
+         return this.localAddress;
       }
       
       /**

@@ -24,7 +24,6 @@ package org.jboss.modcluster;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Map;
@@ -69,7 +68,7 @@ public class ModClusterServiceTestCase
    private final LoadBalanceFactorProvider lbfProvider = EasyMock.createStrictMock(LoadBalanceFactorProvider.class);
    private final AdvertiseListenerFactory advertiseListenerFactory = EasyMock.createStrictMock(AdvertiseListenerFactory.class);
    private final AdvertiseListener advertiseListener = EasyMock.createStrictMock(AdvertiseListener.class);
-
+   
    private ModClusterService service = new ModClusterService(this.nodeConfig, this.balancerConfig, this.mcmpConfig, this.lbfProviderFactory, this.requestFactory, this.responseParser, this.source, this.mcmpHandler, this.advertiseListenerFactory);
    
    private void init(Server server)
@@ -80,7 +79,7 @@ public class ModClusterServiceTestCase
       // Test advertise = null, proxies configured
       EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(localHostName);
       
-      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)));
+      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("ignored");
       
@@ -93,9 +92,77 @@ public class ModClusterServiceTestCase
       EasyMock.replay(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
       
       this.service.init(server);
-      
+
       EasyMock.verify(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
       EasyMock.reset(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
+   }
+   
+   private void establishConnection(Server server)
+   {
+      this.init(server);
+      
+      InetAddress localAddress = this.getLocalAddress();
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Connector connector = EasyMock.createStrictMock(Connector.class);
+      
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+
+      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
+      EasyMock.expect(connector.getAddress()).andReturn(this.getWildcardAddress());
+      
+      connector.setAddress(localAddress);
+      
+      EasyMock.expect(engine.getJvmRoute()).andReturn(null);
+      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
+      EasyMock.expect(connector.getAddress()).andReturn(localAddress);
+      EasyMock.expect(connector.getPort()).andReturn(6666);
+      EasyMock.expect(engine.getName()).andReturn("engine");
+      
+      engine.setJvmRoute("127.0.0.1:6666:engine");
+      
+      EasyMock.replay(server, engine, connector);
+      
+      this.service.connectionEstablished(localAddress);
+      
+      EasyMock.verify(server, engine, connector);
+      EasyMock.reset(server, engine, connector);
+   }
+   
+   private InetAddress getLocalAddress()
+   {
+      try
+      {
+         return InetAddress.getByName("127.0.0.1");
+      }
+      catch (UnknownHostException e)
+      {
+         throw new IllegalStateException(e);
+      }
+   }
+   
+   private InetAddress getWildcardAddress()
+   {
+      try
+      {
+         InetAddress address = InetAddress.getByName("0.0.0.0");
+         
+         Assert.assertTrue(address.isAnyLocalAddress());
+         
+         return address;
+      }
+      catch (UnknownHostException e)
+      {
+         Assert.fail(e.getMessage());
+         throw new IllegalStateException(e);
+      }
+   }
+   
+   @Test
+   public void establishConnection()
+   {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
    }
    
    @Test
@@ -163,10 +230,31 @@ public class ModClusterServiceTestCase
    @Test
    public void getProxyConfiguration()
    {
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+
+      // Test unestablished
+      EasyMock.expect(this.requestFactory.createDumpRequest()).andReturn(request);
+      
+      EasyMock.replay(this.requestFactory, this.mcmpHandler);
+      
+      Map<InetSocketAddress, String> result = this.service.getProxyConfiguration();
+
+      EasyMock.verify(this.requestFactory, this.mcmpHandler);
+      
+      Assert.assertNotNull(result);
+      Assert.assertEquals(0, result.size());
+
+      EasyMock.reset(this.requestFactory, this.mcmpHandler);
+      
+      
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
+      // Test established
       InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 8080);
       String configuration = "config";
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
-      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
       EasyMock.expect(this.requestFactory.createDumpRequest()).andReturn(request);
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, configuration));
@@ -174,7 +262,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      Map<InetSocketAddress, String> result = this.service.getProxyConfiguration();
+      result = this.service.getProxyConfiguration();
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
@@ -187,10 +275,32 @@ public class ModClusterServiceTestCase
    @Test
    public void getProxyInfo()
    {
+      // Test unestablished
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+      
+      EasyMock.expect(this.requestFactory.createInfoRequest()).andReturn(request);
+
+      EasyMock.replay(this.requestFactory, this.mcmpHandler);
+      
+      // Test established
+      Map<InetSocketAddress, String> result = this.service.getProxyInfo();
+
+      EasyMock.verify(this.requestFactory, this.mcmpHandler);
+      
+      Assert.assertNotNull(result);
+      Assert.assertEquals(0, result.size());
+
+      EasyMock.reset(this.requestFactory, this.mcmpHandler);
+
+      
+      // Test established
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 8080);
       String information = "info";
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
-      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
       EasyMock.expect(this.requestFactory.createInfoRequest()).andReturn(request);
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.singletonMap(state, information));
@@ -198,7 +308,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      Map<InetSocketAddress, String> result = this.service.getProxyInfo();
+      result = this.service.getProxyInfo();
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
@@ -211,11 +321,62 @@ public class ModClusterServiceTestCase
    @Test
    public void ping()
    {
+      // Test unestablished
+      // Test no parameter
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+      
+      EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
+
+      EasyMock.replay(this.requestFactory, this.mcmpHandler);
+      
+      Map<InetSocketAddress, String> result = this.service.ping();
+
+      EasyMock.verify(this.requestFactory, this.mcmpHandler);
+      
+      Assert.assertNotNull(result);
+      Assert.assertEquals(0, result.size());
+      
+      EasyMock.reset(this.requestFactory, this.mcmpHandler);
+
+
+      // Test url scheme, host, port
+      EasyMock.expect(this.requestFactory.createPingRequest("ajp", "127.0.0.1", 8009)).andReturn(request);
+
+      EasyMock.replay(this.requestFactory, this.mcmpHandler);
+      
+      result = this.service.ping("ajp", "127.0.0.1", 8009);
+
+      EasyMock.verify(this.requestFactory, this.mcmpHandler);
+      
+      Assert.assertNotNull(result);
+      Assert.assertEquals(0, result.size());
+      
+      EasyMock.reset(this.requestFactory, this.mcmpHandler);
+
+      
+      // Test jvmRoute
+      EasyMock.expect(this.requestFactory.createPingRequest("route")).andReturn(request);
+
+      EasyMock.replay(this.requestFactory, this.mcmpHandler);
+      
+      result = this.service.ping("route");
+
+      EasyMock.verify(this.requestFactory, this.mcmpHandler);
+      
+      Assert.assertNotNull(result);
+      Assert.assertEquals(0, result.size());
+      
+      EasyMock.reset(this.requestFactory, this.mcmpHandler);
+      
+      // Test established, repeat above tests
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       InetSocketAddress address = InetSocketAddress.createUnresolved("localhost", 8080);
       String pingResult = "OK";
       
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
-      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
       // Test no parameter
       EasyMock.expect(this.requestFactory.createPingRequest()).andReturn(request);
@@ -224,7 +385,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(this.mcmpHandler, this.requestFactory, state, request);
       
-      Map<InetSocketAddress, String> result = this.service.ping();
+      result = this.service.ping();
       
       EasyMock.verify(this.mcmpHandler, this.requestFactory, state, request);
       
@@ -270,6 +431,17 @@ public class ModClusterServiceTestCase
    @Test
    public void reset()
    {
+      EasyMock.replay(this.mcmpHandler);
+      
+      this.service.reset();
+      
+      EasyMock.verify(this.mcmpHandler);
+      EasyMock.reset(this.mcmpHandler);
+      
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       this.mcmpHandler.reset();
       
       EasyMock.replay(this.mcmpHandler);
@@ -283,6 +455,17 @@ public class ModClusterServiceTestCase
    @Test
    public void refresh()
    {
+      EasyMock.replay(this.mcmpHandler);
+      
+      this.service.refresh();
+      
+      EasyMock.verify(this.mcmpHandler);
+      EasyMock.reset(this.mcmpHandler);
+      
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       this.mcmpHandler.markProxiesInError();
       
       EasyMock.replay(this.mcmpHandler);
@@ -298,7 +481,17 @@ public class ModClusterServiceTestCase
    {
       Server server = EasyMock.createStrictMock(Server.class);
       
-      this.init(server);
+      EasyMock.replay(server);
+      
+      boolean result = this.service.enable();
+      
+      EasyMock.verify(server);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(server);
+      
+      this.establishConnection(server);
       
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
@@ -313,7 +506,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine);
       
-      boolean result = this.service.enable();
+      result = this.service.enable();
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine);
       
@@ -328,7 +521,17 @@ public class ModClusterServiceTestCase
    {
       Server server = EasyMock.createStrictMock(Server.class);
       
-      this.init(server);
+      EasyMock.replay(server);
+      
+      boolean result = this.service.disable();
+      
+      EasyMock.verify(server);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(server);
+      
+      this.establishConnection(server);
       
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
@@ -343,7 +546,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine);
       
-      boolean result = this.service.disable();
+      result = this.service.disable();
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine);
       
@@ -355,12 +558,25 @@ public class ModClusterServiceTestCase
    @Test
    public void enableContext()
    {
-      Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.init(server);
-      
       String hostName = "host1";
       String path = "/";
+      
+      Server server = EasyMock.createStrictMock(Server.class);
+
+      // Test unestablished
+      EasyMock.replay(server);
+      
+      boolean result = this.service.enableContext(hostName, path);
+
+      EasyMock.verify(server);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(server);
+
+      
+      // Test established
+      this.establishConnection(server);
       
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
@@ -379,7 +595,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
-      boolean result = this.service.enableContext(hostName, path);
+      result = this.service.enableContext(hostName, path);
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
@@ -391,12 +607,25 @@ public class ModClusterServiceTestCase
    @Test
    public void disableContext()
    {
-      Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.init(server);
-      
       String hostName = "host1";
       String path = "/";
+      
+      Server server = EasyMock.createStrictMock(Server.class);
+
+      // Test unestablished
+      EasyMock.replay(server);
+      
+      boolean result = this.service.disableContext(hostName, path);
+
+      EasyMock.verify(server);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(server);
+
+      
+      // Test established
+      this.establishConnection(server);
       
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
@@ -415,7 +644,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
-      boolean result = this.service.disableContext(hostName, path);
+      result = this.service.disableContext(hostName, path);
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine, host, context);
       
@@ -434,7 +663,7 @@ public class ModClusterServiceTestCase
       // Test advertise = false
       EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(localHostName);
       
-      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)));
+      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn(null);
       
@@ -462,7 +691,7 @@ public class ModClusterServiceTestCase
       // Test advertise = true
       EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(localHostName);
       
-      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)));
+      this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("");
       
@@ -492,18 +721,6 @@ public class ModClusterServiceTestCase
       this.init(server);
    }
    
-   private InetAddress getLocalAddress()
-   {
-      try
-      {
-         return InetAddress.getLocalHost();
-      }
-      catch (UnknownHostException e)
-      {
-         throw new IllegalStateException(e);
-      }
-   }
-   
    @Test
    public void initNoProxies() throws IOException
    {
@@ -513,7 +730,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(null);
       Capture<Map<String, Set<String>>> capturedMap = new Capture<Map<String, Set<String>>>();
       
-      this.mcmpHandler.init(Collections.<InetSocketAddress>emptyList());
+      this.mcmpHandler.init(Collections.<InetSocketAddress>emptyList(), this.service);
       
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("host1:ignored,ROOT");
       
@@ -577,23 +794,13 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void addContextNotInit()
+   public void addContextNotEstablished()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       
       EasyMock.replay(context);
       
-      // Test not initialized
-      try
-      {
-         this.service.add(context);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.add(context);
       
       EasyMock.verify(context);
       EasyMock.reset(context);
@@ -602,10 +809,12 @@ public class ModClusterServiceTestCase
    @Test
    public void addContextIgnored() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
       
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -623,10 +832,12 @@ public class ModClusterServiceTestCase
    @Test
    public void addContextNotStarted() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
       
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -645,12 +856,14 @@ public class ModClusterServiceTestCase
    @Test
    public void addContext() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
-      init();
-
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
       EasyMock.expect(host.getName()).andReturn("localhost");
@@ -672,23 +885,13 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void startContextNoInit()
+   public void startContextNotEstablished()
    {
       Context context = EasyMock.createStrictMock(Context.class);
       
       EasyMock.replay(context);
       
-      // Test not initialized
-      try
-      {
-         this.service.start(context);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.start(context);
       
       EasyMock.verify(context);
    }
@@ -696,10 +899,12 @@ public class ModClusterServiceTestCase
    @Test
    public void startContextIgnored() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
       
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -716,11 +921,13 @@ public class ModClusterServiceTestCase
    @Test
    public void startContext() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-      
-      init();
 
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -747,17 +954,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(context);
       
-      // Test not initialized
-      try
-      {
-         this.service.stop(context);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.stop(context);
 
       EasyMock.verify(context);
    }
@@ -765,10 +962,12 @@ public class ModClusterServiceTestCase
    @Test
    public void stopContextIgnored() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
       
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -785,11 +984,13 @@ public class ModClusterServiceTestCase
    @Test
    public void stopContext() throws IOException
    {
-      Context context = EasyMock.createStrictMock(Context.class);
-      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-      Host host = EasyMock.createStrictMock(Host.class);
+      Server server = EasyMock.createStrictMock(Server.class);
       
-      init();
+      this.establishConnection(server);
+      
+      Context context = EasyMock.createStrictMock(Context.class);
+      Host host = EasyMock.createStrictMock(Host.class);
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
 
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -816,17 +1017,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(context);
       
-      // Test not initialized
-      try
-      {
-         this.service.remove(context);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.remove(context);
 
       EasyMock.verify(context);
    }
@@ -834,10 +1025,12 @@ public class ModClusterServiceTestCase
    @Test
    public void removeContextIgnored() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
       
       // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
@@ -850,39 +1043,16 @@ public class ModClusterServiceTestCase
       
       EasyMock.verify(context, host);
    }
-
-   @Test
-   public void removeContextNoJvmRoute() throws IOException
-   {
-      Context context = EasyMock.createStrictMock(Context.class);
-      Engine engine = EasyMock.createStrictMock(Engine.class);
-      Host host = EasyMock.createStrictMock(Host.class);
-      
-      init();
-
-      // Exclusion check
-      EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
-
-      EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getEngine()).andReturn(engine);
-      EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      
-      EasyMock.replay(context, host, engine);
-      
-      this.service.remove(context);
-      
-      EasyMock.verify(context, host, engine);
-   }
       
    @Test
    public void removeContext() throws IOException
    {
-      this.init();
-
-      Context context = EasyMock.createStrictMock(Context.class);
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
+      Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
@@ -890,11 +1060,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(context.getHost()).andReturn(host);
       EasyMock.expect(host.getName()).andReturn("localhost");
       EasyMock.expect(context.getPath()).andReturn("/context");
-      
-      // jvm route null check
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getEngine()).andReturn(engine);
-      EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
       EasyMock.expect(this.requestFactory.createRemoveRequest(context)).andReturn(request);
       
@@ -908,35 +1074,29 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void statusNoInit()
+   public void statusNotEstablished()
    {
       Engine engine = EasyMock.createStrictMock(Engine.class);
-
-      EasyMock.replay(engine);
       
-      // Test not initialized
-      try
-      {
-         this.service.status(engine);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.mcmpHandler.status();
 
-      EasyMock.verify(engine);
-      EasyMock.reset(engine);
+      EasyMock.replay(engine, this.mcmpHandler);
+      
+      this.service.status(engine);
+
+      EasyMock.verify(engine, this.mcmpHandler);
+      EasyMock.reset(engine, this.mcmpHandler);
    }
       
    @Test
    public void status() throws IOException
    {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-      
-      init();
       
       this.mcmpHandler.status();
       
@@ -956,23 +1116,13 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void startServerNoInit()
+   public void startServerNotEstablished()
    {
       Server server = EasyMock.createStrictMock(Server.class);
       
       EasyMock.replay(server);
       
-      // Test not initialized
-      try
-      {
-         this.service.start(server);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.start(server);
       
       EasyMock.verify(server);
       EasyMock.reset(server);
@@ -982,32 +1132,16 @@ public class ModClusterServiceTestCase
    public void startServer() throws Exception
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       Connector connector = EasyMock.createStrictMock(Connector.class);
-      InetAddress address = InetAddress.getByName("127.0.0.1");
       
-      this.init(server);
-      
-      // Test initialized
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
-
-      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
-      EasyMock.expect(connector.getAddress()).andReturn(InetAddress.getByName("0.0.0.0"));
-      EasyMock.expect(this.mcmpHandler.getLocalAddress()).andReturn(address);
-      
-      connector.setAddress(address);
-      
-      EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
-      EasyMock.expect(connector.getAddress()).andReturn(address);
-      EasyMock.expect(connector.getPort()).andReturn(6666);
-      EasyMock.expect(engine.getName()).andReturn("engine");
-      
-      engine.setJvmRoute("127.0.0.1:6666:engine");
-      
       EasyMock.expect(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
@@ -1037,17 +1171,7 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server);
       
-      // Test not initialized
-      try
-      {
-         this.service.stop(server);
-         
-         Assert.fail();
-      }
-      catch (IllegalStateException e)
-      {
-         // Expected
-      }
+      this.service.stop(server);
       
       EasyMock.verify(server);
       EasyMock.reset(server);
@@ -1057,14 +1181,15 @@ public class ModClusterServiceTestCase
    public void stopServer() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.establishConnection(server);
+      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest contextRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest engineRequest = EasyMock.createStrictMock(MCMPRequest.class);
-      
-      this.init(server);
-      
+
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
 
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
@@ -1075,17 +1200,11 @@ public class ModClusterServiceTestCase
       EasyMock.expect(context.getHost()).andReturn(host);
       EasyMock.expect(host.getName()).andReturn("localhost");
       EasyMock.expect(context.getPath()).andReturn("/context");
-      
-      // jvm route null check
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getEngine()).andReturn(engine);
-      EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
       EasyMock.expect(this.requestFactory.createRemoveRequest(context)).andReturn(contextRequest);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(contextRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
-      
-      EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
       EasyMock.expect(this.requestFactory.createRemoveRequest(engine)).andReturn(engineRequest);
       
@@ -1100,7 +1219,7 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void gracefulStop() throws Exception
+   public void stopGracefully() throws Exception
    {
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
@@ -1111,7 +1230,7 @@ public class ModClusterServiceTestCase
       final Capture<HttpSessionListener> capturedAddListener = new Capture<HttpSessionListener>();
       Capture<HttpSessionListener> capturedRemoveListener = new Capture<HttpSessionListener>();
       
-      this.init(server);
+      this.establishConnection(server);
       
       // Test successful drain
       
@@ -1209,7 +1328,7 @@ public class ModClusterServiceTestCase
    }
    
    @Test
-   public void gracefulStopContext() throws Exception
+   public void stopContextGracefully() throws Exception
    {
       String hostName = "host";
       String contextPath = "path";
@@ -1223,7 +1342,7 @@ public class ModClusterServiceTestCase
       final Capture<HttpSessionListener> capturedAddListener = new Capture<HttpSessionListener>();
       Capture<HttpSessionListener> capturedRemoveListener = new Capture<HttpSessionListener>();
       
-      this.init(server);
+      this.establishConnection(server);
       
       // Test successful drain
       

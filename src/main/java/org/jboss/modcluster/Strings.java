@@ -79,8 +79,7 @@ public enum Strings
    ERROR_STATUS_UNSUPPORTED("modcluster.error.status.unsupported"),
    ERROR_ADVERTISE_STOP("modcluster.error.stopListener"),
    ERROR_STOP_OLD_MASTER("modcluster.error.stopOldMaster"),
-   ERROR_REQUEST_SYNTAX("modcluster.error.syntax"),
-   ERROR_UNINITIALIZED("modcluster.error.uninitialized");
+   ERROR_REQUEST_SYNTAX("modcluster.error.syntax");
    
    private static ResourceBundle resource = ResourceBundle.getBundle(Strings.class.getName());
    
