@@ -5,10 +5,8 @@
    <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
    <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
    <Listener className="org.apache.catalina.core.JasperListener" />
-   <!--Listener className="org.jboss.modcluster.ClusterListener"
-             advertise="true"/-->
    <Listener className="org.jboss.web.tomcat.service.deployers.MicrocontainerIntegrationLifecycleListener"
-             delegateBeanName="HAModClusterService"/>
+             delegateBeanName="ModClusterListener"/>
 
    <Service name="jboss.web">
 

@@ -17,7 +17,7 @@
       <!-- Only needed if the org.jboss.web.tomcat.service.deployers.MicrocontainerIntegrationLifecycleListener
            is enabled in the tomcat server.xml file.
       -->
-      <depends>HAModClusterService</depends>
+      <depends>ModClusterListener</depends>
       
       <!-- Inject the TomcatDeployer -->
       <property name="tomcatDeployer"><inject bean="WarDeployer"/></property> 
