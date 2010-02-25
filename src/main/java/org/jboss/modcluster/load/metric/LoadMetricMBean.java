@@ -41,6 +41,13 @@ public interface LoadMetricMBean
     */
    double getCapacity();
    
+   /**
+    * Returns the current load of this metric as a percent of the metric's capacity.
+    * @return raw load / capacity.
+    * @throws Exception if the load could not be determined.
+    */
+   double getLoad() throws Exception;
+   
    void setWeight(int weight);
    
    void setCapacity(double capacity);

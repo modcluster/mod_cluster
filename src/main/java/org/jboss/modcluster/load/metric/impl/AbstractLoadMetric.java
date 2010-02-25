@@ -75,4 +75,22 @@ public abstract class AbstractLoadMetric<C extends LoadContext> implements LoadM
       
       this.capacity = capacity;
    }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.load.metric.LoadMetricMBean#getLoad()
+    */
+   public double getLoad() throws Exception
+   {
+      C context = this.getSource().createContext();
+      
+      try
+      {
+         return this.getLoad(context) / this.capacity;
+      }
+      finally
+      {
+         context.close();
+      }
+   }
 }
