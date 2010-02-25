@@ -255,9 +255,10 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                      "Created: can't reuse worker as it for %s cleaning...", url);
         if ((*worker)->cp->pool) {
+            /* destroy and create a new one */
             apr_pool_destroy((*worker)->cp->pool);
             (*worker)->cp->pool = NULL;
-
+            init_conn_pool(conf->pool, *worker);
         }
         reuse = 1;
     }
