@@ -438,4 +438,12 @@ public class Maintest extends TestCase {
         }
         return tries;
     }
+    /* Just wait n0 sec: needed a the end of some tests */
+    static void waitn() {
+        try {
+            Thread.sleep(35000);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

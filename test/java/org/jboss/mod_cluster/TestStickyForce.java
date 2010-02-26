@@ -84,15 +84,8 @@ public class TestStickyForce extends TestCase {
         String [] nodes = new String[2];
         nodes[0] = "sticky3";
         nodes[1] = "sticky4";
-        int countinfo = 0;
-        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            countinfo++;
-        }
+        if (!Maintest.TestForNodes(cluster, nodes))
+            fail("can't start nodes");
 
         // Start the client and wait for it.
         Client client = new Client();
@@ -127,7 +120,7 @@ public class TestStickyForce extends TestCase {
                 fail("can't stop connector");
             }
             /* wait until the connector has stopped */
-            countinfo = 0;
+            int countinfo = 0;
             while (Maintest.testPort(port) && countinfo < 20) {
                 try {
                     Thread.sleep(3000);
@@ -168,26 +161,16 @@ public class TestStickyForce extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-/* In fact it doesn't stop correctly ... Something needs to be fixed */
-        countinfo = 0;
-        while ((!Maintest.checkProxyInfo(cluster, null)) && countinfo<30) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            countinfo++;
-        }
-        if (countinfo == 30) {
-            System.out.println("Can't stop...");
-        }
-
         Maintest.testPort(8012);
         Maintest.testPort(8011);
+        if (!Maintest.TestForNodes(cluster, null))
+            fail("Can't stop...");
+        /* XXX:  In fact it doesn't stop correctly ... Something needs to be fixed */
 
         // Test client result.
         if ( !clienterror && client.httpResponseCode != 503 ) 
             fail("Client test should have failed");
+        Maintest.waitn();
         System.out.println("TestStickyForce Done");
     }
 }

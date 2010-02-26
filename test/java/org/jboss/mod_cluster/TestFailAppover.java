@@ -90,7 +90,8 @@ public class TestFailAppover extends TestCase {
         String [] nodes = new String[2];
         nodes[0] = "node3";
         nodes[1] = "node4";
-        Maintest.TestForNodes(cluster, nodes);
+        if (!Maintest.TestForNodes(cluster, nodes))
+           fail("can't start nodes"); 
 
         // Start the client and wait for it.
         Client client = new Client();

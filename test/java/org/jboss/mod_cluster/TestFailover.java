@@ -79,11 +79,11 @@ public class TestFailover extends TestCase {
         wait.start();
 
         // Wait until httpd as received the nodes information.
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
+        String [] nodes = new String[2];
+        nodes[0] = "node3";
+        nodes[1] = "node4";
+        if (!Maintest.TestForNodes(cluster, nodes))
+            fail("can't start nodes");
 
         // Start the client and wait for it.
         Client client = new Client();
@@ -139,19 +139,21 @@ public class TestFailover extends TestCase {
             server.removeService(service);
             server.removeService(service2);
             server.removeLifecycleListener(cluster);
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
         // Wait until httpd as received the stop messages.
-        Maintest.TestForNodes(cluster, null);
+        Maintest.testPort(8011);
+        Maintest.testPort(8010);
+        if (!Maintest.TestForNodes(cluster, null))
+            fail("Can't stop nodes");
 
         // Test client result.
         if (clienterror)
             fail("Client test failed");
 
-        Maintest.testPort(8011);
-        Maintest.testPort(8010);
+        Maintest.waitn();
         System.out.println("TestFailover Done");
     }
 }
