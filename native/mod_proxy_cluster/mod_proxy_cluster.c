@@ -1459,6 +1459,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         char *url;
         apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
         url = apr_pstrcat(r->pool, worker->scheme, "://", worker->hostname,  sport, "/", NULL);
+        worker->s->error_time = 0; /* Force retry now */
         rv = proxy_cluster_try_pingpong(r, worker, url, conf, node->mess.ping, node->mess.timeout);
         if (rv != APR_SUCCESS) {
             worker->s->status |= PROXY_WORKER_IN_ERROR;
