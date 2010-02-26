@@ -573,7 +573,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 
         return (0);
     } else {
-         node->mess.lastcleantry = apr_time_now();
+        node->mess.lastcleantry = apr_time_now();
         return (1); /* We should retry later */
     }
 }
@@ -586,7 +586,6 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
 {
     int *id, size, i;
     apr_time_t last;
-    int notok = 0;
 
     /* Check if we have to do something */
     apr_thread_mutex_lock(lock);
@@ -617,11 +616,7 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
             continue;
         if (ou->updatetime >= last) {
             /* The node has changed */
-            if (ou->mess.remove)
-                notok = notok + remove_workers_node(ou, conf, pool, server);
-            else {
-                add_balancers_workers(ou, pool);
-            }
+            add_balancers_workers(ou, pool);
         } 
     } 
 
@@ -1589,6 +1584,23 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
         }
     }
 }
+static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, server_rec *server)
+{
+    int *id, size, i;
+    apr_thread_mutex_lock(lock);
+
+    /* read the ident of the nodes */
+    id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
+    size = node_storage->get_ids_used_node(id);
+    for (i=0; i<size; i++) {
+        nodeinfo_t *ou;
+        if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
+            continue;
+        if (ou->mess.remove)
+            remove_workers_node(ou, conf, pool, server);
+    }
+    apr_thread_mutex_unlock(lock);
+}
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
     apr_pool_t *pool;
@@ -1610,6 +1622,8 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
             /* Create new workers if the shared memory changes */
             if (last)
                 update_workers_node(conf, pool, s, 0);
+            /* removed nodes: check for workers */
+            remove_workers_nodes(conf, pool, s);
             /* cleanup removed node in shared memory */
             remove_removed_node(pool, s);
             /* Calculate the lbstatus for each node */
@@ -2174,12 +2188,6 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
     /* XXX: candidate = (*balancer->lbmethod->finder)(balancer, r); */
     candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain);
 
-    if (candidate) {
-        proxy_cluster_helper *helper;
-        helper = (proxy_cluster_helper *) candidate->opaque;
-        helper->count_active++;
-    }
-
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
         "proxy: CLUSTER: (%s). Unlock failed for find_best_worker()", balancer->name);
@@ -2371,6 +2379,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             for (i = 0; i < (*balancer)->workers->nelts; i++, runtime++) {
                 if (runtime->name && strcmp(worker_name, runtime->name) == 0) {
                     helper = (proxy_cluster_helper *) (runtime)->opaque;
+                    apr_thread_mutex_lock(lock);
                     if (helper->count_active>0)
                         helper->count_active--;
                     /* Ajust the context counter here too */
@@ -2378,6 +2387,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                     if (context_id && *context_id) {
                        upd_context_count(context_id, -1);
                     }
+                    apr_thread_mutex_unlock(lock);
                 }
             }
         }
@@ -2480,6 +2490,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     (*worker)->s->busy++;
 
     /* Mark the worker used for the cleanup logic */
+    apr_thread_mutex_lock(lock);
     helper = (proxy_cluster_helper *) (*worker)->opaque;
     helper->count_active++;
 
@@ -2488,6 +2499,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     if (context_id && *context_id) {
        upd_context_count(context_id, 1);
     }
+    apr_thread_mutex_unlock(lock);
 
     /*
      * get_route_balancer already fills all of the notes and some subprocess_env
@@ -2530,6 +2542,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
 
     /* mark the work as not use */
+    apr_thread_mutex_lock(lock);
     helper = (proxy_cluster_helper *) worker->opaque;
     helper->count_active--;
     /* Ajust the context counter here too */
@@ -2537,6 +2550,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     if (context_id && *context_id) {
        upd_context_count(context_id, -1);
     }
+    apr_thread_mutex_unlock(lock);
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
