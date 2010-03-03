@@ -26,7 +26,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Set;
 
 import org.easymock.Capture;
 import org.easymock.EasyMock;
@@ -107,8 +106,8 @@ public class HAModClusterServiceTestCase
       EasyMock.verify(this.mcmpConfig, this.nodeConfig, this.haConfig, this.partition);
       EasyMock.reset(this.mcmpConfig, this.nodeConfig, this.haConfig, this.partition);
    }
-
-   private void init(Server server)
+   
+   private void init(Server server, Engine engine, Host host)
    {
       InetAddress localAddress = this.getLocalAddress();
       String localHostName = localAddress.getHostAddress();
@@ -121,20 +120,25 @@ public class HAModClusterServiceTestCase
       
       this.clusteredMCMPHandler.init(EasyMock.eq(Collections.singletonList(socketAddress)), EasyMock.isA(HAModClusterService.ClusteredModClusterService.class));
       
-      EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn(null);
+      EasyMock.expect(this.mcmpConfig.isAutoEnableContexts()).andReturn(true);
+      EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("ignored");
+
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+      EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
+      EasyMock.expect(host.getName()).andReturn("localhost");
       
-      this.resetRequestSource.init(server, Collections.<String, Set<String>>emptyMap());
+      this.resetRequestSource.init(server, this.service);
 
       EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
       
       EasyMock.expect(this.mcmpConfig.getAdvertise()).andReturn(false);
       
-      EasyMock.replay(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
+      EasyMock.replay(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener, server, engine, host);
       
       this.service.init(server);
       
-      EasyMock.verify(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
-      EasyMock.reset(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener);
+      EasyMock.verify(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener, server, engine, host);
+      EasyMock.reset(this.clusteredMCMPHandler, this.mcmpConfig, this.lbfProviderFactory, this.lbfProvider, listener, server, engine, host);
    }
 
    private InetAddress getLocalAddress()
@@ -163,10 +167,14 @@ public class HAModClusterServiceTestCase
    
    private void establishConnection(Server server)
    {
-      this.init(server);
+      this.establishConnection(server, EasyMock.createStrictMock(Engine.class), EasyMock.createStrictMock(Host.class));
+   }
+   
+   private void establishConnection(Server server, Engine engine, Host host)
+   {
+      this.init(server, engine, host);
       
       InetAddress localAddress = this.getLocalAddress();
-      Engine engine = EasyMock.createStrictMock(Engine.class);
       Connector connector = EasyMock.createStrictMock(Connector.class);
       DistributedReplicantManager drm = EasyMock.createStrictMock(DistributedReplicantManager.class);
       Capture<SimpleCachableMarshalledValue> capturedMarshalledValue = new Capture<SimpleCachableMarshalledValue>();
@@ -371,11 +379,11 @@ public class HAModClusterServiceTestCase
       String path = "/context";
       
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
       
@@ -407,11 +415,11 @@ public class HAModClusterServiceTestCase
       String path = "/context";
       
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host);
+      
       Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
       

@@ -46,6 +46,7 @@ import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
@@ -58,7 +59,7 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 
-public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener
+public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener, ContextFilter
 {
    protected final Logger log = Logger.getLogger(this.getClass());
    
@@ -71,12 +72,14 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    private final AdvertiseListenerFactory listenerFactory;
    private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
    
+   private final Map<Host, Set<String>> excludedContexts = new HashMap<Host, Set<String>>();
+   
    private volatile boolean established = false;
+   private volatile boolean autoEnableContexts = true;
    private volatile Server server;
    
    private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
    private volatile AdvertiseListener advertiseListener;
-   private volatile Map<String, Set<String>> excludedContextPaths;
 
    public ModClusterService(ModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider)
    {
@@ -126,9 +129,28 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       
       this.mcmpHandler.init(initialProxies, this);
       
-      this.excludedContextPaths = Utils.parseContexts(this.mcmpConfig.getExcludedContexts());
-
-      this.resetRequestSource.init(server, this.excludedContextPaths);
+      this.autoEnableContexts = this.mcmpConfig.isAutoEnableContexts();
+      this.excludedContexts.clear();
+      
+      Map<String, Set<String>> excludedContextPaths = Utils.parseContexts(this.mcmpConfig.getExcludedContexts());
+      
+      if (!excludedContextPaths.isEmpty())
+      {
+         for (Engine engine: server.getEngines())
+         {
+            for (Host host: engine.getHosts())
+            {
+               Set<String> paths = excludedContextPaths.get(host.getName());
+               
+               if (paths != null)
+               {
+                  this.excludedContexts.put(host, Collections.unmodifiableSet(paths));
+               }
+            }
+         }
+      }
+      
+      this.resetRequestSource.init(server, this);
       
       this.loadBalanceFactorProvider = this.loadBalanceFactorProviderFactory.createLoadBalanceFactorProvider();
       
@@ -148,6 +170,24 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             this.log.error(Strings.ERROR_ADVERTISE_START.getString(), e);
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.ContextFilter#getExcludedContexts()
+    */
+   public Map<Host, Set<String>> getExcludedContexts()
+   {
+      return Collections.unmodifiableMap(this.excludedContexts);
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.ContextFilter#isAutoEnableContexts()
+    */
+   public boolean isAutoEnableContexts()
+   {
+      return this.autoEnableContexts;
    }
 
    /**
@@ -303,17 +343,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void add(Context context)
    {
-      if (this.established && !this.exclude(context))
+      // Send ENABLE-APP if state is started
+      if (this.established && !this.exclude(context) && context.isStarted())
       {
-         // Send ENABLE-APP if state is started
-         if (context.isStarted())
-         {
-            this.log.debug(Strings.CONTEXT_ENABLE.getString(context, context.getHost()));
+         this.log.debug(Strings.CONTEXT_ENABLE.getString(context, context.getHost()));
 
-            MCMPRequest request = this.requestFactory.createEnableRequest(context);
-            
-            this.mcmpHandler.sendRequest(request);
-         }
+         this.enable(context);
       }
    }
 
@@ -326,14 +361,18 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       if (this.established && !this.exclude(context))
       {
          this.log.debug(Strings.CONTEXT_START.getString(context, context.getHost()));
-   
-         // Send ENABLE-APP
-         MCMPRequest request = this.requestFactory.createEnableRequest(context);
-         
-         this.mcmpHandler.sendRequest(request);
+
+         this.enable(context);
       }
    }
 
+   private void enable(Context context)
+   {
+      MCMPRequest request = this.autoEnableContexts ? this.requestFactory.createEnableRequest(context) : this.requestFactory.createDisableRequest(context);
+      
+      this.mcmpHandler.sendRequest(request);
+   }
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Context)
@@ -420,6 +459,13 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
+   private boolean exclude(Context context)
+   {
+      Set<String> excludedPaths = this.excludedContexts.get(context.getHost());
+      
+      return (excludedPaths != null) && excludedPaths.contains(context.getPath());
+   }
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
@@ -427,13 +473,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    public int getLoadBalanceFactor()
    {
       return this.loadBalanceFactorProvider.getLoadBalanceFactor();
-   }
-   
-   private boolean exclude(Context context)
-   {
-      Set<String> excludedPaths = this.excludedContextPaths.get(context.getHost().getName());
-      
-      return (excludedPaths != null) ? excludedPaths.contains(context.getPath()) : false;
    }
    
    /**
@@ -591,6 +630,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          // Send ENABLE-APP * request
          this.mcmpHandler.sendRequest(this.requestFactory.createEnableRequest(engine));
       }
+      
+      this.autoEnableContexts = true;
       
       return this.mcmpHandler.isProxyHealthOK();
    }

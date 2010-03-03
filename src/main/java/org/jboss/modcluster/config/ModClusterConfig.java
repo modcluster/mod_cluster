@@ -81,6 +81,10 @@ public class ModClusterConfig
    public String getExcludedContexts() { return this.excludedContexts; }
    public void setExcludedContexts(String excludedContexts) { this.excludedContexts = excludedContexts; }
    
+   private boolean autoEnableContexts = true;
+   public boolean isAutoEnableContexts() { return this.autoEnableContexts; }
+   public void setAutoEnableContexts(boolean autoEnableContexts) { this.autoEnableContexts = autoEnableContexts; }
+   
    // -----------------------------------------------------  SSLConfiguration
    
    private String sslCiphers = null;

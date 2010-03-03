@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2010, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,43 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.config;
+package org.jboss.modcluster.mcmp;
+
+import java.util.Map;
+import java.util.Set;
+
+import org.jboss.modcluster.Host;
 
 /**
- * Configuration object for an {@link MCMPHandler}.
- * 
- * @author Brian Stansberry
- *
+ * @author Paul Ferraro
  */
-public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseConfiguration
-{   
+public interface ContextFilter
+{
    /**
-    * Proxy list, format "address:port,address:port".
+    * Returns the contexts that will *not* be registered in any proxy.
+    * @return a set of context paths per host
     */
-   String getProxyList();
+   Map<Host, Set<String>> getExcludedContexts();
    
    /**
-    * URL prefix.
+    * Indicates when contexts should auto-enable by default.
+    * If auto-enable is off, then contexts are disabled by default and must be enabled manually.
+    * @return true, contexts should be auto-enabled, false otherwise.
     */
-   String getProxyURL();
-
-   /**
-    * Connection timeout for communication with the proxy.
-    */
-   int getSocketTimeout();
-   
-   /**
-    * SSL client cert usage to connect to the proxy.
-    */
-   boolean isSsl();
-      
-   String getExcludedContexts();
-   
-   /**
-    * Receive advertisements from httpd proxies (default is to use advertisements
-    * if the proxyList is not set).
-    */
-   Boolean getAdvertise();
-   
    boolean isAutoEnableContexts();
 }

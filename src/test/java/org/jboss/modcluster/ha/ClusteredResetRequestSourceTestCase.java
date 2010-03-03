@@ -40,6 +40,7 @@ import org.jboss.modcluster.Server;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.ha.rpc.RpcResponse;
+import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
@@ -60,16 +61,16 @@ public class ClusteredResetRequestSourceTestCase
    private HAPartition partition = EasyMock.createStrictMock(HAPartition.class);
    private MCMPRequestFactory requestFactory = EasyMock.createStrictMock(MCMPRequestFactory.class);
    
+   private ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
+   
    @Test
    public void getResetRequestsNonMaster()
    {
-      ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
-
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
 
       EasyMock.replay(this.singleton);
       
-      List<MCMPRequest> requests = source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
+      List<MCMPRequest> requests = this.source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
 
       EasyMock.verify(this.singleton);
       
@@ -81,8 +82,6 @@ public class ClusteredResetRequestSourceTestCase
    @Test
    public void getResetRequestsNoInit() throws Exception
    {
-      ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
-
       MCMPRequest request1 = EasyMock.createMock(MCMPRequest.class);
       MCMPRequest request2 = EasyMock.createMock(MCMPRequest.class);
       @SuppressWarnings("unchecked")
@@ -103,7 +102,7 @@ public class ClusteredResetRequestSourceTestCase
       
       EasyMock.replay(this.key, this.singleton, this.partition, response1, response2);
       
-      List<MCMPRequest> results = source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
+      List<MCMPRequest> results = this.source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
       
       EasyMock.verify(this.key, this.singleton, this.partition, response1, response2);
       
@@ -115,10 +114,9 @@ public class ClusteredResetRequestSourceTestCase
    }
    
    @Test
-   public void getResetRequests() throws Exception
+   public void getResetRequestsContextNotAutoEnabled() throws Exception
    {
-      ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
-
+      ContextFilter contextFilter = EasyMock.createStrictMock(ContextFilter.class);
       MCMPRequest request1 = EasyMock.createMock(MCMPRequest.class);
       MCMPRequest request2 = EasyMock.createMock(MCMPRequest.class);
       @SuppressWarnings("unchecked")
@@ -131,13 +129,17 @@ public class ClusteredResetRequestSourceTestCase
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Context context = EasyMock.createStrictMock(Context.class);
+      Context excludedContext = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest configRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest contextRequest = EasyMock.createStrictMock(MCMPRequest.class);
       
-      source.init(server, Collections.<String, Set<String>>emptyMap());
+      this.source.init(server, contextFilter);
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
+      
+      EasyMock.expect(contextFilter.getExcludedContexts()).andReturn(Collections.singletonMap(host, Collections.singleton("/excluded")));
+      EasyMock.expect(contextFilter.isAutoEnableContexts()).andReturn(false);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
       
@@ -148,11 +150,13 @@ public class ClusteredResetRequestSourceTestCase
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
       EasyMock.expect(host.getName()).andReturn("host");
       EasyMock.expect(host.getAliases()).andReturn(new LinkedHashSet<String>(Arrays.asList("host", "alias1")));
-      EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
+      EasyMock.expect(host.getContexts()).andReturn(Arrays.asList(context, excludedContext));
       EasyMock.expect(context.getPath()).andReturn("/context");
       EasyMock.expect(context.isStarted()).andReturn(true);
       
-      EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(contextRequest);
+      EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(contextRequest);
+
+      EasyMock.expect(excludedContext.getPath()).andReturn("/excluded");
       
       EasyMock.expect(this.key.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.key.getHAServiceKey()).andReturn("service:domain");
@@ -161,11 +165,11 @@ public class ClusteredResetRequestSourceTestCase
       EasyMock.expect(response1.getResult()).andReturn(Collections.singletonList(request1));
       EasyMock.expect(response2.getResult()).andReturn(Collections.singletonList(request2));
       
-      EasyMock.replay(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, response1, response2);
+      EasyMock.replay(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, excludedContext, response1, response2, contextFilter);
       
-      List<MCMPRequest> result = source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
+      List<MCMPRequest> result = this.source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
       
-      EasyMock.verify(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, response1, response2);
+      EasyMock.verify(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, excludedContext, response1, response2, contextFilter);
       
       Assert.assertEquals(4, result.size());
       
@@ -174,35 +178,34 @@ public class ClusteredResetRequestSourceTestCase
       Assert.assertSame(request1, result.get(2));
       Assert.assertSame(request2, result.get(3));
    }
-/*   
-   @Test
-   public void getLocalResetRequestsNoServer() throws Exception
-   {
-      ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
-
-      EasyMock.replay(this.nodeConfig, this.balancerConfig, this.key, this.singleton, this.partition, this.requestFactory);
-      
-      List<MCMPRequest> requests = source.getLocalResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
-
-      EasyMock.verify(this.nodeConfig, this.balancerConfig, this.key, this.singleton, this.partition, this.requestFactory);
-      
-      Assert.assertTrue(requests.isEmpty());
-   }
    
    @Test
-   public void getLocalResetRequests() throws Exception
+   public void getResetRequests() throws Exception
    {
-      ResetRequestSource source = new ClusteredResetRequestSource(this.nodeConfig, this.balancerConfig, this.requestFactory, this.singleton, this.key);
-
-      // Test w/server
+      ContextFilter contextFilter = EasyMock.createStrictMock(ContextFilter.class);
+      MCMPRequest request1 = EasyMock.createMock(MCMPRequest.class);
+      MCMPRequest request2 = EasyMock.createMock(MCMPRequest.class);
+      @SuppressWarnings("unchecked")
+      RpcResponse<List<MCMPRequest>> response1 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
+      RpcResponse<List<MCMPRequest>> response2 = EasyMock.createMock(RpcResponse.class);
+      @SuppressWarnings("unchecked")
+      ArrayList<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
+      
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Context context = EasyMock.createStrictMock(Context.class);
+      Context excludedContext = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest configRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest contextRequest = EasyMock.createStrictMock(MCMPRequest.class);
-
-      source.init(server, Collections.<String, Set<String>>emptyMap());
+      
+      this.source.init(server, contextFilter);
+      
+      EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
+      
+      EasyMock.expect(contextFilter.getExcludedContexts()).andReturn(Collections.singletonMap(host, Collections.singleton("/excluded")));
+      EasyMock.expect(contextFilter.isAutoEnableContexts()).andReturn(true);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
       
@@ -212,23 +215,33 @@ public class ClusteredResetRequestSourceTestCase
       
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
       EasyMock.expect(host.getName()).andReturn("host");
-      EasyMock.expect(host.getAliases()).andReturn(new LinkedHashSet<String>(Arrays.asList("alias1", "alias2")));
-      EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
+      EasyMock.expect(host.getAliases()).andReturn(new LinkedHashSet<String>(Arrays.asList("host", "alias1")));
+      EasyMock.expect(host.getContexts()).andReturn(Arrays.asList(context, excludedContext));
       EasyMock.expect(context.getPath()).andReturn("/context");
       EasyMock.expect(context.isStarted()).andReturn(true);
       
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(contextRequest);
+
+      EasyMock.expect(excludedContext.getPath()).andReturn("/excluded");
       
-      EasyMock.replay(this.nodeConfig, this.balancerConfig, this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context);
+      EasyMock.expect(this.key.getHAPartition()).andReturn(this.partition);
+      EasyMock.expect(this.key.getHAServiceKey()).andReturn("service:domain");
+      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
       
-      List<MCMPRequest> requests = source.getLocalResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
+      EasyMock.expect(response1.getResult()).andReturn(Collections.singletonList(request1));
+      EasyMock.expect(response2.getResult()).andReturn(Collections.singletonList(request2));
       
-      EasyMock.verify(this.nodeConfig, this.balancerConfig, this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context);
+      EasyMock.replay(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, excludedContext, response1, response2, contextFilter);
       
-      Assert.assertEquals(2, requests.size());
+      List<MCMPRequest> result = this.source.getResetRequests(Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap());
       
-      Assert.assertSame(configRequest, requests.get(0));
-      Assert.assertSame(contextRequest, requests.get(1));
+      EasyMock.verify(this.key, this.singleton, this.partition, this.requestFactory, server, engine, host, context, excludedContext, response1, response2, contextFilter);
+      
+      Assert.assertEquals(4, result.size());
+      
+      Assert.assertSame(configRequest, result.get(0));
+      Assert.assertSame(contextRequest, result.get(1));
+      Assert.assertSame(request1, result.get(2));
+      Assert.assertSame(request2, result.get(3));
    }
-*/
 }

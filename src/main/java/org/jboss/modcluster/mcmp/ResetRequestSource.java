@@ -49,7 +49,7 @@ public interface ResetRequestSource
       Map<String, Status> getContexts();
    }
    
-   void init(Server server, Map<String, Set<String>> excludedContexts);
+   void init(Server server, ContextFilter contextFilter);
    
    /**
     * Gets a list of requests that should be sent to an httpd-side 

@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +74,11 @@ public class ModClusterServiceTestCase
    
    private void init(Server server)
    {
+      this.init(server, EasyMock.createStrictMock(Engine.class), EasyMock.createStrictMock(Host.class), true);
+   }
+   
+   private void init(Server server, Engine engine, Host host, boolean autoEnableContexts)
+   {
       InetAddress localAddress = this.getLocalAddress();
       String localHostName = localAddress.getHostName();
       
@@ -81,28 +87,47 @@ public class ModClusterServiceTestCase
       
       this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
-      EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("ignored");
+      EasyMock.expect(this.mcmpConfig.isAutoEnableContexts()).andReturn(autoEnableContexts);
+      EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("excluded");
       
-      this.source.init(server, Collections.singletonMap("localhost", Collections.singleton("/ignored")));
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+      EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
+      EasyMock.expect(host.getName()).andReturn("localhost");
+      
+      this.source.init(server, this.service);
       
       EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
       
       EasyMock.expect(this.mcmpConfig.getAdvertise()).andReturn(null);
       
-      EasyMock.replay(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
+      EasyMock.replay(server, engine, host, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
       
       this.service.init(server);
 
-      EasyMock.verify(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
-      EasyMock.reset(server, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
+      EasyMock.verify(server, engine, host, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
+      
+      Assert.assertEquals(autoEnableContexts, this.service.isAutoEnableContexts());
+
+      Map<Host, Set<String>> contexts = this.service.getExcludedContexts();
+      Assert.assertEquals(1, contexts.size());
+      Set<String> paths = contexts.get(host);
+      Assert.assertNotNull(paths);
+      Assert.assertEquals(1, paths.size());
+      Assert.assertTrue(paths.contains("/excluded"));
+      
+      EasyMock.reset(server, engine, host, this.mcmpHandler, this.mcmpConfig, this.lbfProviderFactory);
    }
    
    private void establishConnection(Server server)
    {
-      this.init(server);
+      this.establishConnection(server, EasyMock.createStrictMock(Engine.class), EasyMock.createStrictMock(Host.class), true);
+   }
+   
+   private void establishConnection(Server server, Engine engine, Host host, boolean autoEnableContexts)
+   {
+      this.init(server, engine, host, autoEnableContexts);
       
       InetAddress localAddress = this.getLocalAddress();
-      Engine engine = EasyMock.createStrictMock(Engine.class);
       Connector connector = EasyMock.createStrictMock(Connector.class);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
@@ -475,11 +500,13 @@ public class ModClusterServiceTestCase
       EasyMock.verify(this.mcmpHandler);
       EasyMock.reset(this.mcmpHandler);
    }
-   
+
    @Test
-   public void enable()
+   public void enableNotEstablished()
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.init(server);
       
       EasyMock.replay(server);
       
@@ -490,11 +517,19 @@ public class ModClusterServiceTestCase
       Assert.assertFalse(result);
       
       EasyMock.reset(server);
-      
-      this.establishConnection(server);
-      
+   }
+   
+   @Test
+   public void enable()
+   {
+      Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
-      MCMPRequest request = EasyMock.createMock(MCMPRequest.class);
+      Host host = EasyMock.createStrictMock(Host.class);
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+      
+      this.establishConnection(server, engine, host, false);
+
+      Assert.assertFalse(this.service.isAutoEnableContexts());
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
 
@@ -506,11 +541,12 @@ public class ModClusterServiceTestCase
       
       EasyMock.replay(server, this.requestFactory, this.mcmpHandler, engine);
       
-      result = this.service.enable();
+      boolean result = this.service.enable();
       
       EasyMock.verify(server, this.requestFactory, this.mcmpHandler, engine);
       
       Assert.assertTrue(result);
+      Assert.assertTrue(this.service.isAutoEnableContexts());
       
       EasyMock.reset(server, this.requestFactory, this.mcmpHandler, engine);
    }
@@ -665,9 +701,10 @@ public class ModClusterServiceTestCase
       
       this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
+      EasyMock.expect(this.mcmpConfig.isAutoEnableContexts()).andReturn(true);
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn(null);
       
-      this.source.init(server, Collections.<String, Set<String>>emptyMap());
+      this.source.init(server, this.service);
       
       EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
       
@@ -693,9 +730,10 @@ public class ModClusterServiceTestCase
       
       this.mcmpHandler.init(Collections.singletonList(new InetSocketAddress(localAddress, 8000)), this.service);
       
+      EasyMock.expect(this.mcmpConfig.isAutoEnableContexts()).andReturn(true);
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("");
       
-      this.source.init(server, Collections.<String, Set<String>>emptyMap());
+      this.source.init(server, this.service);
       
       EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
       
@@ -725,16 +763,26 @@ public class ModClusterServiceTestCase
    public void initNoProxies() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host1 = EasyMock.createStrictMock(Host.class);
+      Host host2 = EasyMock.createStrictMock(Host.class);
+      Host localhost = EasyMock.createStrictMock(Host.class);
       
       // Test advertise = null, no proxies configured
       EasyMock.expect(this.mcmpConfig.getProxyList()).andReturn(null);
-      Capture<Map<String, Set<String>>> capturedMap = new Capture<Map<String, Set<String>>>();
       
       this.mcmpHandler.init(Collections.<InetSocketAddress>emptyList(), this.service);
       
+      EasyMock.expect(this.mcmpConfig.isAutoEnableContexts()).andReturn(true);
       EasyMock.expect(this.mcmpConfig.getExcludedContexts()).andReturn("host1:ignored,ROOT");
+
+      EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
+      EasyMock.expect(engine.getHosts()).andReturn(Arrays.asList(host1, host2, localhost));
+      EasyMock.expect(host1.getName()).andReturn("host1");
+      EasyMock.expect(host2.getName()).andReturn("host2");
+      EasyMock.expect(localhost.getName()).andReturn("localhost");
       
-      this.source.init(EasyMock.same(server), EasyMock.capture(capturedMap));
+      this.source.init(server, this.service);
       
       EasyMock.expect(this.lbfProviderFactory.createLoadBalanceFactorProvider()).andReturn(this.lbfProvider);
       
@@ -744,19 +792,24 @@ public class ModClusterServiceTestCase
       
       this.advertiseListener.start();
       
-      EasyMock.replay(server, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
+      EasyMock.replay(server, engine, host1, host2, localhost, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
       
       this.service.init(server);
       
-      EasyMock.verify(server, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
+      EasyMock.verify(server, engine, host1, host2, localhost, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
       
-      Map<String, Set<String>> contexts = capturedMap.getValue();
-      
+      Map<Host, Set<String>> contexts = this.service.getExcludedContexts();
       Assert.assertEquals(2, contexts.size());
-      Assert.assertEquals(Collections.singleton("/ignored"), contexts.get("host1"));
-      Assert.assertEquals(Collections.singleton(""), contexts.get("localhost"));
+      Set<String> paths = contexts.get(host1);
+      Assert.assertNotNull(paths);
+      Assert.assertEquals(1, paths.size());
+      Assert.assertTrue(paths.contains("/ignored"));
+      paths = contexts.get(localhost);
+      Assert.assertNotNull(paths);
+      Assert.assertEquals(1, paths.size());
+      Assert.assertTrue(paths.contains(""));
       
-      EasyMock.reset(server, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
+      EasyMock.reset(server, engine, host1, host2, localhost, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
    }
    
    @Test
@@ -807,81 +860,107 @@ public class ModClusterServiceTestCase
    }
 
    @Test
-   public void addContextIgnored() throws IOException
+   public void addContextExcluded() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       
-      // Exclusion check
-      EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/ignored");
+      this.establishConnection(server, engine, host, true);
+
+      Context context = EasyMock.createStrictMock(Context.class);
       
-      EasyMock.replay(context, host);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(context.getPath()).andReturn("/excluded");
+      
+      EasyMock.replay(server, engine, host, context);
       
       this.service.add(context);
       
-      EasyMock.verify(context, host);
-      EasyMock.reset(context, host);
+      EasyMock.verify(server, engine, host, context);
+      EasyMock.reset(server, engine, host, context);
    }
 
    @Test
    public void addContextNotStarted() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       
-      // Exclusion check
+      this.establishConnection(server, engine, host, true);
+
+      Context context = EasyMock.createStrictMock(Context.class);
+      
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("host1");
+      EasyMock.expect(context.getPath()).andReturn("");
       
       EasyMock.expect(context.isStarted()).andReturn(false);
       
-      EasyMock.replay(context, host);
+      EasyMock.replay(server, engine, host, context);
       
       this.service.add(context);
       
-      EasyMock.verify(context, host);
-      EasyMock.reset(context, host);
+      EasyMock.verify(server, engine, host, context);
+      EasyMock.reset(server, engine, host, context);
+   }
+   
+   @Test
+   public void addContextNoAutoEnable() throws IOException
+   {
+      Server server = EasyMock.createStrictMock(Server.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+      
+      this.establishConnection(server, engine, host, false);
+      
+      Context context = EasyMock.createStrictMock(Context.class);
+      
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(context.getPath()).andReturn("");
+      EasyMock.expect(context.isStarted()).andReturn(true);
+      EasyMock.expect(context.getHost()).andReturn(host);
+      
+      EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(request);
+      
+      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+      
+      EasyMock.replay(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      
+      this.service.add(context);
+      
+      EasyMock.verify(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      EasyMock.reset(server, engine, host, context, this.mcmpHandler, this.requestFactory);
    }
    
    @Test
    public void addContext() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+      
+      Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
-      // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
-      
+      EasyMock.expect(context.getPath()).andReturn("");
       EasyMock.expect(context.isStarted()).andReturn(true);
-
       EasyMock.expect(context.getHost()).andReturn(host);
       
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, context, host);
+      EasyMock.replay(server, engine, host, context, this.mcmpHandler, this.requestFactory);
       
       this.service.add(context);
       
-      EasyMock.verify(this.mcmpHandler, context, host);
+      EasyMock.verify(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      EasyMock.reset(server, engine, host, context, this.mcmpHandler, this.requestFactory);
    }
    
    @Test
@@ -897,54 +976,81 @@ public class ModClusterServiceTestCase
    }
 
    @Test
-   public void startContextIgnored() throws IOException
+   public void startContextExcluded() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
+
+      this.establishConnection(server, engine, host, true);
       
       Context context = EasyMock.createStrictMock(Context.class);
-      Host host = EasyMock.createStrictMock(Host.class);
       
-      // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/ignored");
+      EasyMock.expect(context.getPath()).andReturn("/excluded");
       
-      EasyMock.replay(context, host);
+      EasyMock.replay(server, engine, host, context);
       
       this.service.start(context);
       
-      EasyMock.verify(context, host);
+      EasyMock.verify(server, engine, host, context);
+      EasyMock.reset(server, engine, host, context);
+   }
+   
+   @Test
+   public void startContextNoAutoEnable() throws IOException
+   {
+      Server server = EasyMock.createStrictMock(Server.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, false);
+
+      Context context = EasyMock.createStrictMock(Context.class);
+      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
+      
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(context.getPath()).andReturn("");
+      EasyMock.expect(context.getHost()).andReturn(host);
+      
+      EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(request);
+      
+      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+      
+      EasyMock.replay(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      
+      this.service.start(context);
+      
+      EasyMock.verify(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      EasyMock.reset(server, engine, host, context, this.mcmpHandler, this.requestFactory);
    }
 
    @Test
    public void startContext() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
+      Host host = EasyMock.createStrictMock(Host.class);
       
-      this.establishConnection(server);
+      this.establishConnection(server, engine, host, true);
       
       Context context = EasyMock.createStrictMock(Context.class);
-      Host host = EasyMock.createStrictMock(Host.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-
-      // Exclusion check
+      
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
-
+      EasyMock.expect(context.getPath()).andReturn("");
       EasyMock.expect(context.getHost()).andReturn(host);
       
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, context, host);
+      EasyMock.replay(server, engine, host, context, this.mcmpHandler, this.requestFactory);
       
       this.service.start(context);
       
-      EasyMock.verify(this.mcmpHandler, this.requestFactory, context, host);
+      EasyMock.verify(server, engine, host, context, this.mcmpHandler, this.requestFactory);
+      EasyMock.reset(server, engine, host, context, this.mcmpHandler, this.requestFactory);
    }
    
    @Test
@@ -960,54 +1066,53 @@ public class ModClusterServiceTestCase
    }
 
    @Test
-   public void stopContextIgnored() throws IOException
+   public void stopContextExcluded() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       
-      // Exclusion check
-      EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/ignored");
+      this.establishConnection(server, engine, host, true);
       
-      EasyMock.replay(context, host);
+      Context context = EasyMock.createStrictMock(Context.class);
+
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(context.getPath()).andReturn("/excluded");
+      
+      EasyMock.replay(server, engine, host, context);
       
       this.service.stop(context);
       
-      EasyMock.verify(context, host);
+      EasyMock.verify(server, engine, host, context);
+      EasyMock.reset(server, engine, host, context);
    }
    
    @Test
    public void stopContext() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
+      Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-
-      // Exclusion check
+      
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
-
+      EasyMock.expect(context.getPath()).andReturn("");
       EasyMock.expect(context.getHost()).andReturn(host);
       
       EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, context, host);
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, server, engine, host, context);
       
       this.service.stop(context);
       
-      EasyMock.verify(this.mcmpHandler, this.requestFactory, context, host);
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, server, engine, host, context);
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, server, engine, host, context);
    }
    
    @Test
@@ -1026,51 +1131,50 @@ public class ModClusterServiceTestCase
    public void removeContextIgnored() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
-      Context context = EasyMock.createStrictMock(Context.class);
+      Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
       
-      // Exclusion check
+      this.establishConnection(server, engine, host, true);
+
+      Context context = EasyMock.createStrictMock(Context.class);
+
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/ignored");
+      EasyMock.expect(context.getPath()).andReturn("/excluded");
       
-      EasyMock.replay(context, host);
+      EasyMock.replay(server, engine, host, context);
       
       this.service.remove(context);
       
-      EasyMock.verify(context, host);
+      EasyMock.verify(server, engine, host, context);
+      EasyMock.reset(server, engine, host, context);
    }
       
    @Test
    public void removeContext() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
       Engine engine = EasyMock.createStrictMock(Engine.class);
-      Context context = EasyMock.createStrictMock(Context.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
+      Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
-      // Exclusion check
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
+      EasyMock.expect(context.getPath()).andReturn("");
       EasyMock.expect(context.getHost()).andReturn(host);
       
       EasyMock.expect(this.requestFactory.createRemoveRequest(context)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, context, engine, host);
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, server, engine, host, context);
       
       this.service.remove(context);
       
-      EasyMock.verify(this.mcmpHandler, this.requestFactory, context, engine, host);
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, server, engine, host, context);
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, server, engine, host, context);
    }
    
    @Test
@@ -1116,9 +1220,24 @@ public class ModClusterServiceTestCase
    }
    
    @Test
+   public void startServerNotInit()
+   {
+      Server server = EasyMock.createStrictMock(Server.class);
+      
+      EasyMock.replay(server);
+      
+      this.service.start(server);
+      
+      EasyMock.verify(server);
+      EasyMock.reset(server);
+   }
+   
+   @Test
    public void startServerNotEstablished()
    {
       Server server = EasyMock.createStrictMock(Server.class);
+      
+      this.init(server);
       
       EasyMock.replay(server);
       
@@ -1132,36 +1251,42 @@ public class ModClusterServiceTestCase
    public void startServer() throws Exception
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
       Context context = EasyMock.createStrictMock(Context.class);
-      MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
-      Connector connector = EasyMock.createStrictMock(Connector.class);
+      Context excludedContext = EasyMock.createStrictMock(Context.class);
+      MCMPRequest configRequest = EasyMock.createStrictMock(MCMPRequest.class);
+      MCMPRequest enableRequest = EasyMock.createStrictMock(MCMPRequest.class);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
-      EasyMock.expect(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).andReturn(request);
+      EasyMock.expect(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).andReturn(configRequest);
       
-      EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+      EasyMock.expect(this.mcmpHandler.sendRequest(configRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
 
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
-      EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
-
-      // Exclusion check
+      EasyMock.expect(host.getContexts()).andReturn(Arrays.asList(context, excludedContext));
+      
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
+      EasyMock.expect(context.getPath()).andReturn("");
+      EasyMock.expect(context.isStarted()).andReturn(true);
+      EasyMock.expect(context.getHost()).andReturn(host);
       
-      EasyMock.expect(context.isStarted()).andReturn(false);
+      EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(enableRequest);
       
-      EasyMock.replay(server, this.mcmpHandler, this.requestFactory, engine, host, context, connector);
+      EasyMock.expect(this.mcmpHandler.sendRequest(enableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+
+      EasyMock.expect(excludedContext.getHost()).andReturn(host);
+      EasyMock.expect(excludedContext.getPath()).andReturn("/excluded");
+      
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
       
       this.service.start(server);
       
-      EasyMock.verify(server, this.mcmpHandler, this.requestFactory, engine, host, context, connector);
-      EasyMock.reset(server, this.mcmpHandler, this.requestFactory, engine, host, context, connector);
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
    }
    
    @Test
@@ -1181,41 +1306,55 @@ public class ModClusterServiceTestCase
    public void stopServer() throws IOException
    {
       Server server = EasyMock.createStrictMock(Server.class);
-      
-      this.establishConnection(server);
-      
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
       Context context = EasyMock.createStrictMock(Context.class);
-      MCMPRequest contextRequest = EasyMock.createStrictMock(MCMPRequest.class);
-      MCMPRequest engineRequest = EasyMock.createStrictMock(MCMPRequest.class);
-
+      Context excludedContext = EasyMock.createStrictMock(Context.class);
+      MCMPRequest stopRequest = EasyMock.createStrictMock(MCMPRequest.class);
+      MCMPRequest removeRrequest = EasyMock.createStrictMock(MCMPRequest.class);
+      MCMPRequest removeAllRequest = EasyMock.createStrictMock(MCMPRequest.class);
+      
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
-
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
-      EasyMock.expect(host.getContexts()).andReturn(Collections.singleton(context));
-      EasyMock.expect(context.isStarted()).andReturn(false);
+      EasyMock.expect(host.getContexts()).andReturn(Arrays.asList(context, excludedContext));
 
-      // Exclusion check
+      EasyMock.expect(context.isStarted()).andReturn(true);
+      
       EasyMock.expect(context.getHost()).andReturn(host);
-      EasyMock.expect(host.getName()).andReturn("localhost");
-      EasyMock.expect(context.getPath()).andReturn("/context");
+      EasyMock.expect(context.getPath()).andReturn("");
+      EasyMock.expect(context.getHost()).andReturn(host);
+
+      EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
+      
+      EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+
+      EasyMock.expect(context.getHost()).andReturn(host);
+      EasyMock.expect(context.getPath()).andReturn("");
       EasyMock.expect(context.getHost()).andReturn(host);
       
-      EasyMock.expect(this.requestFactory.createRemoveRequest(context)).andReturn(contextRequest);
+      EasyMock.expect(this.requestFactory.createRemoveRequest(context)).andReturn(removeRrequest);
       
-      EasyMock.expect(this.mcmpHandler.sendRequest(contextRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+      EasyMock.expect(this.mcmpHandler.sendRequest(removeRrequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+
+      EasyMock.expect(excludedContext.isStarted()).andReturn(true);
+      EasyMock.expect(excludedContext.getHost()).andReturn(host);
+      EasyMock.expect(excludedContext.getPath()).andReturn("/excluded");
+      EasyMock.expect(excludedContext.getHost()).andReturn(host);
+      EasyMock.expect(excludedContext.getPath()).andReturn("/excluded");
       
-      EasyMock.expect(this.requestFactory.createRemoveRequest(engine)).andReturn(engineRequest);
+      EasyMock.expect(this.requestFactory.createRemoveRequest(engine)).andReturn(removeAllRequest);
       
-      EasyMock.expect(this.mcmpHandler.sendRequest(engineRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
+      EasyMock.expect(this.mcmpHandler.sendRequest(removeAllRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(server, this.mcmpHandler, this.requestFactory, engine, host, context);
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
       
       this.service.stop(server);
       
-      EasyMock.verify(server, this.mcmpHandler, this.requestFactory, engine, host, context);
-      EasyMock.reset(server, this.mcmpHandler, this.requestFactory, engine, host, context);
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, server, engine, host, context, excludedContext);
    }
    
    @Test
@@ -1224,13 +1363,14 @@ public class ModClusterServiceTestCase
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
       final Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest disableRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest stopRequest = EasyMock.createStrictMock(MCMPRequest.class);
       final Capture<HttpSessionListener> capturedAddListener = new Capture<HttpSessionListener>();
       Capture<HttpSessionListener> capturedRemoveListener = new Capture<HttpSessionListener>();
-      
-      this.establishConnection(server);
       
       // Test successful drain
       
@@ -1336,13 +1476,14 @@ public class ModClusterServiceTestCase
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
       Host host = EasyMock.createStrictMock(Host.class);
+      
+      this.establishConnection(server, engine, host, true);
+
       final Context context = EasyMock.createStrictMock(Context.class);
       MCMPRequest disableRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest stopRequest = EasyMock.createStrictMock(MCMPRequest.class);
       final Capture<HttpSessionListener> capturedAddListener = new Capture<HttpSessionListener>();
       Capture<HttpSessionListener> capturedRemoveListener = new Capture<HttpSessionListener>();
-      
-      this.establishConnection(server);
       
       // Test successful drain
       

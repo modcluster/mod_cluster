@@ -52,6 +52,7 @@ import org.jboss.ha.framework.server.SimpleCachableMarshalledValue;
 import org.jboss.modcluster.ContainerEventHandler;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
+import org.jboss.modcluster.Host;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.Server;
 import org.jboss.modcluster.Strings;
@@ -75,6 +76,7 @@ import org.jboss.modcluster.ha.rpc.RpcResponseFilter;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
@@ -88,7 +90,7 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 
-public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener
+public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener, ContextFilter
 {
    static final Object[] NULL_ARGS = new Object[0];
    static final Class<?>[] NULL_TYPES = new Class[0];
@@ -132,7 +134,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       this.rpcHandler = new RpcHandler();
       this.requestFactory = new DefaultMCMPRequestFactory();
       this.responseParser = new DefaultMCMPResponseParser();
-      this.resetRequestSource = new ClusteredResetRequestSource(config, config, requestFactory, this, this);
+      this.resetRequestSource = new ClusteredResetRequestSource(config, config, this.requestFactory, this, this);
       this.localHandler = new DefaultMCMPHandler(config, this.resetRequestSource, this.requestFactory, this.responseParser);
       this.clusteredHandler = new ClusteredMCMPHandlerImpl(this.localHandler, this, this);
       
@@ -214,6 +216,24 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       return success;
    }
    
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.ContextFilter#getExcludedContexts()
+    */
+   public Map<Host, Set<String>> getExcludedContexts()
+   {
+      return this.service.getExcludedContexts();
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.ContextFilter#isAutoEnableContexts()
+    */
+   public boolean isAutoEnableContexts()
+   {
+      return this.service.isAutoEnableContexts();
+   }
+
    /**
     * {@inheritDoc}
     * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#isEstablished()

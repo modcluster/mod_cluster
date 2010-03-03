@@ -35,6 +35,7 @@ import org.jboss.modcluster.Host;
 import org.jboss.modcluster.Server;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
+import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
@@ -49,7 +50,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource
    private final BalancerConfiguration balancerConfig;
    private final MCMPRequestFactory requestFactory;
    
-   private volatile Map<String, Set<String>> excludedContexts;
+   private volatile ContextFilter contextFilter;
    private volatile Server server;
    
    public ResetRequestSourceImpl(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPRequestFactory requestFactory)
@@ -63,9 +64,9 @@ public class ResetRequestSourceImpl implements ResetRequestSource
     * @{inheritDoc}
     * @see org.jboss.modcluster.mcmp.ResetRequestSource#init(java.util.Map)
     */
-   public void init(Server server, Map<String, Set<String>> excludedContexts)
+   public void init(Server server, ContextFilter contextFilter)
    {
-      this.excludedContexts = excludedContexts;
+      this.contextFilter = contextFilter;
       this.server = server;
    }
 
@@ -78,6 +79,9 @@ public class ResetRequestSourceImpl implements ResetRequestSource
       List<MCMPRequest> requests = new ArrayList<MCMPRequest>();
       
       if (this.server == null) return requests;
+      
+      Map<Host, Set<String>> excludedContexts = this.contextFilter.getExcludedContexts();
+      boolean contextAutoEnableAllowed = this.contextFilter.isAutoEnableContexts();
       
       List<MCMPRequest> engineRequests = new LinkedList<MCMPRequest>();      
       
@@ -121,34 +125,31 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             }
             
             Set<String> obsoleteContexts = new HashSet<String>(responseContexts.keySet());
+            Set<String> excludedHostContexts = excludedContexts.get(host);
             
             for (Context context: host.getContexts())
             {
                String path = context.getPath();
                
-               Set<String> excludedPaths = this.excludedContexts.get(hostName);
-               
-               if ((excludedPaths != null) && excludedPaths.contains(path))
+               if (!excludedHostContexts.contains(path))
                {
-                  continue;
-               }
-               
-               obsoleteContexts.remove(path);
-               
-               ResetRequestSource.Status status = responseContexts.get(path);
-               
-               if (context.isStarted())
-               {
-                  if (status != ResetRequestSource.Status.ENABLED)
+                  obsoleteContexts.remove(path);
+                  
+                  ResetRequestSource.Status status = responseContexts.get(path);
+                  
+                  if (context.isStarted())
                   {
-                     engineRequests.add(this.requestFactory.createEnableRequest(context));
+                     if (status != ResetRequestSource.Status.ENABLED)
+                     {
+                        engineRequests.add(contextAutoEnableAllowed ? this.requestFactory.createEnableRequest(context) : this.requestFactory.createDisableRequest(context));
+                     }
                   }
-               }
-               else
-               {
-                  if (status == ResetRequestSource.Status.ENABLED)
+                  else
                   {
-                     engineRequests.add(this.requestFactory.createStopRequest(context));
+                     if (status == ResetRequestSource.Status.ENABLED)
+                     {
+                        engineRequests.add(this.requestFactory.createStopRequest(context));
+                     }
                   }
                }
             }
