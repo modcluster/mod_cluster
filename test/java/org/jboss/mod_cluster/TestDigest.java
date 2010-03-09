@@ -93,17 +93,8 @@ public class TestDigest extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        int countinfo = 0;
-        while ((!Maintest.checkProxyInfo(cluster, null)) && countinfo < 20) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            countinfo++;
-        }
+        Maintest.TestForNodes(cluster, null);
         System.gc();
-
 
         try {
 
@@ -145,11 +136,7 @@ public class TestDigest extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
+        Maintest.waitn(0);
         System.gc();
         System.out.println("TestDigest Done");
     }
