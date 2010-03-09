@@ -136,7 +136,7 @@ public class TestDigest extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        Maintest.waitn(0);
+        Maintest.waitn();
         System.gc();
         System.out.println("TestDigest Done");
     }
