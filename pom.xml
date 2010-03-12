@@ -51,14 +51,14 @@
     <dependency>
       <groupId>jboss.web</groupId>
       <artifactId>jbossweb</artifactId>
-      <version>2.1.4.GA</version>
+      <version>2.1.7.GA</version>
     </dependency>
 
     <!--  For installation in standalone JBoss Web or Tomcat -->
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging-jdk</artifactId>
-      <version>2.1.0.GA</version>
+      <version>2.1.1.GA</version>
       <optional>true</optional>
     </dependency>
     
@@ -66,19 +66,19 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
-      <version>2.4</version>
+      <version>2.5.2</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.jboss.test</groupId>
       <artifactId>jboss-test</artifactId>
-      <version>1.1.5-alpha-2</version>
+      <version>1.1.5.GA</version>
       <scope>test</scope>
     </dependency>
     <!-- jboss-as-server is optional dependency within jboss-server-manager, which is transitive dependency of jboss-test -->
