@@ -66,4 +66,12 @@ public class DefaultMCMPResponseParserTestCase
       
       Assert.assertFalse(this.parser.parsePingResponse(null));
    }
+   
+   @Test
+   public void parseStopAppResponse()
+   {
+      Assert.assertEquals(0, this.parser.parseStopAppResponse(null));
+      Assert.assertEquals(0, this.parser.parseStopAppResponse(""));
+      Assert.assertEquals(3, this.parser.parseStopAppResponse("Type=STOP-APP-RSP&JvmRoute=127.0.0.1:8009:jboss.web&Alias=localhos&Context=/context&Requests=3"));
+   }
 }

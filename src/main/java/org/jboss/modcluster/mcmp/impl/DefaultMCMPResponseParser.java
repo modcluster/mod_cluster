@@ -35,11 +35,13 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler.VirtualHostImpl;
 
 /**
  * @author Paul Ferraro
- *
  */
 public class DefaultMCMPResponseParser implements MCMPResponseParser
 {
-   private static Logger log = Logger.getLogger(DefaultMCMPResponseParser.class);
+   private static final String PARAMETER_DELIMITER = "&";
+   private static final String NAME_VALUE_DELIMITER = "=";
+   
+   private static final Logger log = Logger.getLogger(DefaultMCMPResponseParser.class);
    
    /**
     * {@inhericDoc}
@@ -229,18 +231,47 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser
     */
    public boolean parsePingResponse(String response)
    {
-      if (response == null) return false;
+      log.trace(response);
       
-      for (String value: response.split("&"))
+      String value = this.findProperty("State", response);
+      
+      return (value != null) ? value.equals("OK") : false;
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parseStopResponse(java.lang.String)
+    */
+   public int parseStopAppResponse(String response)
+   {
+      log.trace(response);
+      
+      String value = this.findProperty("Requests", response);
+      
+      try
       {
-         String[] pair = value.split("=");
+         return (value != null) ? Integer.parseInt(value) : 0;
+      }
+      catch (NumberFormatException e)
+      {
+         return 0;
+      }
+   }
+   
+   private String findProperty(String name, String response)
+   {
+      if (response == null) return null;
+      
+      for (String value: response.trim().split(PARAMETER_DELIMITER))
+      {
+         String[] pair = value.split(NAME_VALUE_DELIMITER);
          
-         if ((pair.length == 2) && pair[0].equals("State"))
+         if ((pair.length == 2) && pair[0].equals(name))
          {
-            return pair[1].equals("OK");
+            return pair[1];
          }
       }
       
-      return false;
+      return null;
    }
 }
