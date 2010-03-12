@@ -23,6 +23,8 @@ package org.jboss.modcluster.catalina;
 
 import java.util.Iterator;
 
+import javax.management.MBeanServer;
+
 import junit.framework.Assert;
 
 import org.apache.catalina.Service;
@@ -38,8 +40,9 @@ import org.junit.Test;
 public class CatalinaServerTestCase
 {
    private org.apache.catalina.Server server = EasyMock.createStrictMock(org.apache.catalina.Server.class);
+   private MBeanServer mbeanServer = EasyMock.createStrictMock(MBeanServer.class);
    
-   private Server catalinaServer = new CatalinaServer(this.server);
+   private Server catalinaServer = new CatalinaServer(this.server, this.mbeanServer);
    
    @Test
    public void getEngines()
@@ -72,5 +75,55 @@ public class CatalinaServerTestCase
       Assert.assertFalse(engines.hasNext());
       
       EasyMock.reset(this.server, service);
+   }
+   
+   @Test
+   public void getMBeanServer()
+   {
+      EasyMock.replay(this.server, this.mbeanServer);
+      
+      MBeanServer result = this.catalinaServer.getMBeanServer();
+      
+      EasyMock.verify(this.server, this.mbeanServer);
+      
+      Assert.assertSame(this.mbeanServer, result);
+      
+      EasyMock.reset(this.server, this.mbeanServer);
+   }
+   
+   @Test
+   public void getDomain()
+   {
+      EasyMock.expect(this.mbeanServer.getDefaultDomain()).andReturn("domain");
+      
+      EasyMock.replay(this.server, this.mbeanServer);
+      
+      String result = this.catalinaServer.getDomain();
+      
+      EasyMock.verify(this.server, this.mbeanServer);
+      
+      Assert.assertEquals("domain", result);
+      
+      EasyMock.reset(this.server, this.mbeanServer);
+      
+      DomainServer server = EasyMock.createStrictMock(DomainServer.class);
+      Server catalinaServer = new CatalinaServer(server, this.mbeanServer);
+      
+      EasyMock.expect(server.getDomain()).andReturn("domain");
+      
+      EasyMock.replay(server, this.mbeanServer);
+      
+      result = catalinaServer.getDomain();
+      
+      EasyMock.verify(server, this.mbeanServer);
+      
+      Assert.assertEquals("domain", result);
+      
+      EasyMock.reset(server, this.mbeanServer);
+   }
+   
+   private interface DomainServer extends org.apache.catalina.Server
+   {
+      String getDomain();
    }
 }

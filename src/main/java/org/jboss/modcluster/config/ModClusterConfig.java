@@ -85,6 +85,10 @@ public class ModClusterConfig
    public boolean isAutoEnableContexts() { return this.autoEnableContexts; }
    public void setAutoEnableContexts(boolean autoEnableContexts) { this.autoEnableContexts = autoEnableContexts; }
    
+   private int shutdownTimeout = 10;
+   public int getStopContextTimeout() { return this.shutdownTimeout; }
+   public void setShutdownTimeout(int timeout) { this.shutdownTimeout = timeout; }
+   
    // -----------------------------------------------------  SSLConfiguration
    
    private String sslCiphers = null;

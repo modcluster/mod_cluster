@@ -9,6 +9,7 @@
   <bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter" mode="On Demand">
     <constructor>
       <parameter><inject bean="ModClusterService"/></parameter>
+      <parameter><inject bean="JMXKernel" property="mbeanServer"/></parameter>
     </constructor>
   </bean>
   

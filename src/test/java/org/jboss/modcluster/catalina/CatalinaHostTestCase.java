@@ -24,9 +24,12 @@ package org.jboss.modcluster.catalina;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.management.MBeanServer;
+
 import junit.framework.Assert;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.Service;
 import org.easymock.EasyMock;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
@@ -107,7 +110,35 @@ public class CatalinaHostTestCase
    @Test
    public void getEngine()
    {
-      Assert.assertSame(this.engine, this.catalinaHost.getEngine());
+      EasyMock.replay(this.host, this.engine);
+      
+      Engine result = this.catalinaHost.getEngine();
+      
+      EasyMock.verify(this.host, this.engine);
+      
+      Assert.assertSame(this.engine, result);
+      
+      EasyMock.reset(this.host, this.engine);
+      
+      MBeanServer mbeanServer = EasyMock.createStrictMock(MBeanServer.class);
+      org.apache.catalina.Engine engine = EasyMock.createStrictMock(org.apache.catalina.Engine.class);
+      Service service = EasyMock.createStrictMock(Service.class);
+      org.apache.catalina.Server server = EasyMock.createStrictMock(org.apache.catalina.Server.class);
+      
+      EasyMock.expect(this.host.getParent()).andReturn(engine);
+      EasyMock.expect(engine.getService()).andReturn(service);
+      EasyMock.expect(service.getServer()).andReturn(server);
+      
+      EasyMock.replay(this.host, this.engine, engine, service, server, mbeanServer);
+      
+      Host catalinaHost = new CatalinaHost(this.host, mbeanServer);
+      result = catalinaHost.getEngine();
+      
+      EasyMock.verify(this.host, this.engine, engine, service, server, mbeanServer);
+      
+      Assert.assertSame(mbeanServer, result.getServer().getMBeanServer());
+      
+      EasyMock.reset(this.host, this.engine, engine, service, server, mbeanServer);
    }
 
    @Test

@@ -35,6 +35,12 @@ public interface Engine
    String getName();
    
    /**
+    * The server to which this engine is associated.
+    * @return a server.
+    */
+   Server getServer();
+   
+   /**
     * The hosts associated with this engine.
     * @return the engine's hosts.
     */

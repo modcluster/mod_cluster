@@ -30,8 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
@@ -69,10 +73,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    private final MCMPHandler mcmpHandler;
    private final ResetRequestSource resetRequestSource;
    private final MCMPRequestFactory requestFactory;
+   private final MCMPResponseParser responseParser;
    private final AdvertiseListenerFactory listenerFactory;
    private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
    
    private final Map<Host, Set<String>> excludedContexts = new HashMap<Host, Set<String>>();
+   private final ConcurrentMap<Context, EnablableRequestListener> requestListeners = new ConcurrentHashMap<Context, EnablableRequestListener>();
    
    private volatile boolean established = false;
    private volatile boolean autoEnableContexts = true;
@@ -111,6 +117,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       this.mcmpHandler = mcmpHandler;
       this.resetRequestSource = resetRequestSource;
       this.requestFactory = requestFactory;
+      this.responseParser = responseParser;
       this.loadBalanceFactorProviderFactory = loadBalanceFactorProviderFactory;
       this.listenerFactory = listenerFactory;
    }
@@ -343,12 +350,15 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void add(Context context)
    {
-      // Send ENABLE-APP if state is started
-      if (this.established && !this.exclude(context) && context.isStarted())
+      if (this.include(context))
       {
-         this.log.debug(Strings.CONTEXT_ENABLE.getString(context, context.getHost()));
+         // Send ENABLE-APP if state is started
+         if (this.established && context.isStarted())
+         {
+            this.log.debug(Strings.CONTEXT_ENABLE.getString(context, context.getHost()));
 
-         this.enable(context);
+            this.enable(context);
+         }
       }
    }
 
@@ -358,17 +368,35 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void start(Context context)
    {
-      if (this.established && !this.exclude(context))
+      if (this.include(context))
       {
-         this.log.debug(Strings.CONTEXT_START.getString(context, context.getHost()));
+         if (this.established)
+         {
+            // Send ENABLE-APP
+            this.log.debug(Strings.CONTEXT_START.getString(context, context.getHost()));
 
-         this.enable(context);
+            this.enable(context);
+         }
+         
+         EnablableRequestListener listener = new NotifyOnDestroyRequestListener();
+         
+         if (this.requestListeners.putIfAbsent(context, listener) == null)
+         {
+            context.addRequestListener(listener);
+         }
       }
    }
-
+   
    private void enable(Context context)
    {
       MCMPRequest request = this.autoEnableContexts ? this.requestFactory.createEnableRequest(context) : this.requestFactory.createDisableRequest(context);
+      
+      this.mcmpHandler.sendRequest(request);
+   }
+   
+   private void disable(Context context)
+   {
+      MCMPRequest request = this.requestFactory.createDisableRequest(context);
       
       this.mcmpHandler.sendRequest(request);
    }
@@ -379,35 +407,26 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void stop(Context context)
    {
-      if (this.established && !this.exclude(context))
+      if (this.established && this.include(context))
       {
          this.log.debug(Strings.CONTEXT_STOP.getString(context, context.getHost()));
+         
+         this.disable(context);
+         
+         long start = System.currentTimeMillis();
+         long end = start + TimeUnit.SECONDS.toMillis(this.mcmpConfig.getStopContextTimeout());
 
-         // Wait until all requests have been done.
-         boolean on = true;
-         while (on) {
-            // Send STOP-APP and read the STOP-APP-RSP.
-            MCMPRequest request = this.requestFactory.createStopRequest(context);
-   
-            Map<MCMPServerState, String> responses = this.mcmpHandler.sendRequest(request);
-            if (responses.isEmpty())
-               return; // Nothing we can do...
-            Object results[] = responses.values().toArray();
-            if (results.length == 0)
-               return; // Nothing we can do...
-            int nrequests = 0;
-            for (int i=0; i<results.length; i++) {
-               if (results[i] == null)
-                  continue;
-               int ind = ((String) results[i]).indexOf("&Requests=");
-               if (ind > 0) {
-                  String res = ((String) results[i]).substring(ind+10);
-                  res = res.substring(0, res.length()-1);
-                  nrequests = nrequests + Integer.parseInt(res);
-               }
-            }
-            if (nrequests == 0)
-               on = false;
+         if (context.isDistributable())
+         {
+            // If the session manager is distributed - we only need to drain pending requests
+            this.drainRequests(context, start, end);
+         }
+         else
+         {
+            // If the session manager is not distributed - we need to drain the active sessions
+            this.drainSessions(context, start, end);
+            
+            this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
          }
       }
    }
@@ -418,13 +437,23 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    public void remove(Context context)
    {
-      if (this.established && !this.exclude(context))
+      if (this.include(context))
       {
-         this.log.debug(Strings.CONTEXT_DISABLE.getString(context, context.getHost()));
+         if (this.established)
+         {
+            this.log.debug(Strings.CONTEXT_DISABLE.getString(context, context.getHost()));
+            
+            MCMPRequest request = this.requestFactory.createRemoveRequest(context);
+            
+            this.mcmpHandler.sendRequest(request);
+         }
          
-         MCMPRequest request = this.requestFactory.createRemoveRequest(context);
+         EnablableRequestListener listener = this.requestListeners.remove(context);
          
-         this.mcmpHandler.sendRequest(request);
+         if (listener != null)
+         {
+            context.removeRequestListener(listener);
+         }
       }
    }
 
@@ -459,11 +488,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    }
    
-   private boolean exclude(Context context)
+   private boolean include(Context context)
    {
       Set<String> excludedPaths = this.excludedContexts.get(context.getHost());
       
-      return (excludedPaths != null) && excludedPaths.contains(context.getPath());
+      return (excludedPaths == null) || !excludedPaths.contains(context.getPath());
    }
    
    /**
@@ -718,7 +747,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       
       Context context = this.findContext(this.findHost(host), path);
       
-      this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(context));
+      this.disable(context);
       
       long start = System.currentTimeMillis();
       
@@ -733,38 +762,106 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    }
 
    /*
+    * Sends STOP-APP requests for the specified context until there are no more pending requests, or until the specified timeout is met.
+    * Returns true, if there are no more pending requests, false otherwise.
+    */
+   private <M> boolean drainRequests(Context context, long start, long end)
+   {
+      EnablableRequestListener listener = this.requestListeners.get(context);
+
+      if (listener == null) return false;
+      
+      boolean noTimeout = (start >= end);
+      
+      MCMPRequest request = this.requestFactory.createStopRequest(context);
+      
+      synchronized (listener)
+      {
+         listener.setEnabled(true);
+         
+         try
+         {
+            long current = System.currentTimeMillis();
+            long timeout = end - current;
+            
+            int requests = this.stop(request);
+            
+            while ((requests > 0) && (noTimeout || (timeout > 0)))
+            {
+               this.log.debug(java.text.MessageFormat.format("Waiting for {1} requests to drain from context [{0}]", context, requests));
+               
+               // Wait to be notified of a destroyed request
+               listener.wait(noTimeout ? 0 : timeout);
+               
+               current = System.currentTimeMillis();
+               timeout = end - current;
+               
+               requests = this.stop(request);
+            }
+            
+            boolean success = (requests == 0);
+            long duration = (success ? System.currentTimeMillis() : end) - start;
+            
+            if (success)
+            {
+               this.log.info(java.text.MessageFormat.format("All requests drained from context [{0}] in {1} ms.", context, duration));
+            }
+            else
+            {
+               this.log.warn(java.text.MessageFormat.format("Failed to drain all requests from context[{0}] within {1} ms.", context, duration));
+            }
+            
+            return success;
+         }
+         catch (InterruptedException e)
+         {
+            Thread.currentThread().interrupt();
+            return false;
+         }
+         finally
+         {
+            listener.setEnabled(false);
+         }
+      }
+   }
+   
+   /*
+    * Sends the specified stop request, parses and totals the responses.
+    */
+   private int stop(MCMPRequest request)
+   {
+      Map<MCMPServerState, String> responses = this.mcmpHandler.sendRequest(request);
+      
+      int requests = 0;
+      
+      for (String response: responses.values())
+      {
+         requests += this.responseParser.parseStopAppResponse(response);
+      }
+      
+      return requests;
+   }
+   
+   /*
     * Returns true, when the active session count reaches 0; or false, after timeout.
     */
-   private boolean drainSessions(final Context context, long start, long end)
+   private boolean drainSessions(Context context, long start, long end)
    {
       int remainingSessions = context.getActiveSessionCount();
       
       // Short circuit if there are already no sessions
       if (remainingSessions == 0) return true;
          
-      HttpSessionListener listener = new HttpSessionListener()
-      {
-         public void sessionCreated(HttpSessionEvent event)
-         {
-            // Ignore
-         }
-
-         public void sessionDestroyed(HttpSessionEvent event)
-         {
-            synchronized (context)
-            {
-               context.notify();
-            }
-         }
-      };
+      boolean noTimeout = (start >= end);
+      
+      HttpSessionListener listener = new NotifyOnDestroySessionListener();
       
       try
       {
-         synchronized (context)
+         synchronized (listener)
          {
             context.addSessionListener(listener);
             
-            boolean noTimeout = (start >= end);
             long current = System.currentTimeMillis();
             long timeout = end - current;
             
@@ -774,7 +871,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             {
                log.debug(Strings.DRAIN_SESSIONS_WAIT.getString(context, remainingSessions));
                
-               context.wait(noTimeout ? 0 : timeout);
+               listener.wait(noTimeout ? 0 : timeout);
                
                current = System.currentTimeMillis();
                timeout = end - current;
@@ -830,4 +927,87 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       
       return context;
    }
+   
+   static interface Enablable
+   {
+      boolean isEnabled();
+      
+      void setEnabled(boolean enabled);
+   }
+
+   static interface EnablableRequestListener extends Enablable, ServletRequestListener
+   {
+   }
+   
+   private static class NotifyOnDestroyRequestListener implements EnablableRequestListener
+   {
+      private volatile boolean enabled = false;
+      
+      /**
+       * {@inheritDoc}
+       * @see org.jboss.modcluster.ModClusterService.Controllable#start()
+       */
+      public boolean isEnabled()
+      {
+         return this.enabled;
+      }
+
+      /**
+       * {@inheritDoc}
+       * @see org.jboss.modcluster.ModClusterService.Controllable#stop()
+       */
+      public void setEnabled(boolean enabled)
+      {
+         this.enabled = enabled;
+      }
+      
+      /**
+       * {@inheritDoc}
+       * @see javax.servlet.ServletRequestListener#requestInitialized(javax.servlet.ServletRequestEvent)
+       */
+      public void requestInitialized(ServletRequestEvent event)
+      {
+         // Do nothing
+      }
+      
+      /**
+       * {@inheritDoc}
+       * @see javax.servlet.ServletRequestListener#requestDestroyed(javax.servlet.ServletRequestEvent)
+       */
+      public void requestDestroyed(ServletRequestEvent event)
+      {
+         if (this.enabled)
+         {
+            // Notify waiting threads, but only if enabled
+            synchronized (this)
+            {
+               this.notify();
+            }
+         }
+      }
+   };
+   
+   private static class NotifyOnDestroySessionListener implements HttpSessionListener
+   {
+      /**
+       * {@inheritDoc}
+       * @see javax.servlet.http.HttpSessionListener#sessionCreated(javax.servlet.http.HttpSessionEvent)
+       */
+      public void sessionCreated(HttpSessionEvent event)
+      {
+         // Do nothing
+      }
+
+      /**
+       * {@inheritDoc}
+       * @see javax.servlet.http.HttpSessionListener#sessionDestroyed(javax.servlet.http.HttpSessionEvent)
+       */
+      public void sessionDestroyed(HttpSessionEvent event)
+      {
+         synchronized (this)
+         {
+            this.notify();
+         }
+      }
+   };
 }

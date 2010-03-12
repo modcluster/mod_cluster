@@ -48,7 +48,12 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     * SSL client cert usage to connect to the proxy.
     */
    boolean isSsl();
-      
+   
+   /**
+    * Returns a list of contexts that should never be enabled in mod_cluster.
+    * Contexts may be 
+    * @return a comma delimited list of contexts of the form "[host:]context"
+    */
    String getExcludedContexts();
    
    /**
@@ -57,5 +62,16 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     */
    Boolean getAdvertise();
    
+   /**
+    * Indicates whether or not to automatically enable contexts.
+    * If false, context will need to be enabled manually.
+    * @return true, if contexts should auto-enable, false otherwise.
+    */
    boolean isAutoEnableContexts();
+
+   /**
+    * Returns the number of seconds to wait for pending requests to complete when stopping a context.
+    * @return timeout in seconds.
+    */
+   int getStopContextTimeout();
 }

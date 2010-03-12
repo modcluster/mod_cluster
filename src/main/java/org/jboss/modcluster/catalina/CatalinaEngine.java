@@ -24,12 +24,15 @@ package org.jboss.modcluster.catalina;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import javax.management.MBeanServer;
+
 import org.apache.catalina.Container;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
+import org.jboss.modcluster.Server;
 
 /**
  * {@link Engine} implementation that wraps a {@link org.apache.catalina.Context}.
@@ -38,16 +41,36 @@ import org.jboss.modcluster.Host;
 public class CatalinaEngine implements Engine
 {
    private final org.apache.catalina.Engine engine;
+   private final Server server;
    
    /**
     * Constructs a new CatalinaEngine that wraps the specified catalina engine
     * @param engine a catalina engine
     */
-   public CatalinaEngine(org.apache.catalina.Engine engine)
+   public CatalinaEngine(org.apache.catalina.Engine engine, Server server)
    {
       this.engine = engine;
+      this.server = server;
    }
    
+   /**
+    * Constructs a new CatalinaEngine that wraps the specified catalina engine
+    * @param engine a catalina engine
+    */
+   public CatalinaEngine(org.apache.catalina.Engine engine, MBeanServer mbeanServer)
+   {
+      this(engine, new CatalinaServer(engine.getService().getServer(), mbeanServer));
+   }
+   
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.Engine#getServer()
+    */
+   public Server getServer()
+   {
+      return this.server;
+   }
+
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.Engine#getHosts()
@@ -116,12 +139,10 @@ public class CatalinaEngine implements Engine
     */
    public Connector getProxyConnector()
    {
-      org.apache.catalina.connector.Connector[] connectors = this.engine.getService().findConnectors();
-      
       int highestMaxThreads = 0;
       Connector bestConnector = null;
       
-      for (org.apache.catalina.connector.Connector connector: connectors)
+      for (org.apache.catalina.connector.Connector connector: this.engine.getService().findConnectors())
       {
          CatalinaConnector catalinaConnector = new CatalinaConnector(connector);
          

@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.management.MBeanServer;
+
 import org.apache.catalina.Container;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
@@ -56,9 +58,9 @@ public class CatalinaHost implements Host
     * Constructs a new CatalinaHost wrapping the specified catalina host.
     * @param host a catalina host
     */
-   public CatalinaHost(org.apache.catalina.Host host)
+   public CatalinaHost(org.apache.catalina.Host host, MBeanServer mbeanServer)
    {
-      this(host, new CatalinaEngine((org.apache.catalina.Engine) host.getParent()));
+      this(host, new CatalinaEngine((org.apache.catalina.Engine) host.getParent(), mbeanServer));
    }
    
    /**

@@ -24,7 +24,10 @@ package org.jboss.modcluster.catalina;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import javax.management.MBeanServer;
+
 import org.apache.catalina.Service;
+import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Server;
 
@@ -35,14 +38,16 @@ import org.jboss.modcluster.Server;
 public class CatalinaServer implements Server
 {
    private final org.apache.catalina.Server server;
+   private final MBeanServer mbeanServer;
    
    /**
     * Constructs a new CatalinaServer wrapping the specified catalina server.
     * @param host a catalina server
     */
-   public CatalinaServer(org.apache.catalina.Server server)
+   public CatalinaServer(org.apache.catalina.Server server, MBeanServer mbeanServer)
    {
       this.server = server;
+      this.mbeanServer = mbeanServer;
    }
 
    /**
@@ -62,7 +67,7 @@ public class CatalinaServer implements Server
 
          public Engine next()
          {
-            return new CatalinaEngine((org.apache.catalina.Engine) services.next().getContainer());
+            return new CatalinaEngine((org.apache.catalina.Engine) services.next().getContainer(), CatalinaServer.this);
          }
 
          public void remove()
@@ -80,6 +85,26 @@ public class CatalinaServer implements Server
       };
    }
    
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.Server#getMBeanServer()
+    */
+   public MBeanServer getMBeanServer()
+   {
+      return this.mbeanServer;
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.Server#getDomain()
+    */
+   public String getDomain()
+   {
+      String domain = (String) IntrospectionUtils.getProperty(this.server, "domain");
+
+      return (domain != null) ? domain : this.mbeanServer.getDefaultDomain();
+   }
+
    @Override
    public boolean equals(Object object)
    {

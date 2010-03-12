@@ -23,6 +23,8 @@ package org.jboss.modcluster.catalina;
 
 import java.util.Iterator;
 
+import javax.management.MBeanServer;
+
 import junit.framework.Assert;
 
 import org.apache.catalina.Container;
@@ -31,6 +33,7 @@ import org.easymock.EasyMock;
 import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
+import org.jboss.modcluster.Server;
 import org.junit.Test;
 
 /**
@@ -40,7 +43,9 @@ import org.junit.Test;
 public class CatalinaEngineTestCase
 {
    private org.apache.catalina.Engine engine = EasyMock.createStrictMock(org.apache.catalina.Engine.class);
-   private Engine catalinaEngine = new CatalinaEngine(this.engine);
+   private Server server = EasyMock.createStrictMock(Server.class);
+   
+   private Engine catalinaEngine = new CatalinaEngine(this.engine, this.server);
    
    @Test
    public void findHost()
@@ -148,5 +153,37 @@ public class CatalinaEngineTestCase
       
       EasyMock.verify(this.engine);
       EasyMock.reset(this.engine);
+   }
+   
+   @Test
+   public void getServer()
+   {
+      EasyMock.replay(this.engine, this.server);
+      
+      Server result = this.catalinaEngine.getServer();
+      
+      EasyMock.verify(this.engine, this.server);
+      
+      Assert.assertSame(this.server, result);
+      
+      EasyMock.reset(this.engine, this.server);
+      
+      MBeanServer mbeanServer = EasyMock.createStrictMock(MBeanServer.class);
+      Service service = EasyMock.createStrictMock(Service.class);
+      org.apache.catalina.Server server = EasyMock.createStrictMock(org.apache.catalina.Server.class);
+      
+      EasyMock.expect(this.engine.getService()).andReturn(service);
+      EasyMock.expect(service.getServer()).andReturn(server);
+      
+      EasyMock.replay(this.engine, this.server, service, server, mbeanServer);
+      
+      Engine catalinaEngine = new CatalinaEngine(this.engine, mbeanServer);
+      result = catalinaEngine.getServer();
+      
+      EasyMock.verify(this.engine, this.server, service, server, mbeanServer);
+      
+      Assert.assertSame(mbeanServer, result.getMBeanServer());
+      
+      EasyMock.reset(this.engine, this.server, service, server, mbeanServer);
    }
 }
