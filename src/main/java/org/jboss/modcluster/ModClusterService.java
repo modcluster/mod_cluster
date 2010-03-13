@@ -788,7 +788,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             
             while ((requests > 0) && (noTimeout || (timeout > 0)))
             {
-               this.log.debug(java.text.MessageFormat.format("Waiting for {1} requests to drain from context [{0}]", context, requests));
+               this.log.debug(Strings.DRAIN_REQUESTS_WAIT.getString(context, requests));
                
                // Wait to be notified of a destroyed request
                listener.wait(noTimeout ? 0 : timeout);
@@ -800,15 +800,15 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             }
             
             boolean success = (requests == 0);
-            long duration = (success ? System.currentTimeMillis() : end) - start;
+            float duration = ((success ? System.currentTimeMillis() : end) - start) / 1000f;
             
             if (success)
             {
-               this.log.info(java.text.MessageFormat.format("All requests drained from context [{0}] in {1} ms.", context, duration));
+               this.log.info(Strings.DRAIN_REQUESTS.getString(context, duration));
             }
             else
             {
-               this.log.warn(java.text.MessageFormat.format("Failed to drain all requests from context[{0}] within {1} ms.", context, duration));
+               this.log.warn(Strings.DRAIN_REQUESTS_TIMEOUT.getString(context, duration));
             }
             
             return success;
