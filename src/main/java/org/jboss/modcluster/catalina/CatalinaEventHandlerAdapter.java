@@ -144,7 +144,29 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          }
       }
    }
-
+   /**
+    * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so
+    * you could start (restart) one that needs initializations...
+    */
+   private void initialize(Server server) throws IllegalStateException
+   {
+      this.eventHandler.init(new CatalinaServer(server, this.mbeanServer));
+               
+      this.addListeners(server);
+               
+      // Register for mbean notifications if JBoss Web server mbean exists
+      if (this.mbeanServer.isRegistered(this.serviceObjectName))
+      {
+         try
+         {
+            this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
+         }
+         catch (InstanceNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+      }
+   }
    /**
     * {@inhericDoc}
     * Primary entry point for startup and shutdown events.
@@ -162,23 +184,8 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             if (this.init.compareAndSet(false, true))
             {
                Server server = (Server) source;
-               
-               this.eventHandler.init(new CatalinaServer(server, this.mbeanServer));
-               
-               this.addListeners(server);
-               
-               // Register for mbean notifications if JBoss Web server mbean exists
-               if (this.mbeanServer.isRegistered(this.serviceObjectName))
-               {
-                  try
-                  {
-                     this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
-                  }
-                  catch (InstanceNotFoundException e)
-                  {
-                     throw new IllegalStateException(e);
-                  }
-               }
+
+               initialize(server); 
             }
          }
       }
@@ -190,6 +197,15 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             {
                // Start a webapp
                this.eventHandler.start(new CatalinaContext((Context) source, this.mbeanServer));
+            }
+         }
+         else if (source instanceof Server)
+         {
+            if (this.init.compareAndSet(false, true))
+            {
+               Server server = (Server) source;
+
+               initialize(server); 
             }
          }
       }
