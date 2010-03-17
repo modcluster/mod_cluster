@@ -134,6 +134,9 @@ typedef struct mod_manager_config
     /* Should be the slotmem persisted (1) or not (0) */
     int persistent;
 
+    /* check for nonce in the command logic */
+    int nonce;
+
 } mod_manager_config;
 
 /*
@@ -1597,14 +1600,23 @@ static char*context_string(request_rec *r, contextinfo_t *ou, char *Alias, char 
     raw = apr_pstrcat(r->pool, "JVMRoute=", JVMRoute, "&Alias=", Alias, "&Context=", context, NULL);
     return raw;
 }
+static char *balancer_nonce_string(request_rec *r)
+{
+    char *ret = "";
+    void *sconf = r->server->module_config;
+    mod_manager_config *mconf = ap_get_module_config(sconf, &manager_module);
+    if (mconf->nonce)
+        ret = apr_psprintf(r->pool, "nonce=%s&", balancer_nonce);
+    return ret;
+}
 static void context_command_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
 {
     if (ou->status == DISABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=ENABLE-APP&Range=CONTEXT&%s\">Enable</a> ",
-                   r->uri, balancer_nonce, context_string(r, ou, Alias, JVMRoute));
+        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=CONTEXT&%s\">Enable</a> ",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
     if (ou->status == ENABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=DISABLE-APP&Range=CONTEXT&%s\">Disable</a>",
-                   r->uri, balancer_nonce, context_string(r, ou, Alias, JVMRoute));
+        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=CONTEXT&%s\">Disable</a>",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
 }
 /* Create the commands that are possible on the node */
 static char*node_string(request_rec *r, char *JVMRoute)
@@ -1615,20 +1627,20 @@ static char*node_string(request_rec *r, char *JVMRoute)
 static void node_command_string(request_rec *r, int status, char *JVMRoute)
 {
     if (status == ENABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=ENABLE-APP&Range=NODE&%s\">Enable Contexts</a> ",
-                   r->uri, balancer_nonce, node_string(r, JVMRoute));
+        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=NODE&%s\">Enable Contexts</a> ",
+                   r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
     if (status == DISABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a>",
-                   r->uri, balancer_nonce, node_string(r, JVMRoute));
+        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a>",
+                   r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
 }
 static void domain_command_string(request_rec *r, int status, char *Domain)
 {
     if (status == ENABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=ENABLE-APP&Range=DOMAIN&Domain=%s\">Enable Nodes</a> ",
-                   r->uri, balancer_nonce, Domain);
+        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=DOMAIN&Domain=%s\">Enable Nodes</a> ",
+                   r->uri, balancer_nonce_string(r), Domain);
     if (status == DISABLED)
-        ap_rprintf(r, "<a href=\"%s?nonce=%s&Cmd=DISABLE-APP&Range=DOMAIN&Domain=%s\">Disable Nodes</a>",
-                   r->uri, balancer_nonce, Domain);
+        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=DOMAIN&Domain=%s\">Disable Nodes</a>",
+                   r->uri, balancer_nonce_string(r), Domain);
 }
 
 /*
@@ -1864,6 +1876,8 @@ static int manager_info(request_rec *r)
     nodeinfo_t *nodes;
     int nbnodes = 0;
     char *domain = "";
+    void *sconf = r->server->module_config;
+    mod_manager_config *mconf = ap_get_module_config(sconf, &manager_module);
 
     if (r->args) {
         char *args = apr_pstrdup(r->pool, r->args);
@@ -1891,8 +1905,8 @@ static int manager_info(request_rec *r)
      * Check that the supplied nonce matches this server's nonce;
      * otherwise ignore all parameters, to prevent a CSRF attack.
      */
-    if ((name = apr_table_get(params, "nonce")) == NULL
-        || strcmp(balancer_nonce, name) != 0) {
+    if (mconf->nonce && ((name = apr_table_get(params, "nonce")) == NULL
+        || strcmp(balancer_nonce, name) != 0)) {
         apr_table_clear(params);
     }
 
@@ -1967,16 +1981,16 @@ static int manager_info(request_rec *r)
              "<html><head>\n<title>Mod_cluster Status</title>\n</head><body>\n",
              r);
     ap_rvputs(r, "<h1>", MOD_CLUSTER_EXPOSED_VERSION, "</h1>", NULL);
-    ap_rvputs(r, "<a href=\"", r->uri, "?nonce=", balancer_nonce,
-                 "&refresh=10",
+    ap_rvputs(r, "<a href=\"", r->uri, "?", balancer_nonce_string(r),
+                 "refresh=10",
                  "\">Auto Refresh</a>", NULL);
 
-    ap_rvputs(r, " <a href=\"", r->uri, "?nonce=", balancer_nonce,
-                 "&Cmd=DUMP&Range=ALL",
+    ap_rvputs(r, " <a href=\"", r->uri, "?", balancer_nonce_string(r),
+                 "Cmd=DUMP&Range=ALL",
                  "\">show DUMP output</a>", NULL);
 
-    ap_rvputs(r, " <a href=\"", r->uri, "?nonce=", balancer_nonce,
-                 "&Cmd=INFO&Range=ALL",
+    ap_rvputs(r, " <a href=\"", r->uri, "?", balancer_nonce_string(r),
+                 "Cmd=INFO&Range=ALL",
                  "\">show INFO output</a>", NULL);
 
     ap_rputs("\n", r);
@@ -2261,6 +2275,20 @@ static const char*cmd_manager_pers(cmd_parms *cmd, void *dummy, const char *arg)
     return NULL;
 }
 
+static const char*cmd_manager_nonce(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    if (strcasecmp(arg, "Off") == 0)
+       mconf->nonce = 0;
+    else if (strcasecmp(arg, "On") == 0)
+       mconf->nonce = -1;
+    else {
+       return "CheckNonce must be one of: "
+              "off | on";
+    }
+    return NULL;
+}
+
 static const command_rec  manager_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -2312,6 +2340,13 @@ static const command_rec  manager_cmds[] =
         OR_ALL,
         "PersistSlots - Persist the slot mem elements on | off (Default: off No persistence)"
     ),
+    AP_INIT_TAKE1(
+        "CheckNonce",
+        cmd_manager_nonce,
+        NULL,
+        OR_ALL,
+        "CheckNonce - Switch check of nonce when using mod_cluster-manager handler on | off (Default: on Nonce checked)"
+    ),
     {NULL}
 };
 
@@ -2357,6 +2392,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->maxsessionid = DEFMAXSESSIONID;
     mconf->last_updated = 0;
     mconf->persistent = 0;
+    mconf->nonce = -1;
     return mconf;
 }
 
