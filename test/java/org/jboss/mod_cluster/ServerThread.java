@@ -41,10 +41,12 @@ public class  ServerThread extends Thread {
     int delay;
     boolean ok = true;
     StandardServer server = null;
+    ServerThread thread = null;
 
     public ServerThread(int delay,  StandardServer server) {
         this.delay = delay;
         this.server = server;
+        this.thread = this;
     }
     public void run() {
         try {
@@ -56,6 +58,7 @@ public class  ServerThread extends Thread {
             // sleep(delay);
             server.stop();
         } catch (InterruptedException e) {
+            e.printStackTrace();
         } catch (LifecycleException ex) {
             ex.printStackTrace();
         } catch (Exception e) {
@@ -64,5 +67,10 @@ public class  ServerThread extends Thread {
     }
     public void stopit() {
         ok = false;
+        try {
+            thread.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
