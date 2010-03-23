@@ -986,7 +986,7 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         nodeinfo_t *ou;
         proxy_worker_stat *proxystat;
         char *flushpackets;
-        char *pptr = (char *) ou;
+        char *pptr;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
         ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,Domain: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
@@ -1008,6 +1008,7 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
                    (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
+        pptr = (char *) ou;
         pptr = pptr + ou->offset;
         proxystat  = (proxy_worker_stat *) pptr;
         ap_rprintf(r, ",Elected: %d,Read: %d,Transfered: %d,Connected: %d,Load: %d\n",
