@@ -1668,7 +1668,7 @@ public class ModClusterServiceTestCase
          
          context.addSessionListener(EasyMock.capture(capturedAddListener));
          
-         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(1,3);
+         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(1,5);
          
          context.removeSessionListener(EasyMock.capture(capturedRemoveListener));
          
