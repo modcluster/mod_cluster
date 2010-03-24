@@ -1544,13 +1544,13 @@ public class ModClusterServiceTestCase
       
       EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
       EasyMock.expect(context.isDistributable()).andReturn(true);
-      
-      EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
-      EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response2"));
-      EasyMock.expect(this.responseParser.parseStopAppResponse("response2")).andReturn(1);
-      
-      EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response3"));
-      EasyMock.expect(this.responseParser.parseStopAppResponse("response3")).andReturn(1);
+     
+      // Called at least once...
+      EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest).atLeastOnce();
+      EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response2")).atLeastOnce();
+      EasyMock.expect(this.responseParser.parseStopAppResponse("response2")).andReturn(1).atLeastOnce();
+      // EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response3")).atLeastOnce();
+      // EasyMock.expect(this.responseParser.parseStopAppResponse("response3")).andReturn(1).atLeastOnce();
 
       EasyMock.expect(context.getHost()).andReturn(host);
       EasyMock.expect(context.getPath()).andReturn("");
@@ -1668,7 +1668,7 @@ public class ModClusterServiceTestCase
          
          context.addSessionListener(EasyMock.capture(capturedAddListener));
          
-         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(2);
+         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(1,3);
          
          context.removeSessionListener(EasyMock.capture(capturedRemoveListener));
          
