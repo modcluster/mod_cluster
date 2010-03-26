@@ -920,7 +920,8 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d Maxtry: %d\n",
                    id[i], (int) sizeof(ou->balancer), ou->balancer, ou->StickySession,
                    (int) sizeof(ou->StickySessionCookie), ou->StickySessionCookie, (int) sizeof(ou->StickySessionPath), ou->StickySessionPath,
-                   ou->StickySessionRemove, ou->StickySessionForce, ou->Timeout,
+                   ou->StickySessionRemove, ou->StickySessionForce,
+                   (int) apr_time_sec(ou->Timeout),
                    ou->Maxattempts);
     }
 
@@ -1006,8 +1007,10 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
                 flushpackets = "Auto";
         }
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
-                   flushpackets, ou->mess.flushwait,
-                   (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
+                   flushpackets, ou->mess.flushwait/1000,
+                   (int) apr_time_sec(ou->mess.ping),
+                   ou->mess.smax,
+                   (int) apr_time_sec(ou->mess.ttl));
         pptr = (char *) ou;
         pptr = pptr + ou->offset;
         proxystat  = (proxy_worker_stat *) pptr;
