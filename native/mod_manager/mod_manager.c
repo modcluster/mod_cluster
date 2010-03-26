@@ -1879,6 +1879,7 @@ static int manager_info(request_rec *r)
     nodeinfo_t *nodes;
     int nbnodes = 0;
     char *domain = "";
+    char *errstring = NULL;
     void *sconf = r->server->module_config;
     mod_manager_config *mconf = ap_get_module_config(sconf, &manager_module);
 
@@ -1927,7 +1928,6 @@ static int manager_info(request_rec *r)
         /* Process command if any */
         if (cmd != NULL && typ !=NULL) {
             int global = RANGECONTEXT;
-            char *errstring = NULL;
             int errtype = 0;
             int i;
             char **ptr;
@@ -1974,7 +1974,6 @@ static int manager_info(request_rec *r)
             }
             if (errstring) {
                 process_error(r, errstring, errtype);
-                return 500;
             }
         }
     }
@@ -1984,6 +1983,14 @@ static int manager_info(request_rec *r)
              "<html><head>\n<title>Mod_cluster Status</title>\n</head><body>\n",
              r);
     ap_rvputs(r, "<h1>", MOD_CLUSTER_EXPOSED_VERSION, "</h1>", NULL);
+
+    if (errstring) {
+        ap_rvputs(r, "<h1> Command failed: ", errstring , "</h1>\n", NULL);
+        ap_rvputs(r, " <a href=\"", r->uri, "\">Continue</a>\n", NULL);
+        ap_rputs("</body></html>\n", r);
+        return OK;
+    }
+
     ap_rvputs(r, "<a href=\"", r->uri, "?", balancer_nonce_string(r),
                  "refresh=10",
                  "\">Auto Refresh</a>", NULL);
