@@ -1299,11 +1299,9 @@ public class ModClusterServiceTestCase
          EasyMock.expect(context.isDistributable()).andReturn(true);
          
          EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
-         EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response"));
-         EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1);
-         
-         EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response"));
-         EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1);
+         // In fact on windows it is often called 3 times...
+         EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response")).times(2,3);
+         EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1).times(2,3);
          
          EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
          
