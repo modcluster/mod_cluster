@@ -1197,7 +1197,7 @@ public class ModClusterServiceTestCase
          
          context.addSessionListener(EasyMock.capture(capturedAddListener));
          
-         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(2,3);
+         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(2,5);
          
          context.removeSessionListener(EasyMock.capture(capturedRemoveListener));
          
@@ -1300,8 +1300,8 @@ public class ModClusterServiceTestCase
          
          EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
          // In fact on windows it is often called 3 times...
-         EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response")).times(2,3);
-         EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1).times(2,3);
+         EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response")).times(2,5);
+         EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1).times(2,5);
          
          EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
          
@@ -1774,7 +1774,7 @@ public class ModClusterServiceTestCase
          
          context.addSessionListener(EasyMock.capture(capturedAddListener));
          
-         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(2,3);
+         EasyMock.expect(context.getActiveSessionCount()).andReturn(1).times(2,5);
          
          context.removeSessionListener(EasyMock.capture(capturedRemoveListener));
          
