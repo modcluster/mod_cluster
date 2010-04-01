@@ -22,7 +22,8 @@
 package org.jboss.modcluster;
 
 /**
- * SPI for a servlet engine.
+ * SPI for an engine, defined as collection of one or more hosts associated with a collection of Connectors.
+ * The only Connector of significance is the one used to communicate with a proxy.
  * 
  * @author Paul Ferraro
  */

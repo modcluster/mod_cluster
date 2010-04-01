@@ -24,7 +24,7 @@ package org.jboss.modcluster;
 import javax.management.MBeanServer;
 
 /**
- * SPI for a web application server.
+ * SPI for a web application server, defined as a collection of one or more Engines.
  * 
  * @author Paul Ferraro
  */

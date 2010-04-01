@@ -24,7 +24,7 @@ package org.jboss.modcluster;
 import java.util.Set;
 
 /**
- * SPI for a servlet engine host.
+ * SPI for a host, defined as a set of web application contexts.
  * 
  * @author Paul Ferraro
  */
