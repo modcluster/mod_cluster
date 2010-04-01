@@ -24,7 +24,7 @@ package org.jboss.modcluster;
 import java.net.InetAddress;
 
 /**
- * SPI for a servlet engine connector
+ * SPI for a connector, defined as a communication end-point for a client or proxy.
  * 
  * @author Paul Ferraro
  */
