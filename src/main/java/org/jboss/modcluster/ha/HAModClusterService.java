@@ -22,6 +22,7 @@
 package org.jboss.modcluster.ha;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -119,6 +120,37 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    volatile int latestLoad;
    volatile int statusCount = 0;
 
+   @Deprecated
+   public HAModClusterService(HAPartition partition, HAModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider)
+   {
+      this(config, loadBalanceFactorProvider, partition);
+
+      this.deprecatedConstructor(new Class<?>[] { HAPartition.class, HAModClusterConfig.class, LoadBalanceFactorProvider.class }, new Class<?>[] { HAModClusterConfig.class, LoadBalanceFactorProvider.class, HAPartition.class });
+   }
+
+   @Deprecated
+   public HAModClusterService(HAPartition partition, HAModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider, HASingletonElectionPolicy electionPolicy)
+   {
+      this(config, loadBalanceFactorProvider, partition, electionPolicy);
+      
+      this.deprecatedConstructor(new Class<?>[] { HAPartition.class, HAModClusterConfig.class, LoadBalanceFactorProvider.class, HASingletonElectionPolicy.class }, new Class<?>[] { HAModClusterConfig.class, LoadBalanceFactorProvider.class, HAPartition.class, HASingletonElectionPolicy.class });
+   }
+   
+   private void deprecatedConstructor(Class<?>[] oldConstructorArgs, Class<?>[] newConstructorArgs)
+   {
+      try
+      {
+         Constructor<HAModClusterService> oldConstructor = HAModClusterService.class.getConstructor(oldConstructorArgs);
+         Constructor<HAModClusterService> newConstructor = HAModClusterService.class.getConstructor(newConstructorArgs);
+         
+         this.log.warn(Strings.DEPRECATED.getString(oldConstructor, newConstructor));
+      }
+      catch (NoSuchMethodException e)
+      {
+         // Oh well...
+      }
+   }
+   
    public HAModClusterService(HAModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider, HAPartition partition)
    {
       this(config, loadBalanceFactorProvider, partition, null);

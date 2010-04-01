@@ -8,8 +8,8 @@
   <!-- Entry point: catalina lifecycle listener -->
   <bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter" mode="On Demand">
     <constructor>
-      <parameter><inject bean="ModClusterService"/></parameter>
-      <parameter><inject bean="JMXKernel" property="mbeanServer"/></parameter>
+      <parameter class="org.jboss.modcluster.ContainerEventHandler"><inject bean="ModClusterService"/></parameter>
+      <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
     </constructor>
   </bean>
   
@@ -17,7 +17,7 @@
   <bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="ModClusterConfig"/></parameter>
+      <parameter class="org.jboss.modcluster.config.ModClusterConfig"><inject bean="ModClusterConfig"/></parameter>
       <parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
     </constructor>
   </bean>
@@ -26,10 +26,10 @@
   <bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)</annotation>
     <constructor>
-      <parameter><inject bean="ModClusterConfig"/></parameter>
-      <parameter><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
-      <parameter><inject bean="HAPartition"/></parameter>
-      <parameter><bean class="org.jboss.ha.singleton.HASingletonElectionPolicySimple"/></parameter>
+      <parameter class="org.jboss.modcluster.config.ha.HAModClusterConfig"><inject bean="ModClusterConfig"/></parameter>
+      <parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
+      <parameter class="org.jboss.ha.framework.interfaces.HAPartition"><inject bean="HAPartition"/></parameter>
+      <parameter class="org.jboss.ha.framework.interfaces.HASingletonElectionPolicy"><bean class="org.jboss.ha.singleton.HASingletonElectionPolicySimple"/></parameter>
     </constructor>
   </bean>
   
