@@ -1866,7 +1866,8 @@ static int manager_info(request_rec *r)
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
                    (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
-        proxystat  = (proxy_worker_stat *) ou->stat;
+        pptr = pptr + ou->offset;
+        proxystat  = (proxy_worker_stat *) pptr;
         ap_rprintf(r, ",Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
                    (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
                    (int) proxystat->busy, (int) proxystat->lbfactor);
