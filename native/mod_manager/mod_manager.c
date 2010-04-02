@@ -946,6 +946,7 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         nodeinfo_t *ou;
         proxy_worker_stat *proxystat;
         char *flushpackets;
+        char *pptr;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
         ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,Domain: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
@@ -967,7 +968,9 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
                    (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
-        proxystat  = (proxy_worker_stat *) ou->stat;
+        pptr = (char *) ou;
+        pptr = pptr + ou->offset;
+        proxystat  = (proxy_worker_stat *) pptr;
         ap_rprintf(r, ",Elected: %d,Read: %d,Transfered: %d,Connected: %d,Load: %d\n",
                    (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
                    (int) proxystat->busy, (int) proxystat->lbfactor);
@@ -1830,6 +1833,7 @@ static int manager_info(request_rec *r)
         proxy_worker_stat *proxystat;
         char *flushpackets;
         nodeinfo_t *ou = &nodes[i];
+        char *pptr = (char *) ou;
 
         if (strcmp(domain, ou->mess.Domain) != 0) {
             ap_rprintf(r, "<h1> Domain %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
