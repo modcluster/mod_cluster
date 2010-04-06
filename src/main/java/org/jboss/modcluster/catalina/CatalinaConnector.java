@@ -22,6 +22,7 @@
 package org.jboss.modcluster.catalina;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
@@ -50,7 +51,20 @@ public class CatalinaConnector implements Connector
     */
    public InetAddress getAddress()
    {
-      return (InetAddress) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
+      Object value = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
+      
+      if (value == null) return null;
+      
+      if (value instanceof InetAddress) return (InetAddress) value;
+      
+      try
+      {
+         return (value instanceof String) ? InetAddress.getByName((String) value) : InetAddress.getLocalHost();
+      }
+      catch (UnknownHostException e)
+      {
+         throw new IllegalStateException(e);
+      }
    }
 
    /**
