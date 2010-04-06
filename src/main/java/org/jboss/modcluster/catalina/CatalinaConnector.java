@@ -53,18 +53,21 @@ public class CatalinaConnector implements Connector
    {
       Object value = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
       
-      if (value == null) return null;
-      
       if (value instanceof InetAddress) return (InetAddress) value;
       
-      try
+      if (value instanceof String)
       {
-         return (value instanceof String) ? InetAddress.getByName((String) value) : InetAddress.getLocalHost();
+         try
+         {
+            return InetAddress.getByName((String) value);
+         }
+         catch (UnknownHostException e)
+         {
+            // Ignore
+         }
       }
-      catch (UnknownHostException e)
-      {
-         throw new IllegalStateException(e);
-      }
+      
+      return null;
    }
 
    /**
