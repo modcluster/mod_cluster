@@ -38,7 +38,7 @@
 
   <property name="test.runner" value="junit.textui.TestRunner"/>
 
-  <path id="tomcat.test.classpath">
+  <path id="jbossweb.test.classpath">
     <pathelement location="${test.classes}"/>
     <pathelement location="${junit.jar}"/>
     <pathelement location="${commons-httpclient.jar}"/>
@@ -76,7 +76,7 @@
          deprecation="${compile.deprecation}"
          source="${compile.source}"
          optimize="${compile.optimize}">
-         <classpath refid="tomcat.test.classpath" />
+         <classpath refid="jbossweb.test.classpath" />
          <include name="org/jboss/mod_cluster/**" />
   </javac>
 
@@ -141,7 +141,7 @@
      <java dir="${test.classes}" classname="${test.runner}" fork="yes">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster}"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
   </target>
   <target name="all" depends="compile,httpd">
@@ -150,7 +150,7 @@
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" resultproperty="test.failure">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster}"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
 
      <antcall target="stophttpd">
@@ -171,21 +171,21 @@
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster} -DTest=testJBWEB_117"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
 
      <!-- XXX Need to fix the deployement -->
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster} -Dtest=Test_Chunk_JBWEB_117"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
 
     <!-- This test requires tc/jb native for the moment it fails except if you install by hands the libraries -->
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="false">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster} -Dtest=Test_Native_JBWEB_117"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
 
   </target>
@@ -198,7 +198,7 @@
             <!--
             <jvmarg value="-agentlib:jdwp=transport=dt_socket,address=9000,server=y,suspend=y"/>
               -->
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
   </target>
 
@@ -208,7 +208,7 @@
            spawn="true" fork="yes">
             <arg line="${line}"/>
             <jvmarg line="-Dcluster=${cluster}"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
      <echo message="startjbossweb ${line}"/>
   </target>
@@ -231,7 +231,7 @@
         <param name="basenode" value="${basenode}"/>
      </antcall>
      <java dir="${test.classes}" classname="org.jboss.mod_cluster.Util" fork="yes" failonerror="${test.failonerror}">
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
   </target>
   <target name="domain20" depends="compile">
@@ -262,7 +262,7 @@
      <java dir="${test.classes}" classname="${test.runner}" fork="yes" failonerror="${test.failonerror}">
             <arg value="org.jboss.mod_cluster.Maintest"/>
             <jvmarg line="-Dcluster=${cluster} -Dtest=Domaintest"/>
-            <classpath refid="tomcat.test.classpath"/>
+            <classpath refid="jbossweb.test.classpath"/>
      </java>
   </target>
 
