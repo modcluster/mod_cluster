@@ -65,6 +65,11 @@ public class  Client extends Thread {
     private HttpClient httpClient = null;
 
     private String response = null;
+
+    private boolean logok = Boolean.valueOf(System.getProperty(
+                "logok",
+                "false")).booleanValue();
+
     /*
      *  
      * Usage:
@@ -241,7 +246,8 @@ public class  Client extends Thread {
                                         return 0; // first time ok.
                                     } else {
                                         if (jsessionid.compareTo(cookie.getValue()) == 0) {
-                                            // System.out.println("cookie ok");
+                                            if (logok)
+                                                System.out.println("cookie ok: " + bm.getResponseHeader("Date"));
                                             bm.releaseConnection();
                                             return 0;
                                         } else {
