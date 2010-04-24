@@ -104,7 +104,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Void>>) this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(null);
       
@@ -210,7 +210,7 @@ public class ClusteredMCMPHandlerTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<Void> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
+      List<RpcResponse<Void>> responses = new ArrayList<RpcResponse<Void>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
@@ -220,7 +220,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Void>>) this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(null);
       
@@ -296,7 +296,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Void>>) this.partition.callMethodOnCluster(EasyMock.eq(key), EasyMock.eq("mcmpServerDiscoveryEvent"), EasyMock.capture(capturedEvents), EasyMock.aryEq(new Class[] { MCMPServerDiscoveryEvent.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(null);
       
@@ -374,7 +374,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("isProxyHealthOk"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Boolean>>) this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("isProxyHealthOk"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(true);
       
@@ -419,7 +419,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("markProxiesInError"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Void>>) this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("markProxiesInError"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(null);
       
@@ -461,7 +461,7 @@ public class ClusteredMCMPHandlerTestCase
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("reset"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Void>>) this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("reset"), EasyMock.aryEq(new Object[0]), EasyMock.aryEq(new Class[0]), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(null);
       
@@ -503,14 +503,14 @@ public class ClusteredMCMPHandlerTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, String>> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<Map<MCMPServerState, String>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, String>>>(Arrays.asList(response1, response2));
+      List<RpcResponse<Map<MCMPServerState, String>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, String>>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequest"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { MCMPRequest.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Map<MCMPServerState, String>>>) this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequest"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { MCMPRequest.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
@@ -558,14 +558,14 @@ public class ClusteredMCMPHandlerTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<Map<MCMPServerState, List<String>>> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<Map<MCMPServerState, List<String>>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, List<String>>>>(Arrays.asList(response1, response2));
+      List<RpcResponse<Map<MCMPServerState, List<String>>>> responses = new ArrayList<RpcResponse<Map<MCMPServerState, List<String>>>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(false);
       
       EasyMock.expect(this.keyProvider.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.keyProvider.getHAServiceKey()).andReturn(key);
       
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequests"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { List.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<Map<MCMPServerState, List<String>>>>) this.partition.callMethodOnCluster(EasyMock.same(key), EasyMock.eq("sendRequests"), EasyMock.capture(captured), EasyMock.aryEq(new Class[] { List.class }), EasyMock.eq(false), EasyMock.isA(RpcResponseFilter.class))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(Collections.<MCMPServerState, List<String>>emptyMap());
       

@@ -112,7 +112,7 @@ public class ClusteredResetRequestSource extends ResetRequestSourceImpl
       {
          try
          {
-            return this.serviceKeyProvider.getHAPartition().callMethodOnCluster(this.serviceKeyProvider.getHAServiceKey(), METHOD_NAME, new Object[] { response }, TYPES, true);
+            return (List<RpcResponse<List<MCMPRequest>>>) this.serviceKeyProvider.getHAPartition().callMethodOnCluster(this.serviceKeyProvider.getHAServiceKey(), METHOD_NAME, new Object[] { response }, TYPES, true);
          }
          catch (Exception e)
          {

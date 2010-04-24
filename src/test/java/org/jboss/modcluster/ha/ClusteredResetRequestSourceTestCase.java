@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.easymock.EasyMock;
+import org.easymock.IExpectationSetters;
 import org.jboss.ha.framework.interfaces.HAPartition;
 import org.jboss.ha.framework.interfaces.HAServiceKeyProvider;
 import org.jboss.ha.framework.interfaces.HASingletonMBean;
@@ -89,13 +90,13 @@ public class ClusteredResetRequestSourceTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<List<MCMPRequest>> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
+      List<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
       
       EasyMock.expect(this.singleton.isMasterNode()).andReturn(true);
       
       EasyMock.expect(this.key.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.key.getHAServiceKey()).andReturn("service:domain");
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<List<MCMPRequest>>>) this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(Collections.singletonList(request1));
       EasyMock.expect(response2.getResult()).andReturn(Collections.singletonList(request2));
@@ -124,7 +125,7 @@ public class ClusteredResetRequestSourceTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<List<MCMPRequest>> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
+      List<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
       
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
@@ -160,7 +161,7 @@ public class ClusteredResetRequestSourceTestCase
       
       EasyMock.expect(this.key.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.key.getHAServiceKey()).andReturn("service:domain");
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<List<MCMPRequest>>>) this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(Collections.singletonList(request1));
       EasyMock.expect(response2.getResult()).andReturn(Collections.singletonList(request2));
@@ -190,7 +191,7 @@ public class ClusteredResetRequestSourceTestCase
       @SuppressWarnings("unchecked")
       RpcResponse<List<MCMPRequest>> response2 = EasyMock.createMock(RpcResponse.class);
       @SuppressWarnings("unchecked")
-      ArrayList<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
+      List<RpcResponse<List<MCMPRequest>>> responses = new ArrayList<RpcResponse<List<MCMPRequest>>>(Arrays.asList(response1, response2));
       
       Server server = EasyMock.createStrictMock(Server.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
@@ -226,7 +227,7 @@ public class ClusteredResetRequestSourceTestCase
       
       EasyMock.expect(this.key.getHAPartition()).andReturn(this.partition);
       EasyMock.expect(this.key.getHAServiceKey()).andReturn("service:domain");
-      EasyMock.expect(this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
+      EasyMock.expect((List<RpcResponse<List<MCMPRequest>>>) this.partition.callMethodOnCluster(EasyMock.eq("service:domain"), EasyMock.eq("getResetRequests"), EasyMock.aryEq(new Object[] { Collections.<String, Set<ResetRequestSource.VirtualHost>>emptyMap() }), EasyMock.aryEq(new Class[] { Map.class }), EasyMock.eq(true))).andReturn(responses);
       
       EasyMock.expect(response1.getResult()).andReturn(Collections.singletonList(request1));
       EasyMock.expect(response2.getResult()).andReturn(Collections.singletonList(request2));
