@@ -334,9 +334,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       // Create default jvmRoute if none was specified
       if (engine.getJvmRoute() == null)
       {
-         Connector connector = engine.getProxyConnector();
-         
-         String jvmRoute = connector.getAddress().getHostAddress() + ":" + connector.getPort() + ":" + engine.getName();
+         String jvmRoute = this.mcmpConfig.getJvmRouteFactory().createJvmRoute(engine);
          
          engine.setJvmRoute(jvmRoute);
          

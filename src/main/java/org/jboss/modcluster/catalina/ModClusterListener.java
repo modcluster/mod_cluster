@@ -36,6 +36,7 @@ import org.apache.catalina.Server;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.JvmRouteFactory;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.Strings;
@@ -186,6 +187,16 @@ public class ModClusterListener extends ModClusterConfig
       return ObjectName.getInstance(domain , "type", "ModClusterListener");
    }
 
+   public Class<? extends JvmRouteFactory> getJvmRouteFactoryClass()
+   {
+      return this.getJvmRouteFactory().getClass();
+   }
+   
+   public void setJvmRouteFactoryClass(Class<? extends JvmRouteFactory> factoryClass) throws InstantiationException, IllegalAccessException
+   {
+      this.setJvmRouteFactory(factoryClass.newInstance());
+   }
+   
    /**
     * @{inheritDoc}
     * @see org.jboss.modcluster.config.LoadConfiguration#getLoadMetricClass()

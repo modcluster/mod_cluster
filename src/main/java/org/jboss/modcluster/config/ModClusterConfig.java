@@ -27,6 +27,9 @@ import java.util.concurrent.ThreadFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.jboss.modcluster.JvmRouteFactory;
+import org.jboss.modcluster.UUIDJvmRouteFactory;
+
 /**
  * Java bean implementing the various configuration interfaces.
  * 
@@ -88,6 +91,10 @@ public class ModClusterConfig
    private int shutdownTimeout = 10;
    public int getStopContextTimeout() { return this.shutdownTimeout; }
    public void setShutdownTimeout(int timeout) { this.shutdownTimeout = timeout; }
+   
+   private JvmRouteFactory jvmRouteFactory = new UUIDJvmRouteFactory();
+   public JvmRouteFactory getJvmRouteFactory() { return this.jvmRouteFactory; }
+   public void setJvmRouteFactory(JvmRouteFactory jvmRouteFactory) { this.jvmRouteFactory = jvmRouteFactory; }
    
    // -----------------------------------------------------  SSLConfiguration
    

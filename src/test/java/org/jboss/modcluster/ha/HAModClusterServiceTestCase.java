@@ -40,6 +40,7 @@ import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Context;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
+import org.jboss.modcluster.JvmRouteFactory;
 import org.jboss.modcluster.Server;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
@@ -176,6 +177,7 @@ public class HAModClusterServiceTestCase
       
       InetAddress localAddress = this.getLocalAddress();
       Connector connector = EasyMock.createStrictMock(Connector.class);
+      JvmRouteFactory factory = EasyMock.createStrictMock(JvmRouteFactory.class);
       DistributedReplicantManager drm = EasyMock.createStrictMock(DistributedReplicantManager.class);
       Capture<SimpleCachableMarshalledValue> capturedMarshalledValue = new Capture<SimpleCachableMarshalledValue>();
       
@@ -187,14 +189,12 @@ public class HAModClusterServiceTestCase
       connector.setAddress(localAddress);
       
       EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
-      EasyMock.expect(connector.getAddress()).andReturn(localAddress);
-      EasyMock.expect(connector.getPort()).andReturn(6666);
-      EasyMock.expect(engine.getName()).andReturn("engine");
+      EasyMock.expect(this.mcmpConfig.getJvmRouteFactory()).andReturn(factory);
+      EasyMock.expect(factory.createJvmRoute(EasyMock.same(engine))).andReturn("jvm-route");
       
-      engine.setJvmRoute("127.0.0.1:6666:engine");
+      engine.setJvmRoute("jvm-route");
       
-      EasyMock.expect(engine.getJvmRoute()).andReturn("127.0.0.1:6666:engine");
+      EasyMock.expect(engine.getJvmRoute()).andReturn("jvm-route");
       EasyMock.expect(this.partition.getDistributedReplicantManager()).andReturn(drm);
       
       try
@@ -206,11 +206,11 @@ public class HAModClusterServiceTestCase
          Assert.fail();
       }
       
-      EasyMock.replay(server, engine, connector, drm, this.partition);
+      EasyMock.replay(server, engine, connector, drm, this.partition, this.mcmpConfig, factory);
       
       this.service.connectionEstablished(localAddress);
       
-      EasyMock.verify(server, engine, connector, drm, this.partition);
+      EasyMock.verify(server, engine, connector, drm, this.partition, this.mcmpConfig, factory);
       
       SimpleCachableMarshalledValue marshalledValue = capturedMarshalledValue.getValue();
       
@@ -221,7 +221,7 @@ public class HAModClusterServiceTestCase
          ModClusterServiceDRMEntry entry = (ModClusterServiceDRMEntry) value;
          Iterator<String> routes = entry.getJvmRoutes().iterator();
          Assert.assertTrue(routes.hasNext());
-         Assert.assertEquals("127.0.0.1:6666:engine", routes.next());
+         Assert.assertEquals("jvm-route", routes.next());
          Assert.assertFalse(routes.hasNext());
          Assert.assertSame(this.node, entry.getPeer());
          Assert.assertNull(entry.getMCMPServerStates());
@@ -231,7 +231,7 @@ public class HAModClusterServiceTestCase
          Assert.fail();
       }
       
-      EasyMock.reset(server, engine, connector, drm, this.partition);
+      EasyMock.reset(server, engine, connector, drm, this.partition, this.mcmpConfig, factory);
    }
    
    @Test

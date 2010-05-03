@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster.config;
 
+import org.jboss.modcluster.JvmRouteFactory;
+
 /**
  * Configuration object for an {@link MCMPHandler}.
  * 
@@ -74,4 +76,6 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     * @return timeout in seconds.
     */
    int getStopContextTimeout();
+   
+   JvmRouteFactory getJvmRouteFactory();
 }

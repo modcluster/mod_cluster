@@ -131,6 +131,7 @@ public class ModClusterServiceTestCase
       
       InetAddress localAddress = this.getLocalAddress();
       Connector connector = EasyMock.createStrictMock(Connector.class);
+      JvmRouteFactory factory = EasyMock.createStrictMock(JvmRouteFactory.class);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
 
@@ -140,19 +141,17 @@ public class ModClusterServiceTestCase
       connector.setAddress(localAddress);
       
       EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      EasyMock.expect(engine.getProxyConnector()).andReturn(connector);
-      EasyMock.expect(connector.getAddress()).andReturn(localAddress);
-      EasyMock.expect(connector.getPort()).andReturn(6666);
-      EasyMock.expect(engine.getName()).andReturn("engine");
+      EasyMock.expect(this.mcmpConfig.getJvmRouteFactory()).andReturn(factory);
+      EasyMock.expect(factory.createJvmRoute(EasyMock.same(engine))).andReturn("jvm-route");
       
-      engine.setJvmRoute("127.0.0.1:6666:engine");
+      engine.setJvmRoute("jvm-route");
       
-      EasyMock.replay(server, engine, connector);
+      EasyMock.replay(server, engine, connector, this.mcmpConfig, factory);
       
       this.service.connectionEstablished(localAddress);
       
-      EasyMock.verify(server, engine, connector);
-      EasyMock.reset(server, engine, connector);
+      EasyMock.verify(server, engine, connector, this.mcmpConfig, factory);
+      EasyMock.reset(server, engine, connector, this.mcmpConfig, factory);
    }
    
    private InetAddress getLocalAddress()
