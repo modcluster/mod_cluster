@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.InstanceNotFoundException;
+import javax.management.JMException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -51,6 +52,7 @@ import org.jboss.modcluster.ContainerEventHandler;
 public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener, NotificationListener
 {
    private volatile ObjectName serviceObjectName = toObjectName("jboss.web:service=WebServer");
+   private volatile ObjectName serverObjectName = toObjectName("jboss.web:type=Server");
    private volatile String connectorsStartedNotificationType = "jboss.tomcat.connectors.started";
    private volatile String connectorsStoppedNotificationType = "jboss.tomcat.connectors.stopped";
    
@@ -78,6 +80,84 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    {
       this.eventHandler = eventHandler;
       this.mbeanServer = mbeanServer;
+   }
+   
+   public void start() throws JMException
+   {
+      Server server = this.findServer();
+      
+      if (server != null)
+      {
+         if (!(server instanceof Lifecycle)) throw new IllegalStateException();
+
+         Lifecycle lifecycle = (Lifecycle) server;
+         
+         if (!this.containsListener(lifecycle))
+         {
+            lifecycle.addLifecycleListener(this);
+         }
+         
+         if (this.init.compareAndSet(false, true))
+         {
+            this.init(server);
+         }
+         
+         if (this.start.compareAndSet(false, true))
+         {
+            this.eventHandler.start(new CatalinaServer(server, this.mbeanServer));
+         }
+      }
+   }
+   
+   public void stop() throws JMException
+   {
+      Server server = this.findServer();
+      
+      if (server != null)
+      {
+         if (!(server instanceof Lifecycle)) throw new IllegalStateException();
+         
+         Lifecycle lifecycle = (Lifecycle) server;
+
+         lifecycle.removeLifecycleListener(this);
+         
+         if (this.init.get() && this.start.compareAndSet(true, false))
+         {
+            this.eventHandler.stop(new CatalinaServer(server, this.mbeanServer));
+         }
+         
+         if (this.init.compareAndSet(true, false))
+         {
+            this.destroy(server);
+         }
+      }
+   }
+   
+   private boolean containsListener(Lifecycle lifecycle)
+   {
+      for (LifecycleListener listener: lifecycle.findLifecycleListeners())
+      {
+         if (listener.equals(this))
+         {
+            return true;
+         }
+      }
+      
+      return false;
+   }
+   
+   private Server findServer() throws JMException
+   {
+      try
+      {
+         Service[] services = (Service[]) this.mbeanServer.invoke(this.serverObjectName, "findServices", null, null);
+   
+         return (services.length > 0) ? services[0].getServer() : null;
+      }
+      catch (InstanceNotFoundException e)
+      {
+         return null;
+      }
    }
    
    // ------------------------------------------------------------- Properties
@@ -144,29 +224,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          }
       }
    }
-   /**
-    * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so
-    * you could start (restart) one that needs initializations...
-    */
-   private void initialize(Server server) throws IllegalStateException
-   {
-      this.eventHandler.init(new CatalinaServer(server, this.mbeanServer));
-               
-      this.addListeners(server);
-               
-      // Register for mbean notifications if JBoss Web server mbean exists
-      if (this.mbeanServer.isRegistered(this.serviceObjectName))
-      {
-         try
-         {
-            this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
-         }
-         catch (InstanceNotFoundException e)
-         {
-            throw new IllegalStateException(e);
-         }
-      }
-   }
+   
    /**
     * {@inhericDoc}
     * Primary entry point for startup and shutdown events.
@@ -185,7 +243,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             {
                Server server = (Server) source;
 
-               initialize(server); 
+               init(server); 
             }
          }
       }
@@ -205,7 +263,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             {
                Server server = (Server) source;
 
-               initialize(server); 
+               init(server); 
             }
          }
       }
@@ -243,26 +301,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             if (this.init.compareAndSet(true, false))
             {
-               this.removeListeners((Server) source);
-
-               // Unregister for mbean notifications if JBoss Web server mbean exists
-               if (this.mbeanServer.isRegistered(this.serviceObjectName))
-               {
-                  try
-                  {
-                     this.mbeanServer.removeNotificationListener(this.serviceObjectName, this);
-                  }
-                  catch (InstanceNotFoundException e)
-                  {
-                     throw new IllegalStateException(e);
-                  }
-                  catch (ListenerNotFoundException e)
-                  {
-                     throw new IllegalStateException(e);
-                  }
-               }
-               
-               this.eventHandler.shutdown();
+               this.destroy((Server) source);
             }
          }
       }
@@ -278,6 +317,54 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       }
    }
 
+   /**
+    * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so
+    * you could start (restart) one that needs initializations...
+    */
+   private void init(Server server)
+   {
+      this.eventHandler.init(new CatalinaServer(server, this.mbeanServer));
+               
+      this.addListeners(server);
+               
+      // Register for mbean notifications if JBoss Web server mbean exists
+      if (this.mbeanServer.isRegistered(this.serviceObjectName))
+      {
+         try
+         {
+            this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
+         }
+         catch (InstanceNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+      }
+   }
+   
+   private void destroy(Server server)
+   {
+      this.removeListeners(server);
+
+      // Unregister for mbean notifications if JBoss Web server mbean exists
+      if (this.mbeanServer.isRegistered(this.serviceObjectName))
+      {
+         try
+         {
+            this.mbeanServer.removeNotificationListener(this.serviceObjectName, this);
+         }
+         catch (InstanceNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+         catch (ListenerNotFoundException e)
+         {
+            throw new IllegalStateException(e);
+         }
+      }
+      
+      this.eventHandler.shutdown();
+   }
+   
    private void addListeners(Server server)
    {
       // Register ourself as a listener for child services
@@ -358,6 +445,14 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    public void setServiceObjectName(ObjectName serviceObjectName)
    {
       this.serviceObjectName = serviceObjectName;
+   }
+
+   /**
+    * @param serverObjectName the serverObjectName to set
+    */
+   public void setServerObjectName(ObjectName serverObjectName)
+   {
+      this.serverObjectName = serverObjectName;
    }
 
    /**

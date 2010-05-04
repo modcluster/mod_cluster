@@ -50,6 +50,11 @@ public class CatalinaServer implements Server
       this.mbeanServer = mbeanServer;
    }
 
+   public org.apache.catalina.Server getServer()
+   {
+      return this.server;
+   }
+   
    /**
     * {@inhericDoc}
     * @see org.jboss.modcluster.Server#getEngines()

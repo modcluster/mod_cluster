@@ -23,6 +23,8 @@ package org.jboss.modcluster.catalina;
 
 import java.util.List;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.Notification;
 import javax.management.NotificationFilter;
@@ -37,6 +39,7 @@ import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
+import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.easymock.Capture;
@@ -54,6 +57,218 @@ public class CatalinaEventHandlerAdapterTestCase
    private ContainerEventHandler eventHandler = EasyMock.createStrictMock(ContainerEventHandler.class);
    private MBeanServer mbeanServer = EasyMock.createStrictMock(MBeanServer.class);
 
+   @Test
+   public void start() throws JMException
+   {
+      Service service = EasyMock.createStrictMock(Service.class);
+      LifecycleServer server = EasyMock.createStrictMock(LifecycleServer.class);
+      LifecycleListener listener = EasyMock.createStrictMock(LifecycleListener.class);
+      LifecycleEngine engine = EasyMock.createStrictMock(LifecycleEngine.class);
+      Container container = EasyMock.createStrictMock(Container.class);
+      LifecycleContainer childContainer = EasyMock.createStrictMock(LifecycleContainer.class);
+      Capture<ObjectName> capturedName = new Capture<ObjectName>(CaptureType.ALL);
+      Capture<CatalinaServer> capturedServer = new Capture<CatalinaServer>(CaptureType.ALL);
+      
+      CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler, this.mbeanServer);
+
+      EasyMock.expect(this.mbeanServer.invoke(EasyMock.capture(capturedName), EasyMock.eq("findServices"), EasyMock.<Object[]>isNull(), EasyMock.<String[]>isNull())).andReturn(new Service[] { service });
+      EasyMock.expect(service.getServer()).andReturn(server);
+      EasyMock.expect(server.findLifecycleListeners()).andReturn(new LifecycleListener[] { listener });
+      server.addLifecycleListener(EasyMock.same(adapter));
+      
+      this.eventHandler.init(EasyMock.capture(capturedServer));
+      
+      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
+      
+      EasyMock.expect(service.getContainer()).andReturn(engine);
+      
+      engine.addContainerListener(adapter);
+      engine.addLifecycleListener(adapter);
+      
+      EasyMock.expect(engine.findChildren()).andReturn(new Container[] { container });
+      
+      container.addContainerListener(adapter);
+      
+      EasyMock.expect(container.findChildren()).andReturn(new Container[] { childContainer });
+      
+      childContainer.addLifecycleListener(adapter);
+      
+      EasyMock.expect(this.mbeanServer.isRegistered(EasyMock.capture(capturedName))).andReturn(true);
+      
+      this.mbeanServer.addNotificationListener(EasyMock.capture(capturedName), EasyMock.same(adapter), EasyMock.<NotificationFilter>isNull(), EasyMock.same(server));
+
+      this.eventHandler.start(EasyMock.capture(capturedServer));
+      
+      EasyMock.replay(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+      
+      adapter.start();
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+      
+      List<ObjectName> names = capturedName.getValues();
+      Assert.assertEquals(3, names.size());
+      ObjectName name = names.get(0);
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("Server", name.getKeyProperty("type"));
+      name = names.get(1);
+      Assert.assertSame(name, names.get(2));
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("WebServer", name.getKeyProperty("service"));
+      
+      List<CatalinaServer> servers = capturedServer.getValues();
+      Assert.assertSame(this.mbeanServer, servers.get(0).getMBeanServer());
+      Assert.assertSame(server, servers.get(1).getServer());
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+   }
+
+   @Test
+   public void startNoServer() throws JMException
+   {
+      Capture<ObjectName> capturedName = new Capture<ObjectName>();
+      
+      CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler, this.mbeanServer);
+
+      EasyMock.expect(this.mbeanServer.invoke(EasyMock.capture(capturedName), EasyMock.eq("findServices"), EasyMock.<Object[]>isNull(), EasyMock.<String[]>isNull())).andThrow(new InstanceNotFoundException());
+      
+      EasyMock.replay(this.eventHandler, this.mbeanServer);
+      
+      adapter.start();
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer);
+      
+      ObjectName name = capturedName.getValue();
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("Server", name.getKeyProperty("type"));
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer);
+   }
+
+   @Test
+   public void startAlreadyRegistered() throws Exception
+   {
+      Service service = EasyMock.createStrictMock(Service.class);
+      LifecycleServer server = EasyMock.createStrictMock(LifecycleServer.class);
+      LifecycleListener listener = EasyMock.createStrictMock(LifecycleListener.class);
+      Capture<ObjectName> capturedName = new Capture<ObjectName>();
+      
+      CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler, this.mbeanServer);
+
+      this.initServer(adapter, server);
+      this.startServer(adapter, server);
+      
+      EasyMock.expect(this.mbeanServer.invoke(EasyMock.capture(capturedName), EasyMock.eq("findServices"), EasyMock.<Object[]>isNull(), EasyMock.<String[]>isNull())).andReturn(new Service[] { service });
+      EasyMock.expect(service.getServer()).andReturn(server);
+      EasyMock.expect(server.findLifecycleListeners()).andReturn(new LifecycleListener[] { listener, adapter });
+      
+      EasyMock.replay(this.eventHandler, this.mbeanServer, server, service, listener);
+      
+      adapter.start();
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer, server, service, listener);
+      
+      ObjectName name = capturedName.getValue();
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("Server", name.getKeyProperty("type"));
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer, server, service, listener);
+   }
+   
+   @Test
+   public void stop() throws Exception
+   {
+      Service service = EasyMock.createStrictMock(Service.class);
+      LifecycleServer server = EasyMock.createStrictMock(LifecycleServer.class);
+      LifecycleListener listener = EasyMock.createStrictMock(LifecycleListener.class);
+      LifecycleEngine engine = EasyMock.createStrictMock(LifecycleEngine.class);
+      Container container = EasyMock.createStrictMock(Container.class);
+      LifecycleContainer childContainer = EasyMock.createStrictMock(LifecycleContainer.class);
+      Capture<ObjectName> capturedName = new Capture<ObjectName>(CaptureType.ALL);
+      Capture<CatalinaServer> capturedServer = new Capture<CatalinaServer>();
+      
+      CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler, this.mbeanServer);
+
+      this.initServer(adapter, server);
+      this.startServer(adapter, server);
+      
+      EasyMock.expect(this.mbeanServer.invoke(EasyMock.capture(capturedName), EasyMock.eq("findServices"), EasyMock.<Object[]>isNull(), EasyMock.<String[]>isNull())).andReturn(new Service[] { service });
+      EasyMock.expect(service.getServer()).andReturn(server);
+      server.removeLifecycleListener(EasyMock.same(adapter));
+
+      this.eventHandler.stop(EasyMock.capture(capturedServer));
+
+      EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
+      
+      EasyMock.expect(service.getContainer()).andReturn(engine);
+      
+      engine.removeContainerListener(adapter);
+      engine.removeLifecycleListener(adapter);
+      
+      EasyMock.expect(engine.findChildren()).andReturn(new Container[] { container });
+      
+      container.removeContainerListener(adapter);
+      
+      EasyMock.expect(container.findChildren()).andReturn(new Container[] { childContainer });
+      
+      childContainer.removeLifecycleListener(adapter);
+      
+      this.eventHandler.shutdown();
+
+      EasyMock.expect(this.mbeanServer.isRegistered(EasyMock.capture(capturedName))).andReturn(true);
+      this.mbeanServer.removeNotificationListener(EasyMock.capture(capturedName), EasyMock.same(adapter));
+      
+      EasyMock.replay(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+      
+      adapter.stop();
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+      
+      List<ObjectName> names = capturedName.getValues();
+      Assert.assertEquals(3, names.size());
+      ObjectName name = names.get(0);
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("Server", name.getKeyProperty("type"));
+      name = names.get(1);
+      Assert.assertSame(name, names.get(2));
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("WebServer", name.getKeyProperty("service"));
+      
+      CatalinaServer catalinaServer = capturedServer.getValue();
+      Assert.assertSame(this.mbeanServer, catalinaServer.getMBeanServer());
+      Assert.assertSame(server, catalinaServer.getServer());
+      
+      EasyMock.reset(this.eventHandler, this.mbeanServer, server, service, listener, engine, container, childContainer);
+   }
+
+   @Test
+   public void stopNoServer() throws JMException
+   {
+      Capture<ObjectName> capturedName = new Capture<ObjectName>();
+      
+      CatalinaEventHandlerAdapter adapter = new CatalinaEventHandlerAdapter(this.eventHandler, this.mbeanServer);
+
+      EasyMock.expect(this.mbeanServer.invoke(EasyMock.capture(capturedName), EasyMock.eq("findServices"), EasyMock.<Object[]>isNull(), EasyMock.<String[]>isNull())).andThrow(new InstanceNotFoundException());
+      
+      EasyMock.replay(this.eventHandler, this.mbeanServer);
+      
+      adapter.stop();
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer);
+      
+      ObjectName name = capturedName.getValue();
+      Assert.assertEquals("jboss.web", name.getDomain());
+      Assert.assertEquals(1, name.getKeyPropertyList().size());
+      Assert.assertEquals("Server", name.getKeyProperty("type"));
+      
+      EasyMock.verify(this.eventHandler, this.mbeanServer);
+   }
+   
    @Test
    public void deployWebApp() throws Exception
    {
@@ -282,8 +497,9 @@ public class CatalinaEventHandlerAdapterTestCase
       Container container = EasyMock.createStrictMock(Container.class);
       LifecycleContainer childContainer = EasyMock.createStrictMock(LifecycleContainer.class);
       Capture<ObjectName> capturedName = new Capture<ObjectName>(CaptureType.ALL);
+      Capture<CatalinaServer> capturedServer = new Capture<CatalinaServer>();
       
-      this.eventHandler.init(EasyMock.isA(CatalinaServer.class));
+      this.eventHandler.init(EasyMock.capture(capturedServer));
       
       EasyMock.expect(server.findServices()).andReturn(new Service[] { service });
       
@@ -317,6 +533,10 @@ public class CatalinaEventHandlerAdapterTestCase
       Assert.assertEquals(1, name.getKeyPropertyList().size());
       Assert.assertEquals("WebServer", name.getKeyProperty("service"));
       
+      CatalinaServer catalinaServer = capturedServer.getValue();
+      Assert.assertSame(this.mbeanServer, catalinaServer.getMBeanServer());
+      Assert.assertSame(server, catalinaServer.getServer());
+      
       EasyMock.reset(this.eventHandler, this.mbeanServer, server, service, engine, container, childContainer);
    }
    
@@ -340,13 +560,19 @@ public class CatalinaEventHandlerAdapterTestCase
    
    private void startServer(CatalinaEventHandlerAdapter adapter, LifecycleServer server)
    {
-      this.eventHandler.start(EasyMock.isA(CatalinaServer.class));
+      Capture<CatalinaServer> capturedServer = new Capture<CatalinaServer>();
+      
+      this.eventHandler.start(EasyMock.capture(capturedServer));
       
       EasyMock.replay(this.eventHandler, this.mbeanServer, server);
       
       adapter.lifecycleEvent(new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT));
       
       EasyMock.verify(this.eventHandler, this.mbeanServer, server);
+
+      CatalinaServer catalinaServer = capturedServer.getValue();
+      Assert.assertSame(this.mbeanServer, catalinaServer.getMBeanServer());
+      Assert.assertSame(server, catalinaServer.getServer());
       
       EasyMock.reset(this.eventHandler, this.mbeanServer, server);
    }
@@ -410,6 +636,7 @@ public class CatalinaEventHandlerAdapterTestCase
       
       LifecycleServer server = EasyMock.createStrictMock(LifecycleServer.class);
       LifecycleEvent event = new LifecycleEvent(server, Lifecycle.BEFORE_STOP_EVENT);
+      Capture<CatalinaServer> capturedServer = new Capture<CatalinaServer>();
 
       EasyMock.replay(this.eventHandler, this.mbeanServer, server);
       
@@ -429,13 +656,18 @@ public class CatalinaEventHandlerAdapterTestCase
       
       this.startServer(adapter, server);
 
-      this.eventHandler.stop(EasyMock.isA(CatalinaServer.class));
+      this.eventHandler.stop(EasyMock.capture(capturedServer));
       
       EasyMock.replay(this.eventHandler, this.mbeanServer, server);
       
       adapter.lifecycleEvent(event);
       
       EasyMock.verify(this.eventHandler, this.mbeanServer, server);
+      
+      CatalinaServer catalinaServer = capturedServer.getValue();
+      Assert.assertSame(this.mbeanServer, catalinaServer.getMBeanServer());
+      Assert.assertSame(server, catalinaServer.getServer());
+      
       EasyMock.reset(this.eventHandler, this.mbeanServer, server);
       
       EasyMock.replay(this.eventHandler, this.mbeanServer, server);
