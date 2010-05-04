@@ -28,6 +28,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.jboss.modcluster.JvmRouteFactory;
+import org.jboss.modcluster.SystemPropertyJvmRouteFactory;
 import org.jboss.modcluster.UUIDJvmRouteFactory;
 
 /**
@@ -92,7 +93,7 @@ public class ModClusterConfig
    public int getStopContextTimeout() { return this.shutdownTimeout; }
    public void setShutdownTimeout(int timeout) { this.shutdownTimeout = timeout; }
    
-   private JvmRouteFactory jvmRouteFactory = new UUIDJvmRouteFactory();
+   private JvmRouteFactory jvmRouteFactory = new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory());
    public JvmRouteFactory getJvmRouteFactory() { return this.jvmRouteFactory; }
    public void setJvmRouteFactory(JvmRouteFactory jvmRouteFactory) { this.jvmRouteFactory = jvmRouteFactory; }
    
