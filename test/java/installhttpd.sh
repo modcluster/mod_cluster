@@ -209,7 +209,7 @@ esac
 
 case ${EXT} in
   tar.gz)
-    # Arrange the installed files
+    # Arrange the installed files (if already done it will do nothing...
     files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
     for FILE in `echo $files`
     do
@@ -240,8 +240,20 @@ esac
 # Arrange httpd.conf
 file="$BASELOC/${BASEHTTPDCONF}/httpd.conf"
 cp -p "$file" "$file.new"
-echo "s/Listen 80.*/Listen @IP@:8000/" > sed.cmd
-sed -f sed.cmd "$file" > "$file.new"
+grep MOD_CLUSTER_ADDS "$file"
+if [ $? -ne 0 ]
+then
+  echo "s/Listen 80.*/Listen @IP@:8000/" > sed.cmd
+  sed -f sed.cmd "$file" > "$file.new"
+else
+  # Uncomment out conf stuff
+  echo "s/#ServerAdvertise/ServerAdvertise/" > sed.cmd
+  echo "s/#Advertise/Advertise/" >> sed.cmd
+  echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
+  echo "s/127.0.0/@ADVIP@/" >> sed.cmd
+  sed -f sed.cmd "$file" > "$file.new"
+else
+fi
 
 if $ADDMODULES
 then
@@ -261,7 +273,10 @@ LoadModule rewrite_module modules/mod_rewrite.so
 EOF
 fi
 
-cat >> "$file.new" <<EOF
+grep MOD_CLUSTER_ADDS "$file"
+if [ $? -ne 0 ]
+then
+  cat >> "$file.new" <<EOF
 <IfModule manager_module>
   Listen @IP@:6666
   ManagerBalancerName mycluster
@@ -288,6 +303,11 @@ cat >> "$file.new" <<EOF
 
   </VirtualHost>
 </IfModule>
+EOF
+fi
+
+# Add rewrite tests
+cat >> "$file.new" <<EOF
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
