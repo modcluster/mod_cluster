@@ -1133,6 +1133,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(disableRequest);
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
       EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0);
       EasyMock.expect(context.isDistributable()).andReturn(false);
       
@@ -1189,6 +1190,7 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(disableRequest);
          EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
          
+         EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
          EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
          EasyMock.expect(context.isDistributable()).andReturn(false);
          
@@ -1243,6 +1245,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(disableRequest);
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
       EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0);
       EasyMock.expect(context.isDistributable()).andReturn(true);
       
@@ -1294,6 +1297,7 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(disableRequest);
          EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
          
+         EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
          EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
          EasyMock.expect(context.isDistributable()).andReturn(true);
          
@@ -1539,6 +1543,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.requestFactory.createDisableRequest(context)).andReturn(disableRequest);
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.singletonMap(state, "response1"));
       
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
       EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
       EasyMock.expect(context.isDistributable()).andReturn(true);
      

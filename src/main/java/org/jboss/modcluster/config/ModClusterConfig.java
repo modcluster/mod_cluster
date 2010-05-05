@@ -23,6 +23,7 @@ package org.jboss.modcluster.config;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
@@ -89,9 +90,13 @@ public class ModClusterConfig
    public boolean isAutoEnableContexts() { return this.autoEnableContexts; }
    public void setAutoEnableContexts(boolean autoEnableContexts) { this.autoEnableContexts = autoEnableContexts; }
    
-   private int shutdownTimeout = 10;
-   public int getStopContextTimeout() { return this.shutdownTimeout; }
-   public void setShutdownTimeout(int timeout) { this.shutdownTimeout = timeout; }
+   private int stopContextTimeout = 10;
+   public int getStopContextTimeout() { return this.stopContextTimeout; }
+   public void setStopContextTimeout(int stopContextTimeout) { this.stopContextTimeout = stopContextTimeout; }
+   
+   private TimeUnit stopContextTimeoutUnit = TimeUnit.SECONDS;
+   public TimeUnit getStopContextTimeoutUnit() { return this.stopContextTimeoutUnit; }
+   public void setStopContextTimeoutUnit(TimeUnit stopContextTimeoutUnit) { this.stopContextTimeoutUnit = stopContextTimeoutUnit; }
    
    private JvmRouteFactory jvmRouteFactory = new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory());
    public JvmRouteFactory getJvmRouteFactory() { return this.jvmRouteFactory; }

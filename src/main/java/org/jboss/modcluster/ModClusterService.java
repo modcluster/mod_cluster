@@ -279,7 +279,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     */
    protected void config(Engine engine)
    {
-      log.debug(Strings.ENGINE_CONFIG.getString(engine));
+      this.log.debug(Strings.ENGINE_CONFIG.getString(engine));
 
       try
       {
@@ -412,7 +412,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          this.disable(context);
          
          long start = System.currentTimeMillis();
-         long end = start + TimeUnit.SECONDS.toMillis(this.mcmpConfig.getStopContextTimeout());
+         long end = start + this.mcmpConfig.getStopContextTimeoutUnit().toMillis(this.mcmpConfig.getStopContextTimeout());
 
          if (context.isDistributable())
          {
@@ -867,7 +867,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             
             while ((remainingSessions > 0) && (noTimeout || (timeout > 0)))
             {
-               log.debug(Strings.DRAIN_SESSIONS_WAIT.getString(context, remainingSessions));
+               this.log.debug(Strings.DRAIN_SESSIONS_WAIT.getString(context, remainingSessions));
                
                listener.wait(noTimeout ? 0 : timeout);
                
@@ -882,11 +882,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          
          if (success)
          {
-            log.info(Strings.DRAIN_SESSIONS.getString(context, seconds));
+            this.log.info(Strings.DRAIN_SESSIONS.getString(context, seconds));
          }
          else
          {
-            log.warn(Strings.DRAIN_SESSIONS_TIMEOUT.getString(context, seconds));
+            this.log.warn(Strings.DRAIN_SESSIONS_TIMEOUT.getString(context, seconds));
          }
          
          return success;
@@ -937,7 +937,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    {
    }
    
-   private static class NotifyOnDestroyRequestListener implements EnablableRequestListener
+   static class NotifyOnDestroyRequestListener implements EnablableRequestListener
    {
       private volatile boolean enabled = false;
       
@@ -985,7 +985,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       }
    };
    
-   private static class NotifyOnDestroySessionListener implements HttpSessionListener
+   static class NotifyOnDestroySessionListener implements HttpSessionListener
    {
       /**
        * {@inheritDoc}
