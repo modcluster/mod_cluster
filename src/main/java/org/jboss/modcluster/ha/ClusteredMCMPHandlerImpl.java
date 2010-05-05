@@ -478,9 +478,9 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
          
          for (Object obj : responses)
          {
-            if (obj instanceof RpcResponse)
+            if (obj instanceof RpcResponse<?>)
             {
-               return (RpcResponse) obj;
+               return (RpcResponse<T>) obj;
             }
             else if (obj instanceof Throwable)
             {
