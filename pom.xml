@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.jboss</groupId>
     <artifactId>jboss-parent</artifactId>
-    <version>4</version>
+    <version>5</version>
   </parent>
   
   <modelVersion>4.0.0</modelVersion>
@@ -19,13 +19,6 @@
     <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
   </scm>
 
-  <repositories>
-    <repository>
-      <id>repository.jboss.org</id>
-      <url>http://repository.jboss.org/maven2</url>
-    </repository>
-  </repositories>
-  
   <dependencies>
     <dependency>
       <groupId>org.jboss.cluster</groupId>
@@ -78,7 +71,7 @@
     <dependency>
       <groupId>org.jboss.test</groupId>
       <artifactId>jboss-test</artifactId>
-      <version>1.1.5.GA</version>
+      <version>1.1.7.GA</version>
       <scope>test</scope>
     </dependency>
     <!-- jboss-as-server is optional dependency within jboss-server-manager, which is transitive dependency of jboss-test -->
@@ -131,7 +124,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.0.2</version>
         <configuration>
           <source>1.5</source>
         </configuration>
@@ -139,7 +131,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
         <configuration>
           <printSummary>true</printSummary>
           <disableXmlReport>false</disableXmlReport>
@@ -162,7 +153,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.2-beta-4</version>
         <executions>
           <execution>
             <id>sar</id>
@@ -184,26 +174,11 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
-        <version>2.0-beta-9</version>
         <configuration>
           <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
         </configuration>
       </plugin>
     </plugins>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.3</version>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-dependency-plugin</artifactId>
-          <version>2.1</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
   
   <profiles>
