@@ -252,7 +252,6 @@ else
   echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
   echo "s/127.0.0/@ADVIP@/" >> sed.cmd
   sed -f sed.cmd "$file" > "$file.new"
-else
 fi
 
 if $ADDMODULES
