@@ -209,24 +209,29 @@ esac
 
 case ${EXT} in
   tar.gz)
-    # Arrange the installed files (if already done it will do nothing...
-    files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
-    for FILE in `echo $files`
-    do
-      file=${BASELOC}/$FILE
-      echo "$file"
+    # Arrange the installed files
+    if [ -x ${BASELOC}/${BASEHTTPDSBIN}/installhome.sh ]; then
+      # Use / test the installhome script
+      ${BASELOC}/${BASEHTTPDSBIN}/installhome.sh
+    else
+      files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
+      for FILE in `echo $files`
+      do
+        file=${BASELOC}/$FILE
+        echo "$file"
+        cp -p $file $file.new
+        sed "s:${BASEHTTPD}:${BASELOC}/${BASEHTTPD}:" $file > $file.new
+        mv $file $file.`date +%y%m%d.%H%M%S`.org
+        mv $file.new $file
+      done
+      # Arrange apachectl
+      file=$BASELOC/${BASEHTTPDSBIN}/apachectl
       cp -p $file $file.new
-      sed "s:${BASEHTTPD}:${BASELOC}/${BASEHTTPD}:" $file > $file.new
-      mv $file $file.`date +%y%m%d.%H%M%S`.org
+      echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d ${BASELOC}/${BASEHTTPD}/httpd:" > sed.cmd
+      sed -f sed.cmd $file > $file.new
+      mv $file $file.`date +%y%m%d.%H%M%S`.1.org
       mv $file.new $file
-    done
-    # Arrange apachectl
-    file=$BASELOC/${BASEHTTPDSBIN}/apachectl
-    cp -p $file $file.new
-    echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d ${BASELOC}/${BASEHTTPD}/httpd:" > sed.cmd
-    sed -f sed.cmd $file > $file.new
-    mv $file $file.`date +%y%m%d.%H%M%S`.1.org
-    mv $file.new $file
+    fi
     ;;
   *)
     # Arrange the installed files
