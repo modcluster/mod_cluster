@@ -66,7 +66,7 @@ fi
 echo "Installing in $RPM_BUILD_ROOT"
 
 # Process httpd configuration files.
-BASEHTTPD=/opt/jboss/httpd/
+BASEHTTPD=/opt/jboss/httpd
 HTTPDCONF=httpd/conf
 HTTPDSBIN=sbin
 HTTPDBUILD=htdocs/build
