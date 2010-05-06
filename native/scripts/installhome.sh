@@ -76,12 +76,12 @@ do
   file=${RPM_BUILD_ROOT}/$FILE
   echo "$file"
   cp -p $file $file.new
-  sed "s:${BASEHTTPD}:${RPM_BUILD_ROOT}/${BASEHTTPD}:" $file > $file.new
+  sed "s:${BASEHTTPD}:${RPM_BUILD_ROOT}:" $file > $file.new
   mv $file.new $file
 done
 # Arrange apachectl
-file=$RPM_BUILD_ROOT/${BASEHTTPD}/${BASEHTTPDSBIN}/apachectl
+file=$RPM_BUILD_ROOT/${BASEHTTPDSBIN}/apachectl
 cp -p $file $file.new
-echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d $RPM_BUILD_ROOT/${BASEHTTPD}:" > sed.cmd
+echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d $RPM_BUILD_ROOT:" > sed.cmd
 sed -f sed.cmd $file > $file.new
 mv $file.new $file
