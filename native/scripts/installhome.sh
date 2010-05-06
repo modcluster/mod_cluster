@@ -73,7 +73,7 @@ HTTPDBUILD=htdocs/build
 files="${HTTPDSBIN}/apachectl ${HTTPDCONF}/httpd.conf ${HTTPDSBIN}/envvars ${HTTPDSBIN}/apxs ${HTTPDBUILD}/config_vars.mk"
 for FILE in `echo $files`
 do
-  file=${RPM_BUILD_ROOT}/${BASEHTTPD}/$FILE
+  file=${RPM_BUILD_ROOT}/$FILE
   echo "$file"
   cp -p $file $file.new
   sed "s:${BASEHTTPD}:${RPM_BUILD_ROOT}/${BASEHTTPD}:" $file > $file.new
