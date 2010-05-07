@@ -82,6 +82,6 @@ done
 # Arrange apachectl
 file=$RPM_BUILD_ROOT/${HTTPDSBIN}/apachectl
 cp -p $file $file.new
-echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d $RPM_BUILD_ROOT:" > sed.cmd
+echo "s:\$HTTPD -k \$ARGV:\$HTTPD -k \$ARGV -d $RPM_BUILD_ROOT/httpd:" > sed.cmd
 sed -f sed.cmd $file > $file.new
 mv $file.new $file
