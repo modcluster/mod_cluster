@@ -255,7 +255,7 @@ else
   echo "s/#ServerAdvertise/ServerAdvertise/" > sed.cmd
   echo "s/#Advertise/Advertise/" >> sed.cmd
   echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
-  echo "s/127.0.0/@ADVIP@/" >> sed.cmd
+  echo "s/127.0.0/@SUBIP@/" >> sed.cmd
   sed -f sed.cmd "$file" > "$file.new"
 fi
 
@@ -272,8 +272,6 @@ LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
 LoadModule manager_module modules/mod_manager.so
 LoadModule slotmem_module modules/mod_slotmem.so
 LoadModule advertise_module modules/mod_advertise.so
-
-LoadModule rewrite_module modules/mod_rewrite.so
 EOF
 fi
 
@@ -312,6 +310,7 @@ fi
 
 # Add rewrite tests
 cat >> "$file.new" <<EOF
+LoadModule rewrite_module modules/mod_rewrite.so
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
