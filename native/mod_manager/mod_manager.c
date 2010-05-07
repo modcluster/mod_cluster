@@ -137,6 +137,9 @@ typedef struct mod_manager_config
     /* check for nonce in the command logic */
     int nonce;
 
+    /* default name for balancer */
+    char *balancername;
+
 } mod_manager_config;
 
 /*
@@ -682,6 +685,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     int i = 0;
     int id;
     int vid = 1; /* zero and "" is empty */
+    void *sconf = r->server->module_config;
+    mod_manager_config *mconf = ap_get_module_config(sconf, &manager_module);
 
     vhost = apr_palloc(r->pool, sizeof(struct cluster_host));
 
@@ -693,7 +698,11 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
 
     /* Fill default nodes values */
     memset(&nodeinfo.mess, '\0', sizeof(nodeinfo.mess));
-    strcpy(nodeinfo.mess.balancer, "mycluster");
+    if (mconf->balancername != NULL) {
+        strcpy(nodeinfo.mess.balancer, mconf->balancername);
+    } else {
+        strcpy(nodeinfo.mess.balancer, "mycluster");
+    }
     strcpy(nodeinfo.mess.Host, "localhost");
     strcpy(nodeinfo.mess.Port, "8009");
     strcpy(nodeinfo.mess.Type, "ajp");
@@ -2272,8 +2281,8 @@ static const char *cmd_manager_memmanagerfile(cmd_parms *cmd, void *mconfig, con
 }
 static const char *cmd_manager_balancername(cmd_parms *cmd, void *mconfig, const char *word)
 {
-    // mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
-    /* XXX: create the entry in the shared balancer table */
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    mconf->balancername = apr_pstrdup(cmd->pool, word);
     return NULL;
 }
 static const char*cmd_manager_pers(cmd_parms *cmd, void *dummy, const char *arg)
@@ -2408,6 +2417,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->last_updated = 0;
     mconf->persistent = 0;
     mconf->nonce = -1;
+    mconf->balancername = NULL;
     return mconf;
 }
 
@@ -2457,6 +2467,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->persistent = mconf2->persistent;
     else if (mconf1->persistent != 0)
         mconf->persistent = mconf1->persistent;
+
+    if (mconf2->balancername)
+        mconf->balancername = apr_pstrdup(p, mconf2->balancername);
+    else if (mconf1->balancername)
+        mconf->balancername = apr_pstrdup(p, mconf1->balancername);
 
     return mconf;
 }
