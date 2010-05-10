@@ -720,7 +720,11 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
 
     /* Fill default balancer values */
     memset(&balancerinfo, '\0', sizeof(balancerinfo));
-    strcpy(balancerinfo.balancer, "mycluster");
+    if (mconf->balancername != NULL) {
+        strcpy(balancerinfo.balancer, mconf->balancername);
+    } else {
+        strcpy(balancerinfo.balancer, "mycluster");
+    }
     balancerinfo.StickySession = 1;
     balancerinfo.StickySessionForce = 1;
     strcpy(balancerinfo.StickySessionCookie, "JSESSIONID");
