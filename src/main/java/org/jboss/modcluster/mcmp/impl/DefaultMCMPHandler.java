@@ -877,7 +877,8 @@ public class DefaultMCMPHandler implements MCMPHandler
       {
          if ((this.socket == null) || this.socket.isClosed())
          {
-            this.socket = this.socketFactory.createSocket(this.socketAddress.getAddress(), this.socketAddress.getPort());
+            this.socket = this.socketFactory.createSocket();
+            this.socket.connect(this.socketAddress, this.socketTimeout);
             this.socket.setSoTimeout(this.socketTimeout);
             this.localAddress = this.socket.getLocalAddress();
          }
