@@ -1337,6 +1337,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
 
     int i = 0;
 
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "Processing STATUS");
     while (ptr[i]) {
         if (strcasecmp(ptr[i], "JVMRoute") == 0) {
             if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.JVMRoute)) {
@@ -1401,6 +1402,7 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
 
     int i = 0;
 
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "Processing PING");
     nodeinfo.mess.id = -1;
     while (ptr[i] && ptr[i][0] != '\0') {
         if (strcasecmp(ptr[i], "JVMRoute") == 0) {
