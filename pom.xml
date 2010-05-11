@@ -8,15 +8,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.mod_cluster</groupId>
   <artifactId>mod_cluster</artifactId>
-  <version>1.1.0-SNAPSHOT</version>
+  <version>1.1.0.CR2</version>
   
   <name>mod_cluster</name>
   <description />
   <url>http://jboss.org/mod_cluster</url>
   
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/tags/1.1.0.CR2</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/1.1.0.CR2</developerConnection>
+    <url>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/1.1.0.CR2</url>
   </scm>
 
   <dependencies>
