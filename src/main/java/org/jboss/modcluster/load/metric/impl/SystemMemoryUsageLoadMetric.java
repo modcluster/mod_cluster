@@ -62,7 +62,7 @@ public class SystemMemoryUsageLoadMetric extends SourcedLoadMetric<MBeanLoadCont
          double free = context.getAttribute(FREE_MEMORY, Number.class).doubleValue();
          double total = context.getAttribute(TOTAL_MEMORY, Number.class).doubleValue();
          
-         return free / total;
+         return (total - free) / total;
       }
       catch (AttributeNotFoundException e)
       {
