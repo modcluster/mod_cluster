@@ -481,6 +481,8 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                      this.sendRequests(requests);
                   }
                }
+               
+               proxy.closeConnection();
             }
          }
       }
