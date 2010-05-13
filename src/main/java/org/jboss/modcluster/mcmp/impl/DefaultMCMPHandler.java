@@ -397,7 +397,7 @@ public class DefaultMCMPHandler implements MCMPHandler
                proxy.setState(Proxy.State.OK);
    
                String response = this.sendRequest(this.requestFactory.createInfoRequest(), proxy);
-   
+               
                if (proxy.getState() == Proxy.State.OK)
                {
                   // Only notify connection listener once
@@ -417,6 +417,8 @@ public class DefaultMCMPHandler implements MCMPHandler
                      this.sendRequests(requests);
                   }
                }
+               
+               proxy.closeConnection();
             }
          }
       }
