@@ -69,7 +69,7 @@ public class SystemMemoryUsageLoadMetricTestCase
       
       EasyMock.verify(this.server);
       
-      Assert.assertEquals(0.25, load, 0.0);
+      Assert.assertEquals(0.75, load, 0.0);
       
       EasyMock.reset(this.server);
 
