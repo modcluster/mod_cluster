@@ -37,6 +37,6 @@ public class ModClusterListener extends org.jboss.modcluster.catalina.ModCluster
    {
       super();
       
-      logger.warn(Strings.DEPRECATED.getString(ModClusterListener.class.getName(), org.jboss.modcluster.catalina.ModClusterListener.class.getName()));
+      this.logger.warn(Strings.DEPRECATED.getString(ModClusterListener.class.getName(), org.jboss.modcluster.catalina.ModClusterListener.class.getName()));
    }
 }
