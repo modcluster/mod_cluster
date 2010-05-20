@@ -414,18 +414,16 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
          long start = System.currentTimeMillis();
          long end = start + this.mcmpConfig.getStopContextTimeoutUnit().toMillis(this.mcmpConfig.getStopContextTimeout());
 
-         if (context.isDistributable())
+         if (!context.isDistributable())
          {
-            // If the session manager is distributed - we only need to drain pending requests
-            this.drainRequests(context, start, end);
-         }
-         else
-         {
-            // If the session manager is not distributed - we need to drain the active sessions
+            // If the session manager is not distributed
+            // we need to drain the active sessions
+            // before draining pending requests.
             this.drainSessions(context, start, end);
-            
-            this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
          }
+         
+         // Drain pending requests via repeated STOP-APP commands
+         this.drainRequests(context, start, end);
       }
    }
 
