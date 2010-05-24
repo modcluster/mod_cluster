@@ -40,7 +40,6 @@ public class Utils
    private static final String CONTEXT_DELIMITER = ",";
    private static final String HOST_CONTEXT_DELIMITER = ":";
    private static final String DEFAULT_HOST = "localhost";
-   private static final int DEFAULT_PORT = 8000;
 
    private static final Logger log = Logger.getLogger(Utils.class);
    
@@ -69,23 +68,47 @@ public class Utils
       }
    }
 
-   public static InetSocketAddress parseSocketAddress(String addressPort)
+   public static InetSocketAddress parseSocketAddress(String addressPort, int defaultPort) throws UnknownHostException
    {
-      try
+      String address = addressPort;
+      int port = defaultPort;
+      
+      int lastColon = (addressPort != null) ? addressPort.lastIndexOf(":") : -1;
+      
+      if (lastColon >=0)
       {
-         return parseSocketAddress(addressPort, 0);
+         if (addressPort.indexOf(":") == lastColon)
+         {
+            // Handle ipv4 address
+            address = addressPort.substring(0, lastColon);
+            port = Integer.parseInt(addressPort.substring(lastColon + 1));
+         }
+         else // handle ipv6 address
+         {
+            // Detect url-style: [ipv6-address]:port
+            int openBracket = addressPort.indexOf("[");
+            int closeBracket = addressPort.indexOf("]");
+            
+            if ((openBracket >= 0) && (closeBracket >= 0))
+            {
+               address = addressPort.substring(openBracket + 1, closeBracket);
+               
+               if (closeBracket < lastColon)
+               {
+                  port = Integer.parseInt(addressPort.substring(lastColon + 1));
+               }
+            }
+         }
       }
-      catch (UnknownHostException e)
-      {
-         throw new IllegalArgumentException(e);
-      }
+      
+      return new InetSocketAddress((address != null) && (address.length() > 0) ? InetAddress.getByName(address) : InetAddress.getLocalHost(), port);
    }
    
-   public static List<InetSocketAddress> parseProxies(String proxyList)
+   public static List<InetSocketAddress> parseSocketAddresses(String addresses, int defaultPort)
    {
-      if ((proxyList == null) || (proxyList.length() == 0)) return Collections.emptyList();
+      if ((addresses == null) || (addresses.length() == 0)) return Collections.emptyList();
       
-      String[] tokens = proxyList.split(",");
+      String[] tokens = addresses.split(",");
       
       List<InetSocketAddress> proxies = new ArrayList<InetSocketAddress>(tokens.length);
       
@@ -93,7 +116,7 @@ public class Utils
       {
          try
          {
-            InetSocketAddress addressPort = parseSocketAddress(token.trim(), DEFAULT_PORT);
+            InetSocketAddress addressPort = parseSocketAddress(token.trim(), defaultPort);
             
             proxies.add(addressPort);
          }
@@ -104,19 +127,6 @@ public class Utils
       }
 
       return proxies;
-   }
-   
-   private static InetSocketAddress parseSocketAddress(String addressPort, int defaultPort) throws UnknownHostException
-   {
-      int colonPosition = addressPort.indexOf(':');
-      boolean colonExists = (colonPosition >= 0);
-      
-      String address = colonExists ? addressPort.substring(0, colonPosition) : addressPort;
-      int port = colonExists ? Integer.parseInt(addressPort.substring(colonPosition + 1)) : defaultPort;
-      
-      InetAddress inetAddress = (address != null) && (address.length() > 0) ? InetAddress.getByName(address) : InetAddress.getLocalHost();
-      
-      return new InetSocketAddress(inetAddress, port);
    }
    
    public static Map<String, Set<String>> parseContexts(String contexts)

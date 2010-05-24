@@ -502,7 +502,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener
                      String proxy = server.getParameter(AdvertisedServer.MANAGER_ADDRESS);
                      if (proxy != null)
                      {
-                        AdvertiseListenerImpl.this.handler.addProxy(Utils.parseSocketAddress(proxy));
+                        AdvertiseListenerImpl.this.handler.addProxy(Utils.parseSocketAddress(proxy, 0));
                      }
                   }
                   else if (rc)

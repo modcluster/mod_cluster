@@ -65,6 +65,8 @@ import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 
 public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener, ContextFilter
 {
+   private static final int DEFAULT_PORT = 8000;
+   
    protected final Logger log = Logger.getLogger(this.getClass());
    
    private final NodeConfiguration nodeConfig;
@@ -132,7 +134,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       
       this.server = server;
       
-      List<InetSocketAddress> initialProxies = Utils.parseProxies(this.mcmpConfig.getProxyList());
+      List<InetSocketAddress> initialProxies = Utils.parseSocketAddresses(this.mcmpConfig.getProxyList(), DEFAULT_PORT);
       
       this.mcmpHandler.init(initialProxies, this);
       
