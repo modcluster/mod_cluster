@@ -471,6 +471,18 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       this.connectorsStartedNotificationType = type;
    }
    
+   /**
+    * {@inheritDoc}
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode()
+   {
+      // Hack to encourage this notification listener
+      // to trigger *after* any listener with 0 hashCode.
+      return 1;
+   }
+
    private static ObjectName toObjectName(String name)
    {
       try
