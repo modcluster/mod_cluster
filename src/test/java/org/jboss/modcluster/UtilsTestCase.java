@@ -55,12 +55,12 @@ public class UtilsTestCase
       
       address = Utils.parseSocketAddress("", 0);
       
-      Assert.assertSame(InetAddress.getLocalHost(), address.getAddress());
+      Assert.assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
       Assert.assertEquals(0, address.getPort());
       
       address = Utils.parseSocketAddress(null, 0);
       
-      Assert.assertSame(InetAddress.getLocalHost(), address.getAddress());
+      Assert.assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
       Assert.assertEquals(0, address.getPort());
    }
 
