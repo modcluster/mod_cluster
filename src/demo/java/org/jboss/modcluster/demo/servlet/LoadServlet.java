@@ -22,9 +22,16 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.management.InstanceNotFoundException;
+import javax.management.MBeanException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.ReflectionException;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -33,7 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
+import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 
 /**
@@ -51,7 +58,13 @@ public class LoadServlet extends HttpServlet
    
    private static final String HOST = "host";
    private static final String PORT = "port";
-   private static final String JVM_ROUTE = "jvmRoute";
+   
+   private static final String SERVER_OBJECT_NAME = "server-object-name";
+   private static final String SERVICE_NAME = "service-name";
+   private static final String DEFAULT_SERVER_OBJECT_NAME = "jboss.web:type=Server";
+   private static final String DEFAULT_SERVICE_NAME = "jboss.web";
+   
+   private Engine engine;
    
    /**
     * @{inheritDoc}
@@ -62,20 +75,48 @@ public class LoadServlet extends HttpServlet
    {
       super.init(config);
       
-      for (Connector connector: ServerFactory.getServer().findServices()[0].findConnectors())
-      {
-         if (connector.getProtocol().startsWith("HTTP"))
-         {
-            ServletContext context = config.getServletContext();
-            context.setAttribute(PORT, Integer.valueOf(connector.getPort()));
-//            context.setAttribute(HOST, connector.?);
-         }
-      }
+      MBeanServer server = ManagementFactory.getPlatformMBeanServer();
       
-      Engine engine = (Engine) ServerFactory.getServer().findServices()[0].getContainer();
-      config.getServletContext().setAttribute(JVM_ROUTE, engine.getJvmRoute());
+      try
+      {
+         ObjectName name = ObjectName.getInstance(this.getInitParameter(SERVER_OBJECT_NAME, DEFAULT_SERVER_OBJECT_NAME));
+         String serviceName = this.getInitParameter(SERVICE_NAME, DEFAULT_SERVICE_NAME);
+         Service service = (Service) server.invoke(name, "findService", new Object[] { serviceName }, new String[] { String.class.getName() });
+         
+         for (Connector connector: service.findConnectors())
+         {
+            if (connector.getProtocol().startsWith("HTTP"))
+            {
+               ServletContext context = config.getServletContext();
+               context.setAttribute(PORT, Integer.valueOf(connector.getPort()));
+            }
+         }
+         
+         this.engine = (Engine) service.getContainer();
+      }
+      catch (MalformedObjectNameException e)
+      {
+         throw new ServletException(e);
+      }
+      catch (InstanceNotFoundException e)
+      {
+         throw new ServletException(e);
+      }
+      catch (ReflectionException e)
+      {
+         throw new ServletException(e);
+      }
+      catch (MBeanException e)
+      {
+         throw new ServletException(e);
+      }
    }
 
+   protected String getJvmRoute()
+   {
+      return this.engine.getJvmRoute();
+   }
+   
    protected String createServerURL(HttpServletRequest request, Map<String, String> parameterMap)
    {
       return this.createURL(request, request.getServerName(), request.getServerPort(), parameterMap);
@@ -128,10 +169,12 @@ public class LoadServlet extends HttpServlet
    {
       String value = request.getParameter(name);
       
-      if (value == null)
-      {
-         value = this.getInitParameter(name);
-      }
+      return (value != null) ? value : this.getInitParameter(name, defaultValue);
+   }
+   
+   protected String getInitParameter(String name, String defaultValue)
+   {
+      String value = this.getInitParameter(name);
       
       if (value == null)
       {
@@ -143,6 +186,6 @@ public class LoadServlet extends HttpServlet
    
    protected void writeLocalName(HttpServletRequest request, HttpServletResponse response) throws IOException
    {
-      response.getWriter().append("Handled By: ").append((String) this.getServletContext().getAttribute(JVM_ROUTE));
+      response.getWriter().append("Handled By: ").append(this.getJvmRoute());
    }
 }

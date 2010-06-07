@@ -23,50 +23,32 @@ package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.jboss.modcluster.demo.Constants;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class RecordServlet extends HttpServlet
+public class RecordServlet extends LoadServlet
 {
    /** The serialVersionUID */
    private static final long serialVersionUID = -4143320241936636855L;
-
+   
    private static final String DESTROY = "destroy";
    private static final String TIMEOUT = "timeout";
-   private static final String JVM_ROUTE = "jvmRoute";
    
-   /**
-    * @{inheritDoc}
-    * @see javax.servlet.GenericServlet#init(javax.servlet.ServletConfig)
-    */
-   @Override
-   public void init(ServletConfig config) throws ServletException
-   {
-      super.init(config);
-      
-      Engine engine = (Engine) ServerFactory.getServer().findServices()[0].getContainer();
-      config.getServletContext().setAttribute(JVM_ROUTE, engine.getJvmRoute());
-   }
-
    /**
     * @{inheritDoc}
     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
     */
    @Override
    protected void service(HttpServletRequest request, HttpServletResponse response)
-   throws ServletException, IOException
+      throws ServletException, IOException
    {
       HttpSession session = request.getSession(true);
       
@@ -86,13 +68,8 @@ public class RecordServlet extends HttpServlet
          }
       }
       
-      response.setHeader(Constants.NODE_HEADER, (String) this.getServletContext().getAttribute(JVM_ROUTE));
+      response.setHeader(Constants.NODE_HEADER, this.getJvmRoute());
       
       this.writeLocalName(request, response);
-   }
-   
-   protected void writeLocalName(HttpServletRequest request, HttpServletResponse response) throws IOException
-   {
-      response.getWriter().append("Handled By: ").append((String) this.getServletContext().getAttribute(JVM_ROUTE));
    }
 }
