@@ -1001,6 +1001,12 @@ static char *get_cookie_param(request_rec *r, const char *name, int in)
                         *end_cookie = '\0';
                     if((end_cookie = strchr(cookie, ',')) != NULL)
                         *end_cookie = '\0';
+                    /* remove " from version1 cookies */
+                    if (*cookie == '\"' && *(cookie+strlen(cookie)-1) == '\"') {
+                        ++cookie;
+                        *(cookie+strlen(cookie)-1) = '\0';
+                        cookie = apr_pstrdup(r->pool, cookie);
+                    }
                     return cookie;
                 }
             }
