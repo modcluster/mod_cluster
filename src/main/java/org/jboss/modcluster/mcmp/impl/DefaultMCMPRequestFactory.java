@@ -107,13 +107,25 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       {
          parameters.put("StickySession", "No");
       }
-      if (!org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID"))
-      {
-         parameters.put("StickySessionCookie", org.apache.catalina.Globals.SESSION_COOKIE_NAME);
+      try {
+         if (!org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID"))
+         {
+            parameters.put("StickySessionCookie", org.apache.catalina.Globals.SESSION_COOKIE_NAME);
+         }
+      } catch (NoSuchFieldError ex) {
+         // Not in tomcat.
       }
-      if (!org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid"))
-      {
-         parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
+      try {
+         if (!org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid"))
+         {
+            parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
+         }
+      } catch (NoSuchFieldError ex) {
+         // Tomcat location is different.
+         if (!org.apache.jasper.Constants.SESSION_PARAMETER_NAME.equals("jsessionid"))
+         {
+            parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
+         }
       }
       if (balancerConfig.getStickySessionRemove())
       {
