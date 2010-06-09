@@ -316,7 +316,9 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
       {
          this.recordRequestFailure();
          
-         throw e;
+         log.warn(e.getMessage(), e);
+         
+         return null;
       }
    }
 
@@ -339,7 +341,9 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler
       {
          this.recordRequestFailure();
          
-         throw e;
+         log.warn(e.getMessage(), e);
+         
+         return null;
       }
    }
    
