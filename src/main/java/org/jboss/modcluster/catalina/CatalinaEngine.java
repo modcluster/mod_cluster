@@ -27,7 +27,9 @@ import java.util.Iterator;
 import javax.management.MBeanServer;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.Globals;
 import org.apache.coyote.ProtocolHandler;
+import org.apache.jasper.Constants;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Engine;
@@ -181,6 +183,44 @@ public class CatalinaEngine implements Engine
       return (host != null) ? new CatalinaHost(host, this) : null;
    }
 
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.Engine#getSessionCookieName()
+    */
+   public String getSessionCookieName()
+   {
+      try
+      {
+         return Globals.SESSION_COOKIE_NAME;
+      }
+      catch (NoSuchFieldError e)
+      {
+         // Not in Tomcat
+         return "JSESSIONID";
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.Engine#getSessionParameterName()
+    */
+   public String getSessionParameterName()
+   {
+      try
+      {
+         return Globals.SESSION_PARAMETER_NAME;
+      }
+      catch (NoSuchFieldError e)
+      {
+         // Tomcat location is different
+         return Constants.SESSION_PARAMETER_NAME;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    * @see java.lang.Object#equals(java.lang.Object)
+    */
    @Override
    public boolean equals(Object object)
    {
@@ -191,6 +231,10 @@ public class CatalinaEngine implements Engine
       return this.engine == engine.engine;
    }
 
+   /**
+    * {@inheritDoc}
+    * @see java.lang.Object#hashCode()
+    */
    @Override
    public int hashCode()
    {

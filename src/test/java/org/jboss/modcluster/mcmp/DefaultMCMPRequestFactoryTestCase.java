@@ -209,6 +209,9 @@ public class DefaultMCMPRequestFactoryTestCase
       EasyMock.expect(nodeConfig.getNodeTimeout()).andReturn(5);
       EasyMock.expect(nodeConfig.getBalancer()).andReturn("S");
       
+      EasyMock.expect(engine.getSessionCookieName()).andReturn(DefaultMCMPRequestFactory.DEFAULT_SESSION_COOKIE_NAME);
+      EasyMock.expect(engine.getSessionParameterName()).andReturn(DefaultMCMPRequestFactory.DEFAULT_SESSION_PARAMETER_NAME);
+      
       EasyMock.expect(balancerConfig.getStickySession()).andReturn(Boolean.FALSE);
       EasyMock.expect(balancerConfig.getStickySessionRemove()).andReturn(Boolean.TRUE);
       EasyMock.expect(balancerConfig.getStickySessionForce()).andReturn(Boolean.FALSE);

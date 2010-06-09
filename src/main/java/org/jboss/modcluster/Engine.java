@@ -73,4 +73,16 @@ public interface Engine
     * @return a servlet engine host
     */
    Host findHost(String name);
+   
+   /**
+    * Returns the cookie name used for sessions.
+    * @return a cookie name
+    */
+   String getSessionCookieName();
+   
+   /**
+    * Returns the url parameter name used for sessions.
+    * @return a parameter name
+    */
+   String getSessionParameterName();
 }

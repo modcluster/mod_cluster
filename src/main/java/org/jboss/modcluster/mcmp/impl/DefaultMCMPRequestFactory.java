@@ -42,6 +42,9 @@ import org.jboss.modcluster.mcmp.MCMPRequestType;
  */
 public class DefaultMCMPRequestFactory implements MCMPRequestFactory
 {
+   public static final String DEFAULT_SESSION_COOKIE_NAME = "JSESSIONID";
+   public static final String DEFAULT_SESSION_PARAMETER_NAME = "jsessionid";
+   
    private final MCMPRequest infoRequest = new DefaultMCMPRequest(MCMPRequestType.INFO, false, null, Collections.<String, String>emptyMap());
    private final MCMPRequest dumpRequest = new DefaultMCMPRequest(MCMPRequestType.DUMP, true, null, Collections.<String, String>emptyMap());
    
@@ -107,25 +110,15 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       {
          parameters.put("StickySession", "No");
       }
-      try {
-         if (!org.apache.catalina.Globals.SESSION_COOKIE_NAME.equals("JSESSIONID"))
-         {
-            parameters.put("StickySessionCookie", org.apache.catalina.Globals.SESSION_COOKIE_NAME);
-         }
-      } catch (NoSuchFieldError ex) {
-         // Not in tomcat.
+      String sessionCookieName = engine.getSessionCookieName();
+      if (!sessionCookieName.equals(DEFAULT_SESSION_COOKIE_NAME))
+      {
+         parameters.put("StickySessionCookie", sessionCookieName);
       }
-      try {
-         if (!org.apache.catalina.Globals.SESSION_PARAMETER_NAME.equals("jsessionid"))
-         {
-            parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
-         }
-      } catch (NoSuchFieldError ex) {
-         // Tomcat location is different.
-         if (!org.apache.jasper.Constants.SESSION_PARAMETER_NAME.equals("jsessionid"))
-         {
-            parameters.put("StickySessionPath", org.apache.catalina.Globals.SESSION_PARAMETER_NAME);
-         }
+      String sessionParameterName = engine.getSessionParameterName();
+      if (!sessionParameterName.equals(DEFAULT_SESSION_PARAMETER_NAME))
+      {
+         parameters.put("StickySessionPath", sessionParameterName);
       }
       if (balancerConfig.getStickySessionRemove())
       {
