@@ -1122,6 +1122,7 @@ public class ModClusterServiceTestCase
       MCMPRequest disableRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest stopRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
+      SessionDrainingStrategy strategy = EasyMock.createStrictMock(SessionDrainingStrategy.class);
       final Capture<HttpSessionListener> capturedAddListener = new Capture<HttpSessionListener>();
       Capture<HttpSessionListener> capturedRemoveListener = new Capture<HttpSessionListener>();
       
@@ -1135,8 +1136,9 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
-      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0);
-      EasyMock.expect(context.isDistributable()).andReturn(false);
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0L);
+      EasyMock.expect(this.mcmpConfig.getSessionDrainingStrategy()).andReturn(strategy);
+      EasyMock.expect(strategy.isEnabled(context)).andReturn(true);
       
       EasyMock.expect(context.getActiveSessionCount()).andReturn(2);
       
@@ -1157,7 +1159,7 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response"));
          EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(0);
          
-         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          Runnable task = new Runnable()
          {
@@ -1188,11 +1190,11 @@ public class ModClusterServiceTestCase
          thread.interrupt();
          thread.join();
          
-         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          Assert.assertSame(capturedAddListener.getValue(), capturedRemoveListener.getValue());
          
-         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
 
          // Test drain timeout
          EasyMock.expect(context.getHost()).andReturn(host);
@@ -1203,8 +1205,9 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
          
          EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
-         EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
-         EasyMock.expect(context.isDistributable()).andReturn(false);
+         EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1L);
+         EasyMock.expect(this.mcmpConfig.getSessionDrainingStrategy()).andReturn(strategy);
+         EasyMock.expect(strategy.isEnabled(context)).andReturn(true);
          
          EasyMock.expect(context.getActiveSessionCount()).andReturn(2);
          
@@ -1217,15 +1220,15 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
          EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
          
-         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          this.service.stop(context);
          
-         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          Assert.assertSame(capturedAddListener.getValue(), capturedRemoveListener.getValue());
          
-         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
       }
       catch (InterruptedException e)
       {
@@ -1247,6 +1250,7 @@ public class ModClusterServiceTestCase
       MCMPRequest disableRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest stopRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
+      SessionDrainingStrategy strategy = EasyMock.createStrictMock(SessionDrainingStrategy.class);
       
       // Test successful drain
       
@@ -1258,8 +1262,9 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
       EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
-      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0);
-      EasyMock.expect(context.isDistributable()).andReturn(true);
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(0L);
+      EasyMock.expect(this.mcmpConfig.getSessionDrainingStrategy()).andReturn(strategy);
+      EasyMock.expect(strategy.isEnabled(context)).andReturn(false);
       
       EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
       EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response"));
@@ -1268,7 +1273,7 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response"));
       EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(0);
       
-      EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+      EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
       
       Runnable task = new Runnable()
       {
@@ -1295,11 +1300,11 @@ public class ModClusterServiceTestCase
       {
          thread.join();
          
-         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          Assert.assertFalse(listener.isEnabled());
          
-         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
 
          // Test drain timeout
          EasyMock.expect(context.getHost()).andReturn(host);
@@ -1310,23 +1315,24 @@ public class ModClusterServiceTestCase
          EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
          
          EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
-         EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
-         EasyMock.expect(context.isDistributable()).andReturn(true);
+         EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1L);
+         EasyMock.expect(this.mcmpConfig.getSessionDrainingStrategy()).andReturn(strategy);
+         EasyMock.expect(strategy.isEnabled(context)).andReturn(false);
          
          EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest);
          // In fact on windows it is often called 3 times...
          EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response")).times(2,5);
          EasyMock.expect(this.responseParser.parseStopAppResponse("response")).andReturn(1).times(2,5);
          
-         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.replay(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
          
          this.service.stop(context);
          
-         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.verify(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
 
          Assert.assertFalse(listener.isEnabled());
          
-         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest);
+         EasyMock.reset(this.requestFactory, this.mcmpHandler, this.mcmpConfig, this.responseParser, server, engine, host, context, disableRequest, stopRequest, strategy);
       }
       catch (InterruptedException e)
       {
@@ -1541,6 +1547,7 @@ public class ModClusterServiceTestCase
       MCMPRequest removeRrequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPRequest removeAllRequest = EasyMock.createStrictMock(MCMPRequest.class);
       MCMPServerState state = EasyMock.createStrictMock(MCMPServerState.class);
+      SessionDrainingStrategy strategy = EasyMock.createStrictMock(SessionDrainingStrategy.class);
       
       EasyMock.expect(server.getEngines()).andReturn(Collections.singleton(engine));
       EasyMock.expect(engine.getHosts()).andReturn(Collections.singleton(host));
@@ -1556,9 +1563,10 @@ public class ModClusterServiceTestCase
       EasyMock.expect(this.mcmpHandler.sendRequest(disableRequest)).andReturn(Collections.singletonMap(state, "response1"));
       
       EasyMock.expect(this.mcmpConfig.getStopContextTimeoutUnit()).andReturn(TimeUnit.SECONDS);
-      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1);
-      EasyMock.expect(context.isDistributable()).andReturn(true);
-     
+      EasyMock.expect(this.mcmpConfig.getStopContextTimeout()).andReturn(1L);
+      EasyMock.expect(this.mcmpConfig.getSessionDrainingStrategy()).andReturn(strategy);
+      EasyMock.expect(strategy.isEnabled(context)).andReturn(false);
+      
       // Called at least once...
       EasyMock.expect(this.requestFactory.createStopRequest(context)).andReturn(stopRequest).atLeastOnce();
       EasyMock.expect(this.mcmpHandler.sendRequest(stopRequest)).andReturn(Collections.singletonMap(state, "response2")).atLeastOnce();
@@ -1586,12 +1594,12 @@ public class ModClusterServiceTestCase
       
       EasyMock.expect(this.mcmpHandler.sendRequest(removeAllRequest)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       
-      EasyMock.replay(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext);
+      EasyMock.replay(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext, strategy);
       
       this.service.stop(server);
       
-      EasyMock.verify(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext);
-      EasyMock.reset(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext);
+      EasyMock.verify(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext, strategy);
+      EasyMock.reset(this.mcmpHandler, this.requestFactory, this.mcmpConfig, this.responseParser, server, engine, host, context, excludedContext, strategy);
    }
    
    @Test

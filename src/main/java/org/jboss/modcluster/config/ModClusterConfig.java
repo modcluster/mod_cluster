@@ -29,6 +29,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.jboss.modcluster.JvmRouteFactory;
+import org.jboss.modcluster.SessionDrainingStrategy;
+import org.jboss.modcluster.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.SystemPropertyJvmRouteFactory;
 import org.jboss.modcluster.UUIDJvmRouteFactory;
 
@@ -90,8 +92,8 @@ public class ModClusterConfig
    public boolean isAutoEnableContexts() { return this.autoEnableContexts; }
    public void setAutoEnableContexts(boolean autoEnableContexts) { this.autoEnableContexts = autoEnableContexts; }
    
-   private int stopContextTimeout = 10;
-   public int getStopContextTimeout() { return this.stopContextTimeout; }
+   private long stopContextTimeout = 10;
+   public long getStopContextTimeout() { return this.stopContextTimeout; }
    public void setStopContextTimeout(int stopContextTimeout) { this.stopContextTimeout = stopContextTimeout; }
    
    private TimeUnit stopContextTimeoutUnit = TimeUnit.SECONDS;
@@ -101,6 +103,10 @@ public class ModClusterConfig
    private JvmRouteFactory jvmRouteFactory = new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory());
    public JvmRouteFactory getJvmRouteFactory() { return this.jvmRouteFactory; }
    public void setJvmRouteFactory(JvmRouteFactory jvmRouteFactory) { this.jvmRouteFactory = jvmRouteFactory; }
+   
+   private SessionDrainingStrategy sessionDrainingStrategy = SessionDrainingStrategyEnum.DEFAULT;
+   public SessionDrainingStrategy getSessionDrainingStrategy() { return this.sessionDrainingStrategy; }
+   public void setSessionDrainingStrategy(SessionDrainingStrategy sessionDrainingStrategy) { this.sessionDrainingStrategy = sessionDrainingStrategy; }
    
    // -----------------------------------------------------  SSLConfiguration
    

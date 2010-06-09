@@ -24,6 +24,7 @@ package org.jboss.modcluster.config;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.modcluster.JvmRouteFactory;
+import org.jboss.modcluster.SessionDrainingStrategy;
 
 /**
  * Configuration object for an {@link MCMPHandler}.
@@ -74,12 +75,22 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
    boolean isAutoEnableContexts();
 
    /**
-    * Returns the number of seconds to wait for pending requests to complete when stopping a context.
+    * Returns the number of {@link #getStopContextTimeoutUnit()} to wait for pending requests to complete when stopping a context.
     * @return timeout in seconds.
     */
-   int getStopContextTimeout();
+   long getStopContextTimeout();
    
+   /**
+    * Returns the unit of time to which {@link #getStopContextTimeout()} pertains.
+    * @return a unit of time
+    */
    TimeUnit getStopContextTimeoutUnit();
    
+   /**
+    * 
+    * @return
+    */
    JvmRouteFactory getJvmRouteFactory();
+   
+   SessionDrainingStrategy getSessionDrainingStrategy();
 }
