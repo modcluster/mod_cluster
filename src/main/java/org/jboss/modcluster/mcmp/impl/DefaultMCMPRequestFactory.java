@@ -49,8 +49,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    private final MCMPRequest dumpRequest = new DefaultMCMPRequest(MCMPRequestType.DUMP, true, null, Collections.<String, String>emptyMap());
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createConfigRequest(org.apache.catalina.Engine, org.jboss.modcluster.config.NodeConfiguration, org.jboss.modcluster.config.BalancerConfiguration)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createConfigRequest(org.jboss.modcluster.Engine, org.jboss.modcluster.config.NodeConfiguration, org.jboss.modcluster.config.BalancerConfiguration)
     */
    public MCMPRequest createConfigRequest(Engine engine, NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig)
    {
@@ -143,8 +143,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.apache.catalina.Context)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.jboss.modcluster.Context)
     */
    public MCMPRequest createDisableRequest(Context context)
    {
@@ -152,8 +152,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.apache.catalina.Engine)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.jboss.modcluster.Engine)
     */
    public MCMPRequest createDisableRequest(Engine engine)
    {
@@ -161,8 +161,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.apache.catalina.Context)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.jboss.modcluster.Context)
     */
    public MCMPRequest createEnableRequest(Context context)
    {
@@ -170,8 +170,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.apache.catalina.Engine)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.jboss.modcluster.Engine)
     */
    public MCMPRequest createEnableRequest(Engine engine)
    {
@@ -179,8 +179,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.apache.catalina.Engine)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.jboss.modcluster.Engine)
     */
    public MCMPRequest createRemoveRequest(Engine engine)
    {
@@ -188,8 +188,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.apache.catalina.Context)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.jboss.modcluster.Context)
     */
    public MCMPRequest createRemoveRequest(Context context)
    {
@@ -215,8 +215,8 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.apache.catalina.Context)
+    * {@inheritDoc}
+    * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.jboss.modcluster.Context)
     */
    public MCMPRequest createStopRequest(Context context)
    {

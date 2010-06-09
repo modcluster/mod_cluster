@@ -27,12 +27,16 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertPathParameters;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreParameters;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXBuilderParameters;
@@ -56,7 +60,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
-import org.apache.tomcat.util.res.StringManager;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.config.SSLConfiguration;
 
@@ -81,8 +84,6 @@ import org.jboss.modcluster.config.SSLConfiguration;
  */
 public class JSSESocketFactory extends SocketFactory
 {
-   private static StringManager sm = StringManager.getManager("org.apache.tomcat.util.net.jsse.res");
-
    static Logger log = Logger.getLogger(JSSESocketFactory.class);
 
    private SSLSocketFactory socketFactory = null;
@@ -218,7 +219,7 @@ public class JSSESocketFactory extends SocketFactory
    /*
     * Gets the SSL server's keystore.
     */
-   private KeyStore getKeystore() throws IOException
+   private KeyStore getKeystore() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
    {
       return this.getStore(this.config.getSslKeyStoreType(), this.config.getSslKeyStoreProvider(), this.config.getSslKeyStore(), this.config.getSslKeyStorePass());
    }
@@ -226,7 +227,7 @@ public class JSSESocketFactory extends SocketFactory
    /*
     * Gets the SSL server's truststore.
     */
-   protected KeyStore getTrustStore() throws IOException
+   protected KeyStore getTrustStore() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
    {
       String trustStore = this.config.getSslTrustStore();
       
@@ -258,7 +259,7 @@ public class JSSESocketFactory extends SocketFactory
    /*
     * Gets the key- or truststore with the specified type, path, and password.
     */
-   private KeyStore getStore(String type, String provider, String path, String pass) throws IOException
+   private KeyStore getStore(String type, String provider, String path, String pass) throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
    {
       InputStream istream = null;
       try
@@ -283,17 +284,6 @@ public class JSSESocketFactory extends SocketFactory
             ks.load(istream, pass.toCharArray());
          }
          return ks;
-      }
-      catch (IOException ioe)
-      {
-         log.error(sm.getString("jsse.keystore_load_failed", type, path, ioe.getMessage()), ioe);
-         throw ioe;
-      }
-      catch (GeneralSecurityException e)
-      {
-         String msg = sm.getString("jsse.keystore_load_failed", type, path, e.getMessage());
-         log.error(msg, e);
-         throw new IOException(msg);
       }
       finally
       {
@@ -320,10 +310,6 @@ public class JSSESocketFactory extends SocketFactory
    {
       KeyStore ks = this.getKeystore();
       String alias = this.config.getSslKeyAlias();
-      if (alias != null && !ks.isKeyEntry(alias))
-      {
-         throw new IOException(sm.getString("jsse.alias_no_key_entry", alias));
-      }
       
       KeyManagerFactory kmf = KeyManagerFactory.getInstance(this.config.getSslCertificateEncodingAlgorithm());
       kmf.init(ks, this.config.getSslKeyStorePass().toCharArray());
