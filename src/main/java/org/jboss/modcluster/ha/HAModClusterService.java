@@ -101,18 +101,18 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    static final Class<?>[] GET_CLUSTER_COORDINATOR_STATE_TYPES = new Class[] { Set.class };
    
    // HAModClusterServiceMBean and ContainerEventHandler delegate
-   private final ClusteredModClusterService service;
+   final ClusteredModClusterService service;
    private final HAServiceRpcHandler<HAServiceEvent> rpcHandler;
-   private final ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState, List<RpcResponse<Boolean>>> rpcStub = new RpcStub();
+   final ModClusterServiceRpcHandler<List<RpcResponse<ModClusterServiceStatus>>, MCMPServerState, List<RpcResponse<Boolean>>> rpcStub = new RpcStub();
    
-   private final MCMPRequestFactory requestFactory;
+   final MCMPRequestFactory requestFactory;
    private final MCMPResponseParser responseParser;
-   private final MCMPHandler localHandler;
-   private final ClusteredMCMPHandler clusteredHandler;
-   private final ResetRequestSource resetRequestSource;
-   private final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new ConcurrentHashMap<ClusterNode, MCMPServerDiscoveryEvent>();
-   private final ModClusterServiceDRMEntry drmEntry;
-   private final String domain;
+   final MCMPHandler localHandler;
+   final ClusteredMCMPHandler clusteredHandler;
+   final ResetRequestSource resetRequestSource;
+   final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new ConcurrentHashMap<ClusterNode, MCMPServerDiscoveryEvent>();
+   final ModClusterServiceDRMEntry drmEntry;
+   final String domain;
    private final boolean masterPerDomain;
    private final AtomicReference<Set<CachableMarshalledValue>> replicantView = new AtomicReference<Set<CachableMarshalledValue>>(Collections.<CachableMarshalledValue>emptySet());
 
@@ -543,7 +543,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
                   // If ping fails, send REMOVE_APP * on behalf of crashed member
                   if ((proxy.getState() == MCMPServerState.State.OK) && !this.responseParser.parsePingResponse(response.getValue()))
                   {
-                     log.info(Strings.ENGINE_REMOVE_CRASHED.getString(jvmRoute, proxy.getSocketAddress(), entry.getPeer()));
+                     this.log.info(Strings.ENGINE_REMOVE_CRASHED.getString(jvmRoute, proxy.getSocketAddress(), entry.getPeer()));
                      
                      this.localHandler.sendRequest(this.requestFactory.createRemoveEngineRequest(jvmRoute));
                   }
@@ -747,6 +747,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
+      @SuppressWarnings("synthetic-access")
       public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
          try
@@ -759,6 +760,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
 
+      @SuppressWarnings("synthetic-access")
       public List<RpcResponse<ModClusterServiceStatus>> getClusterCoordinatorState(Set<MCMPServerState> masterList)
       {
          try
@@ -771,7 +773,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          }
       }
       
-      @SuppressWarnings("unchecked")
+      @SuppressWarnings({"unchecked", "synthetic-access"})
       private <T> RpcResponse<T> invokeRpc(String methodName, Object[] args, Class<?>[] types) throws Exception
       {
          List<?> responses = HAModClusterService.this.getHAPartition().callMethodOnCluster(HAModClusterService.this.getHAServiceKey(), methodName, args, types, false, new RpcResponseFilter());
@@ -782,7 +784,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          {
             if (obj instanceof RpcResponse)
             {
-               return (RpcResponse) obj;
+               return (RpcResponse<T>) obj;
             }
             else if (obj instanceof Throwable)
             {
@@ -793,7 +795,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
             }
             else
             {
-               log.warn(Strings.ERROR_RPC_UNEXPECTED.getString(obj, methodName));
+               HAModClusterService.this.log.warn(Strings.ERROR_RPC_UNEXPECTED.getString(obj, methodName));
             }
          }
          
@@ -809,6 +811,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#disable(java.lang.String)
        */
+      @SuppressWarnings("synthetic-access")
       public List<RpcResponse<Boolean>> disable(String domain)
       {
          try
@@ -825,6 +828,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#enable(java.lang.String)
        */
+      @SuppressWarnings("synthetic-access")
       public List<RpcResponse<Boolean>> enable(String domain)
       {
          try
@@ -841,6 +845,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
        * {@inhericDoc}
        * @see org.jboss.modcluster.ha.rpc.ModClusterServiceRpcHandler#stop(java.lang.String)
        */
+      @SuppressWarnings("synthetic-access")
       public List<RpcResponse<Boolean>> stop(String domain, long timeout, TimeUnit unit)
       {
          try
@@ -862,6 +867,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       private final ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
       private final RpcResponse<Void> voidResponse = new DefaultRpcResponse<Void>(this.node);
       
+      @SuppressWarnings("synthetic-access")
       public void clusterStatusComplete(Map<ClusterNode, PeerMCMPDiscoveryStatus> statuses)
       {
          ClusterNode node = HAModClusterService.this.getHAPartition().getClusterNode();
