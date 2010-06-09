@@ -37,7 +37,6 @@ public class RpcResponseFilter implements ResponseFilter
    
    public boolean isAcceptable(Object response, ClusterNode responder)
    {
-      @SuppressWarnings("unchecked")
       boolean acceptable = (response instanceof RpcResponse);
       
       if (acceptable) 
