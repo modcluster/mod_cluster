@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="UsingSSL">
+  <title>Using SSL between JBossWEB and httpd</title>
+  <para>
+As the ClusterListener allows to configure httpd it is adviced to use SSL for that connection. The most easy is to use a virtual host that will only be used to receive information from JBossWEB. Both side need configuration.
+  </para>
+  <section id="Apachehttpd">
+    <title>Apache httpd configuration part</title>
+  </section>
+</chapter>

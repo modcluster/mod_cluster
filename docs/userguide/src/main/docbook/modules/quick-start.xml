@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="Quick_Start_Guide">
+  <title>Quick Start Guide</title>
+
+  <para>The following are the steps to set up a minimal working installation
+  of mod_cluster on a single httpd server and a single back end server, either
+  JBoss AS, JBossWeb or Tomcat. The steps can be repeated to add as many httpd
+  servers or back end servers to your cluster as is desired.</para>
+
+  <para>The steps shown here are not intended to demonstrate how to set up a
+  production install of mod_cluster; for example <link linkend="ssl.xml">using
+  SSL to secure access</link> to the httpd-side mod_manager component is not
+  covered. See the httpd-side and java-side configuration documentation for
+  the full set of configuration options.</para>
+
+  <section id="Download mod_cluster components">
+    <title>Download mod_cluster components</title>
+  </section>
+</chapter>
