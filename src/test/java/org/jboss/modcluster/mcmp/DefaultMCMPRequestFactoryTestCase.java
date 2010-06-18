@@ -234,7 +234,7 @@ public class DefaultMCMPRequestFactoryTestCase
       
       Assert.assertEquals(17, parameters.size());
       Assert.assertEquals("true", parameters.get("Reversed"));
-      Assert.assertEquals(InetAddress.getLocalHost().getHostAddress(), parameters.get("Host"));
+      Assert.assertEquals(InetAddress.getLocalHost().getHostName(), parameters.get("Host"));
       Assert.assertEquals("100", parameters.get("Port"));
       Assert.assertEquals("ajp", parameters.get("Type"));
       Assert.assertEquals("domain", parameters.get("Domain"));

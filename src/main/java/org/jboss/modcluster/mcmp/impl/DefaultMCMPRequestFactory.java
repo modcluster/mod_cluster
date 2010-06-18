@@ -62,7 +62,13 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
          parameters.put("Reversed", "true");
       }
 
-      parameters.put("Host", connector.getAddress().getHostAddress());
+      // If address was specified as a host name, we would prefer it
+      // toString() will not perform reverse dns lookup
+      // so send host name portion, if it exists
+      String address = connector.getAddress().toString();
+      int index = address.indexOf("/");
+      
+      parameters.put("Host", (index > 0) ? address.substring(0, index) : address.substring(1));
       parameters.put("Port", String.valueOf(connector.getPort()));
       parameters.put("Type", connector.getType().toString());
 
