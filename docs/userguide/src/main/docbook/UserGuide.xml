@@ -9,6 +9,10 @@
   </bookinfo>
 
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/quick-start.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/config.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/config.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/properties.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/load.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/ssl.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_jk.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_proxy.xml" />

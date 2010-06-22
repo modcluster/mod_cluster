@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+ "http://www.docbook.org/xml/4.3/docbookx.dtd">
+
+<!--
+<chapter id="javaconf">
+  <title>java configuration</title>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="java/config.xml" />
+</chapter>
+<chapter id="javaproper">
+  <title>java properties</title>
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="java/properties.xml" />
+</chapter>
+  -->
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="java/config.xml" />
