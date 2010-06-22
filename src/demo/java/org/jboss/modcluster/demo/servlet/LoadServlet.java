@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.catalina.Engine;
+import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 
@@ -75,24 +76,35 @@ public class LoadServlet extends HttpServlet
    {
       super.init(config);
       
+      Service service = this.findService();
+      
+      for (Connector connector: service.findConnectors())
+      {
+         if (connector.getProtocol().startsWith("HTTP"))
+         {
+            ServletContext context = config.getServletContext();
+            context.setAttribute(PORT, Integer.valueOf(connector.getPort()));
+         }
+      }
+      
+      this.engine = (Engine) service.getContainer();
+   }
+
+   private Service findService() throws ServletException
+   {
       MBeanServer server = ManagementFactory.getPlatformMBeanServer();
       
       try
       {
          ObjectName name = ObjectName.getInstance(this.getInitParameter(SERVER_OBJECT_NAME, DEFAULT_SERVER_OBJECT_NAME));
          String serviceName = this.getInitParameter(SERVICE_NAME, DEFAULT_SERVICE_NAME);
-         Service service = (Service) server.invoke(name, "findService", new Object[] { serviceName }, new String[] { String.class.getName() });
          
-         for (Connector connector: service.findConnectors())
+         if (server.isRegistered(name))
          {
-            if (connector.getProtocol().startsWith("HTTP"))
-            {
-               ServletContext context = config.getServletContext();
-               context.setAttribute(PORT, Integer.valueOf(connector.getPort()));
-            }
+            return (Service) server.invoke(name, "findService", new Object[] { serviceName }, new String[] { String.class.getName() });
          }
          
-         this.engine = (Engine) service.getContainer();
+         return ServerFactory.getServer().findService(serviceName);
       }
       catch (MalformedObjectNameException e)
       {
@@ -111,7 +123,7 @@ public class LoadServlet extends HttpServlet
          throw new ServletException(e);
       }
    }
-
+   
    protected String getJvmRoute()
    {
       return this.engine.getJvmRoute();
