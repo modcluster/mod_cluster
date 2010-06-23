@@ -6,7 +6,7 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
-<sect1><title>Change Log</title><sect2><title>1.1.0.CR3 (15 June 2010)</title>
+<sect1><title>1.1.0.CR3 (15 June 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -134,7 +134,7 @@
                <para>Avoid unnecessary open sockets for non-master nodes (MODCLUSTER-158) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.1.0.CR2 (11 May 2010)</title>
+   </informaltable></sect1><sect1><title>1.1.0.CR2 (11 May 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -263,7 +263,7 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
-   <para> </para></sect2><sect2><title>1.1.0.CR1 (22 March 2010)</title>
+   <para> </para></sect1><sect1><title>1.1.0.CR1 (22 March 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -545,7 +545,7 @@
                <para>Load-demo.war specifies obsolete servlet in web.xml  (MODCLUSTER-113) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.3.GA (15 January 2010)</title>
+   </informaltable></sect1><sect1><title>1.0.3.GA (15 January 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -659,7 +659,7 @@
                <para>Advertise does not work on name-based virtual hosts. (MODCLUSTER-122) (jfclere)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.1.0.Beta1 (30 October 2009)</title>
+   </informaltable></sect1><sect1><title>1.1.0.Beta1 (30 October 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -787,7 +787,7 @@
                <para>getProxyInfo failed when there are too many nodes. (MODCLUSTER-94) (jfclere)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.1.0.Beta1 (30 October 2009)</title>
+   </informaltable></sect1><sect1><title>1.1.0.Beta1 (30 October 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1069,7 +1069,7 @@
                <para>Create SPI and isolate tomcat/jbossweb usage into service provider implementation. (MODCLUSTER-111) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.2.GA (20 August 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.2.GA (20 August 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1211,7 +1211,7 @@
                <para>admin-console should be in the excludedContexts. (MODCLUSTER-87) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.1.GA (29 July 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.1.GA (29 July 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1339,7 +1339,7 @@
                <para>Add INFO and DUMP in the mod_cluster-manager. Partialy MODCLUSTER-79 (jfclere)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.GA (29 May 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.0.GA (29 May 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1397,7 +1397,7 @@
                <para>Various fixes to load simulation section of demo application. (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.CR2 (29 April 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.0.CR2 (29 April 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1483,7 +1483,7 @@
                <para>Simplify rpc response objects (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.CR1 (24 March 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.0.CR1 (24 March 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1611,7 +1611,7 @@
                <para>Fixed advertise listener's pause/resume logic.</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.Beta4 (14 Feb 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.0.Beta4 (14 Feb 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1781,7 +1781,7 @@
                <para>Master node enters tight loop calling getClusterCoordinatorState on remote node (MODCLUSTER-47) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.Beta3 (31 Jan 2009)</title>
+   </informaltable></sect1><sect1><title>1.0.0.Beta3 (31 Jan 2009)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -1909,7 +1909,7 @@
                <para>ActiveSessionsLoadMetric throws AttributeNotFoundException with distributable application (MODCLUSTER-29) (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.Beta2 (12 Dec 2008)</title>
+   </informaltable></sect1><sect1><title>1.0.0.Beta2 (12 Dec 2008)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -2037,7 +2037,7 @@
                <para>Added support for dynamic load balancing in JBoss Web standalone/Tomcat. (pferraro)</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>1.0.0.Beta1 (05 Nov 2008)</title>
+   </informaltable></sect1><sect1><title>1.0.0.Beta1 (05 Nov 2008)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
             <entry>
@@ -2054,5 +2054,5 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
-   <para/></sect2></sect1>
+   <para/></sect1>
 </chapter>

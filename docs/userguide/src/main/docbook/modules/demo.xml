@@ -7,7 +7,7 @@
 <chapter id="demo">
   <title>Load Balancing Demo Application</title>
 
-<sect1><title>Load Balancing Demo Application</title><sect2><title>Overview</title>
+<sect1><title>Overview</title>
    <para>The mod_cluster distribution includes a demo application that helps demonstrate how different server-side scenarios affect the routing of client requests by the load balancer. The demo application is located in the mod_cluster distribution's demo directory.</para>
    <para>The demo application consists of two components:</para>
    <orderedlist>
@@ -21,7 +21,7 @@
    </orderedlist>
    <para> </para>
    <para>Note that the demo application does not actually depend on mod_cluster in any way. Its only dependency is on JBossWeb/Tomcat.<ulink url="http://www.jboss.org/mod_cluster/demo.html">1</ulink> So, the demo could be used to demonstrate the effect of different server-side scenarios on the routing decisions made by any load balancer, including mod_jk, mod_proxy or the various hardware load balancers.</para>
-   <para>Note also that this demo application is not intended to be used as a load testing tool; i.e. something that can demonstrate the maximum load a cluster configuration can handle. Using it as such has a good chance of showing you the maximum load the client can generate rather than the maximum load your cluster can handle.</para></sect2><sect2><title>Basic Usage</title>
+   <para>Note also that this demo application is not intended to be used as a load testing tool; i.e. something that can demonstrate the maximum load a cluster configuration can handle. Using it as such has a good chance of showing you the maximum load the client can generate rather than the maximum load your cluster can handle.</para></sect1><sect1><title>Basic Usage</title>
    <para>To run the demo application:</para>
    <orderedlist>
       <listitem>
@@ -88,7 +88,7 @@
          <para>Experiment with adding artificial load to one or more servers to see what effect that has on load balancing. See <ulink url="http://www.jboss.org/mod_cluster/demo.html#load-generation">Load Generation Scenarios</ulink> for details.</para>
       </listitem>
    </orderedlist>
-   <para>Most of the various panels in application interface also present information on the current status on any client threads. "Total Clients" is the number of client threads created since the last time the "Start" button was pushed. "Live Clients" is the number of threads currently running. "Failed Clients" is the number of clients that terminated abnormally; i.e. made a request that resulted in something other than an HTTP 200 response.</para></sect2><sect2><title>
+   <para>Most of the various panels in application interface also present information on the current status on any client threads. "Total Clients" is the number of client threads created since the last time the "Start" button was pushed. "Live Clients" is the number of threads currently running. "Failed Clients" is the number of clients that terminated abnormally; i.e. made a request that resulted in something other than an HTTP 200 response.</para></sect1><sect1><title>
       <anchor id="client-config"/>Client Driver Configuration Options</title>
    <para>The configuration of the client is driver is done via the application's "Clent Control" tab:</para>
    <para>
@@ -129,7 +129,7 @@
       <listitem>
          <para>Startup Time: Number of seconds over which the application should stagger the start of the client threads. Staggering the start is advised as it avoids the unnatural situation where for the life of the demonstation all sessions start at about the same time and then are invalidated or abandoned at the same time. Staggering the start allows the load balancer to continually see new sessions and decide how to route them.</para>
       </listitem>
-   </orderedlist></sect2><sect2><title>
+   </orderedlist></sect1><sect1><title>
       <anchor id="load-generation"/>Load Generation Scenarios</title>
    <para>You can use the application's GUI to instruct individual servers to artificially generate various types of load, and then track how that load affects request and session balancing. Load generation is controlled via the application's "Server Load Control" tab:</para>
    <para>
@@ -161,5 +161,5 @@
             <anchor id="proxyport_prop"/>[4] The default value for this field is controlled by the mod_cluster.proxy.port system property, or 8000 if not set. Editing the run-demo.sh or run-demo.bat file to change the -Dmod_cluster.proxy.port=8000 passed to java will allow you to avoid re-typing this value every time you launch the demo application.</para>
       </listitem>
    </orderedlist>
-   <para/></sect2></sect1>
+   <para/></sect1>
 </chapter>

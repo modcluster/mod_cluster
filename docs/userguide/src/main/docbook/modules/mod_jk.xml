@@ -7,7 +7,7 @@
 <chapter id="mod_jk">
   <title>Migration from mod_jk</title>
 
-<sect1><title>Migration from mod_jk</title><sect1 id="proj_main-content1"><para>Mod_cluster only support Apache httpd, there are no plan to support IIS or Iplanet.</para>
+   <para>Mod_cluster only support Apache httpd, there are no plan to support IIS or Iplanet.</para>
    <para>The migration from mod_jk to mod_cluster is not very complex. Only very few worker properties can't be mapped to mod_cluster parameters.</para>
    <para>Here is the table of worker properties and how to transfer them in the ClusterListener parameters.</para>
    <informaltable frame="all">
@@ -300,5 +300,5 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
-   <para/></sect1><para/></sect1>
+   <para/>
 </chapter>

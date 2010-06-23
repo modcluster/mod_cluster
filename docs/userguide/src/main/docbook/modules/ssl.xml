@@ -5,7 +5,10 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="UsingSSL">
-  <title>Using SSL between JBossWEB and httpd</title>
+  <title>Using SSL in mod_cluster</title>
+  <para>There are 2 connections between the cluster and the front-end. Both could be encrypted. That chapter
+        describes how to encrypt both connections.
+  </para>
 
 <sect1><title>Using SSL between JBossWEB and httpd</title>
    <para>As the ClusterListener allows to configure httpd it is adviced to use SSL for that connection. The most easy is to use a virtual host that will only be used to receive information from JBossWEB. Both side need configuration.</para><sect2><title>Apache httpd configuration part</title>

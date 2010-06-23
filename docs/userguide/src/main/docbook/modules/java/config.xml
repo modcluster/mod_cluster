@@ -6,7 +6,7 @@
 <chapter id="javaconf">
   <title>java configuration</title>
 
-<sect1><title>Configuration</title><sect2><title>JBoss AS</title>
+<sect1><title>JBoss AS</title>
    <para>The entry point for configuring mod_cluster withing JBoss AS is the server.xml file within JBoss Web service.  This file is located at $JBOSS_HOME/server/<emphasis>profile</emphasis>/deploy/jbossweb.sar/server.xml</para><sect3><title>Lifecycle listener</title>
    <para>mod_cluster leverages a &lt;Listener/&gt; to inform itself of web container lifecycle events, e.g. deploy/undeploy of a web application, startup/shutdown of the server, etc.</para>
    <para>We use the generic MicrocontainerIntegrationLifecycleListener to delegate all lifecycle events to a bean deployed by the JBoss microcontainer.  The name of the bean to use differs depending on the version of mod_cluster.</para><sect4><title>mod_cluster 1.0.x</title>
@@ -186,7 +186,7 @@
    <para>&lt;bean name="ModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand"&gt; </para>
    <para>  &lt;property name="advertise"&gt;true&lt;/property&gt; </para>
    <para>&lt;/bean&gt;</para>
-   <para/></sect4></sect3></sect2><sect2><title>JBoss Web &amp; Tomcat</title>
+   <para/></sect4></sect3></sect1><sect1><title>JBoss Web &amp; Tomcat</title>
    <para>In the absence of the ability for complex configuration, mod_cluster's entire configuration for JBoss Web or Tomcat resides entirely within $CATALINA_HOME/conf/server.xml.</para>
    <para>This adds the following constraints to mod_cluster's feature set:</para>
    <orderedlist>
@@ -207,5 +207,5 @@
    <para>          advertise="true"/&gt;</para>
    <para/></sect4></sect3><sect3><title>Additional Tomcat dependencies</title>
    <para>mod_cluster uses jboss-logging, which exists in JBoss Web, but not in Tomcat. Consequently, to use mod_cluster with Tomcat, it is necessary to add <ulink url="http://repository.jboss.org/jboss/common-logging-spi/">jboss-logging-spi.jar</ulink> to $CATALINA_HOME/lib.</para>
-   <para/></sect3></sect2></sect1>
+   <para/></sect3></sect1>
 </chapter>

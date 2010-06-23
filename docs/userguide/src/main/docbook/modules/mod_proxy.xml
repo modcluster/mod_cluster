@@ -7,10 +7,9 @@
 <chapter id="mod_proxy">
   <title>Migration from mod_proxy</title>
 
-<sect1><title>Migration from mod_proxy</title>
    <para>As mod_cluster is a sophisticated balancer migration from mod_proxy to mod_cluster is strait forward. mod_cluster replaces a reverse proxy with loadbalancing. A reversed proxy is configured like:</para>
    <para>ProxyRequests Off&lt;Proxy *&gt;Order deny,allowAllow from all&lt;/Proxy&gt;ProxyPass /foo http://foo.example.com/barProxyPassReverse /foo http://foo.example.com/bar</para>
-   <para>All the general proxy parameters could be used in mod_cluster they work like in mod_proxy, only the balancers and the workers definitions are slightly different.</para><sect2><title>Workers</title>
+   <para>All the general proxy parameters could be used in mod_cluster they work like in mod_proxy, only the balancers and the workers definitions are slightly different.</para><sect1><title>Workers</title>
    <informaltable frame="all">
       <tgroup cols="3">
          <thead>
@@ -223,7 +222,7 @@
                <para>Default 60 seconds</para>
             </entry>
          </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>Balancers</title>
+   </informaltable></sect1><sect1><title>Balancers</title>
    <informaltable frame="all">
       <tgroup cols="3">
          <thead>
@@ -294,5 +293,5 @@
             </entry>
          </row></tbody></tgroup>
    </informaltable>
-   <para/></sect2></sect1>
+   <para/></sect1>
 </chapter>

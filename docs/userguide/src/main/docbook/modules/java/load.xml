@@ -4,9 +4,10 @@
 %BOOK_ENTITIES;
 ]>
 <chapter id="javaload">
-  <title>Server-Side Load Metrics</title>
+  <title>Load Metrics</title>
 
-<sect1><title>Server-Side Load Metrics</title><sect1 id="proj_main-content"><para>A major feature of mod_cluster is the ability to use server-side load metrics to determine how best to balance requests.</para>
+<sect1><title>Server-Side Load Metrics</title>
+   <para>A major feature of mod_cluster is the ability to use server-side load metrics to determine how best to balance requests.</para>
    <para>The DynamicLoadBalanceFactorProvider bean computes the load balance factor of a node from a defined set of load metrics.</para>
    <para>&lt;bean name="DynamicLoadBalanceFactorProvider" class="org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider" mode="On Demand"&gt; </para>
    <para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=LoadBalanceFactorProvider",exposedInterface=org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean.class)&lt;/annotation&gt; </para>
@@ -186,7 +187,8 @@
    <para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt; </para>
    <para>  &lt;/constructor&gt; </para>
    <para>&lt;/bean&gt;</para>
-   <para/></sect1><sect2><title>Web Container metrics</title>
+   <para/></sect1>
+<sect1><title>Web Container metrics</title>
    <orderedlist>
       <listitem>
          <para>ActiveSessionsLoadMetric </para>
@@ -270,7 +272,8 @@
    <para>  &lt;/constructor&gt; </para>
    <para>  &lt;property name="capacity"&gt;1000&lt;/property&gt; </para>
    <para>&lt;/bean&gt;</para>
-   <para/></sect2><sect2><title>System/JVM metrics</title>
+   <para/></sect1>
+<sect1><title>System/JVM metrics</title>
    <orderedlist>
       <listitem>
          <para>AverageSystemLoadMetric </para>
@@ -308,7 +311,8 @@
    <para>&lt;bean name="HeapMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric" mode="On Demand"&gt; </para>
    <para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=HeapMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt; </para>
    <para>&lt;/bean&gt;</para>
-   <para/></sect2><sect2><title>Other metrics</title>
+   <para/></sect1>
+<sect1><title>Other metrics</title>
    <orderedlist>
       <listitem>
          <para>ConnectionPoolUsageLoadMetric </para>
@@ -327,5 +331,5 @@
    <para>  &lt;/constructor&gt; </para>
    <para>&lt;/bean&gt;</para>
    <para/>
-   <para/></sect2></sect1>
+   <para/></sect1>
 </chapter>
