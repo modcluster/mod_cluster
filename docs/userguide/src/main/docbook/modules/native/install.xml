@@ -6,5 +6,58 @@
 ]>
 <chapter id="nativeinstall">
   <title>Installation of the httpd part</title>
-  <para>TODO</para>
+
+  <para>Several bundles are available at <ulink
+  url="http://www.jboss.org/mod_cluster/downloads.html">http://www.jboss.org/mod_cluster/downloads.html</ulink>.</para>
+
+  <para>In case you can't find a prepared package of mod_cluser in the
+  download area, it is possible to build mod_cluster for the sources. You need
+  a distribution of httpd (at least 2.2.8) or (better) a source tarball of
+  httpd and the sources of mod_cluster. <link
+  linkend="building">Building</link>
+  explains how to build mod_cluster for it sources.</para>
+
+  <sect1>
+    <title>Configuration</title>
+
+    <para>A minimal configuration is needed in httpd (See <link
+    linkend="nativeconfig">httpd.conf</link>).
+    A listener must be a added in in JBossWEB conf/server.xml (See <link
+    linkend="javaconf">Configuring JBoss
+    AS/Web</link>).</para>
+  </sect1>
+
+  <sect1>
+    <title>Installing and using the bundles</title>
+
+    <para>The bundles are tar.gz on POSIX platforms just extract them in root
+    something like:<programlisting>  cd /
+  tar xvf mod-cluster-1.0.0-linux2-x86-ssl.tar.gz</programlisting></para>
+
+    <para>The httpd.conf is located in /opt/jboss/httpd/httpd/conf to quick
+    test just add something like:</para>
+
+    <para><programlisting>Listen 10.33.144.3:6666
+ &lt;VirtualHost 10.33.144.3:6666&gt;
+ 
+   &lt;Directory /&gt;
+      Order deny,allow
+      Deny from all
+      Allow from 10.33.144.
+   &lt;/Directory&gt;
+ 
+ KeepAliveTimeout 60
+ MaxKeepAliveRequests 0
+ 
+ ManagerBalancerName mycluster
+ AdvertiseFrequency 5
+ 
+ &lt;/VirtualHost&gt;</programlisting></para>
+
+    <para>To start httpd do the following:</para>
+
+    <para><programlisting>/opt/jboss/httpd/sbin/apachectl start</programlisting></para>
+
+    <para>NOTE: Make sure to use SSL before going in production.</para>
+  </sect1>
 </chapter>

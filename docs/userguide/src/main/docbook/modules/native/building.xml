@@ -6,5 +6,72 @@
 ]>
 <chapter id="building">
   <title>Building mod_cluster from sources</title>
-  <para>TODO</para>
+
+  <sect1>
+    <title>Build a patched httpd from it sources</title>
+
+    <para>To build httpd-2.2.x from its sources see <ulink
+    url="http://httpd.apache.org/docs/2.2/install.html">ASF httpd
+    doc</ulink></para>
+
+    <para>If needed, patch the httpd-2.2.x sources with (The patch prevents
+    long waiting time when the node IP can't be resolved that should not
+    happen so you can skip the patch part if you don't want to rebuild httpd).
+    <ulink
+    url="http://anonsvn.jboss.org/repos/mod_cluster/trunk/native/mod_proxy_cluster/mod_proxy_ajp.patch">mod_proxy_ajp.patch</ulink></para>
+
+    <para><programlisting>(cd modules/proxy
+  patch -p0 &lt; $location/mod_proxy_ajp.patch
+ )</programlisting></para>
+
+    <para>Configure httpd with something like:<programlisting>./configure  --prefix=apache_installation_directory \
+             --with-mpm=worker \
+             --enable-mods-shared=most \
+             --enable-maintainer-mode \
+             --with-expat=builtin \
+             --enable-ssl \
+             --enable-proxy \
+             --enable-proxy-http \
+             --enable-proxy-ajp \
+             --disable-proxy-balancer</programlisting></para>
+
+    <para>Rebuild (make) and reinstall (make install) after that.</para>
+  </sect1>
+
+  <sect1>
+    <title>Build the 4 modules of mod_cluster</title>
+
+    <para>You need an httpd installation with mod_proxy (--enable-proxy) and
+    ajp protocol (--enable-proxy-ajp) enabled and with dso enabled
+    (--enable-so)</para>
+
+    <para>Download the mod_cluster sources:</para>
+
+    <para><programlisting>svn co http://anonsvn.jboss.org/repos/mod_cluster/trunk/ mod_cluster</programlisting></para>
+
+    <para>Build the mod_cluster modules components, for each subdirectory
+    advertise, mod_manager, mod_proxy_cluster and mod_slotmem do something
+    like:<programlisting>sh buildconf
+ ./configure --with-apsx=apxs_file_location
+ make
+ cp *.so apache_installation_directory/modules</programlisting></para>
+
+    <para>Where apache_installation_directory is the location of an installed
+    version of httpd-2-2.x.</para>
+
+    <para>NOTE: You can ignore the libtool message on most platform:</para>
+
+    <para><programlisting>libtool: install: warning: remember to run `libtool --finish apache_installation_directory/modules'</programlisting></para>
+
+    <para>Once that is done use <link
+    linkend="nativeconfig">Apache httpd
+    configuration</link> to configure mod_cluster.</para>
+  </sect1>
+
+  <sect1>
+    <title>Build the mod_proxy module</title>
+
+    <para>It is only needed for httpd-2.2.x where x &lt; 11. Process like the
+    other mod_cluster modules.</para>
+  </sect1>
 </chapter>
