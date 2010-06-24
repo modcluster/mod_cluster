@@ -38,11 +38,14 @@
     </orderedlist>
 
     <para>Note that the demo application does not actually depend on
-    mod_cluster in any way. Its only dependency is on JBossWeb/Tomcat.<ulink
-    url="http://www.jboss.org/mod_cluster/demo.html">1</ulink> So, the demo
-    could be used to demonstrate the effect of different server-side scenarios
-    on the routing decisions made by any load balancer, including mod_jk,
-    mod_proxy or the various hardware load balancers.</para>
+    mod_cluster in any way. Its only dependency is on JBossWeb/Tomcat.
+    <footnote>
+        <para>The demo's "Datasource Use" load generation scenario requires
+        the use of JBoss Application Server.</para>
+      </footnote>So, the demo could be used to demonstrate the effect of
+    different server-side scenarios on the routing decisions made by any load
+    balancer, including mod_jk, mod_proxy or the various hardware load
+    balancers.</para>
 
     <para>Note also that this demo application is not intended to be used as a
     load testing tool; i.e. something that can demonstrate the maximum load a
@@ -129,9 +132,17 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
       <listitem>
         <para>Switch to the "Session Balancing" tab to see how many active
         sessions<ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#active_sessions">2</ulink>
-        are being hosted by each of your JBossAS/JBossWeb/Tomcat
-        servers:</para>
+        url="http://www.jboss.org/mod_cluster/demo.html#active_sessions"><footnote>
+            <para>For purposes of this chart, a session is considered "active"
+            if a client thread will ever again send a request associated with
+            the session. When client threads stop using a session, they can
+            either send a request to invalidate it or just abandon it by no
+            longer including its session cookie in requests. After a session
+            is abandoned, it will not be reflected in the "Session Balancing"
+            chart, but it will continue to exist on the JBossWeb/Tomcat/JBoss
+            AS server until it is removed due to timeout.</para>
+          </footnote></ulink>are being hosted by each of your
+        JBossAS/JBossWeb/Tomcat servers:</para>
       </listitem>
 
       <listitem>
@@ -182,14 +193,26 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
     <orderedlist>
       <listitem>
         <para>Proxy Hostname: Hostname of the load balancer or the IP address
-        on which it is listening for requests<ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#hostname_prop">3</ulink></para>
+        on which it is listening for requests<footnote>
+            <para>The default value for this field is controlled by the
+            mod_cluster.proxy.host system property, or localhost if not set.
+            Editing the run-demo.sh or run-demo.bat file to change the
+            -Dmod_cluster.proxy.host=localhost passed to java will allow you
+            to avoid re-typing this value every time you launch the demo
+            application.</para>
+          </footnote></para>
       </listitem>
 
       <listitem>
         <para>Proxy Port: Port on which the load balancer is listening for
-        requests<ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#proxyport_prop">4</ulink></para>
+        requests<footnote>
+            <para>The default value for this field is controlled by the
+            mod_cluster.proxy.port system property, or 8000 if not set.
+            Editing the run-demo.sh or run-demo.bat file to change the
+            -Dmod_cluster.proxy.port=8000 passed to java will allow you to
+            avoid re-typing this value every time you launch the demo
+            application.</para>
+          </footnote></para>
       </listitem>
 
       <listitem>
@@ -306,60 +329,33 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
 
         <para>The available Load Creation Actions are as follows:</para>
 
-        <para> 1. Active Sessions: Generates server load by causing session
+        <para>1. Active Sessions: Generates server load by causing session
         creation on the target server.</para>
 
-        <para> 2. Datasource Use: Generates server load by taking connections
+        <para>2. Datasource Use: Generates server load by taking connections
         from the java:DefaultDS datasource for a period1</para>
 
-        <para> 3. Connection Pool Use: Generates server load by tieing up
+        <para>3. Connection Pool Use: Generates server load by tieing up
         threads in the webserver connections pool for a period</para>
 
-        <para> 4. Heap Memory Pool Use: Generates server load by filling 50%
-        of free heap memory for a period</para>
+        <para>4. Heap Memory Pool Use: Generates server load by filling 50% of
+        free heap memory for a period</para>
 
-        <para> 5. CPU Use: Generates server CPU load by initiating a tight
-        loop in a thread</para>
+        <para>5. CPU Use: Generates server CPU load by initiating a tight loop
+        in a thread</para>
 
-        <para> 6. Server Receive Traffic: Generates server traffic receipt
-        load by POSTing a large byte array to the server once per second for a
+        <para>6. Server Receive Traffic: Generates server traffic receipt load
+        by POSTing a large byte array to the server once per second for a
         period</para>
 
-        <para> 7. Server Send Traffic: Generates server traffic send load by
+        <para>7. Server Send Traffic: Generates server traffic send load by
         making a request once per second to which the server responds with a
         large byte array</para>
 
-        <para> 8. Request Count: Generates server load by making numerous
-        requests, increasing the request count on the target server. </para>
+        <para>8. Request Count: Generates server load by making numerous
+        requests, increasing the request count on the target server.</para>
 
-        <para></para>
       </listitem>
     </orderedlist>
-
-    <para><anchor id="dependsDefaultDS" />[1] The demo's "Datasource Use" load
-    generation scenario requires the use of JBoss Application Server.</para>
-
-    <para><anchor id="active_sessions" />[2] For purposes of this chart, a
-    session is considered "active" if a client thread will ever again send a
-    request associated with the session. When client threads stop using a
-    session, they can either send a request to invalidate it or just abandon
-    it by no longer including its session cookie in requests. After a session
-    is abandoned, it will not be reflected in the "Session Balancing" chart,
-    but it will continue to exist on the JBossWeb/Tomcat/JBoss AS server until
-    it is removed due to timeout.</para>
-
-    <para><anchor id="hostname_prop" />[3] The default value for this field is
-    controlled by the mod_cluster.proxy.host system property, or localhost if
-    not set. Editing the run-demo.sh or run-demo.bat file to change the
-    -Dmod_cluster.proxy.host=localhost passed to java will allow you to avoid
-    re-typing this value every time you launch the demo application.</para>
-
-    <para><anchor id="proxyport_prop" />[4] The default value for this field
-    is controlled by the mod_cluster.proxy.port system property, or 8000 if
-    not set. Editing the run-demo.sh or run-demo.bat file to change the
-    -Dmod_cluster.proxy.port=8000 passed to java will allow you to avoid
-    re-typing this value every time you launch the demo application.</para>
-
-    <para></para>
   </sect1>
 </chapter>
