@@ -25,9 +25,9 @@
   <sect1>
     <title>I am using Tomcat 7 / 6 what should I do:</title>
 
-    <para>See at the end of <link linkend="java_config">java
-    configuration</link> You can't use the mod_cluster clustered mode with
-    Tomcat so you get a loadbalancing logic similar to mod_jk but with a
-    dynamic configuration.</para>
+    <para>See at the end of <link linkend="javaconf">java configuration</link>
+    You can't use the mod_cluster clustered mode with Tomcat so you get a
+    loadbalancing logic similar to mod_jk but with a dynamic
+    configuration.</para>
   </sect1>
 </chapter>
