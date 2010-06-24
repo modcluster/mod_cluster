@@ -7,291 +7,262 @@
 <chapter id="mod_proxy">
   <title>Migration from mod_proxy</title>
 
-   <para>As mod_cluster is a sophisticated balancer migration from mod_proxy to mod_cluster is strait forward. mod_cluster replaces a reverse proxy with loadbalancing. A reversed proxy is configured like:</para>
-   <para>ProxyRequests Off&lt;Proxy *&gt;Order deny,allowAllow from all&lt;/Proxy&gt;ProxyPass /foo http://foo.example.com/barProxyPassReverse /foo http://foo.example.com/bar</para>
-   <para>All the general proxy parameters could be used in mod_cluster they work like in mod_proxy, only the balancers and the workers definitions are slightly different.</para><sect1><title>Workers</title>
-   <informaltable frame="all">
+  <para>As mod_cluster is a sophisticated balancer migration from mod_proxy to
+  mod_cluster is strait forward. mod_cluster replaces a reverse proxy with
+  loadbalancing. A reversed proxy is configured like:<programlisting>ProxyRequests Off
+&lt;Proxy *&gt;
+Order deny,allow
+Allow from all
+&lt;/Proxy&gt;
+ProxyPass /foo http://foo.example.com/bar
+ProxyPassReverse /foo http://foo.example.com/bar</programlisting></para>
+
+  <para>All the general proxy parameters could be used in mod_cluster they
+  work like in mod_proxy, only the balancers and the workers definitions are
+  slightly different.</para>
+
+  <sect1>
+    <title>Workers</title>
+
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Mod_proxy Parameter</para>
-               </entry>
-               <entry>
-                  <para>ClusterListener parameter</para>
-               </entry>
-               <entry>
-                  <para>Remarks</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
-            <entry>
-               <para>min</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>Not supported in this version</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>max</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>mod_cluster uses mod_proxy default value</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>smax</para>
-            </entry>
-            <entry>
-               <para>smax</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>ttl</para>
-            </entry>
-            <entry>
-               <para>ttl</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>acquire</para>
-            </entry>
-            <entry>
-               <para>workerTimeout</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy acquire but in seconds</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>disablereuse</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>mod_cluster will disable the node in case of error and the ClusterListener will for the reuse via the STATUS message</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>flushPackets</para>
-            </entry>
-            <entry>
-               <para>flushPackets</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>flushwait</para>
-            </entry>
-            <entry>
-               <para>flushwait</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>keepalive</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>Always on: OS KEEP_ALIVE is always used. Use connectionTimeout in the &lt;Connector&gt; if needed</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>lbset</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>Not supported</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>ping</para>
-            </entry>
-            <entry>
-               <para>ping</para>
-            </entry>
-            <entry>
-               <para>Same as mod_proxy Default value 10 seconds</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>lbfactor</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>The load factor is received by mod_cluster from a calculated value in the ClusterListener</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>redirect</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>Not supported lbfactor sent to 0 makes a standby node</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>retry</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>ClusterListener will test when the node is back online</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>route</para>
-            </entry>
-            <entry>
-               <para>JVMRoute</para>
-            </entry>
-            <entry>
-               <para>In fact JBossWEB via the JVMRoute in the Engine will add it</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>status</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>mod_cluster has a finer status handling: by context via the ENABLE/STOP/DISABLE/REMOVE application messages. hot-standby is done by lbfactor = 0 and Error by lbfactor = 1 both values are sent in STATUS message by the ClusterListener</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>timeout</para>
-            </entry>
-            <entry>
-               <para>nodeTimeout</para>
-            </entry>
-            <entry>
-               <para>Default wait for ever (http://httpd.apache.org/docs/2.2/mod/mod_proxy.html is wrong there)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>ttl</para>
-            </entry>
-            <entry>
-               <para>ttl</para>
-            </entry>
-            <entry>
-               <para>Default 60 seconds</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect1><sect1><title>Balancers</title>
-   <informaltable frame="all">
+        <thead>
+          <row>
+            <entry><para>Mod_proxy Parameter</para></entry>
+
+            <entry><para>ClusterListener parameter</para></entry>
+
+            <entry><para>Remarks</para></entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><para>min</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>Not supported in this version</para></entry>
+          </row>
+
+          <row>
+            <entry><para>max</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>mod_cluster uses mod_proxy default
+            value</para></entry>
+          </row>
+
+          <row>
+            <entry><para>smax</para></entry>
+
+            <entry><para>smax</para></entry>
+
+            <entry><para>Same as mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>ttl</para></entry>
+
+            <entry><para>ttl</para></entry>
+
+            <entry><para>Same as mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>acquire</para></entry>
+
+            <entry><para>workerTimeout</para></entry>
+
+            <entry><para>Same as mod_proxy acquire but in
+            seconds</para></entry>
+          </row>
+
+          <row>
+            <entry><para>disablereuse</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>mod_cluster will disable the node in case of error
+            and the ClusterListener will for the reuse via the STATUS
+            message</para></entry>
+          </row>
+
+          <row>
+            <entry><para>flushPackets</para></entry>
+
+            <entry><para>flushPackets</para></entry>
+
+            <entry><para>Same as mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>flushwait</para></entry>
+
+            <entry><para>flushwait</para></entry>
+
+            <entry><para>Same as mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>keepalive</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>Always on: OS KEEP_ALIVE is always used. Use
+            connectionTimeout in the &lt;Connector&gt; if
+            needed</para></entry>
+          </row>
+
+          <row>
+            <entry><para>lbset</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>Not supported</para></entry>
+          </row>
+
+          <row>
+            <entry><para>ping</para></entry>
+
+            <entry><para>ping</para></entry>
+
+            <entry><para>Same as mod_proxy Default value 10
+            seconds</para></entry>
+          </row>
+
+          <row>
+            <entry><para>lbfactor</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>The load factor is received by mod_cluster from a
+            calculated value in the ClusterListener</para></entry>
+          </row>
+
+          <row>
+            <entry><para>redirect</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>Not supported lbfactor sent to 0 makes a standby
+            node</para></entry>
+          </row>
+
+          <row>
+            <entry><para>retry</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>ClusterListener will test when the node is back
+            online</para></entry>
+          </row>
+
+          <row>
+            <entry><para>route</para></entry>
+
+            <entry><para>JVMRoute</para></entry>
+
+            <entry><para>In fact JBossWEB via the JVMRoute in the Engine will
+            add it</para></entry>
+          </row>
+
+          <row>
+            <entry><para>status</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>mod_cluster has a finer status handling: by context
+            via the ENABLE/STOP/DISABLE/REMOVE application messages.
+            hot-standby is done by lbfactor = 0 and Error by lbfactor = 1 both
+            values are sent in STATUS message by the
+            ClusterListener</para></entry>
+          </row>
+
+          <row>
+            <entry><para>timeout</para></entry>
+
+            <entry><para>nodeTimeout</para></entry>
+
+            <entry><para>Default wait for ever
+            (http://httpd.apache.org/docs/2.2/mod/mod_proxy.html is wrong
+            there)</para></entry>
+          </row>
+
+          <row>
+            <entry><para>ttl</para></entry>
+
+            <entry><para>ttl</para></entry>
+
+            <entry><para>Default 60 seconds</para></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </sect1>
+
+  <sect1>
+    <title>Balancers</title>
+
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Mod_proxy Parameter</para>
-               </entry>
-               <entry>
-                  <para>ClusterListener parameter</para>
-               </entry>
-               <entry>
-                  <para>Remarks</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
-            <entry>
-               <para>lbmethod</para>
-            </entry>
-            <entry>
-               <para>-</para>
-            </entry>
-            <entry>
-               <para>There is only one load balancing method in mod_cluster "cluster_byrequests"</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>maxattempts</para>
-            </entry>
-            <entry>
-               <para>maxAttempts</para>
-            </entry>
-            <entry>
-               <para>Default 3</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>nofailover</para>
-            </entry>
-            <entry>
-               <para>stickySessionForce</para>
-            </entry>
-            <entry>
-               <para>Same as in mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>stickysession</para>
-            </entry>
-            <entry>
-               <para>StickySessionCookie/StickySessionPath</para>
-            </entry>
-            <entry>
-               <para>The 2 parameters in the ClusterListener are combined in one that behaves like in mod_proxy</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>timeout</para>
-            </entry>
-            <entry>
-               <para>workerTimeout</para>
-            </entry>
-            <entry>
-               <para>Default 1 seconds</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable>
-   <para/></sect1>
+        <thead>
+          <row>
+            <entry><para>Mod_proxy Parameter</para></entry>
+
+            <entry><para>ClusterListener parameter</para></entry>
+
+            <entry><para>Remarks</para></entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry><para>lbmethod</para></entry>
+
+            <entry><para>-</para></entry>
+
+            <entry><para>There is only one load balancing method in
+            mod_cluster "cluster_byrequests"</para></entry>
+          </row>
+
+          <row>
+            <entry><para>maxattempts</para></entry>
+
+            <entry><para>maxAttempts</para></entry>
+
+            <entry><para>Default 3</para></entry>
+          </row>
+
+          <row>
+            <entry><para>nofailover</para></entry>
+
+            <entry><para>stickySessionForce</para></entry>
+
+            <entry><para>Same as in mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>stickysession</para></entry>
+
+            <entry><para>StickySessionCookie/StickySessionPath</para></entry>
+
+            <entry><para>The 2 parameters in the ClusterListener are combined
+            in one that behaves like in mod_proxy</para></entry>
+          </row>
+
+          <row>
+            <entry><para>timeout</para></entry>
+
+            <entry><para>workerTimeout</para></entry>
+
+            <entry><para>Default 1 seconds</para></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para></para>
+  </sect1>
 </chapter>
