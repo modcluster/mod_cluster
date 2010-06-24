@@ -13,39 +13,22 @@
   servers or back end servers to your cluster as is desired.</para>
 
   <para>The steps shown here are not intended to demonstrate how to set up a
-  production install of mod_cluster; for example <ulink
-  url="http://www.jboss.org/mod_cluster/ssl.html">using SSL to secure
-  access</ulink> to the httpd-side mod_manager component is not covered. See
-  the <ulink
-  url="http://www.jboss.org/mod_cluster/native.html">httpd-side</ulink> and
-  <ulink url="http://www.jboss.org/mod_cluster/java.html">java-side</ulink>
+  production install of mod_cluster; for example <link linkend="UsingSSL">
+  using SSL to secure access</link> to the httpd-side mod_manager component is not covered.
+  See the <link linkend="nativeconfig">httpd-side</link> and
+  <link linkend="javaconf">java-side</link>
   configuration documentation for the full set of configuration
   options.</para>
-
-  <orderedlist>
-    <listitem>
-      <para>Download the latest <ulink
-      url="http://www.jboss.org/mod_cluster/downloads/1-1-0-Beta1.html">httpd
-      and java release bundles</ulink>. If there is no pre-built httpd bundle
-      appropriate for your OS or system architecture, you can <ulink
-      url="http://www.jboss.org/mod_cluster/native/building.html">build the
-      binary from source</ulink>.</para>
-
-      <para>The httpd-side bundles are gzipped tars and include a full httpd
-      install. As they contain already an Apache httpd install you don't need
-      to download Apache httpd. Just extract them in root, e.g.</para>
-    </listitem>
-  </orderedlist>
 
   <sect2>
     <title>Download mod_cluster components</title>
 
     <para>Download the latest <ulink
-    url="http://www.jboss.org/mod_cluster/downloads/1-1-0-Beta1.html">httpd
+    url="http://www.jboss.org/mod_cluster/downloads/latest.html">httpd
     and java release bundles</ulink>. If there is no pre-built httpd bundle
-    appropriate for your OS or system architecture, you can <ulink
-    url="http://www.jboss.org/mod_cluster/native/building.html">build the
-    binary from source</ulink>.</para>
+    appropriate for your OS or system architecture, you can <link
+    linkend="building">build the
+    binary from source</link>.</para>
   </sect2>
 
   <sect2>
@@ -347,8 +330,8 @@
   <sect2>
     <title>Experiment with the Load Balancing Demo Application</title>
 
-    <para>The <ulink url="http://www.jboss.org/mod_cluster/demo.html">load
-    balancing demo application</ulink> is a good way to learn about
+    <para>The <link linkend="demo">load
+    balancing demo application</link> is a good way to learn about
     mod_cluster's capabilities.</para>
 
     <para />

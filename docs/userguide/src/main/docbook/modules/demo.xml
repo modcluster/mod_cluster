@@ -68,16 +68,16 @@
 
       <listitem>
         <para>Install mod_cluster into your httpd server as described at
-        <ulink
-        url="http://www.jboss.org/mod_cluster/demo/install.html">Installation
-        of the httpd part</ulink></para>
+        <link
+        linkend="nativeinstall">Installation
+        of the httpd part</link></para>
       </listitem>
 
       <listitem>
         <para>Install mod_cluster into your JBossAS/JBossWeb/Tomcat servers as
-        described at <ulink
-        url="http://www.jboss.org/mod_cluster/demo/install.html">Installation
-        on the Java side</ulink></para>
+        described at <link
+        linkend="javainstall">Installation
+        on the Java side</link></para>
       </listitem>
 
       <listitem>
@@ -118,9 +118,9 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
 
       <listitem>
         <para>Configure the hostname and address of the httpd server, the
-        number of client threads, etc and click the "Start" button. See <ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#client-config">Client
-        Driver Configuration Options</ulink> for details on the configuration
+        number of client threads, etc and click the "Start" button. See <link
+        linkend="client-config">Client
+        Driver Configuration Options</link> for details on the configuration
         options.</para>
       </listitem>
 
@@ -131,8 +131,8 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
 
       <listitem>
         <para>Switch to the "Session Balancing" tab to see how many active
-        sessions<ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#active_sessions"><footnote>
+        sessions<link
+        linkend="active_sessions"><footnote>
             <para>For purposes of this chart, a session is considered "active"
             if a client thread will ever again send a request associated with
             the session. When client threads stop using a session, they can
@@ -141,7 +141,7 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
             is abandoned, it will not be reflected in the "Session Balancing"
             chart, but it will continue to exist on the JBossWeb/Tomcat/JBoss
             AS server until it is removed due to timeout.</para>
-          </footnote></ulink>are being hosted by each of your
+          </footnote></link>are being hosted by each of your
         JBossAS/JBossWeb/Tomcat servers:</para>
       </listitem>
 
@@ -159,9 +159,9 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
 
       <listitem>
         <para>Experiment with adding artificial load to one or more servers to
-        see what effect that has on load balancing. See <ulink
-        url="http://www.jboss.org/mod_cluster/demo.html#load-generation">Load
-        Generation Scenarios</ulink> for details.</para>
+        see what effect that has on load balancing. See <link
+        linkend="load-generation">Load
+        Generation Scenarios</link> for details.</para>
       </listitem>
     </orderedlist>
 
@@ -174,9 +174,8 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
     HTTP 200 response.</para>
   </sect1>
 
-  <sect1>
-    <title><anchor id="client-config" />Client Driver Configuration
-    Options</title>
+  <sect1 id="client-config">
+    <title>Client Driver Configuration Options</title>
 
     <para>The configuration of the client is driver is done via the
     application's "Clent Control" tab:</para>
@@ -271,8 +270,8 @@ C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
     </orderedlist>
   </sect1>
 
-  <sect1>
-    <title><anchor id="load-generation" />Load Generation Scenarios</title>
+  <sect1 id="load-generation">
+    <title>Load Generation Scenarios</title>
 
     <para>You can use the application's GUI to instruct individual servers to
     artificially generate various types of load, and then track how that load
