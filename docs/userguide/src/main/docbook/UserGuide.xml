@@ -14,6 +14,7 @@
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/install.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/mod_proxy_https.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/config.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/building.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/properties.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/load.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/install.xml" />
