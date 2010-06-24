@@ -70,6 +70,8 @@
     <para>While you are free to write your own load metrics, the following
     LoadMetrics are available out of the box:</para>
 
+</sect1>
+<sect1>
     <title>Web Container metrics</title>
 
     <orderedlist>
@@ -83,12 +85,10 @@
         <para> * Analogous to method=S in mod_jk </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="ActiveSessionsLoadMetric" class="org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ActiveSessionsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="SessionLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1000&lt;/property&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="SessionLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.SessionLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>BusyConnectorsLoadMetric</para>
 
@@ -101,12 +101,10 @@
         <para> * Analogous to method=B in mod_jk </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="BusyConnectorsLoadMetric" class="org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=BusyConnectorsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="ThreadPoolLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="ThreadPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ThreadPoolLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>ReceiveTrafficLoadMetric</para>
 
@@ -120,12 +118,10 @@
         <para> * Analogous to method=T in mod_jk </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="ReceiveTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ReceiveTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1024&lt;/property&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="RequestProcessorLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>SendTrafficLoadMetric</para>
 
@@ -139,12 +135,10 @@
         <para> * Analogous to method=T in mod_jk </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="SendTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SendTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;512&lt;/property&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>RequestCountLoadMetric</para>
 
@@ -158,11 +152,13 @@
         <para> * Analogous to method=R in mod_jk </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="RequestCountLoadMetric" class="org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=RequestCountLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1000&lt;/property&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
+      </listitem>
+    </orderedlist>
+</sect1>
+<sect1>
     <title>System/JVM metrics</title>
 
     <orderedlist>
@@ -177,12 +173,10 @@
         attributes </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="AverageSystemLoadMetric" class="org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=AverageSystemLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="OperatingSystemLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand"&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>SystemMemoryUsageLoadMetric</para>
 
@@ -195,12 +189,10 @@
         attributes </para>
 
         <para>e.g.</para>
-      </listitem>
-    </orderedlist>
 
     <programlisting><para>&lt;bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SystemMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="OperatingSystemLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
 
-    <orderedlist>
+      </listitem>
       <listitem>
         <para>HeapMemoryUsageLoadMetric</para>
 
@@ -208,11 +200,13 @@
         size</para>
 
         <para>e.g.</para>
+    <programlisting><para>&lt;bean name="HeapMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=HeapMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>&lt;/bean&gt;</para></programlisting>
+
       </listitem>
     </orderedlist>
 
-    <programlisting><para>&lt;bean name="HeapMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=HeapMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
+</sect1>
+<sect1>
     <title>Other metrics</title>
 
     <orderedlist>
