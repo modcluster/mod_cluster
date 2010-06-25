@@ -78,8 +78,10 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>UseAlias: Check that the Alias corresponds to the ServerName (See
     <ulink
     url="http://labs.jboss.com/file-access/default/members/jbossweb/freezone/docs/latest/config/host.html">Host
-    Name Aliases</ulink>)0: Don't (ignore Aliases)1: Check itDefault: 0 Ignore
-    the Alias information from the nodes.</para>
+    Name Aliases</ulink>)</para>
+    <para>0: Don't (ignore Aliases)</para>
+    <para>1: Check it</para>
+    <para>Default: 0 Ignore the Alias information from the nodes.</para>
 
     <para>LBstatusRecalTime:</para>
 
@@ -104,7 +106,8 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
 
     <para>ProxyPassMatch/ProxyPass: ProxyPassMatch and ProxyPass are mod_proxy
     directives that when using ! (instead the back-end url) prevent to
-    reverse-proxy in the pathThis could be used allow httpd to serve static
+    reverse-proxy in the path.
+    This could be used allow httpd to serve static
     information like images.</para>
 
     <para><programlisting>ProxyPassMatch ^(/.*\.gif)$ !  </programlisting></para>
@@ -195,12 +198,14 @@ Allow from 127.0.0.1
 
     <para>ServerAdvertise On: Use the advertise mechanism to tell the JBoss
     AS/JBossWeb/Tomcat to whom it should send the cluster
-    information.ServerAdvertise On http://hostname:port: Tell the hostname and
+    information.</para>
+    <para>ServerAdvertise On http://hostname:port: Tell the hostname and
     port to use. Only needed if the VirtualHost is not defined correctly, if
     the VirtualHost is a <ulink
     url="http://httpd.apache.org/docs/2.2/vhosts/name-based.html">Name-based
-    Virtual Host</ulink> or when VirtualHost is not used.ServerAdvertise Off:
-    Don't use the advertise mechanism. Default: On.</para>
+    Virtual Host</ulink> or when VirtualHost is not used.</para>
+    <para>ServerAdvertise Off: Don't use the advertise mechanism.</para>
+    <para>Default: On.</para>
 
     <para>AdvertiseGroup IP:port: That is the multicast address to use
     (something like 232.0.0.2:8888 for example). IP should correspond to
