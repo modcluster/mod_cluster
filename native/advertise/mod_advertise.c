@@ -641,8 +641,12 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
         }
         /* Use don't use any as local address too */
         if (ptr == NULL || strncmp(ptr,"0.0.0.0", 7) == 0 || strncmp(ptr,"::",2) == 0) {
-            if  ( ma_server_rec->port !=0 || ma_server_rec->port !=1)
+            if  ( ma_server_rec->port == 0 || ma_server_rec->port == 1) {
+                if (ma_server_rec->addrs->host_addr->port != 0)
+                    port = ma_server_rec->addrs->host_addr->port;
+            } else {
                 port = ma_server_rec->port;
+             }
             ptr = apr_psprintf(pproc, "%s:%lu", ma_server_rec->server_hostname, port);
         }
         rv = apr_parse_addr_port(&mconf->ma_advertise_srvs,
