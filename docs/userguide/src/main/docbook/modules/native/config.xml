@@ -184,8 +184,8 @@ Allow from 127.0.0.1
     field is not present when Maxsessionid is zero.</para>
   </sect1>
 
-  <sect1>
-    <title><anchor id="mod_advertise" />mod_advertise</title>
+  <sect1 id="mod_advertise">
+    <title>mod_advertise</title>
 
     <para>mod_advertise uses multicast packets to advertise the VirtualHost
     where it is configured that must be the same VirtualHost where mod_manager

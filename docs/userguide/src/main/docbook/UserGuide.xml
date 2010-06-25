@@ -8,6 +8,7 @@
   <title>Mod_cluster doc</title>
   </bookinfo>
 
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/intro.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/quick-start.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/config.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/building.xml" />
