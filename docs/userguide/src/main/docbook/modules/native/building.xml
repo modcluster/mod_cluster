@@ -52,7 +52,7 @@
     <para>Build the mod_cluster modules components, for each subdirectory
     advertise, mod_manager, mod_proxy_cluster and mod_slotmem do something
     like:<programlisting>sh buildconf
- ./configure --with-apsx=apxs_file_location
+ ./configure --with-apxs=apxs_file_location
  make
  cp *.so apache_installation_directory/modules</programlisting></para>
 
