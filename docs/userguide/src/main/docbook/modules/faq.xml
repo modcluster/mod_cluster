@@ -7,6 +7,22 @@
 <chapter id="faq">
   <title>Frequently Asked questions</title>
 
+<sect1><title>What is Advertise</title>
+   <para>Advertise allows autodiscovery of httpd proxies by the cluster nodes. It is done by sending multicast messages from httpd to the cluster. The httpd specialized module: mod_advertise sends UDP message on a multicast group, both mod_advertise and the cluster listener joined the multicast group and the cluster receives the messages.</para>
+   <para>Example for mod_advertise message:</para>
+   <para>HTTP/1.0 200 OK</para>
+   <para> Date: Wed, 08 Apr 2009 12:26:32 GMT</para>
+   <para> Sequence: 16</para>
+   <para> Digest: f2d5f806a53effa6c67973d2ddcdd233</para>
+   <para> Server: 1b60092e-76f3-49fd-9f99-a51c69c89e2d</para>
+   <para> X-Manager-Address: 127.0.0.1:6666</para>
+   <para> X-Manager-Url: /bla</para>
+   <para> X-Manager-Protocol: http</para>
+   <para> X-Manager-Host: 10.33.144.3</para>
+   <para/>
+   <para>The X-Manager-Address header value is used by the cluster logic to send information about the cluster to the proxy. It is the IP and port of the VirtualHost where mod_advertise is configured or URL parameter of the ServerAdvertise directive.</para>
+   <para>See <link linkend="advertise">Proxy Discovery</link> in Configuration Properties and <link url="mod_advertise">mod_advertise</link> in Apache httpd configuration.</para>
+   <para/></sect1>
   <sect1>
     <title>What to do if I don't want to use Advertise (multicast):</title>
 

@@ -333,7 +333,7 @@
     </sect2>
   </sect1>
 
-  <sect1>
+  <sect1 id="tomcat">
     <title>JBoss Web &amp; Tomcat</title>
 
     <para>In the absence of the ability for complex configuration,
