@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+ "http://www.docbook.org/xml/4.3/docbookx.dtd">
+
+<book lang="en">  
+  <bookinfo>  
+  <title>Mod_cluster doc</title>
+  </bookinfo>
+
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/quick-start.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/config.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/building.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/install.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/config.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/building.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/properties.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/load.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/install.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/mod_proxy_https.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/ssl.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_jk.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_proxy.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/demo.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/changelog.xml" />
+  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/faq.xml" />
+</book>

@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="nativeconfig">
+  <title>native configuration</title>
+
+  <sect1>
+    <title>Apache httpd configuration</title>
+
+    <para>You need to load the modules that are needed for mod_cluster for
+    example:<programlisting>LoadModule proxy_module modules/mod_proxy.so
+LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
+LoadModule slotmem_module modules/mod_slotmem.so
+LoadModule manager_module modules/mod_manager.so
+LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
+LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
+
+    <para>mod_proxy and mod_proxy_ajp are standard httpd modules. mod_slotmem
+    is a shared slotmem memory provider. mod_manager is the module that reads
+    information from JBoss AS/JBossWeb/Tomcat and updates the shared memory
+    information. mod_proxy_cluster is the module that contains the balancer
+    for mod_proxy. mod_advertise is an additional module that allows httpd to
+    advertise via multicast packets the IP and port where the mod_cluster is
+    listening. This multi-module architecture allows the modules to easily be
+    changed depending on what the customer wants to do. For example when using
+    http instead of AJP, only</para>
+
+    <para><programlisting>LoadModule proxy_ajp_module modules/mod_proxy_ajp.so</programlisting></para>
+
+    <para>needs to be changed to:</para>
+
+    <para><programlisting>LoadModule proxy_http_module modules/mod_proxy_http.so</programlisting></para>
+  </sect1>
+
+  <sect1>
+    <title>mod_proxy configuration</title>
+
+    <para>mod_proxy directives like ProxyIOBufferSize could be used to
+    configure mod_cluster. There is no need to use ProxyPass directives
+    because mod_cluster automatically configures which URLs have to be
+    forwarded to JBossWEB.</para>
+  </sect1>
+
+  <sect1>
+    <title>mod_slotmem configuration</title>
+
+    <para>The actual version doesn't require any configuration
+    directives.</para>
+  </sect1>
+
+  <sect1>
+    <title>mod_proxy_cluster</title>
+
+    <para>CreateBalancers: Define how the balancer are created in the httpd
+    VirtualHosts, this is to allow directives like:</para>
+
+    <para><programlisting>ProxyPass / balancer://mycluster1/</programlisting></para>
+
+    <para>0: Create in all VirtualHosts defined in httpd.</para>
+
+    <para>1: Don't create balancers (requires at least one
+    ProxyPass/ProxyPassMatch to define the balancer names).</para>
+
+    <para>2: Create only the main server.</para>
+
+    <para>Default: 2</para>
+
+    <para><emphasis>Note:</emphasis> When using 1 don't forget to configure
+    the balancer in the ProxyPass directive, because the default is empty
+    stickysession and nofailover=Off and the values received via the MCMP
+    CONFIG message are ignored.</para>
+
+    <para> </para>
+
+    <para>UseAlias: Check that the Alias corresponds to the ServerName (See
+    <ulink
+    url="http://labs.jboss.com/file-access/default/members/jbossweb/freezone/docs/latest/config/host.html">Host
+    Name Aliases</ulink>)0: Don't (ignore Aliases)1: Check itDefault: 0 Ignore
+    the Alias information from the nodes.</para>
+
+    <para>LBstatusRecalTime:</para>
+
+    <para>Time interval in seconds for loadbalancing logic to recalculate the
+    status of a node: (Default: 5 seconds)</para>
+
+    <para>The actual formula to recalculate the status of a node is:</para>
+
+    <para><programlisting>status = lbstatus + (elected - oldelected) * 1000)/lbfactor;</programlisting></para>
+
+    <para>lbfactor is received for the node via STATUS messages.lbstatus is
+    recalculated every LBstatusRecalTime seconds using the formula:</para>
+
+    <para><programlisting>lbstatus = (elected - oldelected) * 1000)/lbfactor;</programlisting></para>
+
+    <para>elected is the number of time the worker was elected.oldelected is
+    elected last time the lbstatus was recalculated.The node with the lowest
+    status is selected. Nodes with lbfactor ≤ 0 are skipped by the both
+    calculation logic.</para>
+
+    <para> </para>
+
+    <para>ProxyPassMatch/ProxyPass: ProxyPassMatch and ProxyPass are mod_proxy
+    directives that when using ! (instead the back-end url) prevent to
+    reverse-proxy in the pathThis could be used allow httpd to serve static
+    information like images.</para>
+
+    <para><programlisting>ProxyPassMatch ^(/.*\.gif)$ !  </programlisting></para>
+
+    <para>The above for example will allow httpd to server directly the .gif
+    files.</para>
+
+    <para> </para>
+  </sect1>
+
+  <sect1>
+    <title>mod_manager</title>
+
+    <para>MemManagerFile: That is the base name for the names mod_manager will
+    use to store configuration, generate keys for shared memory or lock files.
+    That must be an absolute path name; the directories will created if
+    needed. It is highly recommended that those files are placed on a local
+    drive and not an NFS share. Default: $server_root/logs/</para>
+
+    <para>Maxcontext: That is the number max of contexts supported by
+    mod_cluster. Default: 100</para>
+
+    <para>Maxnode: That is the number max nodes supported by mod_cluster.
+    Default: 20</para>
+
+    <para>Maxhost: That is the number max host (Aliases) supported by
+    mod_cluster. That is also the max number of balancers. Default: 10</para>
+
+    <para>Maxsessionid: That is the number of active sessionid we store to
+    give number of active sessions in the mod_cluster-manager handler. A
+    session is unactive when mod_cluster doesn't receive any information from
+    the session in 5 minutes. Default: 0 (the logic is activated).</para>
+
+    <para>ManagerBalancerName: That is the name of balancer to use when the
+    JBoss AS/JBossWeb/Tomcat doesn't provide a balancer name. That is not
+    supported in the current version. (Default value is used). Default:
+    mycluster</para>
+
+    <para>PersistSlots: Tell mod_slotmem to persist the nodes, Alias and
+    Context in files. Default: Off</para>
+
+    <para>CheckNonce: Switch check of nonce when using mod_cluster-manager
+    handler on | off (Default: on Nonce checked) Since 1.1.0.CR1</para>
+
+    <para>SetHandler mod_cluster-manager: That is the handler to display the
+    node mod_cluster sees from the cluster. It displays the information about
+    the nodes like INFO and additionaly counts the number of active
+    sessions.</para>
+
+    <para><programlisting>&lt;Location /mod_cluster-manager&gt;
+SetHandler mod_cluster-manager
+Order deny,allow
+Deny from all
+Allow from 127.0.0.1
+&lt;/Location&gt;</programlisting></para>
+
+    <para>When accessing the location you define in httpd.conf you get
+    something like: <mediaobject>
+        <imageobject role="mod_cluster status">
+          <imagedata align="center" fileref="images/mod_status.jpg"
+                     format="JPG" />
+        </imageobject>
+      </mediaobject></para>
+
+    <para> </para>
+
+    <para>Note that:</para>
+
+    <para>Transferred: Corresponds to the POST data send to the back-end
+    server.</para>
+
+    <para>Connected: Corresponds to the number of requests been processed when
+    the mod_cluster status page was requested.</para>
+
+    <para>sessions: Corresponds to the number of sessions mod_cluster report
+    as active (on which there was a request during the past 5 minutes). That
+    field is not present when Maxsessionid is zero.</para>
+  </sect1>
+
+  <sect1>
+    <title><anchor id="mod_advertise" />mod_advertise</title>
+
+    <para>mod_advertise uses multicast packets to advertise the VirtualHost
+    where it is configured that must be the same VirtualHost where mod_manager
+    is defined. Of course at least one mod_advertise must be in the
+    VirtualHost to allow mod_cluster to find the right IP and port to give to
+    the ClusterListener.</para>
+
+    <para>ServerAdvertise On: Use the advertise mechanism to tell the JBoss
+    AS/JBossWeb/Tomcat to whom it should send the cluster
+    information.ServerAdvertise On http://hostname:port: Tell the hostname and
+    port to use. Only needed if the VirtualHost is not defined correctly, if
+    the VirtualHost is a <ulink
+    url="http://httpd.apache.org/docs/2.2/vhosts/name-based.html">Name-based
+    Virtual Host</ulink> or when VirtualHost is not used.ServerAdvertise Off:
+    Don't use the advertise mechanism. Default: On.</para>
+
+    <para>AdvertiseGroup IP:port: That is the multicast address to use
+    (something like 232.0.0.2:8888 for example). IP should correspond to
+    AdvertiseGroupAddress and port to AdvertisePort in the JBoss
+    AS/JBossWeb/Tomcat configuration. Note that if JBoss AS is used and the -u
+    startup switch is included in the AS startup command, the default
+    AdvertiseGroupAddress is the value passed via the -u. Default:
+    224.0.1.105:23364. If port is missing the default port will be used:
+    23364.</para>
+
+    <para>AdvertiseFrequency seconds[.miliseconds]: Time between the multicast
+    messages advertising the IP and port. Default: 10 Ten seconds.</para>
+
+    <para>AdvertiseSecurityKey value: key string to identify the mod_cluster
+    in JBossWEB. Default: No default value. Information not sent.</para>
+
+    <para>AdvertiseManagerUrl value: Not used in this version (It is sent in
+    the X-Manager-Url: value header). That is the URL that JBoss
+    AS/JBossWeb/Tomcat should use to send information to mod_cluster. Default:
+    No default value. Information not sent.</para>
+
+    <para>AdvertiseBindAddress IP:port: That is the address and port httpd is
+    bind to send the multicast messages. This allow to specify an address on
+    multi IP address boxes. Default: 0.0.0.0:23364</para>
+  </sect1>
+
+  <sect1>
+    <title>Minimal Example</title>
+
+    <para><programlisting>LoadModule proxy_module modules/mod_proxy.so
+ LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
+ LoadModule slotmem_module modules/mod_slotmem.so
+ LoadModule manager_module modules/mod_manager.so
+ LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
+ LoadModule advertise_module modules/mod_advertise.so
+ 
+ Listen 10.33.144.3:6666
+ &lt;VirtualHost 10.33.144.3:6666&gt;
+ 
+   &lt;Directory /&gt;
+      Order deny,allow
+      Deny from all
+      Allow from 10.33.144.
+   &lt;/Directory&gt;
+ 
+ KeepAliveTimeout 60
+ MaxKeepAliveRequests 0
+ 
+ ManagerBalancerName mycluster
+ AdvertiseFrequency 5
+ 
+ &lt;/VirtualHost&gt;</programlisting></para>
+  </sect1>
+</chapter>

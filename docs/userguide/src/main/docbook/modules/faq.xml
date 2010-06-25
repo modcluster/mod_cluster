@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="faq">
+  <title>Frequently Asked questions</title>
+
+  <sect1>
+    <title>What to do if I don't want to use Advertise (multicast):</title>
+
+    <para>In the VirtualHost receiving the MCPM of httpd.conf don't use any
+    Advertise directive or use:</para>
+
+    <para><programlisting>ServerAdvertise Off</programlisting></para>
+
+    <para>In mod_cluster-jboss-beans.xml add the addresses and ports of the
+    VirtualHost to the proxyList property and set advertise to false, for
+    example:<programlisting>&lt;property name="proxyList"&gt;10.33.144.3:6666,10.33.144.1:6666&lt;/property&gt;
+
+&lt;property name="advertise"&gt;false&lt;/property&gt;</programlisting></para>
+  </sect1>
+
+  <sect1>
+    <title>I am using Tomcat 7 / 6 what should I do:</title>
+
+    <para>See at the end of <link linkend="javaconf">java configuration</link>
+    You can't use the mod_cluster clustered mode with Tomcat so you get a
+    loadbalancing logic similar to mod_jk but with a dynamic
+    configuration.</para>
+  </sect1>
+</chapter>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
+%BOOK_ENTITIES;
+]>
+<chapter id="mod_proxy_https">
+  <title>Using https between httpd and JBossWEB</title>
+
+  <para>The feature is only needed if the connection between httpd and
+  JBossWEB is not secure it needs some more resources because crypto is
+  used.<programlisting>SSLProxyEngine On
+SSLProxyVerify require
+SSLProxyCACertificateFile conf/cacert.pem
+SSLProxyMachineCertificateFile conf/proxy.pem</programlisting></para>
+
+  <para>conf/proxy.pem should contain both key and certificate (and the
+  certificate must be trusted by Tomcat).conf/cacert.pem must contain the CA
+  that signed the Tomcat certificate.The &lt;connector/&gt; should use
+  https.</para>
+</chapter>
