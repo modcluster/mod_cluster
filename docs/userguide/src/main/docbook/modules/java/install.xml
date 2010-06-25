@@ -6,5 +6,53 @@
 ]>
 <chapter id="javainstall">
   <title>Installation of the java part</title>
+
+  <sect1>
+    <title>Install the Java-side binaries</title>
+
+    <para>First, extract the java-side binary to a temporary directory. The
+    following assumes it was extracted to /tmp/mod-cluster</para>
+
+    <para>Your next step depends on whether your target server is JBoss AS or
+    JBossWeb/Tomcat.</para>
+
+    <sect2>
+      <title>Installing in JBoss AS 6.0.0.M1 and up</title>
+
+      <para>You don't need to do anything to install the java-side binaries in
+      AS 6.x; it's part of the AS distribution's default, standard and all
+      configurations.</para>
+    </sect2>
+
+    <sect2>
+      <title>Installing in JBoss AS 5.x</title>
+
+      <para>Assuming $JBOSS_HOME indicates the root of your JBoss AS install
+      and that you want to use mod_cluster in the AS's all config:</para>
+<programlisting>
+  cp -r /tmp/mod-cluster/mod-cluster.sar $JBOSS_HOME/server/all/deploy
+</programlisting>
+    </sect2>
+
+    <sect2>
+      <title>Installing in JBoss Web or Tomcat</title>
+
+      <para>Assuming $CATALINA_HOME indicates the root of your JBossWeb or
+      Tomcat install:</para>
+
+      <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/*
+      $CATALINA_HOME/lib/ </programlisting>
+    </sect2>
+
+    <sect2>
+      <title>Installing in JBoss AS 4.2.x or 4.3.x</title>
+
+      <para>Assuming $JBOSS_HOME indicates the root of your JBoss AS install
+      and that you want to use mod_cluster in the AS's all config:</para>
+
+      <programlisting>
+      cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/mod-cluster.jar $JBOSS_HOME/server/all/deploy/jboss-web.deployer </programlisting>
+    </sect2>
+  </sect1>
   <para>TODO</para>
 </chapter>
