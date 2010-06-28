@@ -7,22 +7,43 @@
 <chapter id="faq">
   <title>Frequently Asked questions</title>
 
-<sect1><title>What is Advertise</title>
-   <para>Advertise allows autodiscovery of httpd proxies by the cluster nodes. It is done by sending multicast messages from httpd to the cluster. The httpd specialized module: mod_advertise sends UDP message on a multicast group, both mod_advertise and the cluster listener joined the multicast group and the cluster receives the messages.</para>
-   <para>Example for mod_advertise message:</para>
-   <para>HTTP/1.0 200 OK</para>
-   <para> Date: Wed, 08 Apr 2009 12:26:32 GMT</para>
-   <para> Sequence: 16</para>
-   <para> Digest: f2d5f806a53effa6c67973d2ddcdd233</para>
-   <para> Server: 1b60092e-76f3-49fd-9f99-a51c69c89e2d</para>
-   <para> X-Manager-Address: 127.0.0.1:6666</para>
-   <para> X-Manager-Url: /bla</para>
-   <para> X-Manager-Protocol: http</para>
-   <para> X-Manager-Host: 10.33.144.3</para>
-   <para/>
-   <para>The X-Manager-Address header value is used by the cluster logic to send information about the cluster to the proxy. It is the IP and port of the VirtualHost where mod_advertise is configured or URL parameter of the ServerAdvertise directive.</para>
-   <para>See <link linkend="advertise">Proxy Discovery</link> in Configuration Properties and <link url="mod_advertise">mod_advertise</link> in Apache httpd configuration.</para>
-   <para/></sect1>
+  <sect1 id="advertisemessage">
+    <title>What is Advertise</title>
+
+    <para>Advertise allows autodiscovery of httpd proxies by the cluster
+    nodes. It is done by sending multicast messages from httpd to the cluster.
+    The httpd specialized module: mod_advertise sends UDP message on a
+    multicast group, both mod_advertise and the cluster listener joined the
+    multicast group and the cluster receives the messages.</para>
+
+    <para>Example for mod_advertise message:</para>
+
+    <programlisting>
+HTTP/1.0 200 OK
+Date: Wed, 08 Apr 2009 12:26:32 GMT
+Sequence: 16
+Digest: f2d5f806a53effa6c67973d2ddcdd233
+Server: 1b60092e-76f3-49fd-9f99-a51c69c89e2d
+X-Manager-Address: 127.0.0.1:6666
+X-Manager-Url: /bla
+X-Manager-Protocol: http
+X-Manager-Host: 10.33.144.3</programlisting>
+
+    <para></para>
+
+    <para>The X-Manager-Address header value is used by the cluster logic to
+    send information about the cluster to the proxy. It is the IP and port of
+    the VirtualHost where mod_advertise is configured or URL parameter of the
+    ServerAdvertise directive.</para>
+
+    <para>See <link linkend="advertise">Proxy Discovery</link> in
+    Configuration Properties and <link
+    url="mod_advertise">mod_advertise</link> in Apache httpd
+    configuration.</para>
+
+    <para></para>
+  </sect1>
+
   <sect1>
     <title>What to do if I don't want to use Advertise (multicast):</title>
 
@@ -36,6 +57,8 @@
     example:<programlisting>&lt;property name="proxyList"&gt;10.33.144.3:6666,10.33.144.1:6666&lt;/property&gt;
 
 &lt;property name="advertise"&gt;false&lt;/property&gt;</programlisting></para>
+
+    <para>In server.xml (with JBossweb/Tomcat) <programlisting>&lt;Listener className="org.jboss.modcluster.catalina.ModClusterListener" advertise="true"/&gt;</programlisting></para>
   </sect1>
 
   <sect1>
@@ -45,5 +68,109 @@
     You can't use the mod_cluster clustered mode with Tomcat so you get a
     loadbalancing logic similar to mod_jk but with a dynamic
     configuration.</para>
+  </sect1>
+
+  <sect1>
+    <title>It is not working what should I do:</title>
+
+    <para>Most likely you have a configuration problem. Check the log of the
+    cluster nodes and error_log of httpd</para>
+
+    <sect2>
+      <title>No error</title>
+
+      <para>That happens when Advertise is not working: The nodes don't get
+      the <link linkend="advertisemessage">advertise messages</link> from
+      httpd.</para>
+
+      <orderedlist>
+        <listitem>
+           Check that Advertise message are received on the cluster node. A 
+
+          <ulink
+          url="http://anonsvn.jboss.org/repos/mod_cluster/trunk/test/java/Advertize.java">small
+          java</ulink>
+
+           utility could be used to check Advertise. It is in the mod_cluster repository and can be compiled using javac. Run it using java Advertise. The output should be something like:
+
+          <programlisting>
+[jfclere@jfcpc java]$ java Advertize
+ready waiting...
+received: HTTP/1.0 200 OK
+Date: Mon, 28 Jun 2010 07:30:31 GMT
+Sequence: 1
+Digest: df8a4321fa99e5098174634f2fe2f87c
+Server: 1403c3be-837a-4e76-85b1-9dfe5ddb4378
+X-Manager-Address: test.example.com:6666
+X-Manager-Url: /1403c3be-837a-4e76-85b1-9dfe5ddb4378
+X-Manager-Protocol: http
+X-Manager-Host: test.example.com</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>No Advertise messages</para>
+
+           Check firewall (don't forget the boxes firewall). Advertise uses UDP port 23364 and multicast addresse 224.0.1.105
+        </listitem>
+
+        <listitem>
+          <para>Can't get Advertise messages</para>
+
+           Use ProxyList property. In case Advertise can't work you put the address and port of the VirtualHost used in httpd to receive the MCMP. In server/profile/deploy/mod_cluster.sar/META-INF/mod_cluster-jboss-beans.xml
+
+          <programlisting>
+&lt;property name="proxyList"&gt;test.example.com:6666&lt;/property&gt;</programlisting>
+
+           or in server.xml:
+
+          <programlisting>
+&lt;Listener className="org.jboss.modcluster.catalina.ModClusterListener" proxyList="test.example.com:6666"/&gt;</programlisting>
+        </listitem>
+      </orderedlist>
+    </sect2>
+
+    <sect2>
+      <title>Error in server.log or catalina.out</title>
+
+      <orderedlist>
+        <listitem>
+          <para>"Add Here":</para>
+
+           Check firewall and error_log if there is nothing error_log then it is a firewall problem. You can use telnet hostname port to check by hands that it is OK:
+
+          <programlisting>[jfclere@jfcpc docs]$ telnet jfcpc 6666
+Trying 10.33.144.3...
+Connected to jfcpc.
+Escape character is '^]'.
+GET /
+&lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;Connection closed by foreign host.
+</programlisting>
+        </listitem>
+      </orderedlist>
+    </sect2>
+
+    <sect2>
+      <title>Error in error_log</title>
+
+      <orderedlist>
+        <listitem>
+          <para>"client denied by server configuration":</para>
+
+           The directory in the VirtualHost is not allowed for the client. If you have something like:
+
+          <programlisting>
+Mon Jun 28 18:08:47 2010] [error] [client 10.33.144.3] client denied by server configuration: /
+</programlisting>
+
+           You need to have something like:
+
+          <programlisting>&lt;Directory /&gt;
+Order deny,allow
+Deny from all
+Allow from 10.33.144.3
+&lt;/Directory&gt;</programlisting>
+        </listitem>
+      </orderedlist>
+    </sect2>
   </sect1>
 </chapter>
