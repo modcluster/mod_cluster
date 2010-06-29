@@ -134,17 +134,23 @@ X-Manager-Host: test.example.com</programlisting>
 
       <orderedlist>
         <listitem>
-          <para>"Add Here":</para>
+          <para>"IO error sending command ":</para>
 
-           Check firewall and error_log if there is nothing error_log then it is a firewall problem. You can use telnet hostname port to check by hands that it is OK:
+           Check firewall and error_log if there is nothing error_log then it is a firewall problem.
+           If you have something like:
+<programlisting>18:36:14,533 INFO  [DefaultMCMPHandler] IO error sending command INFO to proxy jfcpc/10.33.144.3:8888</programlisting>
+            You can use telnet hostname/address port to check by hands that it is OK for example:
 
-          <programlisting>[jfclere@jfcpc docs]$ telnet jfcpc 6666
+          <programlisting>[jfclere@jfcpc docs]$ telnet 10.33.144.3 8888
 Trying 10.33.144.3...
 Connected to jfcpc.
 Escape character is '^]'.
 GET /
 &lt;html&gt;&lt;body&gt;&lt;h1&gt;It works!&lt;/h1&gt;&lt;/body&gt;&lt;/html&gt;Connection closed by foreign host.
 </programlisting>
+            Check that the address and port are the expected ones you may use ServerAdvertise On
+            http://hostname:port, like:
+<programlisting>ServerAdvertise On http://localhost:6666</programlisting>
         </listitem>
       </orderedlist>
     </sect2>
