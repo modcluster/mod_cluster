@@ -292,8 +292,8 @@
   <!-- Uses the ratio of the sum of the values of the specified dividend attribute,
        to the sum of the values of the specified divisor attribute for each mbean
        matching the query. -->
-  <bean name="MBeanAttributeRatioLoadMetric" class="org.jboss.modcluster.load.metric.impl.MBeanAttributeLoadMetric" mode="On Demand">
-    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=MBeanAttributeLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <bean name="MBeanAttributeRatioLoadMetric" class="org.jboss.modcluster.load.metric.impl.MBeanAttributeRatioLoadMetric" mode="On Demand">
+    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=MBeanAttributeRatioLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
     <constructor>
       <parameter><inject bean="MBeanQueryLoadMetricSource"/></parameter>
       <parameter><!-- dividend attribute --></parameter>
