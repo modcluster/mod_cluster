@@ -1338,7 +1338,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
              *            0 standby.
              *           >0 factor to use.
              */
-            if (worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
+            if (worker->s == NULL || worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
                 continue;
 
             /* If the worker is in error state the STATUS logic will retry it */
