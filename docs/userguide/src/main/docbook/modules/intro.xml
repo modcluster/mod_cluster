@@ -35,7 +35,10 @@
    <para>Traditional httpd-based load balancers do not handle web application undeployments particularly well. From the proxy's perspective requests to an undeployed web application are indistinguishable from a request for an non-existent resource, and will result in 404 errors. In mod_cluster, each server forwards any web application context lifecycle events (e.g. web-app deploy/undeploy) to the proxy informing it to start/stop routing requests for a given context to that server. </para>
    <para>AJP is optional </para>
    <para>Unlike mod_jk, mod_cluster does not require AJP. httpd connections to application server nodes can use HTTP, HTTPS, or AJP. </para>
-   <para>The original concepts are described in a <ulink url="http://www.jboss.org/community/docs/DOC-11431">wiki</ulink>.</para></sect1><sect1><title>Requirements</title>
+   <para>The original concepts are described in a <ulink url="http://www.jboss.org/community/docs/DOC-11431">wiki</ulink>.</para>
+</sect1>
+
+<sect1><title>Requirements</title>
    <orderedlist>
       <listitem>
          <para>httpd-2.2.8+ </para>
@@ -44,7 +47,50 @@
          <para>JBoss AS 5.0.0+ or JBossWeb 2.1.1+ </para>
       </listitem>
    </orderedlist>
-   <para>Note: httpd-2.2.8+ is already in the bundles, so if you use the bundle you don't need to download Apache httpd.</para></sect1><sect1><title>
+   <para>Note: httpd-2.2.8+ is already in the bundles, so if you use the bundle you don't need to download Apache httpd.</para>
+</sect1>
+
+<sect1><title>Limitations</title>
+mod_cluster uses shared memory to keep the nodes description, the shared memory is created at the start of httpd and the structure
+of each item is fixed. The following can't be changed by configuration directives.
+   <orderedlist>
+      <listitem>
+Max Alias length 40 characters (Host: hostname header, Alias in &lt;Host/&gt;).
+      </listitem>
+      <listitem>
+Max context length 40 (for example myapp.war deploys in /myapp /myapp is the context).
+      </listitem>
+      <listitem>
+Max balancer name length 40 (balancer property in mbean).
+      </listitem>
+      <listitem>
+Max JVMRoute string length 80 (JVMRoute in &lt;Engine/&gt;).
+      </listitem>
+      <listitem>
+Max domain name length 20 (domain property in mbean).
+      </listitem>
+      <listitem>
+Max hostname length for a node 64 (address in the &lt;Connector/&gt;).
+      </listitem>
+      <listitem>
+Max port length for a node 7 (8009 is 4 characters, port in the &lt;Connector/&gt;).
+      </listitem>
+      <listitem>
+Max scheme length for a node 6 (possible values are http, https, ajp, liked with the protocol of &lt;Connector/&gt;).
+      </listitem>
+      <listitem>
+Max cookie name 30 (the header cookie name for sessionid default value: JSESSIONID from org.apache.catalina.Globals.SESSION_COOKIE_NAME).
+      </listitem>
+      <listitem>
+Max path name 30 (the parameter name for the sessionid default value: jsessionid from org.apache.catalina.Globals.SESSION_PARAMETER_NAME).
+      </listitem>
+      <listitem>
+Max length for a sessionid 120 (something like BE81FAA969BF64C8EC2B6600457EAAAA.node01).
+      </listitem>
+   </orderedlist>
+</sect1>
+
+<sect1><title>
       <anchor id="download"/>Downloads</title>
    <para>Download the latest mod_cluster release <ulink url="http://www.jboss.org/mod_cluster/downloads/latest">here</ulink>.</para>
    <para>The release is comprised of the following artifacts:</para>
@@ -73,8 +119,11 @@
          <para>Building <link linkend="javabuilding">Java archives</link> 
          </para>
       </listitem>
-   </orderedlist></sect1><sect1><title>Quick Start</title>
-   <para>If you want to skip the details and just set up a minimal working installation of mod_cluster, see the <link linkend="Quick_Start_Guide">Quick Start Guide</link>.</para></sect1><sect1><title>Configuration</title>
+   </orderedlist>
+</sect1>
+
+<sect1><title>Configuration</title>
+   <para>If you want to skip the details and just set up a minimal working installation of mod_cluster, see the <link linkend="Quick_Start_Guide">Quick Start Guide</link>.</para>
    <orderedlist>
       <listitem>
          <para>Configuring <link linkend="nativeconfig">httpd</link> 
@@ -88,7 +137,10 @@
          <para>Configuring <link linkend="tomcat">Tomcat</link> 
          </para>
       </listitem>
-   </orderedlist></sect1><sect1><title>Migration</title>
+   </orderedlist>
+</sect1>
+
+<sect1><title>Migration</title>
    <para>Migrating from mod_jk or mod_proxy is fairly straight forward. In general, much of the configuration previously found in httpd.conf is now defined in the application server nodes.</para>
    <orderedlist>
       <listitem>
