@@ -1,0 +1,13 @@
+Limit in version 1.0 of mod_cluster:
+
+Max Alias length 40 characters (Host: hostname header, Alias in <Host/>).
+Max context length 40 (for example myapp.war deploys in /myapp /myapp is the context).
+Max balancer name length 40 (balancer property in mbean).
+Max JVMRoute string length 80 (JVMRoute in <Engine/>).
+Max domain name length 20 (domain property in mbean).
+Max hostname length for a node 64 (address in the <Connector/>).
+Max port length for a node 7 (8009 is 4 characters, port in the <Connector/>).
+Max scheme length for a node 6 (possible values are http, https, ajp, liked with the protocol of <Connector/>).
+Max cookie name 30 (the header cookie name for sessionid default value: JSESSIONID from org.apache.catalina.Globals.SESSION_COOKIE_NAME).
+Max path name 30 (the parameter name for the sessionid default value: jsessionid from org.apache.catalina.Globals.SESSION_PARAMETER_NAME).
+Max length for a sessionid 120 (something like BE81FAA969BF64C8EC2B6600457EAAAA.node01).
