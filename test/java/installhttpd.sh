@@ -259,7 +259,11 @@ LoadModule advertise_module modules/mod_advertise.so
 EOF
 fi
 
-cat >> "$file.new" <<EOF
+# Add manager_module directives is not already there...
+grep MOD_CLUSTER_ADDS "$file"
+if [ $? -ne 0 ]
+then
+  cat >> "$file.new" <<EOF
 <IfModule manager_module>
   Listen @IP@:6666
   ManagerBalancerName mycluster
@@ -286,6 +290,8 @@ cat >> "$file.new" <<EOF
   </VirtualHost>
 </IfModule>
 EOF
+fi
+
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd
 echo "s/@SUBIP@/${SUBIP}/" >> sed.cmd
