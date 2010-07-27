@@ -255,7 +255,7 @@ Allow from 127.0.0.1
  MaxKeepAliveRequests 0
  
  ManagerBalancerName mycluster
- AdvertiseFrequency 5
+ ServerAdvertise on
  
  &lt;/VirtualHost&gt;</programlisting></para>
   </sect1>

@@ -23,11 +23,7 @@
 
       <para>We use the generic MicrocontainerIntegrationLifecycleListener to
       delegate all lifecycle events to a bean deployed by the JBoss
-      microcontainer.  The name of the bean to use differs depending on the
-      version of mod_cluster.</para>
-
-      <sect3>
-        <title>mod_cluster 1.0.x</title>
+      microcontainer.</para>
 
         <para>mod_cluster 1.0.x is wired directly to the Catalina container
         API.  Catalina lifecycle events are delegated directly to
@@ -49,55 +45,11 @@
   &lt;!-- ... --&gt; 
 &lt;/bean&gt;</programlisting></para>
 
-        <para>For details of how to configure <ulink
-        url="http://www.jboss.org/mod_cluster/java/config.html#local">ModClusterService</ulink>
-        or <ulink
-        url="http://www.jboss.org/mod_cluster/java/config.html#ha">HAModClusterService</ulink>,
+        <para>For details of how to configure
+        <link linkend="local">ModClusterService</link>
+        or
+        <link linkend="HAModClusterService">HAModClusterService</link>
         refer to the appropriate section.</para>
-      </sect3>
-
-      <sect3>
-        <title>mod_cluster 1.1.x</title>
-
-        <para>Version 1.1.x introduced a container service provider interface
-        (SPI) to isolate mod_cluster's core logic from any specific web
-        container integration layer.  Consequently, a separate delegate bean,
-        CatalinaEventHandlerAdapter, adapts web container lifecycle events to
-        mod_cluster's ContainerEventHandler API.  The net effect is a cleaner
-        integration, more intuitive configuration, and the potential of
-        integration with other web containers.<programlisting>&lt;Listener className="org.jboss.web.tomcat.service.deployers.MicrocontainerIntegrationLifecycleListener" 
-          delegateBeanName="ModClusterListener"/&gt;</programlisting></para>
-
-        <para>As of JBoss AS 6.0, mod_cluster is integrated into the
-        <emphasis>all</emphasis> profile by default.  Consequently, the
-        listener defined above already exists in server.xml.</para>
-
-        <para>The ModClusterListener bean is defined in
-        $JBOSS_HOME/server/<emphasis>profile</emphasis>/deploy/mod_cluster.sar/META-INF/mod_cluster-jboss-beans.xml
-        as follows:<programlisting>&lt;bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter" mode="On Demand"&gt; 
-  &lt;constructor&gt; 
-    &lt;parameter class="org.jboss.modcluster.ContainerEventHandler"&gt; 
-      &lt;inject bean="ModClusterService"/&gt;&lt;!-- Non-clustered mode --&gt; 
-      &lt;!--inject bean="HAModClusterService"/--&gt;&lt;!-- Clustered mode --&gt; 
-    &lt;/parameter&gt; 
-    &lt;parameter class="javax.management.MBeanServer"&gt; 
-      &lt;inject bean="JMXKernel" property="mbeanServer"/&gt; 
-    &lt;/parameter&gt; 
-  &lt;/constructor&gt; 
-&lt;/bean&gt;</programlisting></para>
-
-        <para>To ensure that the delegate bean exists before the JBoss Web
-        service starts, and that the bean does not get destroyed until the
-        service shuts down, we must add an explicit microcontainer dependency
-        to the JBoss Web service.  To do this, update the WebServer bean
-        contained in
-        $JBOSS_HOME/server/<emphasis>profile</emphasis>/deploy/jbossweb.sar/META-INF/jboss-beans.xml
-        with the appropriate dependency:<programlisting>&lt;bean name="WebServer" class="org.jboss.web.tomcat.service.deployers.TomcatService"&gt; 
-  &lt;!-- ... --&gt; 
-  &lt;depends&gt;ModClusterListener&lt;/depends&gt; 
-  &lt;!-- ... --&gt; 
-&lt;/bean&gt;</programlisting></para>
-      </sect3>
     </sect2>
 
     <sect2>
@@ -124,10 +76,6 @@
         </listitem>
       </orderedlist>
 
-      <para>As of version 1.1.x, the connector bind address is set
-      automatically, based on the network interface address on which
-      mod_cluster's internal MCMP connection was established.</para>
-
       <para>e.g.<programlisting>&lt;Server&gt; 
   &lt;!-- ... --&gt; 
   &lt;Service name="jboss.web"&gt; 
@@ -148,23 +96,16 @@
       url="http://tomcat.apache.org/tomcat-6.0-doc/config/engine.html#Common%20Attributes">jvmRoute</ulink>
       attribute of the Engine within server.xml.</para>
 
-      <para>As of version 1.1.x, mod_cluster will auto-assign a jvmRoute if
-      none was defined in server.xml.  The auto-generated value will take the
-      form:
-      <emphasis>bind-address</emphasis>:<emphasis>port</emphasis>:<emphasis>engine-name</emphasis></para>
-
-      <para>However, since the auto-generated value exposes the address and
-      port of the server, it is likely only appropriate for development
-      environments.  For production use, users should still define jvm routes
+      <para>Users must define jvm routes
       manually, perhaps using system property expansion, e.g.
       jvmRoute="${jboss.mod_cluster.jvmRoute}"</para>
     </sect2>
 
-    <sect2>
+    <sect2 id="local">
       <title>Non-Clustered Mode</title>
 
-      <para>mod_cluster can operate in 2 modes: non-clustered or <ulink
-      url="http://www.jboss.org/mod_cluster/java/config.html#ha">clustered</ulink>.
+      <para>mod_cluster can operate in 2 modes: non-clustered or
+      <link linkend="HAModClusterService">clustered</link>.
        In non-clustered mode, each JBoss server node communicates with a httpd
       proxy directly, and do not communicate with each other.  Non-clustered
       mode is powered by the ModClusterService, whose definition varies
@@ -174,24 +115,18 @@
 
       <orderedlist>
         <listitem>
-          <para><ulink
-          url="http://www.jboss.org/mod_cluster/java/config.html#ha">A set
-          of</ulink> <ulink
-          url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-          properties</ulink></para>
+          <para>A set of
+          <link linkend="javaproperties"> configuration properties</link></para>
         </listitem>
 
         <listitem>
-          <para>A mechanism for <ulink
-          url="http://www.jboss.org/mod_cluster/java/load.html">providing the
-          load balance factor</ulink> to a proxy</para>
+          <para>A mechanism for
+          <link linkend="javaload">providing the
+          load balance factor</link>  to a proxy</para>
         </listitem>
       </orderedlist>
 
-      <sect3>
-        <title>mod_cluster 1.0.x</title>
-
-        <para>In version 1.0.x, all mod_cluster configuration properties were
+        <para>In version 1.0.x, all mod_cluster configuration properties are
         members of the ModClusterService bean itself:<programlisting>&lt;bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand"&gt; 
   &lt;constructor&gt; 
     &lt;parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"&gt; 
@@ -201,35 +136,13 @@
   &lt;!-- Configuration properties go here --&gt; 
   &lt;property name="advertise"&gt;true&lt;/property&gt; 
 &lt;/bean&gt;</programlisting></para>
-      </sect3>
-
-      <sect3>
-        <title>mod_cluster 1.1.x</title>
-
-        <para>In version 1.1.x, configuration properties are injected via a
-        shared object, rather than being members of the service bean
-        itself:<programlisting>&lt;bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand"&gt; 
-  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)&lt;/annotation&gt; 
-  &lt;constructor&gt; 
-    &lt;parameter class="org.jboss.modcluster.config.ModClusterConfig"&gt; 
-      &lt;inject bean="ModClusterConfig"/&gt; 
-    &lt;/parameter&gt; 
-    &lt;parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"&gt; 
-      &lt;inject bean="DynamicLoadBalanceFactorProvider"/&gt; 
-    &lt;/parameter&gt; 
-  &lt;/constructor&gt; 
-&lt;/bean&gt; 
-&lt;bean name="ModClusterConfig" class="org.jboss.modcluster.config.ModClusterConfig" mode="On Demand"&gt; 
-  &lt;property name="advertise"&gt;true&lt;/property&gt; 
-&lt;/bean&gt;</programlisting></para>
-      </sect3>
     </sect2>
 
-    <sect2>
+    <sect2 id="HAModClusterService">
       <title>Clustered Mode</title>
 
-      <para>mod_cluster can operate in 2 modes: <ulink
-      url="http://www.jboss.org/mod_cluster/java/config.html#local">non-clustered</ulink>
+      <para>mod_cluster can operate in 2 modes:
+      <link linkend="local">non-clustered</link>
       or clustered.  In clustered mode, a single JBoss node (the HA singleton
       master) communicates with the httpd proxy on behalf of the other nodes
       in the cluster.  This mode offers the following advantages over
@@ -263,15 +176,14 @@
 
       <orderedlist>
         <listitem>
-          <para>A set of <ulink
-          url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-          properties</ulink></para>
+          <para>A set of
+          <link linkend="javaproperties"> configuration properties</link></para>
         </listitem>
 
         <listitem>
-          <para>A mechanism for <ulink
-          url="http://www.jboss.org/mod_cluster/java/load.html">providing the
-          load balance factor</ulink> to a proxy</para>
+          <para>A mechanism for
+          <link linkend="javaload">providing the
+          load balance factor</link> to a proxy</para>
         </listitem>
 
         <listitem>
@@ -280,9 +192,6 @@
           in:$JBOSS_HOME/server/<emphasis>profile</emphasis>/deploy/cluster/hapartition-jboss-beans.xml</para>
         </listitem>
       </orderedlist>
-
-      <sect3>
-        <title>mod_cluster 1.0.x</title>
 
         <para><programlisting>&lt;bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand"&gt; 
   &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)&lt;/annotation&gt; 
@@ -304,32 +213,6 @@
 &lt;bean name="HAModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand"&gt; 
   &lt;property name="advertise"&gt;true&lt;/property&gt; 
 &lt;/bean&gt;</programlisting></para>
-      </sect3>
-
-      <sect3>
-        <title>mod_cluster 1.1.x</title>
-
-        <para><programlisting>&lt;bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand"&gt; 
-  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)&lt;/annotation&gt; 
-  &lt;constructor&gt; 
-    &lt;parameter class="org.jboss.modcluster.config.ha.HAModClusterConfig"&gt; 
-      &lt;inject bean="ModClusterConfig"/&gt; 
-    &lt;/parameter&gt; 
-    &lt;parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"&gt; 
-      &lt;inject bean="DynamicLoadBalanceFactorProvider"/&gt; 
-    &lt;/parameter&gt; 
-    &lt;parameter class="org.jboss.ha.framework.interfaces.HAPartition"&gt; 
-      &lt;inject bean="HAPartition"/&gt; 
-    &lt;/parameter&gt; 
-    &lt;parameter class="org.jboss.ha.framework.interfaces.HASingletonElectionPolicy"&gt; 
-      &lt;bean class="org.jboss.ha.singleton.HASingletonElectionPolicySimple"/&gt; 
-    &lt;/parameter&gt; 
-  &lt;/constructor&gt; 
-&lt;/bean&gt; 
-&lt;bean name="ModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand"&gt; 
-  &lt;property name="advertise"&gt;true&lt;/property&gt; 
-&lt;/bean&gt;</programlisting></para>
-      </sect3>
     </sect2>
   </sect1>
 
@@ -349,9 +232,9 @@
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://www.jboss.org/mod_cluster/java/load.html#load">Only one
-        load metric</ulink> can be used in the load balance factor
+        <para>
+        <link inkend="javaload"> Only one
+        load metric</link> can be used in the load balance factor
         calculation</para>
       </listitem>
     </orderedlist>
@@ -360,28 +243,13 @@
       <title>Lifecycle Listener</title>
 
       <para>The entry point for JBoss Web and Tomcat configuration is the
-      ModClusterListener.  All mod_cluster <ulink
-      url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-      properties</ulink> are defined as attributes of the Listener
+      ModClusterListener.  All mod_cluster
+      <link linkend="javaproperties"> configuration
+      properties</link> are defined as attributes of the Listener
       element.</para>
-
-      <sect3>
-        <title>mod_cluster 1.0.x</title>
 
         <para><programlisting>&lt;Listener className="org.jboss.modcluster.ModClusterListener" 
           advertise="true"/&gt;</programlisting></para>
-      </sect3>
-
-      <sect3>
-        <title>mod_cluster 1.1.x</title>
-
-        <para>In version 1.1.x, ModClusterListener was refactored into the
-        catalina container SPI implementation package, and the old location
-        was deprecated.</para>
-
-        <para><programlisting>&lt;Listener className="org.jboss.modcluster.catalina.ModClusterListener" 
-          advertise="true"/&gt;</programlisting></para>
-      </sect3>
     </sect2>
 
     <sect2>
