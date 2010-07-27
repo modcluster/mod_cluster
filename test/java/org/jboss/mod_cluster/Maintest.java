@@ -132,6 +132,16 @@ public class Maintest extends TestCase {
     static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce) {
+    	return createClusterListener(groupa, groupp, ssl, domain, stickySession, stickySessionRemove, stickySessionForce, 0, 0);
+    }
+    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl,
+                                                   int ping, int nodetimeout) {
+    	return createClusterListener(groupa, groupp, ssl, null, true, false, true, ping, nodetimeout);
+    }
+    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+                                                   boolean stickySession, boolean stickySessionRemove,
+                                                   boolean stickySessionForce,
+                                                   int ping, int nodetimeout) {
         LifecycleListener lifecycle = null;
         ClusterListener jcluster = null;
         org.jboss.modcluster.ModClusterListener pcluster = null;
@@ -145,6 +155,8 @@ public class Maintest extends TestCase {
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
+            jcluster.setPing(ping);
+            jcluster.setNodeTimeout(nodetimeout);
             lifecycle = jcluster;
         } else {
             pcluster = new org.jboss.modcluster.ModClusterListener();
@@ -155,6 +167,8 @@ public class Maintest extends TestCase {
             pcluster.setStickySession(stickySession);
             pcluster.setStickySessionRemove(stickySessionRemove);
             pcluster.setStickySessionForce(stickySessionForce);
+            pcluster.setPing(ping);
+            pcluster.setNodeTimeout(nodetimeout);
             lifecycle = pcluster;
 
         }

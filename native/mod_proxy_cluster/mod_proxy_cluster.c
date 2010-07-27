@@ -236,8 +236,25 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         }
         reuse = 1;
     } else {
-        /* XXX: (*worker)->id ?=  node->mess.id; */
-        return APR_SUCCESS; /* Done Already existing */
+        /* Check if the shared memory goes to the right place */
+        char *pptr = (char *) node;
+        pptr = pptr + node->offset;
+        if ((*worker)->id == node->mess.id && (*worker)->s == (proxy_worker_stat *) pptr) {
+            /* the share memory may have been removed and recreated */
+            if (!(*worker)->s->status) {
+                (*worker)->s->status = PROXY_WORKER_INITIALIZED;
+                strncpy((*worker)->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZ);
+                (*worker)->s->route[PROXY_WORKER_MAX_ROUTE_SIZ] = '\0';
+                /* XXX: We need that information from TC */
+                (*worker)->s->redirect[0] = '\0';
+                (*worker)->s->lbstatus = 0;
+                (*worker)->s->lbfactor = -1; /* prevent using the node using status message */
+            }
+            return APR_SUCCESS; /* Done Already existing */
+        }
+        ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
+                     "Created: can't reuse worker for %s", url);
+        return APR_EGENERAL;
     }
 
     /* Get the shared memory for this worker */
@@ -625,6 +642,8 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
+            continue;
+        if (ou->mess.remove)
             continue;
         if (ou->mess.updatetimelb < (now - lbstatus_recalc_time)) {
             /* The lbstatus needs to be updated */
@@ -1195,7 +1214,9 @@ cleanup:
                          "ajp_cping_cpong: Done");
     return status;
 }
-static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker, char *url, proxy_server_conf *conf)
+static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker,
+                                               char *url, proxy_server_conf *conf,
+                                               apr_interval_time_t ping, apr_interval_time_t workertimeout)
 {
     apr_status_t status;
     apr_interval_time_t timeout;
@@ -1236,6 +1257,8 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
      * 2 - conf->timeout (if timeout_set ProxyTimeout 300)
      * 3 - s->timeout (TimeOut 300).
      * We hack it... Via 1
+     * Since 20051115.16 (2.2.9) there is a conn_timeout and conn_timeout_set.
+     * Changing the worker->timeout is a bad idea (we have to restore the value from the shared memory).
      */
 #if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
     timeout = worker->ping_timeout;
@@ -1246,15 +1269,38 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
     if (timeout <= 0)
         timeout =  apr_time_from_sec(10); /* 10 seconds */
 
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
+    if (!worker->conn_timeout_set) {
+        savetimeout_set = worker->conn_timeout_set;
+        savetimeout = worker->conn_timeout;
+        worker->conn_timeout = timeout;
+        worker->conn_timeout_set = 1;
+    }
+#else
+    /* XXX: side effects the worker may be used in another socket */
     savetimeout_set = worker->timeout_set;
     savetimeout = worker->timeout;
     worker->timeout_set = 1;
     worker->timeout = timeout;
+#endif
 
     /* Step Two: Make the Connection */
     status = ap_proxy_connect_backend(worker->scheme, backend, worker, r->server);
-    worker->timeout_set = savetimeout_set;
-    worker->timeout = savetimeout;
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
+    if (!savetimeout_set) {
+        worker->conn_timeout = savetimeout;
+        worker->conn_timeout_set = savetimeout_set;
+    }
+#else
+    /* Restore the information from the node information */
+    if (workertimeout) {
+        worker->timeout = workertimeout;
+        worker->timeout_set = 1;
+    } else {
+        worker->timeout_set = 0;
+        worker->timeout = 0;
+    }
+#endif
     if (status != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "proxy_cluster_try_pingpong: can't connect to backend");
@@ -1327,7 +1373,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         char *url;
         apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
         url = apr_pstrcat(r->pool, worker->scheme, "://", worker->hostname,  sport, "/", NULL);
-        rv = proxy_cluster_try_pingpong(r, worker, url, conf);
+        rv = proxy_cluster_try_pingpong(r, worker, url, conf, node->mess.ping, node->mess.timeout);
         if (rv != APR_SUCCESS) {
             worker->s->status |= PROXY_WORKER_IN_ERROR;
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,

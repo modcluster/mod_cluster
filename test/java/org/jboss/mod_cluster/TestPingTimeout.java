@@ -92,7 +92,7 @@ public class TestPingTimeout extends TestCase {
 
         // Do a request.
         try {
-            if (client.runit("/ROOT/MyTest?test=timeout", 1, false, false) != 0)
+            if (client.runit("/ROOT/MyTest?timeou=15000", 1, false, false) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();

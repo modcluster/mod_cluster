@@ -54,11 +54,12 @@ public class MyTest extends HttpServlet {
         out.println("</head>");
         out.println("<body>");
 
-        String test = request.getParameter("test");
-        if (test.equalsIgnoreCase("timeout")) {
+        String test = request.getParameter("timeout");
+        if (test != null) {
+            int timeout =  Integer.parseInt(test);
             Thread me = Thread.currentThread();
             try {
-                me.sleep(15000);
+                me.sleep(timeout);
             } catch(Exception e) {
                 throw new ServletException("sleep interrupted");
             }

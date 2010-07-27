@@ -321,6 +321,9 @@ public class  Client extends Thread {
         public void setdelay(int delay) {
             this.delay = delay;
         }
+        public void setURL(String URL) {
+            this.URL = URL;
+        }
         public void setnode(String node) {
             this.node = node;
         }
