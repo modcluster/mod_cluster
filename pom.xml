@@ -8,15 +8,15 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.native</groupId>
   <artifactId>mod-cluster</artifactId>
-  <version>1.0.4.GA</version>
+  <version>1.0.5.GA-SNAPSHOT</version>
   
   <name>mod_cluster</name>
   <description />
   <url>http://jboss.org/mod_cluster</url>
   
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/tags/1.0.4.GA</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/1.0.4.GA</developerConnection>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/branches/1.0.x</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/branches/1.0.x</developerConnection>
   </scm>
 
   <repositories>
