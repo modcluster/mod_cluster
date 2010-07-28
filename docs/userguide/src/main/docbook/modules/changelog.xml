@@ -8,7 +8,8 @@
   <title>Change Log</title>
    <sect1><title>1.0.4 (27 Jully 2010)</title>
    <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
+      <tgroup cols="2"><tbody>
+         <row>
             <entry>
                <para>
                   <mediaobject>
@@ -21,7 +22,148 @@
             <entry>
                <para>Separate 1.0.x doc from 1.1.x (jfclere)</para>
             </entry>
-         </row></tbody></tgroup>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Advertise does not work on name-based virtual hosts (MODCLUSTER-122) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Microcontainer does not choose the right constructor when creating RequestCountLoadMetric (MODCLUSTER-126) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>proxy_cluster_isup: Can't find worker for 2 (just after CONFIG). (MODCLUSTER-149) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>SystemMemoryUsageLoadMetric returns wrong load metric. (MODCLUSTER-157) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>ManagerBalancerName doesn't work. (MODCLUSTER-163) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Fix class name of MBeanAttributeRatioLoadMetric in MC config (MODCLUSTER-174) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Wrong configuration could cause a core (MODCLUSTER-175) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>ping and nodeTimeout interact. (MODCLUSTER-180) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="update">
+                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Add a solaris10 64 bits sparc in the bundles. (MODCLUSTER-137) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="update">
+                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Avoid unnecessary open sockets for non-master nodes (MODCLUSTER-158) (pferraro)</para>
+            </entry>
+         </row>
+         </tbody></tgroup>
    </informaltable></sect1>
    <sect1><title>1.0.3.GA (15 January 2010)</title>
    <informaltable frame="all">
