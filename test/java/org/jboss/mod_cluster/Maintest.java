@@ -155,8 +155,10 @@ public class Maintest extends TestCase {
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
-            jcluster.setPing(ping);
-            jcluster.setNodeTimeout(nodetimeout);
+            if (ping>0)
+                jcluster.setPing(ping);
+            if (nodetimeout>0)
+                jcluster.setNodeTimeout(nodetimeout);
             lifecycle = jcluster;
         } else {
             pcluster = new org.jboss.modcluster.ModClusterListener();
@@ -167,8 +169,10 @@ public class Maintest extends TestCase {
             pcluster.setStickySession(stickySession);
             pcluster.setStickySessionRemove(stickySessionRemove);
             pcluster.setStickySessionForce(stickySessionForce);
-            pcluster.setPing(ping);
-            pcluster.setNodeTimeout(nodetimeout);
+            if (ping>0)
+                pcluster.setPing(ping);
+            if (nodetimeout>0)
+                pcluster.setNodeTimeout(nodetimeout);
             lifecycle = pcluster;
 
         }
