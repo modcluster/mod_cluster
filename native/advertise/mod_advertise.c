@@ -650,7 +650,7 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
 
     /* prevent X-Manager-Address: (null):0  */
     if (!ma_advertise_srvs || !ma_advertise_srvp) {
-            ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
                          "mod_advertise: ServerAdvertise Address or Port not defined, Advertise disabled!!!");
             return OK;
     }
