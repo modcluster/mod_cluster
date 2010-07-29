@@ -101,15 +101,16 @@
 #define HAVE_CLUSTER_EX_DEBUG 0
 
 /* shared memory */
-mem_t *contextstatsmem = NULL;
-mem_t *nodestatsmem = NULL;
-mem_t *hoststatsmem = NULL;
-mem_t *balancerstatsmem = NULL;
-mem_t *sessionidstatsmem = NULL;
-mem_t *domainstatsmem = NULL;
+static mem_t *contextstatsmem = NULL;
+static mem_t *nodestatsmem = NULL;
+static mem_t *hoststatsmem = NULL;
+static mem_t *balancerstatsmem = NULL;
+static mem_t *sessionidstatsmem = NULL;
+static mem_t *domainstatsmem = NULL;
 
-slotmem_storage_method *storage = NULL;
-balancer_method *balancerhandler = NULL;
+static slotmem_storage_method *storage = NULL;
+static balancer_method *balancerhandler = NULL;
+static void (*advertise_info)(request_rec *) = NULL;
 
 module AP_MODULE_DECLARE_DATA manager_module;
 
@@ -482,6 +483,8 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
     if (balancerhandler == NULL) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, s, "can't find a ping/pong logic");
     }
+
+    advertise_info = ap_lookup_provider("advertise", "info", "0");
 
     /*
      * Retrieve a UUID and store the nonce.
@@ -2007,6 +2010,13 @@ static int manager_info(request_rec *r)
         ap_rvputs(r, " <a href=\"", r->uri, "\">Continue</a>\n", NULL);
         ap_rputs("</body></html>\n", r);
         return OK;
+    }
+
+    /* Advertise information */
+    if (advertise_info != NULL) {
+        ap_rputs("start of \"httpd.conf\" configuration<br/>", r); 
+        advertise_info(r);
+        ap_rputs("end of \"httpd.conf\" configuration<br/><br/>", r);
     }
 
     ap_rvputs(r, "<a href=\"", r->uri, "?", balancer_nonce_string(r),

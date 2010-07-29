@@ -30,15 +30,6 @@
 #include "mod_core.h"
 #include "util_script.h"
 
-#ifndef MAX
-#define MAX(x,y) ((x) >= (y) ? (x) : (y))
-#endif
-
-#define MOD_SRVCONF(p) ap_get_module_config((p)->server->module_config, \
-                                            &advertise_module)
-#define MOD_GETCONF(s) ap_get_module_config((s)->module_config,         \
-                                            &advertise_module)
-
 /*
  * Declare ourselves so the configuration routines can find and know us.
  * We'll fill it in at the end of the module.
@@ -58,6 +49,7 @@ static pid_t      ma_parent_pid     = -1;
 
 static int   ma_advertise_run  = 0;
 static int   ma_advertise_stat = 0;
+static server_rec *main_server = NULL;
 
 /*
  * configuration.
@@ -698,6 +690,40 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
     return OK;
 }
 
+static void  child_init_hook(apr_pool_t *p, server_rec *s)
+{
+    main_server = s;
+}
+
+/*
+ * Provide information for "status" logic
+ */
+static void advertise_info(request_rec *r)
+{
+    server_rec *s = main_server;
+    /* Find the VirtualHost (Server) that does the Advertise */
+    while (s) {
+        void *sconf = s->module_config;
+        mod_advertise_config *mconf = ap_get_module_config(sconf, &advertise_module);
+        ap_rprintf(r, "Server: %s ", s->server_hostname);
+        if (s->is_virtual && s->addrs) {
+           server_addr_rec *srec = s->addrs;
+           ap_rprintf(r, "VirtualHost: %s:%d", srec->virthost, srec->host_port);
+        }
+        if (mconf->ma_advertise_server != NULL) {
+            ap_rprintf(r, " Advertising on Group %s Port %d ", mconf->ma_advertise_adrs, mconf->ma_advertise_port);
+            ap_rprintf(r, "for %s://%s:%d every %d seconds<br/>",
+                       mconf->ma_advertise_srvm, mconf->ma_advertise_srvs,
+                       mconf-> ma_advertise_srvp,
+                       apr_time_sec(mconf->ma_advertise_freq)
+                       );
+        } else {
+            ap_rputs("<br/>", r);
+        }
+        s = s->next;
+    }
+}
+
 
 /*--------------------------------------------------------------------------*/
 /*                                                                          */
@@ -766,6 +792,10 @@ static void register_hooks(apr_pool_t *p)
                         NULL,
                         NULL,
                         APR_HOOK_LAST);
+    ap_hook_child_init(child_init_hook, NULL, NULL, APR_HOOK_MIDDLE);
+
+    /* Provider for the "status" page */
+    ap_register_provider(p, "advertise" , "info", "0", &advertise_info);
 
 }
 
