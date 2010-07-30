@@ -50,7 +50,7 @@ public interface SSLConfiguration
    String getSslKeyStore();
    
    /**
-    * SSL keystore password.
+    * @deprecated Use {@link #getSslKeyStorePassword()} instead.
     */
    @Deprecated
    String getSslKeyStorePass();
