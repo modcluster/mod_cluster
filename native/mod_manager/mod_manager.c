@@ -65,7 +65,7 @@
 #define SBAFBIG "SYNTAX: A field is too big"
 #define SROUBIG "SYNTAX: JVMRoute field too big"
 #define SROUBAD "SYNTAX: JVMRoute can't be empty"
-#define SDOMBIG "SYNTAX: Domain field too big"
+#define SDOMBIG "SYNTAX: LBGroup field too big"
 #define SHOSBIG "SYNTAX: Host field too big"
 #define SPORBIG "SYNTAX: Port field too big"    
 #define STYPBIG "SYNTAX: Type field too big"
@@ -787,6 +787,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             }
             strcpy(nodeinfo.mess.JVMRoute, ptr[i+1]);
         }
+        /* We renamed it LBGroup */
         if (strcasecmp(ptr[i], "Domain") == 0) {
             if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.Domain)) {
                 *errtype = TYPESYNTAX;
@@ -948,7 +949,7 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
         nodeinfo_t *ou;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "node: [%d:%d],Balancer: %.*s,JVMRoute: %.*s,Domain: [%.*s],Host: %.*s,Port: %.*s,Type: %.*s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
+        ap_rprintf(r, "node: [%d:%d],Balancer: %.*s,JVMRoute: %.*s,LBGroup: [%.*s],Host: %.*s,Port: %.*s,Type: %.*s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
                    id[i], ou->mess.id,
                    (int) sizeof(ou->mess.balancer), ou->mess.balancer,
                    (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
@@ -1006,7 +1007,7 @@ static char * process_info(request_rec *r, char **ptr, int *errtype)
         char *pptr;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,Domain: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
+        ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,LBGroup: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
                    id[i],
                    (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
                    (int) sizeof(ou->mess.balancer), ou->mess.balancer,
@@ -1766,7 +1767,7 @@ static void manager_domain(request_rec *r)
     int *id;
 
     /* Process the domain information: the remove node belonging to a domain are stored there */
-    ap_rprintf(r, "<h1>Domain:</h1>");
+    ap_rprintf(r, "<h1>LBGroup:</h1>");
     ap_rprintf(r, "<pre>");
     size = get_max_size_domain(domainstatsmem);
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -2058,7 +2059,7 @@ static int manager_info(request_rec *r)
         char *pptr = (char *) ou;
 
         if (strcmp(domain, ou->mess.Domain) != 0) {
-            ap_rprintf(r, "<h1> Domain %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
+            ap_rprintf(r, "<h1> LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
             domain = ou->mess.Domain;
             domain_command_string(r, ENABLED, domain);
             domain_command_string(r, DISABLED, domain);
@@ -2074,7 +2075,7 @@ static int manager_info(request_rec *r)
         node_command_string(r, DISABLED, ou->mess.JVMRoute);
         ap_rprintf(r, "<br/>\n");
 
-        ap_rprintf(r, "Balancer: %.*s,Domain: %.*s", (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+        ap_rprintf(r, "Balancer: %.*s,LBGroup: %.*s", (int) sizeof(ou->mess.balancer), ou->mess.balancer,
                    (int) sizeof(ou->mess.Domain), ou->mess.Domain);
 
         flushpackets = "Off";
