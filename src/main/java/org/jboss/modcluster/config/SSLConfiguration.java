@@ -52,7 +52,13 @@ public interface SSLConfiguration
    /**
     * SSL keystore password.
     */
+   @Deprecated
    String getSslKeyStorePass();
+   
+   /**
+    * SSL keystore password.
+    */
+   String getSslKeyStorePassword();
    
    /**
     * Keystore type.
@@ -103,5 +109,4 @@ public interface SSLConfiguration
     * Trust store provider.
     */
    String getSslTrustStoreProvider();
-   
 }

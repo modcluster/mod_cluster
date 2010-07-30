@@ -330,8 +330,7 @@
             </row>
          </thead><tbody><row>
             <entry>
-               <para>
-                  <anchor id="ssl2"/>ssl</para>
+               <para><anchor id="ssl2"/>ssl</para>
             </entry>
             <entry>
                <para>false</para>
@@ -386,7 +385,7 @@
          </row>
          <row>
             <entry>
-               <para>sslKeyStorePass</para>
+               <para>sslKeyStorePassword</para>
             </entry>
             <entry>
                <para>changeit</para>

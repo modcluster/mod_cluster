@@ -28,9 +28,11 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.jboss.logging.Logger;
 import org.jboss.modcluster.JvmRouteFactory;
 import org.jboss.modcluster.SessionDrainingStrategy;
 import org.jboss.modcluster.SessionDrainingStrategyEnum;
+import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.SystemPropertyJvmRouteFactory;
 import org.jboss.modcluster.UUIDJvmRouteFactory;
 
@@ -42,6 +44,8 @@ import org.jboss.modcluster.UUIDJvmRouteFactory;
 public class ModClusterConfig
    implements BalancerConfiguration, MCMPHandlerConfiguration, NodeConfiguration, SSLConfiguration
 {
+   private static Logger logger = Logger.getLogger(ModClusterConfig.class);
+   
    // ----------------------------------------------- MCMPHandlerConfiguration
 
    private Boolean advertise;
@@ -126,9 +130,20 @@ public class ModClusterConfig
    public String getSslKeyStore() { return this.sslKeyStore; }
    public void setSslKeyStore(String sslKeyStore) { this.sslKeyStore = sslKeyStore; }
    
-   private String sslKeyStorePass = "changeit";
-   public String getSslKeyStorePass() { return this.sslKeyStorePass; }
-   public void setSslKeyStorePass(String sslKeyStorePass) { this.sslKeyStorePass = sslKeyStorePass; }
+   private String sslKeyStorePassword = "changeit";
+   public String getSslKeyStorePassword() { return this.sslKeyStorePassword; }
+   public void setSslKeyStorePassword(String sslKeyStorePassword) { this.sslKeyStorePassword = sslKeyStorePassword; }
+
+   public String getSslKeyStorePass()
+   {
+      this.deprecate("sslkeyStorePass", "sslKeyStorePassword");
+      return this.getSslKeyStorePassword();
+   }
+   public void setSslKeyStorePass(String sslKeyStorePass)
+   {
+      this.deprecate("sslkeyStorePass", "sslKeyStorePassword");
+      this.setSslKeyStorePassword(sslKeyStorePass);
+   }
    
    private String sslKeyStoreType = "JKS";
    public String getSslKeyStoreType() { return this.sslKeyStoreType; }
@@ -226,4 +241,9 @@ public class ModClusterConfig
    private int maxAttempts = -1;
    public int getMaxAttempts() { return this.maxAttempts; }
    public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
+
+   private void deprecate(String oldProperty, String newProperty)
+   {
+      logger.warn(Strings.DEPRECATED.getString(this.getClass().getName() + "." + oldProperty, this.getClass().getName() + "." + newProperty));
+   }
 }

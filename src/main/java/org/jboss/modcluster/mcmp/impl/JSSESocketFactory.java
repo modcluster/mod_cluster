@@ -221,7 +221,7 @@ public class JSSESocketFactory extends SocketFactory
     */
    private KeyStore getKeystore() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
    {
-      return this.getStore(this.config.getSslKeyStoreType(), this.config.getSslKeyStoreProvider(), this.config.getSslKeyStore(), this.config.getSslKeyStorePass());
+      return this.getStore(this.config.getSslKeyStoreType(), this.config.getSslKeyStoreProvider(), this.config.getSslKeyStore(), this.config.getSslKeyStorePassword());
    }
 
    /*
@@ -236,7 +236,7 @@ public class JSSESocketFactory extends SocketFactory
       String truststorePassword = this.config.getSslTrustStorePassword();
       if (truststorePassword == null)
       {
-         truststorePassword = this.config.getSslKeyStorePass();
+         truststorePassword = this.config.getSslKeyStorePassword();
       }
       else if (truststorePassword.equals(""))
       {
@@ -259,7 +259,7 @@ public class JSSESocketFactory extends SocketFactory
    /*
     * Gets the key- or truststore with the specified type, path, and password.
     */
-   private KeyStore getStore(String type, String provider, String path, String pass) throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
+   private KeyStore getStore(String type, String provider, String path, String password) throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException
    {
       InputStream istream = null;
       try
@@ -275,13 +275,13 @@ public class JSSESocketFactory extends SocketFactory
             istream = new FileInputStream(keyStoreFile);
          }
 
-         if (pass == null)
+         if (password == null)
          {
             ks.load(istream, null);
          }
          else
          {
-            ks.load(istream, pass.toCharArray());
+            ks.load(istream, password.toCharArray());
          }
          return ks;
       }
@@ -312,7 +312,7 @@ public class JSSESocketFactory extends SocketFactory
       String alias = this.config.getSslKeyAlias();
       
       KeyManagerFactory kmf = KeyManagerFactory.getInstance(this.config.getSslCertificateEncodingAlgorithm());
-      kmf.init(ks, this.config.getSslKeyStorePass().toCharArray());
+      kmf.init(ks, this.config.getSslKeyStorePassword().toCharArray());
 
       KeyManager[] kms = kmf.getKeyManagers();
       if (alias != null)
