@@ -94,8 +94,8 @@ public class HAModClusterServiceTestCase
    @Before
    public void setUp() throws Exception
    {
-      EasyMock.expect(this.haConfig.isMasterPerDomain()).andReturn(MASTER_PER_DOMAIN);
-      EasyMock.expect(this.nodeConfig.getDomain()).andReturn(DOMAIN);
+      EasyMock.expect(this.haConfig.isMasterPerLoadBalancingGroup()).andReturn(MASTER_PER_DOMAIN);
+      EasyMock.expect(this.nodeConfig.getLoadBalancingGroup()).andReturn(DOMAIN);
       
       EasyMock.expect(this.partition.getClusterNode()).andReturn(this.node).times(2);
       

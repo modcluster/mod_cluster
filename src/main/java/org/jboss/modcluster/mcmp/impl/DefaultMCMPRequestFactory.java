@@ -73,10 +73,10 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory
       parameters.put("Type", connector.getType().toString());
 
       // Other configuration parameters
-      String domain = nodeConfig.getDomain();
-      if (domain != null)
+      String lbGroup = nodeConfig.getLoadBalancingGroup();
+      if (lbGroup != null)
       {
-         parameters.put("Domain", domain);
+         parameters.put("Domain", lbGroup);
       }
       if (nodeConfig.getFlushPackets())
       {

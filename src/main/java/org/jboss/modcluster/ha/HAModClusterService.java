@@ -91,6 +91,9 @@ import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 
+/**
+ * @author Paul Ferraro
+ */
 public class HAModClusterService extends HASingletonImpl<HAServiceEvent> implements HAModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider, MCMPConnectionListener, ContextFilter
 {
    static final Object[] NULL_ARGS = new Object[0];
@@ -112,8 +115,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    final ResetRequestSource resetRequestSource;
    final Map<ClusterNode, MCMPServerDiscoveryEvent> proxyChangeDigest = new ConcurrentHashMap<ClusterNode, MCMPServerDiscoveryEvent>();
    final ModClusterServiceDRMEntry drmEntry;
-   final String domain;
-   private final boolean masterPerDomain;
+   final String loadBalancingGroup;
+   private final boolean masterPerLoadBalancingGroup;
    private final AtomicReference<Set<CachableMarshalledValue>> replicantView = new AtomicReference<Set<CachableMarshalledValue>>(Collections.<CachableMarshalledValue>emptySet());
 
    volatile int processStatusFrequency = 1;
@@ -172,8 +175,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       
       this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
       this.service = new ClusteredModClusterService(config, config, config, new SimpleLoadBalanceFactorProviderFactory(loadBalanceFactorProvider), this.requestFactory, this.responseParser, this.resetRequestSource, this.clusteredHandler, new AdvertiseListenerFactoryImpl());
-      this.domain = config.getDomain();
-      this.masterPerDomain = config.isMasterPerDomain();
+      this.loadBalancingGroup = config.getLoadBalancingGroup();
+      this.masterPerLoadBalancingGroup = config.isMasterPerLoadBalancingGroup();
    }
    
    protected HAModClusterService(EventFactory<HAServiceEvent> eventFactory, HAConfiguration haConfig,
@@ -197,8 +200,8 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       
       this.drmEntry = new ModClusterServiceDRMEntry(partition.getClusterNode(), null);
       this.service = new ClusteredModClusterService(nodeConfig, balancerConfig, mcmpConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource, clusteredHandler, advertiseListenerFactory);
-      this.domain = nodeConfig.getDomain();
-      this.masterPerDomain = haConfig.isMasterPerDomain();
+      this.loadBalancingGroup = nodeConfig.getLoadBalancingGroup();
+      this.masterPerLoadBalancingGroup = haConfig.isMasterPerLoadBalancingGroup();
    }
 
    /**
@@ -221,17 +224,17 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
 
    public boolean disableDomain()
    {
-      return this.conjoin(this.rpcStub.disable(this.domain));
+      return this.conjoin(this.rpcStub.disable(this.loadBalancingGroup));
    }
 
    public boolean enableDomain()
    {
-      return this.conjoin(this.rpcStub.enable(this.domain));
+      return this.conjoin(this.rpcStub.enable(this.loadBalancingGroup));
    }
 
    public boolean stopDomain(long timeout, TimeUnit unit)
    {
-      return this.conjoin(this.rpcStub.stop(this.domain, timeout, unit));
+      return this.conjoin(this.rpcStub.stop(this.loadBalancingGroup, timeout, unit));
    }
 
    private boolean conjoin(List<RpcResponse<Boolean>> responses)
@@ -571,7 +574,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    {
       String name = this.getServiceHAName();
       
-      return ((this.domain != null) && this.masterPerDomain) ? name + ":" + this.domain : name;
+      return ((this.loadBalancingGroup != null) && this.masterPerLoadBalancingGroup) ? name + ":" + this.loadBalancingGroup : name;
    }
    
    /**
@@ -1077,7 +1080,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
       
       private boolean sameDomain(String domain)
       {
-         return (HAModClusterService.this.domain != null) ? HAModClusterService.this.domain.equals(domain) : (domain == null);
+         return (HAModClusterService.this.loadBalancingGroup != null) ? HAModClusterService.this.loadBalancingGroup.equals(domain) : (domain == null);
       }
    }
    

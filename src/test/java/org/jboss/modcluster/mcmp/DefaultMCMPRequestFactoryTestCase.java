@@ -200,7 +200,7 @@ public class DefaultMCMPRequestFactoryTestCase
       EasyMock.expect(connector.getPort()).andReturn(100);
       EasyMock.expect(connector.getType()).andReturn(Connector.Type.AJP);
       
-      EasyMock.expect(nodeConfig.getDomain()).andReturn("domain");
+      EasyMock.expect(nodeConfig.getLoadBalancingGroup()).andReturn("lb-group");
       EasyMock.expect(nodeConfig.getFlushPackets()).andReturn(Boolean.TRUE);
       EasyMock.expect(nodeConfig.getFlushWait()).andReturn(1);
       EasyMock.expect(nodeConfig.getPing()).andReturn(2);
@@ -237,7 +237,7 @@ public class DefaultMCMPRequestFactoryTestCase
       Assert.assertEquals(InetAddress.getLocalHost().getHostName(), parameters.get("Host"));
       Assert.assertEquals("100", parameters.get("Port"));
       Assert.assertEquals("ajp", parameters.get("Type"));
-      Assert.assertEquals("domain", parameters.get("Domain"));
+      Assert.assertEquals("lb-group", parameters.get("Domain"));
       Assert.assertEquals("On", parameters.get("flushpackets"));
       Assert.assertEquals("1", parameters.get("flushwait"));
       Assert.assertEquals("2", parameters.get("ping"));

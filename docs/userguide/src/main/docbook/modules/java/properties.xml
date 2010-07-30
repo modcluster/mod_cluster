@@ -297,16 +297,17 @@
          </row>
          <row>
             <entry>
-               <para>
-                  <anchor id="domain"/>domain</para>
+               <para><anchor id="lbGroup"/>loadBalancingGroup</para>
+            </entry>
+            <entry>
+               <para><emphasis>None</emphasis></para>
             </entry>
             <entry>
                <para>
-                  <emphasis>None</emphasis>
+                  If specified, load will be balanced among jvmRoutes withing the same load balancing group.
+                  A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.
+                  This is primarily used in conjunction with partitioned session replication (e.g. buddy replication).
                </para>
-            </entry>
-            <entry>
-               <para>If specified, load will be balanced among jvmRoutes with the same domain. This is primarily used in conjunction with partitioned session replication (e.g. buddy replication).</para>
             </entry>
          </row></tbody></tgroup>
    </informaltable>

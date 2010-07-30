@@ -29,7 +29,26 @@ import org.jboss.modcluster.config.ModClusterConfig;
  */
 public class HAModClusterConfig extends ModClusterConfig implements HAConfiguration
 {
-   private boolean masterPerDomain = false;
-   public boolean isMasterPerDomain() { return this.masterPerDomain; }
-   public void setMasterPerDomain(boolean masterPerDomain) { this.masterPerDomain = masterPerDomain; }
+   private boolean masterPerLoadBalancingGroup = false;
+   
+   public boolean isMasterPerLoadBalancingGroup()
+   {
+      return this.masterPerLoadBalancingGroup;
+   }
+   public void setMasterPerLoadBalancingGroup(boolean masterPerLoadBalancingGroup)
+   {
+      this.masterPerLoadBalancingGroup = masterPerLoadBalancingGroup;
+   }
+   
+   public boolean isMasterPerDomain()
+   {
+      this.deprecate("masterPerDomain", "masterPerLoadBalancingGroup");
+      return this.isMasterPerLoadBalancingGroup();
+   }
+   @Deprecated
+   public void setMasterPerDomain(boolean masterPerDomain)
+   {
+      this.deprecate("masterPerDomain", "masterPerLoadBalancingGroup");
+      this.setMasterPerLoadBalancingGroup(masterPerDomain);
+   }
 }

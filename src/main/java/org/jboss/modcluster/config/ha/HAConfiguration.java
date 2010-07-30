@@ -28,7 +28,14 @@ package org.jboss.modcluster.config.ha;
 public interface HAConfiguration
 {   
    /**
-    * Should clustered service use a singleton master per domain.
+    * @deprecated Use {@link #isMasterPerLoadBalancingGroup()} instead.
     */
+   @Deprecated
    boolean isMasterPerDomain();
+   
+   /**
+    * Should clustered service use a singleton master per load balancing group.
+    * A load balancing group is equivalent to a mod_jk domain.
+    */
+   boolean isMasterPerLoadBalancingGroup();
 }

@@ -139,6 +139,7 @@ public class ModClusterConfig
       this.deprecate("sslkeyStorePass", "sslKeyStorePassword");
       return this.getSslKeyStorePassword();
    }
+   @Deprecated
    public void setSslKeyStorePass(String sslKeyStorePass)
    {
       this.deprecate("sslkeyStorePass", "sslKeyStorePassword");
@@ -188,10 +189,22 @@ public class ModClusterConfig
 
    // -----------------------------------------------------  NodeConfiguration
 
-   private String domain = null;
-   public String getDomain() { return this.domain; }
-   public void setDomain(String domain) { this.domain = domain; }
+   public String getDomain()
+   {
+      this.deprecate("domain", "failoverGroup");
+      return this.getLoadBalancingGroup();
+   }
+   @Deprecated
+   public void setDomain(String domain)
+   {
+      this.deprecate("domain", "failoverGroup");
+      this.setLoadBalancingGroup(domain);
+   }
 
+   private String loadBalancingGroup = null;
+   public String getLoadBalancingGroup() { return this.loadBalancingGroup; }
+   public void setLoadBalancingGroup(String loadBalancingGroup) { this.loadBalancingGroup = loadBalancingGroup; }
+   
    private boolean flushPackets = false;
    public boolean getFlushPackets() { return this.flushPackets; }
    public void setFlushPackets(boolean flushPackets) { this.flushPackets = flushPackets; }
@@ -242,7 +255,7 @@ public class ModClusterConfig
    public int getMaxAttempts() { return this.maxAttempts; }
    public void setMaxAttempts(int maxAttempts) { this.maxAttempts = maxAttempts; }
 
-   private void deprecate(String oldProperty, String newProperty)
+   protected void deprecate(String oldProperty, String newProperty)
    {
       logger.warn(Strings.DEPRECATED.getString(this.getClass().getName() + "." + oldProperty, this.getClass().getName() + "." + newProperty));
    }

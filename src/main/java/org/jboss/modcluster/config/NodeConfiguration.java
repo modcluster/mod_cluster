@@ -25,10 +25,18 @@ package org.jboss.modcluster.config;
 public interface NodeConfiguration
 {
    /**
-    * Domain parameter, which allows tying a jvmRoute to a particular domain.
+    * @deprecated Use {@link #getLoadBalancingGroup()} instead.
     */
+   @Deprecated
    String getDomain();
 
+   /**
+    * Indicates the group of servers to which this node belongs.
+    * If defined, mod_cluster will always attempt to failover a given request to a node in the same group as the failed node.
+    * This property is equivalent to the mod_jk domain directive.
+    */
+   String getLoadBalancingGroup();
+   
    /**
     * Allows controlling flushing of packets.
     */
