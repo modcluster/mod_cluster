@@ -141,6 +141,13 @@ typedef struct mod_manager_config
     /* default name for balancer */
     char *balancername;
 
+    /* allow aditional display */
+    int allow_display;
+    /* allow command logic */
+    int allow_cmd;
+    /* don't context in first status page */
+    int reduce_display;  
+
 } mod_manager_config;
 
 /*
@@ -2329,6 +2336,45 @@ static const char*cmd_manager_nonce(cmd_parms *cmd, void *dummy, const char *arg
     }
     return NULL;
 }
+static const char*cmd_manager_allow_display(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    if (strcasecmp(arg, "Off") == 0)
+       mconf->allow_display = 0;
+    else if (strcasecmp(arg, "On") == 0)
+       mconf->allow_display = -1;
+    else {
+       return "AllowDisplay must be one of: "
+              "off | on";
+    }
+    return NULL;
+}
+static const char*cmd_manager_allow_cmd(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    if (strcasecmp(arg, "Off") == 0)
+       mconf->allow_cmd = 0;
+    else if (strcasecmp(arg, "On") == 0)
+       mconf->allow_cmd = -1;
+    else {
+       return "AllowCmd must be one of: "
+              "off | on";
+    }
+    return NULL;
+}
+static const char*cmd_manager_reduce_display(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    if (strcasecmp(arg, "Off") == 0)
+       mconf->reduce_display = 0;
+    else if (strcasecmp(arg, "On") == 0)
+       mconf->reduce_display = -1;
+    else {
+       return "ReduceDisplay must be one of: "
+              "off | on";
+    }
+    return NULL;
+}
 
 static const command_rec  manager_cmds[] =
 {
@@ -2388,6 +2434,27 @@ static const command_rec  manager_cmds[] =
         OR_ALL,
         "CheckNonce - Switch check of nonce when using mod_cluster-manager handler on | off (Default: on Nonce checked)"
     ),
+    AP_INIT_TAKE1(
+        "AllowDisplay",
+        cmd_manager_allow_display,
+        NULL,
+        OR_ALL,
+        "AllowDisplay - Display additional information in the mod_cluster-manager page on | off (Default: off Only version displayed)"
+    ),
+    AP_INIT_TAKE1(
+        "AllowCmd",
+        cmd_manager_allow_cmd,
+        NULL,
+        OR_ALL,
+        "AllowCmd - Allow commands using mod_cluster-manager URL on | off (Default: on Commmands allowed)"
+    ),
+    AP_INIT_TAKE1(
+        "ReduceDisplay",
+        cmd_manager_reduce_display,
+        NULL,
+        OR_ALL,
+        "ReduceDisplay - Don't contexts in the main mod_cluster-manager page. on | off (Default: off Context displayed)"
+    ),
     {NULL}
 };
 
@@ -2435,6 +2502,9 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->persistent = 0;
     mconf->nonce = -1;
     mconf->balancername = NULL;
+    mconf->allow_display = 0;
+    mconf->allow_cmd = -1;
+    mconf->reduce_display = 0;
     return mconf;
 }
 
@@ -2489,6 +2559,21 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->balancername = apr_pstrdup(p, mconf2->balancername);
     else if (mconf1->balancername)
         mconf->balancername = apr_pstrdup(p, mconf1->balancername);
+
+    if (mconf2->allow_display != 0)
+        mconf->allow_display = mconf2->allow_display;
+    else if (mconf1->allow_display != 0)
+        mconf->allow_display = mconf1->allow_display;
+
+    if (mconf2->allow_cmd != -1)
+        mconf->allow_cmd = mconf2->allow_cmd;
+    else if (mconf1->allow_cmd != -1)
+        mconf->allow_cmd = mconf1->allow_cmd;
+
+    if (mconf2->reduce_display != 0)
+        mconf->reduce_display = mconf2->reduce_display;
+    else if (mconf1->reduce_display != 0)
+        mconf->reduce_display = mconf1->reduce_display;
 
     return mconf;
 }

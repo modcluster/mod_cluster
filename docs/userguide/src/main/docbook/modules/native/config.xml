@@ -152,6 +152,15 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>CheckNonce: Switch check of nonce when using mod_cluster-manager
     handler on | off (Default: on Nonce checked) Since 1.1.0.CR1</para>
 
+    <para>AllowDisplay: Switch additional display on mod_cluster-manager main page
+    on | off (Default: off Only version displayed) Since 1.1.0.GA</para>
+
+    <para>AllowCmd: Allow commands using mod_cluster-manager URL
+     on | off (Default: on Commmands allowed) Since 1.1.0.GA</para>
+
+    <para>ReduceDisplay - Don't contexts in the main mod_cluster-manager page.
+     on | off (Default: off Context displayed)</para>
+
     <para>SetHandler mod_cluster-manager: That is the handler to display the
     node mod_cluster sees from the cluster. It displays the information about
     the nodes like INFO and additionaly counts the number of active
