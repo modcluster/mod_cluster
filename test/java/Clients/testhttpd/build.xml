@@ -1,0 +1,28 @@
+<project name="test application"  default="build" basedir=".">
+  <property file="${user.home}/build.properties"/>
+  <property file="build.properties"/>
+  <property file="../../build.properties.default"/>
+
+  <path id="tomcat.test.classpath">
+    <pathelement location="${servlet-api.jar}"/>
+  </path>
+  
+  <target name="build" depends="compile">
+    <copy file="testhttpd.war" todir="../../output/classes" />
+  </target>
+  <target name="compile">
+    <mkdir dir="classes" />
+    <javac srcdir="./src" destdir="./classes" debug="on" debuglevel="lines,vars,source">
+      <classpath refid="tomcat.test.classpath" />
+   </javac>
+
+    <war destfile="testhttpd.war" webxml="testhttpd.xml">
+      <classes dir="./classes" />
+      <!--
+      <metainf dir="./metainf">
+        <include name="**/context.xml"/>
+      </metainf>
+       -->
+    </war>
+  </target>
+</project>

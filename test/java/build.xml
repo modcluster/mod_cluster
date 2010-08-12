@@ -81,8 +81,8 @@
   </javac>
 
   <!-- Build the client (servlets) applications -->
-  <ant dir="Clients/JBWEB-117/" target="build">
-  </ant>
+  <ant dir="Clients/JBWEB-117/" target="build"/>
+  <ant dir="Clients/testhttpd/" target="build"/>
 
   <!-- Copy the class file in the ouput directory -->
   <copy file="Clients/JBWEB-117/JBWEB-117.war" todir="${test.classes}"/>
