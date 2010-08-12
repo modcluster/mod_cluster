@@ -78,6 +78,8 @@
          optimize="${compile.optimize}">
          <classpath refid="jbossweb.test.classpath" />
          <include name="org/jboss/mod_cluster/**" />
+         <include name="Advertize.java" />
+         <include name="SAdvertize.java" />
   </javac>
 
   <!-- Build the client (servlets) applications -->
