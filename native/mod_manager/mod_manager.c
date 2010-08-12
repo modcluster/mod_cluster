@@ -1898,6 +1898,35 @@ static void printproxy_stat(request_rec *r, proxy_worker_stat *proxystat)
                (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
                (int) proxystat->busy, proxystat->lbfactor);
 }
+/* Display module information */
+static void modules_info(request_rec *r)
+{
+    if (ap_find_linked_module("mod_proxy_cluster.c") != NULL)
+        ap_rputs("mod_proxy_cluster.c: OK<br/>", r);
+    else
+        ap_rputs("mod_proxy_cluster.c: missing<br/>", r);
+
+    if (ap_find_linked_module("mod_sharedmem.c") != NULL)
+        ap_rputs("mod_sharedmem.c: OK<br/>", r);
+    else
+        ap_rputs("mod_sharedmem.c: missing<br/>", r);
+
+    ap_rputs("Protocol supported: ", r);
+    if (ap_find_linked_module("mod_proxy_http.c") != NULL)
+        ap_rputs("http ", r);
+    if (ap_find_linked_module("mod_proxy_ajp.c") != NULL) 
+        ap_rputs("AJP ", r);
+    if (ap_find_linked_module("mod_ssl.c") != NULL) 
+        ap_rputs("https", r);
+    ap_rputs("<br/>", r);
+
+    if (ap_find_linked_module("mod_advertise.c") != NULL)
+        ap_rputs("mod_advertise.c: OK<br/>", r);
+    else
+        ap_rputs("mod_advertise.c: not loaded<br/>", r);
+
+}
+/* Process INFO message and mod_cluster_manager pages generation */
 static int manager_info(request_rec *r)
 {
     int size, i, sizesessionid;
@@ -2021,9 +2050,11 @@ static int manager_info(request_rec *r)
     }
 
     /* Advertise information */
-    if (advertise_info != NULL) {
+    if (mconf->allow_display) {
         ap_rputs("start of \"httpd.conf\" configuration<br/>", r); 
-        advertise_info(r);
+        modules_info(r);
+        if (advertise_info != NULL)
+            advertise_info(r);
         ap_rputs("end of \"httpd.conf\" configuration<br/><br/>", r);
     }
 
