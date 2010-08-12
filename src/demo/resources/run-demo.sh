@@ -5,6 +5,7 @@ do
     CP=$CP:./${i}
 done
 
+# NOTE -Xss8K may cause troubles check ulimit -s should be >= 8192
 OPTS="-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=31"
 
 # Tell the HttpURLConnection pool to maintain 400 connections max
