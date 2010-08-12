@@ -927,7 +927,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
 /*
  * Process a DUMP command.
  */
-static char * process_dump(request_rec *r, char **ptr, int *errtype)
+static char * process_dump(request_rec *r, int *errtype)
 {
     int size, i;
     int *id;
@@ -997,7 +997,7 @@ static char * process_dump(request_rec *r, char **ptr, int *errtype)
  * Process a INFO command.
  * Statics informations ;-)
  */
-static char * process_info(request_rec *r, char **ptr, int *errtype)
+static char * process_info(request_rec *r, int *errtype)
 {
     int size, i;
     int *id;
@@ -1678,7 +1678,7 @@ static void domain_command_string(request_rec *r, int status, char *Domain)
 /*
  * Process the parameters and display corresponding informations.
  */
-static void manager_info_contexts(request_rec *r, int node, int host, char *Alias, char *JVMRoute)
+static void manager_info_contexts(request_rec *r, int allow_cmd, int node, int host, char *Alias, char *JVMRoute)
 {
     int size, i;
     int *id;
@@ -1708,12 +1708,13 @@ static void manager_info_contexts(request_rec *r, int node, int host, char *Alia
                 break;
         }
         ap_rprintf(r, "%.*s, Status: %s Request: %d ", (int) sizeof(ou->context), ou->context, status, ou->nbrequests);
-        context_command_string(r, ou, Alias, JVMRoute);
+        if (allow_cmd)
+            context_command_string(r, ou, Alias, JVMRoute);
         ap_rprintf(r, "\n");
     }
     ap_rprintf(r, "</pre>");
 }
-static void manager_info_hosts(request_rec *r, int node, char *JVMRoute)
+static void manager_info_hosts(request_rec *r, int allow_cmd, int node, char *JVMRoute)
 {
     int size, i;
     int *id;
@@ -1733,7 +1734,7 @@ static void manager_info_hosts(request_rec *r, int node, char *JVMRoute)
             if (vhost)
                 ap_rprintf(r, "</pre>");
             ap_rprintf(r, "<h2> Virtual Host %d:</h2>", ou->vhost);
-            manager_info_contexts(r, ou->node, ou->vhost, ou->host, JVMRoute);
+            manager_info_contexts(r, allow_cmd, ou->node, ou->vhost, ou->host, JVMRoute);
             ap_rprintf(r, "<h3>Aliases:</h3>");
             ap_rprintf(r, "<pre>");
             vhost = ou->vhost;
@@ -1983,8 +1984,24 @@ static int manager_info(request_rec *r)
             long t = atol(val);
             apr_table_set(r->headers_out, "Refresh", apr_ltoa(r->pool,t < 1 ? 10 : t));
         }
-        /* Process command if any */
-        if (cmd != NULL && typ !=NULL) {
+        /* Process INFO and DUMP */
+        if (cmd != NULL) {
+            int errtype = 0;
+            if (strcasecmp(cmd, "DUMP") == 0) {
+                errstring = process_dump(r, &errtype);
+                if (!errstring)
+                    return OK;
+            } else if (strcasecmp(cmd, "INFO") == 0) {
+                errstring = process_info(r, &errtype);
+                if (!errstring)
+                    return OK;
+            }
+            if (errstring) {
+                process_error(r, errstring, errtype);
+            }
+        }
+        /* Process other command if any */
+        if (cmd != NULL && typ !=NULL && mconf->allow_cmd && errstring == NULL) {
             int global = RANGECONTEXT;
             int errtype = 0;
             int i;
@@ -2018,15 +2035,7 @@ static int manager_info(request_rec *r)
                 errstring = process_stop(r, ptr, &errtype, global);
             else if (strcasecmp(cmd, "REMOVE-APP") == 0)
                 errstring = process_remove(r, ptr, &errtype, global);
-            else if (strcasecmp(cmd, "DUMP") == 0) {
-                errstring = process_dump(r, ptr, &errtype);
-                if (!errstring)
-                    return OK;
-            } else if (strcasecmp(cmd, "INFO") == 0) {
-                errstring = process_info(r, ptr, &errtype);
-                if (!errstring)
-                    return OK;
-            } else {
+            else {
                 errstring = SCMDUNS;
                 errtype = TYPESYNTAX;
             }
@@ -2099,8 +2108,10 @@ static int manager_info(request_rec *r)
         if (strcmp(domain, ou->mess.Domain) != 0) {
             ap_rprintf(r, "<h1> LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
             domain = ou->mess.Domain;
-            domain_command_string(r, ENABLED, domain);
-            domain_command_string(r, DISABLED, domain);
+            if (mconf->allow_cmd)
+                domain_command_string(r, ENABLED, domain);
+            if (mconf->allow_cmd)
+                domain_command_string(r, DISABLED, domain);
             ap_rprintf(r, "</h1>\n");
         }
         ap_rprintf(r, "<h1> Node %.*s (%.*s://%.*s:%.*s): </h1>\n",
@@ -2109,8 +2120,10 @@ static int manager_info(request_rec *r)
                    (int) sizeof(ou->mess.Host), ou->mess.Host,
                    (int) sizeof(ou->mess.Port), ou->mess.Port);
 
-        node_command_string(r, ENABLED, ou->mess.JVMRoute);
-        node_command_string(r, DISABLED, ou->mess.JVMRoute);
+        if (mconf->allow_cmd)
+            node_command_string(r, ENABLED, ou->mess.JVMRoute);
+        if (mconf->allow_cmd)
+            node_command_string(r, DISABLED, ou->mess.JVMRoute);
         ap_rprintf(r, "<br/>\n");
 
         ap_rprintf(r, "Balancer: %.*s,LBGroup: %.*s", (int) sizeof(ou->mess.balancer), ou->mess.balancer,
@@ -2137,7 +2150,7 @@ static int manager_info(request_rec *r)
         ap_rprintf(r, "\n");
 
         /* Process the Vhosts */
-        manager_info_hosts(r, ou->mess.id, ou->mess.JVMRoute); 
+        manager_info_hosts(r, mconf->allow_cmd, ou->mess.id, ou->mess.JVMRoute); 
     }
     /* Display the sessions */
     if (sizesessionid)
@@ -2218,9 +2231,9 @@ static int manager_handler(request_rec *r)
     else if (strcasecmp(r->method, "STATUS") == 0)
         errstring = process_status(r, ptr, &errtype);
     else if (strcasecmp(r->method, "DUMP") == 0)
-        errstring = process_dump(r, ptr, &errtype);
+        errstring = process_dump(r, &errtype);
     else if (strcasecmp(r->method, "INFO") == 0)
-        errstring = process_info(r, ptr, &errtype);
+        errstring = process_info(r, &errtype);
     else if (strcasecmp(r->method, "PING") == 0)
         errstring = process_ping(r, ptr, &errtype);
     else {
