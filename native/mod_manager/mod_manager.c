@@ -1678,12 +1678,13 @@ static void domain_command_string(request_rec *r, int status, char *Domain)
 /*
  * Process the parameters and display corresponding informations.
  */
-static void manager_info_contexts(request_rec *r, int allow_cmd, int node, int host, char *Alias, char *JVMRoute)
+static void manager_info_contexts(request_rec *r, int reduce_display, int allow_cmd, int node, int host, char *Alias, char *JVMRoute)
 {
     int size, i;
     int *id;
     /* Process the Contexts */
-    ap_rprintf(r, "<h3>Contexts:</h3>");
+    if (!reduce_display)
+        ap_rprintf(r, "<h3>Contexts:</h3>");
     ap_rprintf(r, "<pre>");
     size = get_max_size_context(contextstatsmem);
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1714,7 +1715,7 @@ static void manager_info_contexts(request_rec *r, int allow_cmd, int node, int h
     }
     ap_rprintf(r, "</pre>");
 }
-static void manager_info_hosts(request_rec *r, int allow_cmd, int node, char *JVMRoute)
+static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd, int node, char *JVMRoute)
 {
     int size, i;
     int *id;
@@ -1731,17 +1732,25 @@ static void manager_info_hosts(request_rec *r, int allow_cmd, int node, char *JV
         if (ou->node != node)
             continue;
         if (ou->vhost != vhost) {
-            if (vhost)
+            if (vhost && !reduce_display)
                 ap_rprintf(r, "</pre>");
-            ap_rprintf(r, "<h2> Virtual Host %d:</h2>", ou->vhost);
-            manager_info_contexts(r, allow_cmd, ou->node, ou->vhost, ou->host, JVMRoute);
-            ap_rprintf(r, "<h3>Aliases:</h3>");
-            ap_rprintf(r, "<pre>");
+            if (!reduce_display)
+                ap_rprintf(r, "<h2> Virtual Host %d:</h2>", ou->vhost);
+            manager_info_contexts(r, reduce_display, allow_cmd, ou->node, ou->vhost, ou->host, JVMRoute);
+            if (reduce_display)
+                ap_rprintf(r, "Aliases: ");
+            else {
+                ap_rprintf(r, "<h3>Aliases:</h3>");
+                ap_rprintf(r, "<pre>");
+            }
             vhost = ou->vhost;
         }
-        ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), ou->host);
+        if (reduce_display)
+            ap_rprintf(r, "%.*s ", (int) sizeof(ou->host), ou->host);
+        else
+            ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), ou->host);
     }
-    if (size)
+    if (size && !reduce_display)
         ap_rprintf(r, "</pre>");
 
 }
@@ -1769,13 +1778,16 @@ static void manager_sessionid(request_rec *r)
 }
 
 #if HAVE_CLUSTER_EX_DEBUG
-static void manager_domain(request_rec *r)
+static void manager_domain(request_rec *r, int reduce_display)
 {
     int size, i;
     int *id;
 
-    /* Process the domain information: the remove node belonging to a domain are stored there */
-    ap_rprintf(r, "<h1>LBGroup:</h1>");
+    /* Process the domain information: the removed node belonging to a domain are stored there */
+    if (reduce_display)
+        ap_rprintf(r, "<br/>LBGroup:");
+    else
+        ap_rprintf(r, "<h1>LBGroup:</h1>");
     ap_rprintf(r, "<pre>");
     size = get_max_size_domain(domainstatsmem);
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1887,14 +1899,17 @@ static char *process_domain(request_rec *r, char **ptr, int *errtype, const char
     return errstring;
 }
 /* XXX: move to mod_proxy_cluster as a provider ? */
-static void printproxy_stat(request_rec *r, proxy_worker_stat *proxystat)
+static void printproxy_stat(request_rec *r, int reduce_display, proxy_worker_stat *proxystat)
 {
     char *status = NULL;
     if (proxystat->status & PROXY_WORKER_NOT_USABLE_BITMAP)
         status = "NOTOK";
     else
         status = "OK";
-    ap_rprintf(r, ",Status: %s,Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
+    if (reduce_display)
+        ap_rprintf(r, " %s ", status);
+    else
+        ap_rprintf(r, ",Status: %s,Elected: %d,Read: %d,Transferred: %d,Connected: %d,Load: %d",
                status,
                (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
                (int) proxystat->busy, proxystat->lbfactor);
@@ -2106,43 +2121,58 @@ static int manager_info(request_rec *r)
         char *pptr = (char *) ou;
 
         if (strcmp(domain, ou->mess.Domain) != 0) {
-            ap_rprintf(r, "<h1> LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
+            if (mconf->reduce_display)
+                ap_rprintf(r, "<br/><br/>LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
+            else
+                ap_rprintf(r, "<h1> LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
             domain = ou->mess.Domain;
             if (mconf->allow_cmd)
                 domain_command_string(r, ENABLED, domain);
             if (mconf->allow_cmd)
                 domain_command_string(r, DISABLED, domain);
-            ap_rprintf(r, "</h1>\n");
+            if (!mconf->reduce_display)
+                ap_rprintf(r, "</h1>\n");
         }
-        ap_rprintf(r, "<h1> Node %.*s (%.*s://%.*s:%.*s): </h1>\n",
+        if (mconf->reduce_display)
+            ap_rprintf(r, "<br/><br/>Node %.*s ",
+                   (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute);
+        else 
+            ap_rprintf(r, "<h1> Node %.*s (%.*s://%.*s:%.*s): </h1>\n",
                    (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
                    (int) sizeof(ou->mess.Type), ou->mess.Type,
                    (int) sizeof(ou->mess.Host), ou->mess.Host,
                    (int) sizeof(ou->mess.Port), ou->mess.Port);
+        pptr = pptr + ou->offset;
+        if (mconf->reduce_display)
+            printproxy_stat(r, mconf->reduce_display, (proxy_worker_stat *) pptr);
 
         if (mconf->allow_cmd)
             node_command_string(r, ENABLED, ou->mess.JVMRoute);
         if (mconf->allow_cmd)
             node_command_string(r, DISABLED, ou->mess.JVMRoute);
-        ap_rprintf(r, "<br/>\n");
 
-        ap_rprintf(r, "Balancer: %.*s,LBGroup: %.*s", (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+        if (!mconf->reduce_display) {
+            ap_rprintf(r, "<br/>\n");
+            ap_rprintf(r, "Balancer: %.*s,LBGroup: %.*s", (int) sizeof(ou->mess.balancer), ou->mess.balancer,
                    (int) sizeof(ou->mess.Domain), ou->mess.Domain);
 
-        flushpackets = "Off";
-        switch (ou->mess.flushpackets) {
-            case flush_on:
-                flushpackets = "On";
-                break;
-            case flush_auto:
-                flushpackets = "Auto";
-        }
-        ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
+            flushpackets = "Off";
+            switch (ou->mess.flushpackets) {
+                case flush_on:
+                    flushpackets = "On";
+                    break;
+                case flush_auto:
+                    flushpackets = "Auto";
+            }
+            ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
                    flushpackets, ou->mess.flushwait,
                    (int) ou->mess.ping, ou->mess.smax, (int) ou->mess.ttl);
+        }
 
-        pptr = pptr + ou->offset;
-        printproxy_stat(r, (proxy_worker_stat *) pptr);
+        if (mconf->reduce_display)
+            ap_rprintf(r, "<br/>\n");
+        else
+            printproxy_stat(r, mconf->reduce_display, (proxy_worker_stat *) pptr);
 
         if (sizesessionid) {
             ap_rprintf(r, ",Num sessions: %d",  count_sessionid(r, ou->mess.JVMRoute));
@@ -2150,13 +2180,13 @@ static int manager_info(request_rec *r)
         ap_rprintf(r, "\n");
 
         /* Process the Vhosts */
-        manager_info_hosts(r, mconf->allow_cmd, ou->mess.id, ou->mess.JVMRoute); 
+        manager_info_hosts(r, mconf->reduce_display, mconf->allow_cmd, ou->mess.id, ou->mess.JVMRoute); 
     }
     /* Display the sessions */
     if (sizesessionid)
         manager_sessionid(r);
 #if HAVE_CLUSTER_EX_DEBUG
-    manager_domain(r);
+    manager_domain(r, mconf->reduce_display);
 #endif
 
 
