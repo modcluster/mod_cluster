@@ -7,7 +7,7 @@
   <title>java properties</title>
 
 <sect1><title>Configuration Properties</title>
-   <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <ulink url="http://www.jboss.org/mod_cluster/java/properties.html">how mod_cluster is configured</ulink>.</para><sect2><title>
+   <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <link linkend="javaconf">how mod_cluster is configured</link>.</para><sect2><title>
       <anchor id="mcmp"/>Proxy Discovery Configuration</title>
    <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
    <informaltable frame="all">
@@ -163,9 +163,8 @@
                </entry>
             </row>
          </thead><tbody><row>
-            <entry>
-               <para>
-                  <anchor id="stickySession"/>stickySession</para>
+            <entry id="stickySession">
+               <para>stickySession</para>
             </entry>
             <entry>
                <para>true</para>
@@ -182,7 +181,7 @@
                <para>false</para>
             </entry>
             <entry>
-               <para>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <ulink url="http://www.jboss.org/mod_cluster/java/properties.html#stickySession">stickySession</ulink> is false.</para>
+               <para>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
          </row>
          <row>
@@ -193,7 +192,7 @@
                <para>true</para>
             </entry>
             <entry>
-               <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <ulink url="http://www.jboss.org/mod_cluster/java/properties.html#stickySession">stickySession</ulink> is false.</para>
+               <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
          </row>
          <row>
@@ -296,8 +295,8 @@
             </entry>
          </row>
          <row>
-            <entry>
-               <para><anchor id="lbGroup"/>loadBalancingGroup</para>
+            <entry id="lbGroup">
+               <para>loadBalancingGroup</para>
             </entry>
             <entry>
                <para><emphasis>None</emphasis></para>
@@ -530,7 +529,8 @@
                <para>false</para>
             </entry>
             <entry>
-               <para>If the <ulink url="http://www.jboss.org/mod_cluster/java/properties.html#domain">domain</ulink> directive is used, should HA partition use a singleton master per domain</para>
+               <para>If the <link linkend="lbGroup">loadBalancingGroup</link> directive is used,
+                     should HA partition use a singleton master per loadBalancingGroup</para>
             </entry>
          </row></tbody></tgroup>
    </informaltable></sect2><sect2><title>
