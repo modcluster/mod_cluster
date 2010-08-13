@@ -139,7 +139,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>Maxsessionid: That is the number of active sessionid we store to
     give number of active sessions in the mod_cluster-manager handler. A
     session is unactive when mod_cluster doesn't receive any information from
-    the session in 5 minutes. Default: 0 (the logic is activated).</para>
+    the session in 5 minutes. Default: 0 (the logic is not activated).</para>
 
     <para>ManagerBalancerName: That is the name of balancer to use when the
     JBoss AS/JBossWeb/Tomcat doesn't provide a balancer name. That is not
