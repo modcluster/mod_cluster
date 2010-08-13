@@ -7,7 +7,7 @@
   <title>java properties</title>
 
 <sect1><title>Configuration Properties</title>
-   <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <link linkend="javaproperties">how mod_cluster is configured</link>.</para><sect2><title>
+   <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <link linkend="javaconf">how mod_cluster is configured</link>.</para><sect2><title>
       <anchor id="mcmp"/>Proxy Discovery Configuration</title>
    <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
    <informaltable frame="all">
