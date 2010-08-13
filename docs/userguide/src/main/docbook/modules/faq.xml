@@ -85,16 +85,35 @@ X-Manager-Host: 10.33.144.3</programlisting>
 
       <orderedlist>
         <listitem>
+           Check the modules are loaded and Advertise is started.
+           in httpd.conf activate extented informatio display, add:
+          <programlisting>AllowDisplay On</programlisting>
+           When accessing to the <link linked="SetHandlermod_cluster-manager">mod_cluster_manager</link>
+           you should get something like:
+           <mediaobject>
+           <imageobject role="mod_cluster extended status">
+           <imagedata align="center" fileref="images/mod_status_ext.jpg"
+                     format="JPG" />
+            </imageobject>
+            </mediaobject>
+            If not, go to the <link linked="MinimalExample">Minimal Example</link>
+            and add the missing directive(s).
+        </listitem>
+           
+        <listitem>
            Check that Advertise message are received on the cluster node. A 
 
           <ulink
           url="http://anonsvn.jboss.org/repos/mod_cluster/trunk/test/java/Advertize.java">small
           java</ulink>
 
-           utility could be used to check Advertise. It is in the mod_cluster repository and can be compiled using javac. Run it using java Advertise. The output should be something like:
+           utility could be used to check Advertise. It is in the mod_cluster repository and can be compiled using javac.
+           A compiled version can be found under in /opt/jboss/httpd/tools in the bundles.
+           Run it using java Advertise multicastaddress port.
+           The output should be something like:
 
           <programlisting>
-[jfclere@jfcpc java]$ java Advertize
+[jfclere@jfcpc java]$ java Advertize 224.0.1.105 23364
 ready waiting...
 received: HTTP/1.0 200 OK
 Date: Mon, 28 Jun 2010 07:30:31 GMT
@@ -151,6 +170,16 @@ GET /
             Check that the address and port are the expected ones you may use ServerAdvertise On
             http://hostname:port, like:
 <programlisting>ServerAdvertise On http://localhost:6666</programlisting>
+            Or use the servlet testhttpd in the testhttpd.war of the bundle (in /opt/jboss/httpd/tools).
+            install/deploy it in in the node and start the AS/Tomcat on the node, than access to the node directly
+            and call /testhttpd/testhttpd 
+           <mediaobject>
+           <imageobject role="testhttpd servlet">
+           <imagedata align="center" fileref="images/testhttpd.jpg"
+                     format="JPG" />
+            </imageobject>
+            </mediaobject>
+            If you don't get a similar page the output should help to find that is wrong.
         </listitem>
       </orderedlist>
     </sect2>
