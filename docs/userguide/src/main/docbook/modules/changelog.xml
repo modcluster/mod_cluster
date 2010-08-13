@@ -6,6 +6,178 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+<sect1><title>1.1.0.Final (13 August 2010)</title>
+   <informaltable frame="all">
+      <tgroup cols="2"><tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Demo servlets throw InstanceNotFoundException against EAP5 (MODCLUSTER-170) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> mod_advertise: Invalid ServerAdvertise Address too often (MODCLUSTER-172) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Fix class name of MBeanAttributeRatioLoadMetric in MC config (MODCLUSTER-174) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Wrong configuration could cause an httpd core (MODCLUSTER-175) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Advertise not configured error message in log is actually a warning (MODCLUSTER-176) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Better no servers connected message (MODCLUSTER-165) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> How does the UI deal with 20 or more servers (MODCLUSTER-165) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> mod_cluster should use hostname provided in address instead a IP address (MODCLUSTER-168) (pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Read only view of mod_cluster-manager (MODCLUSTER-181) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="update">
+                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Demo client throws Bus Error when run with JDK 1.6 on OSX (MODCLUSTER-169) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="update">
+                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Use versioned docs (MODCLUSTER-141) (jfclere,pferraro)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para> Deprecate use of term "domain" (MODCLUSTER-177) (jfclere,pferraro)</para>
+            </entry>
+         </row></tbody></tgroup>
+   </informaltable></sect1>
 <sect1><title>1.1.0.CR3 (15 June 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody><row>
