@@ -114,15 +114,19 @@ public class TestContexts extends TestCase {
         }
 
         try {
+            int ret;
             // A request to /test/Mytest should failed. 404
-            if (client.runit("/test/MyTest", 1, false, false) != 404)
-                fail("Should return 404");
+            ret = client.runit("/test/MyTest", 1, false, false);
+            if (ret != 404)
+                fail("Should return 404 (got: " + ret + ")");
             // A request to /Mytest should work.
-            if (client.runit("/MyTest", 1, false, false) != 0)
-                fail("/MyTest failed");
+            ret = client.runit("/MyTest", 1, false, false);
+            if (ret != 0)
+                fail("/MyTest failed (" + ret + ")");
             // A request to /testtest/Mytest should work.
-            if (client.runit("/testtest/MyTest", 1, false, false) != 0)
-                fail("/testtest/MyTest failed");
+            ret = client.runit("/testtest/MyTest", 1, false, false);
+            if (ret != 0)
+                fail("/testtest/MyTest failed (" + ret + ")");
         } catch (Exception ex) {
             ex.printStackTrace();
             fail("Client error");

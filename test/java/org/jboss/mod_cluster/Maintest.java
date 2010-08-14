@@ -411,9 +411,10 @@ public class Maintest extends TestCase {
             }
             countinfo++;
         }
-        if (countinfo == 20)
+        if (countinfo == 20) {
+            System.out.println("TestForNodes failed: " + getProxyInfo(lifecycle));
             return false;
-        else
+        } else
             return true;
     }
 
