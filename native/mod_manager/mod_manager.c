@@ -1977,6 +1977,8 @@ static int manager_info(request_rec *r)
             else
                 return HTTP_BAD_REQUEST;
         }
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                "manager_info request:%s", r->args);
     }
 
     /*
@@ -2598,6 +2600,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
     mconf->maxnode = DEFMAXNODE;
     mconf->last_updated = 0;
     mconf->persistent = 0;
+    mconf->nonce = -1;
+    mconf->balancername = NULL;
+    mconf->allow_display = 0;
+    mconf->allow_cmd = -1;
+    mconf->reduce_display = 0;
 
     if (mconf2->basefilename)
         mconf->basefilename = apr_pstrdup(p, mconf2->basefilename);
@@ -2628,6 +2635,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->persistent = mconf2->persistent;
     else if (mconf1->persistent != 0)
         mconf->persistent = mconf1->persistent;
+
+    if (mconf2->nonce != -1)
+        mconf->nonce = mconf2->nonce;
+    else if (mconf1->nonce != -1)
+        mconf->nonce = mconf1->nonce;
 
     if (mconf2->balancername)
         mconf->balancername = apr_pstrdup(p, mconf2->balancername);
