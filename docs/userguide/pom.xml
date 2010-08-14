@@ -1,85 +1,87 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<parent>
- <groupId>org.jboss</groupId>
- <artifactId>jboss-parent</artifactId>
- <version>4</version>
-</parent>
+  <parent>
+    <groupId>org.jboss</groupId>
+    <artifactId>jboss-parent</artifactId>
+    <version>5</version>
+  </parent>
 
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>User-Guide-${translation}</artifactId>
-    <packaging>jdocbook</packaging>
-    <name>User Guide (${translation})</name>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>User-Guide-${translation}</artifactId>
+  <packaging>jdocbook</packaging>
+  <name>User Guide (${translation})</name>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.jboss.maven.plugins</groupId>
-                <artifactId>maven-jdocbook-plugin</artifactId>
-                <version>2.1.2</version>
-                <extensions>true</extensions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jbossorg-docbook-xslt</artifactId>
-                        <version>1.1.0</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jbossorg-jdocbook-style</artifactId>
-                        <version>1.1.0</version>
-                        <type>jdocbook-style</type>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <sourceDocumentName>UserGuide.xml</sourceDocumentName>
-                    <imageResource>
-                        <directory>${basedir}/en</directory>
-                        <includes>
-                          <include>images/**/*</include>
-                        </includes>
-                    </imageResource>
-                    <formats>
-                        <format>
-                            <formatName>pdf</formatName>
-                            <stylesheetResource>classpath:/xslt/org/jboss/pdf.xsl</stylesheetResource>
-			    <finalName>Mod_cluster-UserGuide.pdf</finalName>
-                        </format>
-                        <format>
-                            <formatName>html</formatName>
-			    <stylesheetResource>classpath:/xslt/org/jboss/xhtml.xsl</stylesheetResource>
-                            <finalName>index.html</finalName>
-                        </format>
-                        <format>
-                            <formatName>html_single</formatName>
-                            <stylesheetResource>classpath:/xslt/org/jboss/xhtml-single.xsl</stylesheetResource>
-                            <finalName>index.html</finalName>
-                        </format>
-                        <format>
-                            <formatName>eclipse</formatName>
-                            <stylesheetResource>classpath:/xslt/org/jboss/eclipse.xsl</stylesheetResource>
-                            <finalName>index.html</finalName>
-                        </format>
-                    </formats>
-                    <options>
-                        <xincludeSupported>true</xincludeSupported>
-                        <xmlTransformerType>saxon</xmlTransformerType>
-                        <!-- needed for uri-resolvers; can be ommitted if using 'current' uri scheme -->
-                        <!--     could also locate the docbook dependency and inspect its version... -->
-                        <docbookVersion>1.72.0</docbookVersion>
-                    </options>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jboss.maven.plugins</groupId>
+        <artifactId>maven-jdocbook-plugin</artifactId>
+        <version>2.1.2</version>
+        <extensions>true</extensions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jbossorg-docbook-xslt</artifactId>
+            <version>1.1.0</version>
+          </dependency>
+          <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jbossorg-jdocbook-style</artifactId>
+            <version>1.1.0</version>
+            <type>jdocbook-style</type>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <sourceDocumentName>UserGuide.xml</sourceDocumentName>
+          <imageResource>
+            <directory>${basedir}/en</directory>
+            <includes>
+              <include>images/**/*</include>
+            </includes>
+          </imageResource>
+          <formats>
+            <format>
+              <formatName>pdf</formatName>
+              <stylesheetResource>classpath:/xslt/org/jboss/pdf.xsl</stylesheetResource>
+              <finalName>Mod_cluster-UserGuide.pdf</finalName>
+            </format>
+            <format>
+              <formatName>html</formatName>
+              <stylesheetResource>classpath:/xslt/org/jboss/xhtml.xsl</stylesheetResource>
+              <finalName>index.html</finalName>
+            </format>
+            <format>
+              <formatName>html_single</formatName>
+              <stylesheetResource>classpath:/xslt/org/jboss/xhtml-single.xsl</stylesheetResource>
+              <finalName>index.html</finalName>
+            </format>
+            <format>
+              <formatName>eclipse</formatName>
+              <stylesheetResource>classpath:/xslt/org/jboss/eclipse.xsl</stylesheetResource>
+              <finalName>index.html</finalName>
+            </format>
+          </formats>
+          <options>
+            <xincludeSupported>true</xincludeSupported>
+            <xmlTransformerType>saxon</xmlTransformerType>
+            <!-- needed for uri-resolvers; can be ommitted if using 'current' 
+              uri scheme -->
+            <!-- could also locate the docbook dependency and inspect its 
+              version... -->
+            <docbookVersion>1.72.0</docbookVersion>
+          </options>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
-    <properties>
-        <translation>en</translation>
-    </properties> 
- <pluginRepositories>
-   <pluginRepository>
-     <id>JBOSS</id>
-     <name>JBoss Repository</name>
-     <url>http://repository.jboss.org/maven2/</url>
-   </pluginRepository>
- </pluginRepositories>
+  <properties>
+    <translation>en</translation>
+  </properties>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>JBOSS</id>
+      <name>JBoss Repository</name>
+      <url>http://repository.jboss.org/maven2/</url>
+    </pluginRepository>
+  </pluginRepositories>
 </project>

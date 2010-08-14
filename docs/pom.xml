@@ -1,18 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-<parent>
- <groupId>org.jboss</groupId>
- <artifactId>jboss-parent</artifactId>
- <version>5</version>
-</parent>
+  <parent>
+    <groupId>org.jboss</groupId>
+    <artifactId>jboss-parent</artifactId>
+    <version>5</version>
+  </parent>
 
- <modelVersion>4.0.0</modelVersion>
- <artifactId>org.jboss.mod_cluster-docs</artifactId>
- <version>1.1.0-SNAPSHOT</version>
- <packaging>pom</packaging>
- <name>Mod_cluster Docs</name>
- <url>http://jboss.org/mod_cluster_docs</url>
- <description>Mod_cluster Documentation</description>
- <modules>
-   <module>userguide</module>
- </modules>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>org.jboss.mod_cluster-docs</artifactId>
+  <version>1.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  
+  <name>mod_cluster Docs</name>
+  <url>http://jboss.org/mod_cluster_docs</url>
+  <description>Mod_cluster Documentation</description>
+
+  <modules>
+    <module>userguide</module>
+  </modules>
 </project>
