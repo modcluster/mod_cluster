@@ -403,7 +403,7 @@ public class Maintest extends TestCase {
     /* Wait until the node is in the ok status (load>0). */
     static  boolean TestForNodes(LifecycleListener lifecycle, String [] nodes) {
         int countinfo = 0;
-        while ((!Maintest.checkProxyInfo(lifecycle, nodes)) && countinfo < 40) {
+        while ((!Maintest.checkProxyInfo(lifecycle, nodes)) && countinfo < 80) {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
@@ -411,7 +411,7 @@ public class Maintest extends TestCase {
             }
             countinfo++;
         }
-        if (countinfo == 40) {
+        if (countinfo == 80) {
             System.out.println("TestForNodes failed: " + getProxyInfo(lifecycle));
             return false;
         } else
