@@ -69,7 +69,7 @@ public class TestAddDel extends TestCase {
             }
         }
 
-        lifecycle = Maintest.createClusterListener("224.0.1.105", 23364, false);
+        lifecycle = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
 
         server.addLifecycleListener(lifecycle);
 

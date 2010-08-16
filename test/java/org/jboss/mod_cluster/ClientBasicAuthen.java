@@ -75,7 +75,7 @@ public class ClientBasicAuthen {
             service.addWAR("JBWEB-117.war", "node1");
             server.addService(service);
  
-            cluster =  Maintest.createClusterListener("224.0.1.105", 23364, false);
+            cluster =  Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
             server.addLifecycleListener(cluster);
 
             // Add AprLifecycleListener.

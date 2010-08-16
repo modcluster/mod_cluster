@@ -53,7 +53,7 @@ public class  Test_ReWrite extends TestCase {
             service.addConnector(8011);
             service.addConnector(8080, "http");
             server.addService(service);
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false);
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
             server.addLifecycleListener(cluster);
         } catch(IOException ex) {
             ex.printStackTrace();

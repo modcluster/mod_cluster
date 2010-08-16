@@ -83,7 +83,7 @@ public class ProcJBossWeb {
                 } else if (cmd[0].compareToIgnoreCase("addService")== 0) {
                     server.addService(service);
                 } else if (cmd[0].compareToIgnoreCase("addLifecycleListener") == 0) {
-                    cluster = Maintest.createClusterListener(cmd[1], Integer.parseInt(cmd[2]), false);
+                    cluster = Maintest.createClusterListener(cmd[1], Integer.parseInt(cmd[2]), false, null, true, false, true, "secret");
                     server.addLifecycleListener(cluster);
                 } else if (cmd[0].compareToIgnoreCase("start") == 0) {
                     wait = new ServerThread(3000, server);

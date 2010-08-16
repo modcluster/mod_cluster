@@ -65,7 +65,7 @@ public class TestStickyRemove extends TestCase {
             connector2 = service2.addConnector(8889);
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, true, false);
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, true, false, "secret");
             server.addLifecycleListener(cluster);
             // Maintest.listServices();
 

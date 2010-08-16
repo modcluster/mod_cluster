@@ -71,7 +71,7 @@ public class StartJBossWeb {
             service.addConnector(port);
             server.addService(service);
  
-            LifecycleListener cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, domain);
+            LifecycleListener cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, domain, true, false, true, "secret");
             server.addLifecycleListener(cluster);
 
             server.start();

@@ -52,7 +52,7 @@ public class  Test_102 extends TestCase {
             service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
             server.addService(service);
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false);
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
             server.addLifecycleListener(cluster);
         } catch(IOException ex) {
             ex.printStackTrace();
