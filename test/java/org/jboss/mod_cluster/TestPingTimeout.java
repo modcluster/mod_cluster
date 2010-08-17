@@ -63,7 +63,7 @@ public class TestPingTimeout extends TestCase {
             service.AddContext("/test", "/test");
             server.addService(service);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1");
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
             server.addLifecycleListener(cluster);
             // Maintest.listServices();
 

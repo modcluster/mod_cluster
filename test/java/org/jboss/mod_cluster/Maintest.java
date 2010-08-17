@@ -428,6 +428,7 @@ public class Maintest extends TestCase {
             if (result != null) {
                 if (Maintest.checkProxyPing(result))
                     break; // Done
+                System.out.println("WaitForHttpd failed: " + result);
                 return -1; // Failed.
             }
             try {
@@ -435,8 +436,11 @@ public class Maintest extends TestCase {
                 me.sleep(5000);
                 tries++;
             } catch (Exception ex) {
+                // Ignore
             }
         }
+        if (tries == maxtries)
+            System.out.println("WaitForHttpd failed: " + result);
         return tries;
     }
     /* Just wait n0 sec: needed a the end of some tests */

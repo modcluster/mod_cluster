@@ -66,7 +66,7 @@ public class TestUndeploy extends TestCase {
             service2.AddContext("/test", "/test");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1");
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
             server.addLifecycleListener(cluster);
             // Maintest.listServices();
 
