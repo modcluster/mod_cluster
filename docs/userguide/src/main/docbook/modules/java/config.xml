@@ -125,11 +125,11 @@
       jvmRoute="${jboss.mod_cluster.jvmRoute}"</para>
     </sect2>
 
-    <sect2>
+    <sect2 id="javaconflocal">
       <title>Non-Clustered Mode</title>
 
-      <para>mod_cluster can operate in 2 modes: non-clustered or <ulink
-      url="http://www.jboss.org/mod_cluster/java/config.html#ha">clustered</ulink>.
+      <para>mod_cluster can operate in 2 modes: non-clustered or
+      <link linkend="javaconfha"> clustered</link>
        In non-clustered mode, each JBoss server node communicates with a httpd
       proxy directly, and do not communicate with each other.  Non-clustered
       mode is powered by the ModClusterService, whose definition varies
@@ -139,17 +139,15 @@
 
       <orderedlist>
         <listitem>
-          <para><ulink
-          url="http://www.jboss.org/mod_cluster/java/config.html#ha">A set
-          of</ulink> <ulink
-          url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-          properties</ulink></para>
+          <para>
+          <link linkend="javaproperties">
+          A set of configuration properties</link></para>
         </listitem>
 
         <listitem>
-          <para>A mechanism for <ulink
-          url="http://www.jboss.org/mod_cluster/java/load.html">providing the
-          load balance factor</ulink> to a proxy</para>
+          <para>A mechanism for
+          <link linkend="javaload"> providing the load balance factor</link>
+          to a proxy</para>
         </listitem>
       </orderedlist>
 
@@ -171,11 +169,12 @@
 &lt;/bean&gt;</programlisting></para>
     </sect2>
 
-    <sect2>
+    <sect2 id="javaconfha">
       <title>Clustered Mode</title>
 
-      <para>mod_cluster can operate in 2 modes: <ulink
-      url="http://www.jboss.org/mod_cluster/java/config.html#local">non-clustered</ulink>
+      <para>mod_cluster can operate in 2 modes:
+      <link linkend="javaconflocal">
+      non-clustered</link>
       or clustered.  In clustered mode, a single JBoss node (the HA singleton
       master) communicates with the httpd proxy on behalf of the other nodes
       in the cluster.  This mode offers the following advantages over
@@ -209,15 +208,15 @@
 
       <orderedlist>
         <listitem>
-          <para>A set of <ulink
-          url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-          properties</ulink></para>
+          <para>
+          <link linkend="javaproperties">
+          A set of configuration properties</link></para>
         </listitem>
 
         <listitem>
-          <para>A mechanism for <ulink
-          url="http://www.jboss.org/mod_cluster/java/load.html">providing the
-          load balance factor</ulink> to a proxy</para>
+          <para>A mechanism for
+          <link linkend="javaload"> providing the load balance factor</link>
+          to a proxy</para>
         </listitem>
 
         <listitem>
@@ -266,9 +265,10 @@
       </listitem>
 
       <listitem>
-        <para><ulink
-        url="http://www.jboss.org/mod_cluster/java/load.html#load">Only one
-        load metric</ulink> can be used in the load balance factor
+        <para>
+        <link linkend="javaload">
+        Only one
+        load metric</link> can be used in the load balance factor
         calculation</para>
       </listitem>
     </orderedlist>
@@ -277,9 +277,10 @@
       <title>Lifecycle Listener</title>
 
       <para>The entry point for JBoss Web and Tomcat configuration is the
-      ModClusterListener.  All mod_cluster <ulink
-      url="http://www.jboss.org/mod_cluster/java/properties.html">configuration
-      properties</ulink> are defined as attributes of the Listener
+      ModClusterListener.  All mod_cluster
+      <link linkend="javaproperties">
+      configuration
+      properties</link> are defined as attributes of the Listener
       element.</para>
 
         <para>Since version 1.1.x, ModClusterListener was refactored into the
