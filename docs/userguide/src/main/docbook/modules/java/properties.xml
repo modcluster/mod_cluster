@@ -3,597 +3,489 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="javaproperties">
-  <title>java properties</title>
-
-<sect1><title>Configuration Properties</title>
-   <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <link linkend="javaconf">how mod_cluster is configured</link>.</para><sect2><title>
-      <anchor id="mcmp"/>Proxy Discovery Configuration</title>
-   <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
-   <informaltable frame="all">
+<chapter id="java.properties">
+  <title id="java.properties.title">Server-side Configuration Properties</title>
+  <para>The tables below enumerate the configuration properties available to an application server node. The location for these properties depends on <link linkend="java.config">how mod_cluster is configured</link>.</para>
+  <section id="mcmp">
+    <title>Proxy Discovery Configuration</title>
+    <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Attribute</para>
-               </entry>
-               <entry>
-                  <para>Default</para>
-               </entry>
-               <entry>
-                  <para>Description</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
-            <entry id="proxyList">
-               <para>proxyList</para>
-            </entry>
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+            <entry>Default</entry>
+            <entry>Description</entry>
+           </row>
+        </thead>
+        <tbody>
+          <row id="proxyList">
+            <entry>proxyList</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>
-               <para>
-                  <emphasis>None</emphasis>
-               </para>
+              <para>Defines a comma delimited list of httpd proxies with which this node will initially communicate. Value should be of the form: </para>
+              <para><emphasis>address1</emphasis>:<emphasis>port1</emphasis>,<emphasis>address2</emphasis>:<emphasis>port2</emphasis></para>
+              <para>Using the default configuration, this property can by manipulated via the jboss.modcluster.proxyList system property.</para>
             </entry>
+          </row>
+          <row id="excludedContexts">
+            <entry>excludedContexts</entry>
+            <entry>ROOT, admin-console, invoker, bossws, jmx-console, juddi, web-console</entry>
             <entry>
-               <para>Defines a comma delimited list of httpd proxies with which this node will initially communicate. Value should be of the form: </para>
-               <para>address1:port1,address2:port2</para>
-               <para>Using the default configuration, this property can by manipulated via the jboss.modcluster.proxyList system property.</para>
+              <para>List of contexts to exclude from httpd registration, of the form: </para>
+              <para><emphasis>host1</emphasis>:<emphasis>context1</emphasis>,<emphasis>host2</emphasis>:<emphasis>context2</emphasis>,<emphasis>host3</emphasis>:<emphasis>context3</emphasis></para>
+              <para>If no host is indicated, it is assumed to be the default host of the server (e.g. localhost). "ROOT" indicates the root context. Using the default configuration, this property can by manipulated via the jboss.modcluster.excludedContexts system property.</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry>autoEnableContexts</entry>
+            <entry>true</entry>
             <entry>
-               <para>
-                  <anchor id="excludedContexts"/>excludedContexts</para>
+              <para>If false the contexts are registered disabled in httpd, they need to be enabled via the enable() mbean method or via mod_cluster_manager.</para>
             </entry>
+          </row>
+          <row id="stopContextTimeout">
+            <entry>stopContextTimeout</entry>
+            <entry>10</entry>
             <entry>
-               <para>ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console</para>
+              <para>The amount of time, measure in units specified by <link linkend="stopContextTimeoutUnit">stopContextTimeoutUnit</link>, for which to wait for clean shutdown of a context (completion of pending requests for a distributable context; or destruction/expiration of active sessions for a non-distributable context).</para>
             </entry>
+          </row>
+          <row id="stopContextTimeoutUnit">
+            <entry>stopContextTimeoutUnit</entry>
+            <entry>TimeUnit.SECONDS</entry>
             <entry>
-               <para>List of contexts to exclude from httpd registration, of the form: </para>
-               <para>host1:context1,host2:context2,host3:context3</para>
-               <para>If no host is indicated, it is assumed to be the default host of the server (e.g. localhost). "ROOT" indicates the root context. Using the default configuration, this property can by manipulated via the jboss.modcluster.excludedContexts system property.</para>
+              <para>The unit of time for use with <link linkend="stopContextTimeout">stopContextTimeout</link></para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry>sessionDrainingStrategy</entry>
+            <entry>org.jboss.modcluster.SessionDrainingStrategyEnum.DEFAULT</entry>
             <entry>
-               <para>autoEnableContexts</para>
+              <para>
+                Indicates the session draining strategy used during undeployment of a web application.
+                There are three possible values:
+              </para>
+              <variablelist>
+                <varlistentry>
+                  <term>DEFAULT</term>
+                  <listitem>
+                    <para>Drain sessions before web application undeploy only if the web application is non-disributable.</para>
+                  </listitem>
+                </varlistentry>
+                <varlistentry>
+                  <term>ALWAYS</term>
+                  <listitem>
+                    <para>Always drain sessions before web application undeploy, even for distributable web applications.</para>
+                  </listitem>
+                </varlistentry>
+                <varlistentry>
+                  <term>NEVER</term>
+                  <listitem>
+                    <para>Do not drain sessions before web application undeploy, even for non-distributable web application.</para>
+                  </listitem>
+                </varlistentry>
+              </variablelist>
             </entry>
+          </row>
+          <row>
+            <entry>proxyURL</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>
-               <para>true</para>
+              <para>If defined, this value will be prepended to the URL of MCMP commands.</para>
             </entry>
+          </row>
+          <row>
+            <entry>socketTimeout</entry>
+            <entry>20000</entry>
             <entry>
-               <para>If false the contexts are registered disabled in httpd, they need to be enabled via the enable() mbean method or via mod_cluster_manager. Since version 1.1.0.CR1.</para>
+              <para>Number of milliseconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</para>
             </entry>
-         </row>
-         <row>
+          </row>
+         <row id="advertise">
+            <entry>advertise</entry>
+            <entry>true, if <link linkend="proxyList">proxyList</link> is undefined, false otherwise</entry>
             <entry>
-               <para>stopContextTimeout</para>
+              <para>If enabled, httpd proxies will be auto-discovered via multicast announcements. This can be used either in concert or in place of a static <link linkend="proxyList">proxyList</link>.</para>
             </entry>
+          </row>
+          <row>
+            <entry>advertiseGroupAddress</entry>
+            <entry>224.0.1.105</entry>
             <entry>
-               <para>10</para>
+              <para>UDP address on which to listen for httpd proxy multicast advertisements</para>
             </entry>
+          </row>
+          <row>
+            <entry>advertisePort</entry>
+            <entry>23364</entry>
             <entry>
-               <para>The number of seconds to wait for clean shutdown of a context (completion of pending requests for a distributable context; or destruction/expiration of active sessions for a non-distributable context). Since version 1.1.0.CR1.</para>
+              <para>UDP port on which to listen for httpd proxy multicast advertisements</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry>advertiseSecurityKey</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>
-               <para>proxyURL</para>
+              <para>If specified, httpd proxy advertisements checksums will be verified using this value as a salt</para>
             </entry>
+          </row>
+          <row>
+            <entry>advertiseThreadFactory</entry>
+            <entry>Executors.defaultThreadFactory()</entry>
             <entry>
-               <para>
-                  <emphasis>None</emphasis>
-               </para>
+              <para>The thread factory used to create the background advertisement listener.</para>
             </entry>
+          </row>
+          <row>
+            <entry>jvmRouteFactory</entry>
+            <entry>new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory(), "jboss.mod_cluster.jvmRoute")</entry>
             <entry>
-               <para>If defined, this value will be prepended to the URL of MCMP commands.</para>
+             Defines the strategy for determing the jvm route of a node, if none was specified in server.xml.
+             The default factory first consults the <code>jboss.mod_cluster.jvmRoute</code> system property.
+             If this system property is undefined, the jvm route is assiged a UUID.
             </entry>
-         </row>
-         <row>
-            <entry>
-               <para>socketTimeout</para>
-            </entry>
-            <entry>
-               <para>20000</para>
-            </entry>
-            <entry>
-               <para>Number of milliseconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</para>
-            </entry>
-         </row>
-         <row>
-            <entry id="advertise">
-               <para>advertise</para>
-            </entry>
-            <entry>
-               <para>true, if <link linkend="proxyList">proxyList</link> is undefined, false otherwise</para>
-            </entry>
-            <entry>
-               <para>If enabled, httpd proxies will be auto-discovered via multicast announcements. This can be used either in concert or in place of a static <link linkend="proxyList">proxyList</link>.</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>advertiseGroupAddress</para>
-            </entry>
-            <entry>
-               <para>224.0.1.105</para>
-            </entry>
-            <entry>
-               <para>UDP address on which to listen for httpd proxy multicast advertisements</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>advertisePort</para>
-            </entry>
-            <entry>
-               <para>23364</para>
-            </entry>
-            <entry>
-               <para>UDP port on which to listen for httpd proxy multicast advertisements</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>advertiseSecurityKey</para>
-            </entry>
-            <entry>
-               <para>
-                  <emphasis>None</emphasis>
-               </para>
-            </entry>
-            <entry>
-               <para>If specified, httpd proxy advertisements checksums will be verified using this value as a salt</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>
-      <anchor id="proxy"/>Proxy Configuration</title>
-   <para>The following configuration values are sent to proxies during server startup, when a proxy is detected via the advertise mechanism, or during the resetting of a proxy's configuration during error recovery.</para>
-   <informaltable frame="all">
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section id="proxy">
+    <title>Proxy Configuration</title>
+    <para>The following configuration values are sent to proxies during server startup, when a proxy is detected via the advertise mechanism, or during the resetting of a proxy's configuration during error recovery.</para>
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Attribute</para>
-               </entry>
-               <entry>
-                  <para>Default</para>
-               </entry>
-               <entry>
-                  <para>Description</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
-            <entry id="stickySession">
-               <para>stickySession</para>
-            </entry>
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+            <entry>Default</entry>
             <entry>
-               <para>true</para>
+              <para>Description</para>
             </entry>
+           </row>
+        </thead>
+        <tbody>
+          <row id="stickySession">
+            <entry>stickySession</entry>
+            <entry>true</entry>
             <entry>
-               <para>Indicates whether subsequent requests for a given session should be routed to the same node, if possible.</para>
+              <para>Indicates whether subsequent requests for a given session should be routed to the same node, if possible.</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>stickySessionRemove</entry>
+            <entry>false</entry>
             <entry>
-               <para>stickySessionRemove</para>
+              <para>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
+           </row>
+          <row>
+            <entry>stickySessionForce</entry>
+            <entry>true</entry>
             <entry>
-               <para>false</para>
+              <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
+           </row>
+          <row>
+            <entry>workerTimeout</entry>
+            <entry>-1</entry>
             <entry>
-               <para>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
+              <para>Number of seconds to wait for a worker to become available to handle a request. When all the workers of a balancer are usable, mod_cluster will retry after a while (workerTimeout/100) to find an usable worker. That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>maxAttempts</entry>
+            <entry>1</entry>
             <entry>
-               <para>stickySessionForce</para>
+              <para>Number of times an httpd proxy will attempt to send a given request to a worker before giving up. The minimum value is 1, meaning try only once. (Note that mod_proxy default is also 1: no retry).</para>
             </entry>
+           </row>
+          <row>
+            <entry>flushPackets</entry>
+            <entry>false</entry>
             <entry>
-               <para>true</para>
+              <para>Enables/disables packet flushing</para>
             </entry>
+           </row>
+          <row>
+            <entry>flushWait</entry>
+            <entry>-1</entry>
             <entry>
-               <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
+              <para>
+                Time to wait before flushing packets.
+                A value of -1 means wait forever.
+              </para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>ping</entry>
+            <entry>10</entry>
             <entry>
-               <para>workerTimeout</para>
+              <para>Time (in seconds) in which to wait for a pong answer to a ping</para>
             </entry>
+           </row>
+          <row>
+            <entry>smax</entry>
+            <entry>Determined by httpd configuration</entry>
             <entry>
-               <para>-1</para>
+              <para>Soft maximum idle connection count (that is the smax in worker mod_proxy documentation). The maximum value depends on the httpd thread configuration (ThreadsPerChild or 1).</para>
             </entry>
+           </row>
+          <row>
+            <entry>ttl</entry>
+            <entry>60</entry>
             <entry>
-               <para>Number of seconds to wait for a worker to become available to handle a request. When all the workers of a balancer are usable, mod_cluster will retry after a while (workerTimeout/100) to find an usable worker. That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
+              <para>Time to live (in seconds) for idle connections above smax</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>nodeTimeout</entry>
+            <entry>-1</entry>
             <entry>
-               <para>maxAttempts</para>
+              <para>
+                Timeout (in seconds) for proxy connections to a node.
+                That is the time mod_cluster will wait for the back-end response before returning error.
+                That corresponds to timeout in the worker mod_proxy documentation.
+                A value of -1 indicates no timeout.
+                Note that mod_cluster always uses a cping/cpong before forwarding a request and the connectiontimeout value used by mod_cluster is the ping value.
+              </para>
             </entry>
+           </row>
+          <row>
+            <entry>balancer</entry>
+            <entry>mycluster</entry>
             <entry>
-               <para>1</para>
+              <para>The balancer name</para>
             </entry>
+           </row>
+          <row id="lbGroup">
+            <entry>loadBalancingGroup</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>
-               <para>Number of times an httpd proxy will attempt to send a given request to a worker before giving up. The minimum value is 1, meaning try only once. (Note that mod_proxy default is also 1: no retry).</para>
+              <para>
+                If specified, load will be balanced among jvmRoutes withing the same load balancing group.
+                A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.
+                This is primarily used in conjunction with partitioned session replication (e.g. buddy replication).
+              </para>
             </entry>
-         </row>
-         <row>
-            <entry>
-               <para>flushPackets</para>
-            </entry>
-            <entry>
-               <para>false</para>
-            </entry>
-            <entry>
-               <para>Enables/disables packet flushing</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>flushWait</para>
-            </entry>
-            <entry>
-               <para>-1</para>
-            </entry>
-            <entry>
-               <para>Time to wait before flushing packets. A value of -1 means wait forever.</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>ping</para>
-            </entry>
-            <entry>
-               <para>10 seconds</para>
-            </entry>
-            <entry>
-               <para>Time to wait for a pong answer to a ping</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>smax</para>
-            </entry>
-            <entry>
-               <para>Determined by httpd configuration</para>
-            </entry>
-            <entry>
-               <para>Soft maximum idle connection count (that is the smax in worker mod_proxy documentation). The maximum value depends on the httpd thread configuration (ThreadsPerChild or 1).</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>ttl</para>
-            </entry>
-            <entry>
-               <para>60 seconds</para>
-            </entry>
-            <entry>
-               <para>Time to live (in seconds) for idle connections above smax</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>nodeTimeout</para>
-            </entry>
-            <entry>
-               <para>-1 (none)</para>
-            </entry>
-            <entry>
-               <para>Timeout (in seconds) for proxy connections to a node. That is the time mod_cluster will wait for the back-end response before returning error. That corresponds to timeout in the worker mod_proxy documentation. Note that mod_cluster always uses a cping/cpong before forwarding a request and the connectiontimeout value used by mod_cluster is the ping value.</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>balancer</para>
-            </entry>
-            <entry>
-               <para>mycluster</para>
-            </entry>
-            <entry>
-               <para>The balancer name</para>
-            </entry>
-         </row>
-         <row>
-            <entry id="lbGroup">
-               <para>loadBalancingGroup</para>
-            </entry>
-            <entry>
-               <para><emphasis>None</emphasis></para>
-            </entry>
-            <entry>
-               <para>
-                  If specified, load will be balanced among jvmRoutes withing the same load balancing group.
-                  A loadBalancingGroup is conceptually equivalent to a mod_jk domain directive.
-                  This is primarily used in conjunction with partitioned session replication (e.g. buddy replication).
-               </para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable>
-   <para>Note: When nodeTimeout is not defined the ProxyTimeout directive Proxy is used. If ProxyTimeout is not defined the server timeout (Timeout) is used (default 300 seconds). nodeTimeout, ProxyTimeout or Timeout is set at the socket level.</para></sect2><sect2><title>
-      <anchor id="ssl"/>SSL Configuration</title>
-   <para>The communication channel between application servers and httpd proxies uses HTTP by default. This channel can be secured using HTTPS by setting the <anchor id="ssl1"/>ssl to true.</para>
-   <para>N.B. This HTTP/HTTPS channel should not be confused with the processing of HTTP/HTTPS client requests.</para>
-   <informaltable frame="all">
+           </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <note>
+      <para>
+        When nodeTimeout is not defined the ProxyTimeout directive Proxy is used.
+        If ProxyTimeout is not defined the server timeout (Timeout) is used (default 300 seconds).
+        nodeTimeout, ProxyTimeout or Timeout is set at the socket level.
+      </para>
+    </note>
+  </section>
+  <section id="ssl">
+    <title>SSL Configuration</title>
+    <para>
+      The communication channel between application servers and httpd proxies uses HTTP by default.
+      This channel can be secured using HTTPS by setting the <link linkend="ssl-property">ssl</link> property to true.
+    </para>
+    <note>
+      <para>
+        This HTTP/HTTPS channel should not be confused with the processing of HTTP/HTTPS client requests.
+      </para>
+    </note>
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Attribute</para>
-               </entry>
-               <entry>
-                  <para>Default</para>
-               </entry>
-               <entry>
-                  <para>Description</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+            <entry>Default</entry>
+            <entry>Description</entry>
+           </row>
+        </thead>
+        <tbody>
+          <row id="ssl-property">
+            <entry>ssl</entry>
+            <entry>false</entry>
             <entry>
-               <para><anchor id="ssl2"/>ssl</para>
+              <para>Should connection to proxy use a secure socket layer</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslCiphers</entry>
+            <entry><emphasis>The default JSSE cipher suites</emphasis></entry>
             <entry>
-               <para>false</para>
+              <para>Overrides the cipher suites used to init an SSL socket ignoring any unsupported ciphers</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslProtocol</entry>
+            <entry>TLS</entry>
             <entry>
-               <para>Should connection to proxy use a secure socket layer</para>
+              <para>Overrides the default SSL socket protocol.</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>sslCertificateEncodingAlgorithm</entry>
+            <entry><emphasis>The default JSSE key manager algorithm</emphasis></entry>
             <entry>
-               <para>sslCiphers</para>
+              <para>The algorithm of the key manager factory</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslKeyStore</entry>
+            <entry><code>System.getProperty("user.home") + "/.keystore"</code></entry>
             <entry>
-               <para>The default JSSE cipher suites</para>
+              <para>The location of the key store containing client certificates</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslKeyStorePassword</entry>
+            <entry>changeit</entry>
             <entry>
-               <para>Overrides the cipher suites used to init an SSL socket ignoring any unsupported ciphers</para>
+              <para>The password granting access to the key store</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>sslKeyStoreType</entry>
+            <entry>JKS</entry>
             <entry>
-               <para>sslProtocol</para>
+              <para>The type of key store</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslKeyStoreProvider</entry>
+            <entry><emphasis>The default JSSE security provider</emphasis></entry>
             <entry>
-               <para>TLS</para>
+              <para>The key store provider</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslTrustAlgorithm</entry>
+            <entry><emphasis>The default JSSE trust manager algorithm</emphasis></entry>
             <entry>
-               <para>Overrides the default SSL socket protocol.</para>
+              <para>The algorithm of the trust manager factory</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>sslKeyAlias</entry>
+            <entry>&nbsp;</entry>
             <entry>
-               <para>sslCertificateEncodingAlgorithm</para>
+              <para>The alias of the key holding the client certificates in the key store</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslCrlFile</entry>
+            <entry>&nbsp;</entry>
             <entry>
-               <para>The default JSSE key manager algorithm</para>
+              <para>Certificate revocation list</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslTrustMaxCertLength</entry>
+            <entry>5</entry>
             <entry>
-               <para>The algorithm of the key manager factory</para>
+              <para>The maximum length of a certificate held in the trust store</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>sslTrustStore</entry>
+            <entry><code>System.getProperty("javax.net.ssl.trustStorePassword")</code></entry>
             <entry>
-               <para>sslKeyStore</para>
+              <para>The location of the file containing the trust store</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslTrustStorePassword</entry>
+            <entry><code>System.getProperty("javax.net.ssl.trustStore")</code></entry>
             <entry>
-               <para>System.getProperty("user.home") + "/.keystore"</para>
+              <para>The password granting access to the trust store.</para>
             </entry>
+           </row>
+          <row>
+            <entry>sslTrustStoreType</entry>
+            <entry><code>System.getProperty("javax.net.ssl.trustStoreType")</code></entry>
             <entry>
-               <para>The location of the key store containing client certificates</para>
+              <para>The trust store type</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>sslTrustStoreProvider</entry>
+            <entry><code>System.getProperty("javax.net.ssl.trustStoreProvider")</code></entry>
             <entry>
-               <para>sslKeyStorePassword</para>
+              <para>The trust store provider</para>
             </entry>
-            <entry>
-               <para>changeit</para>
-            </entry>
-            <entry>
-               <para>The password granting access to the key store</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslKeyStoreType</para>
-            </entry>
-            <entry>
-               <para>JKS</para>
-            </entry>
-            <entry>
-               <para>The type of key store</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslKeyStoreProvider</para>
-            </entry>
-            <entry>
-               <para>The default JSSE security provider</para>
-            </entry>
-            <entry>
-               <para>The key store provider</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustAlgorithm</para>
-            </entry>
-            <entry>
-               <para>The default JSSE trust manager algorithm</para>
-            </entry>
-            <entry>
-               <para>The algorithm of the trust manager factory</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslKeyAlias</para>
-            </entry>
-            <entry>
-               <para> </para>
-            </entry>
-            <entry>
-               <para>The alias of the key holding the client certificates in the key store</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslCrlFile</para>
-            </entry>
-            <entry>
-               <para> </para>
-            </entry>
-            <entry>
-               <para>Certificate revocation list</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustMaxCertLength</para>
-            </entry>
-            <entry>
-               <para>5</para>
-            </entry>
-            <entry>
-               <para>The maximum length of a certificate held in the trust store</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustStore</para>
-            </entry>
-            <entry>
-               <para>System.getProperty("javax.net.ssl.trustStorePassword")</para>
-            </entry>
-            <entry>
-               <para>The location of the file containing the trust store</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustStorePassword</para>
-            </entry>
-            <entry>
-               <para>System.getProperty("javax.net.ssl.trustStore")</para>
-            </entry>
-            <entry>
-               <para>The password granting access to the trust store.</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustStoreType</para>
-            </entry>
-            <entry>
-               <para>System.getProperty("javax.net.ssl.trustStoreType")</para>
-            </entry>
-            <entry>
-               <para>The trust store type</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>sslTrustStoreProvider</para>
-            </entry>
-            <entry>
-               <para>System.getProperty("javax.net.ssl.trustStoreProvider")</para>
-            </entry>
-            <entry>
-               <para>The trust store provider</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>
-      <anchor id="ha"/>HA Configuration</title>
-   <para>Additional configuration properties when mod_cluster is configured in clustered mode.</para>
-   <informaltable frame="all">
+           </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section id="ha">
+    <title>HA Configuration</title>
+    <para>Additional configuration properties when mod_cluster is configured in clustered mode.</para>
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Attribute</para>
-               </entry>
-               <entry>
-                  <para>Default</para>
-               </entry>
-               <entry>
-                  <para>Description</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+            <entry>Default</entry>
+            <entry>Description</entry>
+           </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>masterPerLoadBalancingGroup</entry>
+            <entry>false</entry>
             <entry>
-               <para>masterPerDomain</para>
+              <para>
+                If the <link linkend="lbGroup">loadBalancingGroup</link> directive is used, should HA partition use a singleton master per loadBalancingGroup.
+              </para>
             </entry>
-            <entry>
-               <para>false</para>
-            </entry>
-            <entry>
-               <para>If the <link linkend="lbGroup">loadBalancingGroup</link> directive is used,
-                     should HA partition use a singleton master per loadBalancingGroup</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect2><sect2><title>
-      <anchor id="load"/>Load Configuration</title>
-   <para>Additional configuration properties used when mod_cluster is configured in JBoss Web standalone or Tomcat.</para>
-   <informaltable frame="all">
+           </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section id="load">
+    <title>Load Configuration for JBoss Web and Tomcat</title>
+    <para>Additional configuration properties used when mod_cluster is configured in JBoss Web standalone or Tomcat.</para>
+    <informaltable frame="all">
       <tgroup cols="3">
-         <thead>
-            <row>
-               <entry>
-                  <para>Attribute</para>
-               </entry>
-               <entry>
-                  <para>Default</para>
-               </entry>
-               <entry>
-                  <para>Description</para>
-               </entry>
-            </row>
-         </thead><tbody><row>
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+             <entry>Default</entry>
+             <entry>Description</entry>
+           </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>loadMetricClass</entry>
+            <entry>org.jboss.load.metric.impl.BusyConnectorsLoadMetric</entry>
             <entry>
-               <para>loadMetricClass</para>
+              <para>Class name of an object implementing org.jboss.load.metric.LoadMetric</para>
             </entry>
+           </row>
+          <row>
+            <entry>loadMetricCapacity</entry>
+            <entry>1</entry>
             <entry>
-               <para>org.jboss.load.metric.impl.BusyConnectorsLoadMetric</para>
+              <para>The capacity of the load metric defined via the loadMetricClass property</para>
             </entry>
+           </row>
+          <row>
+            <entry>loadHistory</entry>
+            <entry>9</entry>
             <entry>
-               <para>Class name of an object implementing org.jboss.load.metric.LoadMetric</para>
+              <para>The number of historic load values to consider in the load balance factor computation.</para>
             </entry>
-         </row>
-         <row>
+           </row>
+          <row>
+            <entry>loadDecayFactor</entry>
+            <entry>2</entry>
             <entry>
-               <para>loadMetricCapacity</para>
+              <para>The factor by which a historic load values should degrade in significance.</para>
             </entry>
-            <entry>
-               <para>1</para>
-            </entry>
-            <entry>
-               <para>The capacity of the load metric defined via the loadMetricClass property</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>loadHistory</para>
-            </entry>
-            <entry>
-               <para>9</para>
-            </entry>
-            <entry>
-               <para>The number of historic load values to consider in the load balance factor computation.</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>loadDecayFactor</para>
-            </entry>
-            <entry>
-               <para>2</para>
-            </entry>
-            <entry>
-               <para>The factor by which a historic load values should degrade in significance.</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable>
-   <para/></sect2></sect1>
+           </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
 </chapter>

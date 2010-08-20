@@ -1,12 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?> 
-
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
- "http://www.docbook.org/xml/4.3/docbookx.dtd">
-
-<book lang="en">  
-  <bookinfo>  
-  <title>Mod_cluster doc</title>
-  </bookinfo>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<book>
+  <title>mod_cluster Documentation</title>
 
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/intro.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/quick-start.xml" />

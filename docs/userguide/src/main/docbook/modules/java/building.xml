@@ -4,65 +4,66 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="javabuilding">
-  <title>Building mod_cluster's Java components from source</title>
+<chapter id="java.building">
+  <title>Building Server-Side Components</title>
 
-  <para>Building from source the components used in JBoss AS/JBossWeb/Tomcat
-  requires Maven 2.0.x.</para>
+  <section>
+    <title>Requirements</title>
+    <para>
+      Building mod_cluster's server-side components from source requires the following tools:
+    </para>
+    <itemizedlist>
+      <listitem><para>JDK 5.0+</para></listitem>
+      <listitem><para>Maven 2.0+</para></listitem>
+    </itemizedlist>
+  </section>
 
-  <para>Steps to build:</para>
-
-  <orderedlist>
-    <listitem>
-      <para>Download the mod_cluster sources</para>
-
-      <para><programlisting>svn co http://anonsvn.jboss.org/repos/mod_cluster/trunk/ mod_cluster</programlisting></para>
-    </listitem>
-
-    <listitem>
-      <para>Use maven "dist" profile to build:</para>
-
-      <para><programlisting>cd mod_cluster; mvn -P dist package</programlisting></para>
-    </listitem>
-  </orderedlist>
-
-  <para>Note: Some maven tests are using UDP port 23365 make sure you are
-  local firewall allows the port.</para>
-
-  <sect1>
-    <title>Build products</title>
-
-    <para>The build produces the following output in the target
-    directory:</para>
-
+  <section>
+    <title>Building</title>
+    <para>Steps to build:</para>
     <orderedlist>
       <listitem>
-        <para>mod-cluster.sar</para>
-
-        <para>Exploded format sar to copy to the deploy dir in your JBoss AS
-        install</para>
+        <para>Download the mod_cluster sources</para>
+        <para>
+          <programlisting>svn co http://anonsvn.jboss.org/repos/mod_cluster/trunk/ mod_cluster</programlisting>
+        </para>
       </listitem>
-
       <listitem>
-        <para>JBossWeb-Tomcat/lib directory</para>
-
-        <para>Jar files to copy to the lib directory in your JBossWeb or
-        Tomcat install to support use of mod_cluster</para>
-      </listitem>
-
-      <listitem>
-        <para>demo directory</para>
-
-        <para>The <link
-        linkend="demo">load balancing demo</link> application</para>
-      </listitem>
-
-      <listitem>
-        <para>mod-cluster-XXX.tar.gz</para>
-
-        <para>The full distribution tarball; includes the above
-        elements</para>
+        <para>Use maven "dist" profile to build:</para>
+        <para>
+<programlisting>cd mod_cluster
+mvn -P dist package</programlisting>
+        </para>
       </listitem>
     </orderedlist>
-  </sect1>
+    <note>
+      <para>
+        Some unit tests require UDP port 23365.
+        Make sure your local firewall allows the port.
+      </para>
+    </note>
+  </section>
+
+  <section>
+    <title>Build Artifacts</title>
+    <para>The build produces the following output in the target directory:</para>
+    <variablelist>
+      <varlistentry>
+        <term>mod-cluster.sar</term>
+        <listitem><para>Exploded format sar to copy to the deploy dir in your JBoss AS install</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>JBossWeb-Tomcat/lib directory</term>
+        <listitem><para>Jar files to copy to the lib directory in your JBossWeb or Tomcat install to support use of mod_cluster</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>demo directory</term>
+        <listitem><para>The <link linkend="demo">load balancing demo</link> application</para></listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>mod-cluster-XXX.tar.gz</term>
+        <listitem><para>The full distribution tarball; includes the above elements</para></listitem>
+      </varlistentry>
+    </variablelist>
+  </section>
 </chapter>

@@ -6,1127 +6,468 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
-<sect1><title>1.1.0.Final (13 August 2010)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody>
-         <row>
+  <section>
+    <title>1.1.0.Final (13 August 2010)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Demo servlets throw InstanceNotFoundException against EAP5 (MODCLUSTER-170) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Demo servlets throw InstanceNotFoundException against EAP5 (MODCLUSTER-170) (pferraro)</para>
+              <para>mod_advertise: Invalid ServerAdvertise Address too often (MODCLUSTER-172) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Fix class name of MBeanAttributeRatioLoadMetric in MC config (MODCLUSTER-174) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> mod_advertise: Invalid ServerAdvertise Address too often (MODCLUSTER-172) (jfclere)</para>
+              <para>Wrong configuration could cause an httpd core (MODCLUSTER-175) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Advertise not configured error message in log is actually a warning (MODCLUSTER-176) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Fix class name of MBeanAttributeRatioLoadMetric in MC config (MODCLUSTER-174) (pferraro)</para>
+              <para>Better no servers connected message (MODCLUSTER-165) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>How does the UI deal with 20 or more servers (MODCLUSTER-165) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Wrong configuration could cause an httpd core (MODCLUSTER-175) (jfclere)</para>
+              <para>mod_cluster should use hostname provided in address instead a IP address (MODCLUSTER-168) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Read only view of mod_cluster-manager (MODCLUSTER-181) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Advertise not configured error message in log is actually a warning (MODCLUSTER-176) (jfclere)</para>
+              <para>Demo client throws Bus Error when run with JDK 1.6 on OSX (MODCLUSTER-169) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Use versioned docs (MODCLUSTER-141) (jfclere, pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Better no servers connected message (MODCLUSTER-165) (jfclere)</para>
+              <para>Deprecate use of term "domain" (MODCLUSTER-177) (jfclere, pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section><title>1.1.0.CR3 (15 June 2010)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Rpc failure can lead to failure to deploy a webapp (MODCLUSTER-140) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> How does the UI deal with 20 or more servers (MODCLUSTER-165) (jfclere)</para>
+              <para>Quotes in jsessionId causing sticky sessions to fail (MODCLUSTER-146) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>ManagerBalancerName doesn't work (MODCLUSTER-153) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> mod_cluster should use hostname provided in address instead a IP address (MODCLUSTER-168) (pferraro)</para>
+              <para>Parsing of IPv6 loopback address fails (MODCLUSTER-156) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>SystemMemoryUsageLoadMetric returns wrong load metric (MODCLUSTER-157) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Read only view of mod_cluster-manager (MODCLUSTER-181) (jfclere)</para>
+              <para>Clean shutdown logic can still inadvertently kill requests for non-distributed contexts. (MODCLUSTER-159) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>NoClassDefFoundError running demo app against AS6 (MODCLUSTER-161) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Demo client throws Bus Error when run with JDK 1.6 on OSX (MODCLUSTER-169) (jfclere)</para>
+              <para>Allow override of default clean shutdown behavior (MODCLUSTER-139) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Avoid unnecessary open sockets for non-master nodes (MODCLUSTER-158) (pferraro)</para>
             </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section>
+    <title>1.1.0.CR2 (11 May 2010)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Use versioned docs (MODCLUSTER-141) (jfclere,pferraro)</para>
+              <para>Add the lifecycle listener dynamically (MODCLUSTER-20) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Use UUID for auto-generated jvmRoute (MODCLUSTER-142) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Deprecate use of term "domain" (MODCLUSTER-177) (jfclere,pferraro)</para>
+              <para>improve packaging so that the bundle can run in ~ too (MODCLUSTER-150) (jfclere)</para>
             </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect1>
-<sect1><title>1.1.0.CR3 (15 June 2010)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>jboss.mod_cluster.proxyList: invalid hosts cause mod-cluster startup to be delayed (MODCLUSTER-155) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para> Rpc failure can lead to failure to deploy a webapp (MODCLUSTER-140) (pferraro)</para>
+              <para>mod_cluster 1.1.0.CR1 doesn't work with Tomcat (MODCLUSTER-143) (jfclere/pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Allow configuration of stopContextTimeout units (MODCLUSTER-138) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Quotes in jsessionId causing sticky sessions to fail (MODCLUSTER-146) (jfclere)</para>
+              <para>Add a solaris10 64 bits sparc in the bundles (MODCLUSTER-137) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>INFO and mod_cluster_manager/ displays milliseconds and DUMP second (MODCLUSTER-128) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>ManagerBalancerName doesn't work (MODCLUSTER-153) (jfclere)</para>
+              <para>Make mod_cluster manager tolerant to F5 page refresh when disabled context (MODCLUSTER-124) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section>
+    <title>1.1.0.CR1 (22 March 2010)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Update httpd to 2.2.25. (MODCLUSTER-134) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Parsing of IPv6 loopback address fails (MODCLUSTER-156) (pferraro)</para>
+              <para>Apache with mod_cluster refuses to start at first, but after 7 retries it starts up (MODCLUSTER-120) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Add getLoad() to load metric mbean interface (MODCLUSTER-130) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>SystemMemoryUsageLoadMetric returns wrong load metric (MODCLUSTER-157) (pferraro)</para>
+              <para>Disable "cnone" request parameter to ease remote invocation on mod_cluster-manager (MODCLUSTER-127) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Microcontainer does not always choose the right constructor when creating ModClusterService (MODCLUSTER-116) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Clean shutdown logic can still inadvertently kill requests for non-distributed contexts. (MODCLUSTER-159) (pferraro)</para>
+              <para>Microcontainer does not choose the right constructor when creating RequestCountLoadMetric (MODCLUSTER-126) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Mod_cluster does support more that 3 Alias in &lt;Host/&gt; (MODCLUSTER-121) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>NoClassDefFoundError running demo app against AS6 (MODCLUSTER-161) (pferraro)</para>
+              <para>Allow toggling of context auto-enable during mod_cluster startup. (MODCLUSTER-125) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>STATUS should retry the worker even if there was an error before. (MODCLUSTER-133) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Allow override of default clean shutdown behavior (MODCLUSTER-139) (pferraro)</para>
+              <para>Split ModClusterServiceMBean.ping(String) into 3 methods (MODCLUSTER-110) (pferraro/jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Use clean shutdown by default, leveraging STOP-APP-RSP for &lt;distributable/&gt; contexts and session draining for non-distributable contexts.  mod_cluster shutdown now triggered earlier via Connector JMX notification.  (MODCLUSTER-131) (pferraro/jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Avoid unnecessary open sockets for non-master nodes (MODCLUSTER-158) (pferraro)</para>
+              <para>move the web site to magnolia (MODCLUSTER-114) (.org team)</para>
             </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect1><sect1><title>1.1.0.CR2 (11 May 2010)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>ping and nodeTimeout interact. (MODCLUSTER-132) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Add the lifecycle listener dynamically (MODCLUSTER-20) (pferraro)</para>
+              <para>update mod_jk to 1.2.30  (MODCLUSTER-138) (jfclere) </para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>query string is truncated to (MODCLUSTER-118) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Use UUID for auto-generated jvmRoute (MODCLUSTER-142) (pferraro)</para>
+              <para>AdvertiseBindAddress does not default to the 23364 port (MODCLUSTER-119) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Skip load balance factor calculation if there are no proxies to receive status message (MODCLUSTER-103) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>improve packaging so that the bundle can run in ~ too (MODCLUSTER-150) (jfclere)</para>
+              <para>Disabling contexts does not work (MODCLUSTER-123) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>advertise doesn't use new AdvertiseSecurityKey on graceful restarts. (MODCLUSTER-129) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>jboss.mod_cluster.proxyList: invalid hosts cause mod-cluster startup to be delayed (MODCLUSTER-155) (pferraro)</para>
+              <para>Load-demo.war specifies obsolete servlet in web.xml  (MODCLUSTER-113) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section>
+    <title>1.1.0.Beta1 (30 October 2009)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Interaction with mod_rewrite looks weird for end-users. (MODCLUSTER-86) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>mod_cluster 1.1.0.CR1 doesn't work with Tomcat (MODCLUSTER-143) (jfclere/pferraro)</para>
+              <para>admin-console should be in the excludedContexts. (MODCLUSTER-87) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>ClassCastException upon redeploy after mod-cluster-jboss-beans.xml modification. (MODCLUSTER-88) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Allow configuration of stopContextTimeout units (MODCLUSTER-138) (pferraro)</para>
+              <para>Alias from webapps/jboss-web.xml are not handled correctly in mod_cluster. (MODCLUSTER-89) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Display version. (MODCLUSTER-90) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Add a solaris10 64 bits sparc in the bundles (MODCLUSTER-137) (jfclere)</para>
+              <para>Connector bind address of 0.0.0.0 propagated to proxy. (MODCLUSTER-91) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Display status of the worker. (MODCLUSTER-92) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>INFO and mod_cluster_manager/ displays milliseconds and DUMP second (MODCLUSTER-128) (jfclere)</para>
+              <para>Update httpd to lastest version. (MODCLUSTER-93) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>getProxyInfo failed when there are too many nodes. (MODCLUSTER-94) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Make mod_cluster manager tolerant to F5 page refresh when disabled context (MODCLUSTER-124) (jfclere)</para>
+              <para>mod_cluster-manager display corrupted with jboss starting. (MODCLUSTER-95) (jfclere)</para>
             </entry>
-         </row></tbody></tgroup>
-   </informaltable>
-   <para> </para></sect1><sect1><title>1.1.0.CR1 (22 March 2010)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>DISABLE application active as STOPPED. (MODCLUSTER-96) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Update httpd to 2.2.25. (MODCLUSTER-134) (jfclere)</para>
+              <para>Httpd should remove workers it can't ping. (MODCLUSTER-97) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Linux mod_cluster_manager display zero instead values. (MODCLUSTER-98) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Apache with mod_cluster refuses to start at first, but after 7 retries it starts up (MODCLUSTER-120) (jfclere)</para>
+              <para>mod_cluster_manager doesn't seem to ENABLE/DISABLE the right context. (MODCLUSTER-99) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>load balancing logic doesn't allow manual demo of load-balancing. (MODCLUSTER-100) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Add getLoad() to load metric mbean interface (MODCLUSTER-130) (pferraro)</para>
+              <para>404 errors when load is increasing. (MODCLUSTER-102) (jfclere)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Advertise security key verification does not work. (MODCLUSTER-104) (jfclere)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Disable "cnone" request parameter to ease remote invocation on mod_cluster-manager (MODCLUSTER-127) (jfclere)</para>
+              <para>Allow advertise listener to listen on a specific network interface. (MODCLUSTER-106) (pferraro)</para>
             </entry>
-         </row>
-         <row>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
+              <para>Allow thread factory injection for advertise listener. (MODCLUSTER-108) (pferraro)</para>
             </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-               <para>Microcontainer does not always choose the right constructor when creating ModClusterService (MODCLUSTER-116) (pferraro)</para>
+              <para>Create SPI and isolate tomcat/jbossweb usage into service provider implementation. (MODCLUSTER-111) (pferraro)</para>
             </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Microcontainer does not choose the right constructor when creating RequestCountLoadMetric (MODCLUSTER-126) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Mod_cluster does support more that 3 Alias in &lt;Host/&gt; (MODCLUSTER-121) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Allow toggling of context auto-enable during mod_cluster startup. (MODCLUSTER-125) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>STATUS should retry the worker even if there was an error before. (MODCLUSTER-133) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Split ModClusterServiceMBean.ping(String) into 3 methods (MODCLUSTER-110) (pferraro/jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Use clean shutdown by default, leveraging STOP-APP-RSP for &lt;distributable/&gt; contexts and session draining for non-distributable contexts.  mod_cluster shutdown now triggered earlier via Connector JMX notification.  (MODCLUSTER-131) (pferraro/jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>move the web site to magnolia (MODCLUSTER-114) (.org team)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>ping and nodeTimeout interact. (MODCLUSTER-132) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>update mod_jk to 1.2.30  (MODCLUSTER-138) (jfclere) </para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>query string is truncated to (MODCLUSTER-118) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>AdvertiseBindAddress does not default to the 23364 port (MODCLUSTER-119) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Skip load balance factor calculation if there are no proxies to receive status message (MODCLUSTER-103) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Disabling contexts does not work (MODCLUSTER-123) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>advertise doesn't use new AdvertiseSecurityKey on graceful restarts. (MODCLUSTER-129) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Load-demo.war specifies obsolete servlet in web.xml  (MODCLUSTER-113) (pferraro)</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect1><sect1><title>1.1.0.Beta1 (30 October 2009)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Interaction with mod_rewrite looks weird for end-users. (MODCLUSTER-86) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>admin-console should be in the excludedContexts. (MODCLUSTER-87) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>ClassCastException upon redeploy after mod-cluster-jboss-beans.xml modification. (MODCLUSTER-88) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Alias from webapps/jboss-web.xml are not handled correctly in mod_cluster. (MODCLUSTER-89) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Display version. (MODCLUSTER-90) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Connector bind address of 0.0.0.0 propagated to proxy. (MODCLUSTER-91) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Display status of the worker. (MODCLUSTER-92) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Update httpd to lastest version. (MODCLUSTER-93) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>getProxyInfo failed when there are too many nodes. (MODCLUSTER-94) (jfclere)</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable></sect1><sect1><title>1.1.0.Beta1 (30 October 2009)</title>
-   <informaltable frame="all">
-      <tgroup cols="2"><tbody><row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Interaction with mod_rewrite looks weird for end-users. (MODCLUSTER-86) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>admin-console should be in the excludedContexts. (MODCLUSTER-87) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>ClassCastException upon redeploy after mod-cluster-jboss-beans.xml modification. (MODCLUSTER-88) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Alias from webapps/jboss-web.xml are not handled correctly in mod_cluster. (MODCLUSTER-89) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Display version. (MODCLUSTER-90) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Connector bind address of 0.0.0.0 propagated to proxy. (MODCLUSTER-91) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Display status of the worker. (MODCLUSTER-92) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Update httpd to lastest version. (MODCLUSTER-93) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>getProxyInfo failed when there are too many nodes. (MODCLUSTER-94) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>mod_cluster-manager display corrupted with jboss starting. (MODCLUSTER-95) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>DISABLE application active as STOPPED. (MODCLUSTER-96) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Httpd should remove workers it can't ping. (MODCLUSTER-97) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Linux mod_cluster_manager display zero instead values. (MODCLUSTER-98) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>mod_cluster_manager doesn't seem to ENABLE/DISABLE the right context. (MODCLUSTER-99) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>load balancing logic doesn't allow manual demo of load-balancing. (MODCLUSTER-100) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>404 errors when load is increasing. (MODCLUSTER-102) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="fix">
-                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Advertise security key verification does not work. (MODCLUSTER-104) (jfclere)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Allow advertise listener to listen on a specific network interface. (MODCLUSTER-106) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="add">
-                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Allow thread factory injection for advertise listener. (MODCLUSTER-108) (pferraro)</para>
-            </entry>
-         </row>
-         <row>
-            <entry>
-               <para>
-                  <mediaobject>
-                      <imageobject role="update">
-                              <imagedata fileref="images/update.jpg" format="JPG" align="center"/>
-                      </imageobject>
-                  </mediaobject>
-               </para>
-            </entry>
-            <entry>
-               <para>Create SPI and isolate tomcat/jbossweb usage into service provider implementation. (MODCLUSTER-111) (pferraro)</para>
-            </entry>
-         </row></tbody></tgroup>
-   </informaltable>
-   <para/></sect1>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
 </chapter>

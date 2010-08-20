@@ -7,159 +7,186 @@
 <chapter id="Intro">
   <title>Overview</title>
 
-   <para>mod_cluster is an httpd-based load balancer. Like mod_jk and mod_proxy, mod_cluster uses a communication channel to forward requests from httpd to one of a set of application server nodes. Unlike mod_jk and mod_proxy, mod_cluster leverages an additional connection between the application server nodes and httpd. The application server nodes use this connection to transmit server-side load balance factors and lifecycle events back to httpd via a custom set of HTTP methods, affectionately called the Mod-Cluster Management Protocol (MCMP). This additional feedback channel allows mod_cluster to offer a level of intelligence and granularity not found in other load balancing solutions.</para>
-   <para>Within httpd, mod_cluster is implemented as a set of modules for httpd with mod_proxy enabled. Much of the logic comes from mod_proxy, e.g. mod_proxy_ajp provides all the AJP logic needed by mod_cluster.</para>
-<sect1><title>Platforms</title>
-   <para>JBoss already prepares <ulink url="http://www.jboss.org/mod_cluster/downloads.html">binary packages</ulink> with httpd and mod_cluster so you can quickly try mod_cluster on the following platforms:</para>
-   <orderedlist>
+  <para>
+    mod_cluster is an httpd-based load balancer.
+    Like mod_jk and mod_proxy, mod_cluster uses a communication channel to forward requests from httpd to one of a set of application server nodes.
+    Unlike mod_jk and mod_proxy, mod_cluster leverages an additional connection between the application server nodes and httpd.
+    The application server nodes use this connection to transmit server-side load balance factors and lifecycle events back to httpd via a custom set of HTTP methods, affectionately called the Mod-Cluster Management Protocol (MCMP).
+    This additional feedback channel allows mod_cluster to offer a level of intelligence and granularity not found in other load balancing solutions.
+  </para>
+  <para>
+    Within httpd, mod_cluster is implemented as a set of modules for httpd with mod_proxy enabled.
+    Much of the logic comes from mod_proxy, e.g. mod_proxy_ajp provides all the AJP logic needed by mod_cluster.
+  </para>
+  
+  <section>
+    <title>Platforms</title>
+    <para>
+      JBoss already prepares <ulink url="http://www.jboss.org/mod_cluster/downloads.html">binary packages</ulink> with httpd and mod_cluster so you can quickly try mod_cluster on the following platforms:
+    </para>
+    <itemizedlist>
       <listitem>
-         <para>Linux x86, x64, ia64 </para>
+        <para>Linux x86, x64, ia64</para>
       </listitem>
       <listitem>
-         <para>Solaris x86, SPARC </para>
+        <para>Solaris x86, SPARC</para>
       </listitem>
       <listitem>
-         <para>Windows x86, x64, ia64 </para>
+        <para>Windows x86, x64, ia64</para>
       </listitem>
       <listitem>
-         <para>HP-UX PA-RISC, ia64 </para>
+        <para>HP-UX PA-RISC, ia64</para>
       </listitem>
-   </orderedlist></sect1>
-<sect1><title>Advantages</title>
-   <para>mod_cluster boasts the following advantages over other httpd-based load balancers:</para>
-   <para>Dynamic configuration of httpd workers </para>
-   <para>Traditional httpd-based load balancers require explicit configuration of the workers available to a proxy. In mod_cluster, the bulk of the proxy's configuration resides on the application servers. The set of proxies to which an application server will communicate is determined either by a static list or using dynamic discovery via the <link linkend="advertise">advertise</link> mechanism. The application server relays lifecycle events (e.g. server startup/shutdown) to the proxies allowing them to effectively auto-configure themselves. Notably, the graceful shutdown of a server will not result in a failover response by a proxy, as is the case with traditional httpd-based load balancers. </para>
-   <para>Server-side load balance factor calculation </para>
-   <para>In contrast with traditional httpd-based load balancers, mod_cluster uses load balance factors calculated and provided by the application servers, rather than computing these in the proxy. Consequently, mod_cluster offers a more robust and accurate set of load metrics than is available from the proxy. (see <link linkend="javaload">Load Metrics</link> for more) </para>
-   <para>Fine grained web-app lifecycle control </para>
-   <para>Traditional httpd-based load balancers do not handle web application undeployments particularly well. From the proxy's perspective requests to an undeployed web application are indistinguishable from a request for an non-existent resource, and will result in 404 errors. In mod_cluster, each server forwards any web application context lifecycle events (e.g. web-app deploy/undeploy) to the proxy informing it to start/stop routing requests for a given context to that server. </para>
-   <para>AJP is optional </para>
-   <para>Unlike mod_jk, mod_cluster does not require AJP. httpd connections to application server nodes can use HTTP, HTTPS, or AJP. </para>
-   <para>The original concepts are described in a <ulink url="http://www.jboss.org/community/docs/DOC-11431">wiki</ulink>.</para>
-</sect1>
+    </itemizedlist>
+  </section>
 
-<sect1><title>Requirements</title>
-   <orderedlist>
-      <listitem>
-         <para>httpd-2.2.8+ </para>
-      </listitem>
-      <listitem>
-         <para>JBoss AS 5.0.0+ or JBossWeb 2.1.1+ </para>
-      </listitem>
-   </orderedlist>
-   <para>Note: httpd-2.2.8+ is already in the bundles, so if you use the bundle you don't need to download Apache httpd.</para>
-</sect1>
+  <section>
+    <title>Advantages</title>
+    <para>mod_cluster boasts the following advantages over other httpd-based load balancers:</para>
+    <variablelist>
+      <varlistentry>
+        <term>Dynamic configuration of httpd workers</term>
+        <listitem>
+          <para>
+            Traditional httpd-based load balancers require explicit configuration of the workers available to a proxy.
+            In mod_cluster, the bulk of the proxy's configuration resides on the application servers.
+            The set of proxies to which an application server will communicate is determined either by a static list or using dynamic discovery via the <link linkend="advertise">advertise</link> mechanism.
+            The application server relays lifecycle events (e.g. server startup/shutdown) to the proxies allowing them to effectively auto-configure themselves.
+            Notably, the graceful shutdown of a server will not result in a failover response by a proxy, as is the case with traditional httpd-based load balancers.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Server-side load balance factor calculation</term>
+        <listitem>
+          <para>
+            In contrast with traditional httpd-based load balancers, mod_cluster uses load balance factors calculated and provided by the application servers, rather than computing these in the proxy.
+            Consequently, mod_cluster offers a more robust and accurate set of load metrics than is available from the proxy.
+            See the chapter entitled <link linkend="java.load" endterm="java.load.title"/> for details.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>Fine grained web-app lifecycle control</term>
+        <listitem>
+          <para>
+            Traditional httpd-based load balancers do not handle web application undeployments particularly well.
+            From the proxy's perspective requests to an undeployed web application are indistinguishable from a request for an non-existent resource, and will result in 404 errors.
+            In mod_cluster, each server forwards any web application context lifecycle events (e.g. web-app deploy/undeploy) to the proxy informing it to start/stop routing requests for a given context to that server.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>AJP is optional</term>
+        <listitem>
+          <para>
+            Unlike mod_jk, mod_cluster does not require AJP.
+            httpd connections to application server nodes can use HTTP, HTTPS, or AJP.
+          </para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+    <para>
+      The original concepts are described in a <ulink url="http://www.jboss.org/community/docs/DOC-11431">wiki</ulink>.
+    </para>
+  </section>
 
-<sect1><title>Limitations</title>
-mod_cluster uses shared memory to keep the nodes description, the shared memory is created at the start of httpd and the structure
-of each item is fixed. The following can't be changed by configuration directives.
-   <orderedlist>
-      <listitem>
-Max Alias length 40 characters (Host: hostname header, Alias in &lt;Host/&gt;).
-      </listitem>
-      <listitem>
-Max context length 40 (for example myapp.war deploys in /myapp /myapp is the context).
-      </listitem>
-      <listitem>
-Max balancer name length 40 (balancer property in mbean).
-      </listitem>
-      <listitem>
-Max JVMRoute string length 80 (JVMRoute in &lt;Engine/&gt;).
-      </listitem>
-      <listitem>
-Max domain name length 20 (domain property in mbean).
-      </listitem>
-      <listitem>
-Max hostname length for a node 64 (address in the &lt;Connector/&gt;).
-      </listitem>
-      <listitem>
-Max port length for a node 7 (8009 is 4 characters, port in the &lt;Connector/&gt;).
-      </listitem>
-      <listitem>
-Max scheme length for a node 6 (possible values are http, https, ajp, liked with the protocol of &lt;Connector/&gt;).
-      </listitem>
-      <listitem>
-Max cookie name 30 (the header cookie name for sessionid default value: JSESSIONID from org.apache.catalina.Globals.SESSION_COOKIE_NAME).
-      </listitem>
-      <listitem>
-Max path name 30 (the parameter name for the sessionid default value: jsessionid from org.apache.catalina.Globals.SESSION_PARAMETER_NAME).
-      </listitem>
-      <listitem>
-Max length for a sessionid 120 (something like BE81FAA969BF64C8EC2B6600457EAAAA.node01).
-      </listitem>
-   </orderedlist>
-</sect1>
+  <section>
+    <title>Requirements</title>
+    <itemizedlist>
+      <listitem><para>httpd-2.2.8+</para></listitem>
+      <listitem><para>JBoss AS 5.0.0+ or JBossWeb 2.1.1+</para></listitem>
+    </itemizedlist>
+    <note>
+      <para>httpd-2.2.8+ is already in the bundles, so if you use the bundle you don't need to download Apache httpd.</para>
+    </note>
+  </section>
 
-<sect1><title>
-      <anchor id="download"/>Downloads</title>
-   <para>Download the latest mod_cluster release <ulink url="http://www.jboss.org/mod_cluster/downloads/latest">here</ulink>.</para>
-   <para>The release is comprised of the following artifacts:</para>
-   <orderedlist>
-      <listitem>
-         <para>httpd binaries for common platforms </para>
-      </listitem>
-      <listitem>
-         <para>JBoss AS/JBossWeb/Tomcat binary distribution </para>
-      </listitem>
-   </orderedlist>
-   <para>Alternatively, you can build from source using the subversion repository:</para>
-   <para>
-      <ulink url="http://anonsvn.jboss.org/repos/mod_cluster/tags/">http://anonsvn.jboss.org/repos/mod_cluster/tags/</ulink>
-      <ulink url="http://anonsvn.jboss.org/repos/mod_cluster/tags/">
-         <emphasis>release</emphasis>
-      </ulink>
-      <ulink url="http://anonsvn.jboss.org/repos/mod_cluster/tags/">/</ulink>
-   </para>
-   <orderedlist>
-      <listitem>
-         <para>Building <link linkend="building">httpd modules</link> 
-         </para>
-      </listitem>
-      <listitem>
-         <para>Building <link linkend="javabuilding">Java archives</link> 
-         </para>
-      </listitem>
-   </orderedlist>
-</sect1>
+  <section>
+    <title>Limitations</title>
+    <para>
+      mod_cluster uses shared memory to keep the nodes description, the shared memory is created at the start of httpd and the structure of each item is fixed.
+      The following can't be changed by configuration directives.
+    </para>
+    <itemizedlist>
+      <listitem><para>Max Alias length 40 characters (Host: hostname header, Alias in <![CDATA[<Host/>]]>).</para></listitem>
+      <listitem><para>Max context length 40 (for example myapp.war deploys in /myapp /myapp is the context).</para></listitem>
+      <listitem><para>Max balancer name length 40 (balancer property in mbean).</para></listitem>
+      <listitem><para>Max JVMRoute string length 80 (JVMRoute in <![CDATA[<Engine/>]]>).</para></listitem>
+      <listitem><para>Max load balancing group name length 20 (domain property in mbean).</para></listitem>
+      <listitem><para>Max hostname length for a node 64 (address in the &lt;Connector/&gt;).</para></listitem>
+      <listitem><para>Max port length for a node 7 (8009 is 4 characters, port in the &lt;Connector/&gt;).</para></listitem>
+      <listitem><para>Max scheme length for a node 6 (possible values are http, https, ajp, liked with the protocol of &lt;Connector/&gt;).</para></listitem>
+      <listitem><para>Max cookie name 30 (the header cookie name for sessionid default value: JSESSIONID from org.apache.catalina.Globals.SESSION_COOKIE_NAME).</para></listitem>
+      <listitem><para>Max path name 30 (the parameter name for the sessionid default value: jsessionid from org.apache.catalina.Globals.SESSION_PARAMETER_NAME).</para></listitem>
+      <listitem><para>Max length for a sessionid 120 (something like BE81FAA969BF64C8EC2B6600457EAAAA.node01).</para></listitem>
+    </itemizedlist>
+  </section>
 
-<sect1><title>Configuration</title>
-   <para>If you want to skip the details and just set up a minimal working installation of mod_cluster, see the <link linkend="Quick_Start_Guide">Quick Start Guide</link>.</para>
-   <orderedlist>
-      <listitem>
-         <para>Configuring <link linkend="nativeconfig">httpd</link> 
-         </para>
-      </listitem>
-      <listitem>
-         <para>Configuring <link linkend="javaconf">JBoss AS/Web</link> 
-         </para>
-      </listitem>
-      <listitem>
-         <para>Configuring <link linkend="tomcat">Tomcat</link> 
-         </para>
-      </listitem>
-   </orderedlist>
-</sect1>
+  <section id="download">
+    <title>Downloads</title>
+    <para>Download the latest mod_cluster release <ulink url="http://www.jboss.org/mod_cluster/downloads/latest">here</ulink>.</para>
+    <para>The release is comprised of the following artifacts:</para>
+    <itemizedlist>
+      <listitem><para>httpd binaries for common platforms</para></listitem>
+      <listitem><para>JBoss AS/JBossWeb/Tomcat binary distribution</para></listitem>
+    </itemizedlist>
+    <para>Alternatively, you can build from source using the subversion repository:</para>
+    <para><ulink url="http://anonsvn.jboss.org/repos/mod_cluster/tags/">http://anonsvn.jboss.org/repos/mod_cluster/tags/<emphasis>release</emphasis>/</ulink></para>
+    <itemizedlist>
+      <listitem><para>Building <link linkend="native.building">httpd modules</link> </para></listitem>
+      <listitem><para>Building <link linkend="java.building">server-side components</link> </para></listitem>
+    </itemizedlist>
+  </section>
 
-<sect1><title>Migration</title>
-   <para>Migrating from mod_jk or mod_proxy is fairly straight forward. In general, much of the configuration previously found in httpd.conf is now defined in the application server nodes.</para>
-   <orderedlist>
-      <listitem>
-         <para>Migrating from <link linkend="mod_jk">mod_jk</link> 
-         </para>
-      </listitem>
-      <listitem>
-         <para>Migrating from <link linkend="mod_proxy">mod_proxy</link> 
-         </para>
-      </listitem>
-   </orderedlist></sect1><sect1><title>SSL support</title>
-   <para>Both the request connections between httpd and the application server nodes, and the feedback channel between the nodes and httpd can be secured. The former is achieved via the <link linkend="mod_proxy_https">mod_proxy_https module</link> and a corresponding ssl-enabled HTTP connector in JBoss Web. The latter requires the <link linkend="UsingSSL">mod_ssl module</link> and <link linkend="javaconf">explicit configuration in JBoss AS/Web</link>.</para></sect1><sect1><title>Load Balancing Demo Application</title>
-   <para>The mod_cluster binary distribution for JBoss AS/JBossWeb/Tomcat includes a <link linkend="demo">demo application</link> that helps demonstrate how different server-side scenarios affect the routing of client requests by the load balancer. The demo application is located in the mod_cluster distribution's demo directory.</para></sect1>
-<sect1><title>Strong cryptography warning</title>
-   <para>Mod_cluster contains mod_ssl, therefore the warning (copied from <ulink url="http://www.openssl.org/">OpenSSL</ulink>)</para>
-   <para> </para>
-   <para>PLEASE REMEMBER THAT EXPORT/IMPORT AND/OR USE OF STRONG CRYPTOGRAPHY SOFTWARE, PROVIDING CRYPTOGRAPHY HOOKS OR EVEN JUST COMMUNICATING TECHNICAL DETAILS ABOUT CRYPTOGRAPHY SOFTWARE IS ILLEGAL IN SOME PARTS OF THE WORLD. SO, WHEN YOU IMPORT THIS PACKAGE TO YOUR COUNTRY, RE-DISTRIBUTE IT FROM THERE OR EVEN JUST EMAIL TECHNICAL SUGGESTIONS OR EVEN SOURCE PATCHES TO THE AUTHOR OR OTHER PEOPLE YOU ARE STRONGLY ADVISED TO PAY CLOSE ATTENTION TO ANY EXPORT/IMPORT AND/OR USE LAWS WHICH APPLY TO YOU. THE AUTHORS OF OPENSSL ARE NOT LIABLE FOR ANY VIOLATIONS YOU MAKE HERE. SO BE CAREFUL, IT IS YOUR RESPONSIBILITY.</para>
-   <para> </para>
-   <para/>
-   <para/>
-</sect1>
+  <section>
+    <title>Configuration</title>
+    <para>If you want to skip the details and just set up a minimal working installation of mod_cluster, see the <link linkend="Quick_Start_Guide">Quick Start Guide</link>.</para>
+    <itemizedlist>
+      <listitem><para>Configuring <link linkend="native.config">httpd</link></para></listitem>
+      <listitem><para>Configuring <link linkend="java.config">JBoss AS</link></para></listitem>
+      <listitem><para>Configuring <link linkend="tomcat">JBoss Web or Tomcat</link></para></listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Migration</title>
+    <para>
+      Migrating from mod_jk or mod_proxy is fairly straight forward.
+      In general, much of the configuration previously found in httpd.conf is now defined in the application server nodes.
+    </para>
+    <itemizedlist>
+      <listitem><para>Migrating from <link linkend="mod_jk">mod_jk</link></para></listitem>
+      <listitem><para>Migrating from <link linkend="mod_proxy">mod_proxy</link></para></listitem>
+    </itemizedlist>
+  </section>
+  
+  <section>
+    <title>SSL support</title>
+    <para>
+      Both the request connections between httpd and the application server nodes, and the feedback channel between the nodes and httpd can be secured.
+      The former is achieved via the <link linkend="mod_proxy_https">mod_proxy_https module</link> and a corresponding ssl-enabled HTTP connector in JBoss Web.
+      The latter requires the <link linkend="UsingSSL">mod_ssl module</link> and <link linkend="java.config">explicit configuration in JBoss AS/Web</link>.
+    </para>
+  </section>
+  
+  <section>
+    <title>Load Balancing Demo Application</title>
+    <para>
+      The mod_cluster binary distribution for JBoss AS/JBossWeb/Tomcat includes a <link linkend="demo">demo application</link> that helps demonstrate how different server-side scenarios affect the routing of client requests by the load balancer.
+      The demo application is located in the mod_cluster distribution's demo directory.
+    </para>
+  </section>
+  
+  <warning>
+    <title>Strong cryptography warning</title>
+    <para>
+      mod_cluster contains mod_ssl, therefore the following warning (copied from <ulink url="http://www.openssl.org/">OpenSSL</ulink>) applies:
+    </para>
+    <para>
+      PLEASE REMEMBER THAT EXPORT/IMPORT AND/OR USE OF STRONG CRYPTOGRAPHY SOFTWARE, PROVIDING CRYPTOGRAPHY HOOKS OR EVEN JUST COMMUNICATING TECHNICAL DETAILS ABOUT CRYPTOGRAPHY SOFTWARE IS ILLEGAL IN SOME PARTS OF THE WORLD.
+      SO, WHEN YOU IMPORT THIS PACKAGE TO YOUR COUNTRY, RE-DISTRIBUTE IT FROM THERE OR EVEN JUST EMAIL TECHNICAL SUGGESTIONS OR EVEN SOURCE PATCHES TO THE AUTHOR OR OTHER PEOPLE YOU ARE STRONGLY ADVISED TO PAY CLOSE ATTENTION TO ANY EXPORT/IMPORT AND/OR USE LAWS WHICH APPLY TO YOU.
+      THE AUTHORS OF OPENSSL ARE NOT LIABLE FOR ANY VIOLATIONS YOU MAKE HERE. SO BE CAREFUL, IT IS YOUR RESPONSIBILITY.
+    </para>
+  </warning>
 </chapter>

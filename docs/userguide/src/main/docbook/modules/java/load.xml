@@ -1,228 +1,394 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!DOCTYPE section PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
 <!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="javaload">
-  <title>Load Metrics</title>
+<chapter id="java.load">
+  <title id="java.load.title">Server-Side Load Metrics</title>
+  <para>
+    A major feature of mod_cluster is the ability to use server-side load metrics to determine how best to balance requests.
+  </para>
+  <para>
+    The <code>DynamicLoadBalanceFactorProvider</code> bean computes the load balance factor of a node from a defined set of load metrics.
+  </para>
+<programlisting><![CDATA[
+<bean name="DynamicLoadBalanceFactorProvider" class="org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=LoadBalanceFactorProvider",exposedInterface=org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean.class)</annotation>
+  <constructor>
+    <parameter>
+      <set elementClass="org.jboss.modcluster.load.metric.LoadMetric">
+        <inject bean="BusyConnectorsLoadMetric"/>
+        <inject bean="HeapMemoryUsageLoadMetric"/>
+      </set>
+    </parameter>
+  </constructor>
+  <property name="history">9</property>
+  <property name="decayFactor">2</property>
+</bean>]]></programlisting>
 
-  <sect1>
-    <title>Server-Side Load Metrics</title>
-
-    <para>A major feature of mod_cluster is the ability to use server-side
-    load metrics to determine how best to balance requests.</para>
-
-    <para>The DynamicLoadBalanceFactorProvider bean computes the load balance
-    factor of a node from a defined set of load metrics.</para>
-
-    <programlisting><para>&lt;bean name="DynamicLoadBalanceFactorProvider" class="org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=LoadBalanceFactorProvider",exposedInterface=org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;</para><para>      &lt;set elementClass="org.jboss.modcluster.load.metric.LoadMetric"&gt;</para><para>        &lt;inject bean="BusyConnectorsLoadMetric"/&gt;</para><para>        &lt;inject bean="HeapMemoryUsageLoadMetric"/&gt;</para><para>      &lt;/set&gt;</para><para>    &lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="history"&gt;9&lt;/property&gt;</para><para>  &lt;property name="decayFactor"&gt;2&lt;/property&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-    <para>Load metrics can be configured with an associated weight and
-    capacity:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>The weight (default is 1) indicates the significance of a metric
-        with respect to the other metrics. For example, a metric of weight 2
-        will have twice the impact on the overall load factor than a metric of
-        weight 1.</para>
-      </listitem>
-
-      <listitem>
-        <para>The capacity of a metric serves 2 functions:</para>
-      </listitem>
-    </orderedlist>
-
-    <para>Each load metric contributes a value to the overall load factor of a
-    node. The load factors from each metric are aggregated according to their
-    weights.</para>
-
-    <para>In general, the load factor contribution of given metric is: (load /
-    capacity) * weight / total weight.</para>
-
-    <para>The DynamicLoadBalanceFactorProvider applies a time decay function
-    to the loads returned by each metric. The aggregate load, with respect to
-    previous load values, can be expressed by the following formula:</para>
-
-    <para>    L = (L0 + L1/D + L2/D2 + L3/D3 + ... + LH/DH) * (1 + D + D2 + D3
-    + ... DH)</para>
-
-    <para>... or more concisely as:</para>
-
-    <para>    H         H</para>
-
-    <para>L = ∑ Li/Di *  ∑ Di</para>
-
-    <para>   i=0       i=0</para>
-
-    <para>... where D = decayFactor and H = history.</para>
-
-    <para>Setting history = 0 effectively disables the time decay function and
-    only the current load for each metric will be considered in the load
-    balance factor computation.</para>
-
-    <para>The mod_cluster proxy module expects the load factor to be an
-    integer between 0 and 100, where 0 indicates max load and 100 indicates
-    zero load. Therefore, the final load balance factor sent to the proxy =
-    100 - (L * 100).</para>
-
-    <para>While you are free to write your own load metrics, the following
-    LoadMetrics are available out of the box:</para>
-
-</sect1>
-<sect1>
+  <para>
+    Load metrics can be configured with an associated weight and capacity.
+  </para>
+  <para>
+    The weight (default is 1) indicates the significance of a metric with respect to the other metrics.
+    For example, a metric of weight 2 will have twice the impact on the overall load factor than a metric of weight 1.
+  </para>
+  <para>The capacity of a metric serves 2 functions:</para>
+  <itemizedlist>
+    <listitem>
+      <para>
+        To normalize the load values from each metric.
+        In some load metrics, capacity is already reflected in the load values.
+        The capacity of a metric should be configured such that 0 &lt;= (load / capacity) &gt;= 1.
+      </para>
+    </listitem>
+    <listitem>
+      <para>
+        To favor some nodes over others.
+        By setting the metric capacities to different values on each node, proxies will effectively favor nodes with higher capacities, since they will return smaller load values.
+        This adds an interesting level of granularity to node weighting.
+        Consider a cluster of two nodes, one with more memory, and a second with a faster CPU; and two metrics, one memory-based and the other CPU-based.
+        In the memory-based metric, the first node would be given a higher load capacity than the second node.
+        In a CPU-based metric, the second node would be given a higher load capacity than the first node.
+      </para>
+    </listitem>
+  </itemizedlist>
+  <para>
+    Each load metric contributes a value to the overall load factor of a node.
+    The load factors from each metric are aggregated according to their weights.
+  </para>
+  <para>
+    In general, the load factor contribution of given metric is: (load / capacity) * weight / total weight.
+  </para>
+  <para>
+    The DynamicLoadBalanceFactorProvider applies a time decay function to the loads returned by each metric.
+    The aggregate load, with respect to previous load values, can be expressed by the following formula:
+  </para>
+  <informalequation>
+    <mathphrase>L = (L<subscript>0</subscript> + L<subscript>1</subscript>/D + L<subscript>2</subscript>/D<superscript>2</superscript> + L<subscript>3</subscript>/D<superscript>3</superscript> + ... + L<subscript>H</subscript>/D<superscript>H</superscript>) * (1 + D + D<superscript>2</superscript> + D<superscript>3</superscript> + ... D<superscript>H</superscript>)</mathphrase>
+  </informalequation>
+  <para>... or more concisely as:</para>
+  <informalequation>
+    <mathphrase>L = (∑<superscript>H</superscript><subscript>i=0</subscript> L<subscript>i</subscript>/D<superscript>i</superscript>) * (∑<superscript>H</superscript><subscript>i=0</subscript> D<superscript>i</superscript>)</mathphrase>
+  </informalequation>
+  <!-- MathML -->
+  <!--informalequation>
+    <mml:math display="block">
+      <mml:mstyle displaystyle="true">
+        <mml:mi>L</mml:mi>
+        <mml:mo>=</mml:mo>
+        <mml:mfenced open="(" close=")">
+          <mml:mrow>
+            <mml:munderover>
+              <mml:mrow>
+                <mml:mo>∑</mml:mo>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:mi>i</mml:mi>
+                <mml:mo>=</mml:mo>
+                <mml:mn>0</mml:mn>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:mi>H</mml:mi>
+              </mml:mrow>
+            </mml:munderover>
+            <mml:mfrac>
+              <mml:mrow>
+                <mml:msub>
+                  <mml:mrow>
+                    <mml:mi>L</mml:mi>
+                  </mml:mrow>
+                  <mml:mrow>
+                    <mml:mi>i</mml:mi>
+                  </mml:mrow>
+                </mml:msub>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:msup>
+                  <mml:mrow>
+                    <mml:mi>D</mml:mi>
+                  </mml:mrow>
+                  <mml:mrow>
+                    <mml:mi>i</mml:mi>
+                  </mml:mrow>
+                </mml:msup>
+              </mml:mrow>
+            </mml:mfrac>
+          </mml:mrow>
+        </mml:mfenced>
+        <mml:mo>⋅</mml:mo>
+        <mml:mfenced open="(" close=")">
+          <mml:mrow>
+            <mml:munderover>
+              <mml:mrow>
+                <mml:mo>∑</mml:mo>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:mi>i</mml:mi>
+                <mml:mo>=</mml:mo>
+                <mml:mn>0</mml:mn>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:mi>H</mml:mi>
+              </mml:mrow>
+            </mml:munderover>
+            <mml:msup>
+              <mml:mrow>
+                <mml:mi>D</mml:mi>
+              </mml:mrow>
+              <mml:mrow>
+                <mml:mi>i</mml:mi>
+              </mml:mrow>
+            </mml:msup>
+          </mml:mrow>
+        </mml:mfenced>
+      </mml:mstyle>
+    </mml:math>
+  </informalequation-->
+  <para>... where D = decayFactor, and H = history.</para>
+  <para>
+    Setting history = 0 effectively disables the time decay function and only the current load for each metric will be considered in the load balance factor computation.
+  </para>
+  <para>
+    The mod_cluster load balancer expects the load factor to be an integer between 0 and 100, where 0 indicates max load and 100 indicates zero load. Therefore, the final load factor sent to the load balancer
+    <informalequation><mathphrase>L<subscript>Final</subscript> = 100 - (L * 100)</mathphrase></informalequation>
+  </para>
+  <para>
+    While you are free to write your own load metrics, the following LoadMetrics are available out of the box:
+  </para>
+  
+  <section>
     <title>Web Container metrics</title>
-
-    <orderedlist>
-      <listitem>
-        <para>ActiveSessionsLoadMetric</para>
-
-        <para> * Requires an explicit capacity</para>
-
-        <para> * Uses SessionLoadMetricSource to query session managers</para>
-
-        <para> * Analogous to method=S in mod_jk </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="ActiveSessionsLoadMetric" class="org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ActiveSessionsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="SessionLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1000&lt;/property&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="SessionLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.SessionLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>BusyConnectorsLoadMetric</para>
-
-        <para> * Returns the percentage of connector threads from the thread
-        pool that are busy servicing requests</para>
-
-        <para> * Uses ThreadPoolLoadMetricSource to query connector thread
-        pools</para>
-
-        <para> * Analogous to method=B in mod_jk </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="BusyConnectorsLoadMetric" class="org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=BusyConnectorsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="ThreadPoolLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="ThreadPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ThreadPoolLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>ReceiveTrafficLoadMetric</para>
-
-        <para> * Returns the incoming request traffic in KB/sec</para>
-
-        <para> * Requires an explicit capacity</para>
-
-        <para> * Uses RequestProcessorLoadMetricSource to query request
-        processors</para>
-
-        <para> * Analogous to method=T in mod_jk </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="ReceiveTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ReceiveTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1024&lt;/property&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="RequestProcessorLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>SendTrafficLoadMetric</para>
-
-        <para> * Returns the outgoing request traffic in KB/sec</para>
-
-        <para> * Requires an explicit capacity</para>
-
-        <para> * Uses RequestProcessorLoadMetricSource to query request
-        processors</para>
-
-        <para> * Analogous to method=T in mod_jk </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="SendTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SendTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;512&lt;/property&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>RequestCountLoadMetric</para>
-
-        <para> * Returns the number of requests/sec</para>
-
-        <para> * Requires an explicit capacity</para>
-
-        <para> * Uses RequestProcessorLoadMetricSource to query request
-        processors</para>
-
-        <para> * Analogous to method=R in mod_jk </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="RequestCountLoadMetric" class="org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=RequestCountLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"&gt;&lt;inject bean="RequestProcessorLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>  &lt;property name="capacity"&gt;1000&lt;/property&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-    </orderedlist>
-</sect1>
-<sect1>
+    <section>
+      <title><code>ActiveSessionsLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Requires an explicit capacity</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>SessionLoadMetricSource</code> to query session managers</para>
+        </listitem>
+        <listitem>
+          <para>Analogous to method=S in mod_jk</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="ActiveSessionsLoadMetric" class="org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ActiveSessionsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter><inject bean="SessionLoadMetricSource"/></parameter>
+  </constructor>
+  <property name="capacity">1000</property>
+</bean>
+<bean name="SessionLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.SessionLoadMetricSource" mode="On Demand">
+  <constructor>
+    <parameter class="javax.management.MBeanServer">
+      <inject bean="JMXKernel" property="mbeanServer"/>
+    </parameter>
+  </constructor>
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>BusyConnectorsLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the percentage of connector threads from the thread pool that are busy servicing requests</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>ThreadPoolLoadMetricSource</code> to query connector thread</para>
+        </listitem>
+        <listitem>
+          <para>Analogous to method=B in mod_jk</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="BusyConnectorsLoadMetric" class="org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=BusyConnectorsLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter><inject bean="ThreadPoolLoadMetricSource"/></parameter>
+  </constructor>
+</bean>
+<bean name="ThreadPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ThreadPoolLoadMetricSource" mode="On Demand">
+  <constructor>
+    <parameter class="javax.management.MBeanServer">
+      <inject bean="JMXKernel" property="mbeanServer"/>
+    </parameter>
+  </constructor>
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>ReceiveTrafficLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the incoming request traffic in KB/sec</para>
+        </listitem>
+        <listitem>
+          <para>Requires an explicit capacity</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>RequestProcessorLoadMetricSource</code> to query request processors</para>
+        </listitem>
+        <listitem>
+          <para>Analogous to method=T in mod_jk</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="ReceiveTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ReceiveTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource">
+      <inject bean="RequestProcessorLoadMetricSource"/>
+    </parameter>
+  </constructor>
+  <property name="capacity">1024</property>
+</bean>
+<bean name="RequestProcessorLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource" mode="On Demand">
+  <constructor>
+    <parameter class="javax.management.MBeanServer">
+      <inject bean="JMXKernel" property="mbeanServer"/>
+    </parameter>
+  </constructor>
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>SendTrafficLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the outgoing request traffic in KB/sec</para>
+        </listitem>
+        <listitem>
+          <para>Requires an explicit capacity</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>RequestProcessorLoadMetricSource</code> to query request processors</para>
+        </listitem>
+        <listitem>
+          <para>Analogous to method=T in mod_jk</para>
+        </listitem>
+      </itemizedlist>
+      <programlisting><![CDATA[<bean name="SendTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SendTrafficLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource">
+      <inject bean="RequestProcessorLoadMetricSource"/>
+    </parameter>
+  </constructor>
+  <property name="capacity">512</property>
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>RequestCountLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the number of requests/sec</para>
+        </listitem>
+        <listitem>
+          <para>Requires an explicit capacity</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>RequestProcessorLoadMetricSource</code> to query request processors</para>
+        </listitem>
+        <listitem>
+          <para>Analogous to method=R in mod_jk</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="RequestCountLoadMetric" class="org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=RequestCountLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource">
+      <inject bean="RequestProcessorLoadMetricSource"/>
+    </parameter>
+  </constructor>
+  <property name="capacity">1000</property>
+</bean>]]></programlisting>
+    </section>
+  </section>
+  <section>
     <title>System/JVM metrics</title>
-
-    <orderedlist>
-      <listitem>
-        <para>AverageSystemLoadMetric</para>
-
-        <para> * Returns CPU load</para>
-
-        <para> * Requires Java 1.6+.</para>
-
-        <para> * Uses OperatingSystemLoadMetricSource to generically read
-        attributes </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="AverageSystemLoadMetric" class="org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=AverageSystemLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="OperatingSystemLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand"&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>SystemMemoryUsageLoadMetric</para>
-
-        <para> * Returns system memory usage</para>
-
-        <para> * Requires com.sun.management.OperatingSystemMXBean (available
-        in Sun's JDK or OpenJDK)</para>
-
-        <para> * Uses OperatingSystemLoadMetricSource to generically read
-        attributes </para>
-
-        <para>e.g.</para>
-
-    <programlisting><para>&lt;bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SystemMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="OperatingSystemLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-      <listitem>
-        <para>HeapMemoryUsageLoadMetric</para>
-
-        <para>* Returns the heap memory usage as a percentage of max heap
-        size</para>
-
-        <para>e.g.</para>
-    <programlisting><para>&lt;bean name="HeapMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=HeapMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-
-      </listitem>
-    </orderedlist>
-
-</sect1>
-<sect1>
+    <section>
+      <title><code>AverageSystemLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns CPU load</para>
+        </listitem>
+        <listitem>
+          <para>Requires Java 1.6+</para>
+        </listitem>
+        <listitem>
+          <para>Uses <code>OperatingSystemLoadMetricSource</code> to generically read attributes</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="AverageSystemLoadMetric" class="org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=AverageSystemLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter><inject bean="OperatingSystemLoadMetricSource"/></parameter>
+  </constructor>
+</bean>
+<bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand">
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>SystemMemoryUsageLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns system memory usage</para>
+        </listitem>
+        <listitem>
+          <para>Requires com.sun.management.OperatingSystemMXBean (available in Sun's JDK or OpenJDK)</para>
+        </listitem>
+        <listitem>
+          <para>Uses OperatingSystemLoadMetricSource to generically read attributes</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SystemMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter><inject bean="OperatingSystemLoadMetricSource"/></parameter>
+  </constructor>
+</bean>]]></programlisting>
+    </section>
+    <section>
+      <title><code>HeapMemoryUsageLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the heap memory usage as a percentage of max heap size</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="HeapMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=HeapMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+</bean>]]></programlisting>
+    </section>
+  </section>
+  <section>
     <title>Other metrics</title>
-
-    <orderedlist>
-      <listitem>
-        <para>ConnectionPoolUsageLoadMetric</para>
-
-        <para> * Returns the percentage of connections from a connection pool
-        that are in use.</para>
-
-        <para> * Uses ConnectionPoolLoadMetricSource to query JCA connection
-        pools </para>
-
-        <para>e.g.</para>
-      </listitem>
-    </orderedlist>
-
-    <programlisting><para>&lt;bean name="ConnectionPoolUsageMetric" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolUsageLoadMetric" mode="On Demand"&gt;</para><para>  &lt;annotation&gt;@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ConnectionPoolUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)&lt;/annotation&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter&gt;&lt;inject bean="ConnectionPoolLoadMetricSource"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para><para>&lt;bean name="ConnectionPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolLoadMetricSource" mode="On Demand"&gt;</para><para>  &lt;constructor&gt;</para><para>    &lt;parameter class="javax.management.MBeanServer"&gt;&lt;inject bean="JMXKernel" property="mbeanServer"/&gt;&lt;/parameter&gt;</para><para>  &lt;/constructor&gt;</para><para>&lt;/bean&gt;</para></programlisting>
-  </sect1>
+    <section>
+      <title><code>ConnectionPoolUsageLoadMetric</code></title>
+      <itemizedlist>
+        <listitem>
+          <para>Returns the percentage of connections from a connection pool that are in use</para>
+        </listitem>
+        <listitem>
+          <para>Uses ConnectionPoolLoadMetricSource to query JCA connection pools</para>
+        </listitem>
+      </itemizedlist>
+      <para>e.g.</para>
+      <programlisting><![CDATA[<bean name="ConnectionPoolUsageMetric" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolUsageLoadMetric" mode="On Demand">
+  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ConnectionPoolUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
+  <constructor>
+    <parameter><inject bean="ConnectionPoolLoadMetricSource"/></parameter>
+  </constructor>
+</bean>
+<bean name="ConnectionPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolLoadMetricSource" mode="On Demand">
+  <constructor>
+    <parameter class="javax.management.MBeanServer">
+      <inject bean="JMXKernel" property="mbeanServer"/>
+    </parameter>
+  </constructor>
+</bean>]]></programlisting>
+    </section>
+  </section>
 </chapter>

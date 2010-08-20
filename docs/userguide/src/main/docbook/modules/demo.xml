@@ -7,354 +7,307 @@
 <chapter id="demo">
   <title>Load Balancing Demo Application</title>
 
-  <sect1>
+  <section>
     <title>Overview</title>
-
-    <para>The mod_cluster distribution includes a demo application that helps
-    demonstrate how different server-side scenarios affect the routing of
-    client requests by the load balancer. The demo application is located in
-    the mod_cluster distribution's demo directory.</para>
-
+    <para>
+      The mod_cluster distribution includes a demo application that helps demonstrate how different server-side scenarios affect the routing of client requests by the load balancer.
+      The demo application is located in the mod_cluster distribution's demo directory.
+    </para>
     <para>The demo application consists of two components:</para>
-
     <orderedlist>
       <listitem>
-        <para>The first component is a war file that needs to be deployed in
-        JBossWeb/Tomcat/JBoss AS. The war includes a number of
-        servlets:</para>
+        <para>
+          The first component is a war file that needs to be deployed in JBossWeb/Tomcat/JBoss AS.
+          The war includes a number of servlets.</para>
       </listitem>
-
       <listitem>
-        <para>The second component is a GUI application that allows a user to
-        launch a pool of threads that repeatedly make requests to the load
-        balancer. The requests are ultimately routed to the demo war's primary
-        servlet. The application tracks which servers are handling the
-        requests and displays this information in a chart.</para>
-
-        <para>The application can also send separate requests to the demo
-        war's load generation servlets, allowing the user to see how different
-        load conditions affect the balancing of requests.</para>
+        <para>
+          The second component is a GUI application that allows a user to launch a pool of threads that repeatedly make requests to the load balancer.
+          The requests are ultimately routed to the demo war's primary servlet.
+          The application tracks which servers are handling the requests and displays this information in a chart.
+        </para>
+        <para>
+          The application can also send separate requests to the demo war's load generation servlets,
+          allowing the user to see how different load conditions affect the balancing of requests.
+        </para>
       </listitem>
     </orderedlist>
+    <para>
+       Note that the demo application does not actually depend on mod_cluster in any way.
+       Its only dependency is on JBossWeb/Tomcat.
+       <footnote><para>The demo's "Datasource Use" load generation scenario requires the use of JBoss Application Server.</para></footnote>
+       Consequently, the demo can be used to demonstrate the effect of different server-side scenarios on the routing decisions made by any load balancer, including mod_jk, mod_proxy or the various hardware load balancers.
+    </para>
+    <para>
+      Note also that this demo application is not intended to be used as a load testing tool;
+      i.e. something that can demonstrate the maximum load a cluster configuration can handle.
+      Using it as such has a good chance of showing you the maximum load the client can generate rather than the maximum load your cluster can handle.
+    </para>
+  </section>
 
-    <para>Note that the demo application does not actually depend on
-    mod_cluster in any way. Its only dependency is on JBossWeb/Tomcat.
-    <footnote>
-        <para>The demo's "Datasource Use" load generation scenario requires
-        the use of JBoss Application Server.</para>
-      </footnote>So, the demo could be used to demonstrate the effect of
-    different server-side scenarios on the routing decisions made by any load
-    balancer, including mod_jk, mod_proxy or the various hardware load
-    balancers.</para>
-
-    <para>Note also that this demo application is not intended to be used as a
-    load testing tool; i.e. something that can demonstrate the maximum load a
-    cluster configuration can handle. Using it as such has a good chance of
-    showing you the maximum load the client can generate rather than the
-    maximum load your cluster can handle.</para>
-  </sect1>
-
-  <sect1>
+  <section>
     <title>Basic Usage</title>
-
     <para>To run the demo application:</para>
-
     <orderedlist>
-      <listitem>
-        <para><anchor id="first" />Unpack the mod_cluster distribution on your
-        filesystem. Here we assume it has been unzipped to
-        /home/bes/mod_cluster or C:\mod_cluster.</para>
+      <listitem id="first">
+        <para>
+          Unpack the mod_cluster distribution on your filesystem.
+          Here we assume it has been unzipped to ~/mod_cluster or C:\mod_cluster.
+        </para>
       </listitem>
-
       <listitem>
-        <para>Install mod_cluster into your httpd server as described at
-        <link
-        linkend="nativeinstall">Installation
-        of the httpd part</link></para>
+        <para>
+          Install mod_cluster into your httpd server as described at <link linkend="native.install">Installation of the httpd part</link>
+        </para>
       </listitem>
-
       <listitem>
-        <para>Install mod_cluster into your JBossAS/JBossWeb/Tomcat servers as
-        described at <link
-        linkend="javainstall">Installation
-        on the Java side</link></para>
+        <para>
+          Install mod_cluster into your JBossAS/JBossWeb/Tomcat servers as described at <link linkend="java.install">Installation on the Java side</link>
+        </para>
       </listitem>
-
       <listitem>
         <para>Start httpd and your JBossAS/JBossWeb/Tomcat servers</para>
       </listitem>
-
       <listitem>
-        <para>Deploy the load-demo.war found in the distribution's demo/server
-        folder to your JBossAS/JBossWeb/Tomcat servers.</para>
+        <para>Deploy the load-demo.war found in the distribution's demo/server folder to your JBossAS/JBossWeb/Tomcat servers.</para>
       </listitem>
-
       <listitem>
-        <para>Start the demo application:<orderedlist>
-            <listitem>
-              <para>On *nix:</para>
-
-              <para><programlisting>[bes@besdev ~]$ cd /home/bes/mod_cluster/demo/client
-[bes@besdev mod_cluster]$ ./run-demo.sh</programlisting></para>
-            </listitem>
-
-            <listitem>
-              <para>On Windows:</para>
-
-              <para><programlisting>C:\&gt;cd mod_cluster\demo\client
-C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
-            </listitem>
-          </orderedlist></para>
-
-        <para></para>
-
-        <para><mediaobject>
-            <imageobject role="demo-client-control">
-              <imagedata align="center"
-                         fileref="images/demo-client-control.jpg" format="JPG" />
-            </imageobject>
-          </mediaobject></para>
-      </listitem>
-
-      <listitem>
-        <para>Configure the hostname and address of the httpd server, the
-        number of client threads, etc and click the "Start" button. See <link
-        linkend="client-config">Client
-        Driver Configuration Options</link> for details on the configuration
-        options.</para>
-      </listitem>
-
-      <listitem>
-        <para>Switch to the "Request Balancing" tab to see how many requests
-        are going to each of your JBossAS/JBossWeb/Tomcat servers:</para>
-      </listitem>
-
-      <listitem>
-        <para>Switch to the "Session Balancing" tab to see how many active
-        sessions<link
-        linkend="active_sessions"><footnote>
-            <para>For purposes of this chart, a session is considered "active"
-            if a client thread will ever again send a request associated with
-            the session. When client threads stop using a session, they can
-            either send a request to invalidate it or just abandon it by no
-            longer including its session cookie in requests. After a session
-            is abandoned, it will not be reflected in the "Session Balancing"
-            chart, but it will continue to exist on the JBossWeb/Tomcat/JBoss
-            AS server until it is removed due to timeout.</para>
-          </footnote></link>are being hosted by each of your
-        JBossAS/JBossWeb/Tomcat servers:</para>
-      </listitem>
-
-      <listitem>
-        <para>Stop some of your JBossAS/JBossWeb/Tomcat servers and/or
-        undeploy the load-demo.war from some of the servers and see the effect
-        this has on load balancing.</para>
-      </listitem>
-
-      <listitem>
-        <para>Restart some of your JBossAS/JBossWeb/Tomcat servers and/or
-        re-deploy the load-demo.war to some of the servers and see the effect
-        this has on load balancing.</para>
-      </listitem>
-
-      <listitem>
-        <para>Experiment with adding artificial load to one or more servers to
-        see what effect that has on load balancing. See <link
-        linkend="load-generation">Load
-        Generation Scenarios</link> for details.</para>
-      </listitem>
-    </orderedlist>
-
-    <para>Most of the various panels in application interface also present
-    information on the current status on any client threads. "Total Clients"
-    is the number of client threads created since the last time the "Start"
-    button was pushed. "Live Clients" is the number of threads currently
-    running. "Failed Clients" is the number of clients that terminated
-    abnormally; i.e. made a request that resulted in something other than an
-    HTTP 200 response.</para>
-  </sect1>
-
-  <sect1 id="client-config">
-    <title>Client Driver Configuration Options</title>
-
-    <para>The configuration of the client is driver is done via the
-    application's "Clent Control" tab:</para>
-
-    <para><mediaobject>
-        <imageobject role="demo-client-control">
-          <imagedata align="center" fileref="images/demo-client-control.jpg"
-                     format="JPG" />
-        </imageobject>
-      </mediaobject></para>
-
-    <para>The panel includes the following options:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Proxy Hostname: Hostname of the load balancer or the IP address
-        on which it is listening for requests<footnote>
-            <para>The default value for this field is controlled by the
-            mod_cluster.proxy.host system property, or localhost if not set.
-            Editing the run-demo.sh or run-demo.bat file to change the
-            -Dmod_cluster.proxy.host=localhost passed to java will allow you
-            to avoid re-typing this value every time you launch the demo
-            application.</para>
-          </footnote></para>
-      </listitem>
-
-      <listitem>
-        <para>Proxy Port: Port on which the load balancer is listening for
-        requests<footnote>
-            <para>The default value for this field is controlled by the
-            mod_cluster.proxy.port system property, or 8000 if not set.
-            Editing the run-demo.sh or run-demo.bat file to change the
-            -Dmod_cluster.proxy.port=8000 passed to java will allow you to
-            avoid re-typing this value every time you launch the demo
-            application.</para>
-          </footnote></para>
-      </listitem>
-
-      <listitem>
-        <para>Context Path: Portion of the request URL that specifies the
-        request is for the load-demo.war</para>
-      </listitem>
-
-      <listitem>
-        <para>Session Life: Number of seconds a client thread should use a
-        session before invalidating or abandoning it. Generally it is good to
-        keep this to a small value; otherwise the use of session stickiness
-        will prevent changes in server load from affecting the load balancer's
-        routing decisions. With sticky sessions enabled (strongly
-        recommended), it is the creation of a new session that allows the load
-        balancer to try to balance load.</para>
-      </listitem>
-
-      <listitem>
-        <para>Invalidate: Controls what the client thread should do when it
-        stops using a session because Session Life has passed. If checked, the
-        driver will send a request that results in the session being
-        invalidated. If unchecked, the session will just be abandoned, and
-        will continue to exist on the server until Session Timeout seconds
-        have passed. (In the future this will likely be changed to a
-        percentage input, so X% can be invalidated, the rest
-        abandoned.)</para>
-      </listitem>
-
-      <listitem>
-        <para>Session Timeout: Number of seconds a session can remain unused
-        before the server is free to expire it. Unchecking Invalidate and
-        setting a high value relative to Session Life allows a significant
-        number of unused sessions to accumulate on the server.</para>
-      </listitem>
-
-      <listitem>
-        <para>Num Threads: Number of client threads to launch. Each thread
-        repeatedly makes requests until the "Stop" button is pushed or a
-        request receives a response other than HTTP 200.</para>
-      </listitem>
-
-      <listitem>
-        <para>Sleep Time: Number of ms the client threads should sleep between
-        requests.</para>
-      </listitem>
-
-      <listitem>
-        <para>Startup Time: Number of seconds over which the application
-        should stagger the start of the client threads. Staggering the start
-        is advised as it avoids the unnatural situation where for the life of
-        the demonstation all sessions start at about the same time and then
-        are invalidated or abandoned at the same time. Staggering the start
-        allows the load balancer to continually see new sessions and decide
-        how to route them.</para>
-      </listitem>
-    </orderedlist>
-  </sect1>
-
-  <sect1 id="load-generation">
-    <title>Load Generation Scenarios</title>
-
-    <para>You can use the application's GUI to instruct individual servers to
-    artificially generate various types of load, and then track how that load
-    affects request and session balancing. Load generation is controlled via
-    the application's "Server Load Control" tab:</para>
-
-    <para><mediaobject>
-        <imageobject role="demo-server-load">
-          <imagedata align="center" fileref="images/demo-server-load.jpg"
-                     format="JPG" />
-        </imageobject>
-      </mediaobject></para>
-
-    <para>The panel includes the following options:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Target Hostname and Target Port: The hostname or IP address of
-        the server on which you want load generated. There are two strategies
-        for setting these:</para>
-
+        <para>
+          Start the demo application:
+        </para>
         <orderedlist>
           <listitem>
-            <para>You can use the hostname and port of the load balancer, in
-            which case the load balancer will pick a backend server and route
-            the request to it. Note the client application does not maintain a
-            session cookie for these requests, so if you invoke another server
-            load generation request, you shouldn't expect the same server to
-            handle it.</para>
+            <para>On *nix:</para>
+            <para><programlisting>cd ~/mod_cluster/demo/client
+./run-demo.sh</programlisting>
+            </para>
           </listitem>
-
           <listitem>
-            <para>If the JBoss AS/JBossWeb/Tomcat servers are running the
-            HttpConnector as well as the AJP connector, you can specify the
-            address and port on which a particular server's HttpConnector is
-            listening. The standard port is 8080.</para>
+            <para>On Windows:</para>
+            <para><programlisting>C:\&gt;cd mod_cluster\demo\client
+C:\mod_cluster\demo\client&gt;run-demo</programlisting></para>
+          </listitem>
+        </orderedlist>
+        <mediaobject><imageobject role="demo-client-control"><imagedata align="center" fileref="images/demo-client-control.jpg" format="JPG"/></imageobject></mediaobject>
+      </listitem>
+      <listitem>
+        <para>
+          Configure the hostname and address of the httpd server, the number of client threads, etc and click the "Start" button.
+          See <link linkend="client-config">Client Driver Configuration Options</link> for details on the configuration options.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Switch to the "Request Balancing" tab to see how many requests are going to each of your JBossAS/JBossWeb/Tomcat servers.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Switch to the "Session Balancing" tab to see how many active sessions
+          <link linkend="active_sessions">
+            <footnote>
+              <para>
+                For purposes of this chart, a session is considered "active" if a client thread will ever again send a request associated with the session.
+                When client threads stop using a session, they can either send a request to invalidate it or just abandon it by no longer including its session cookie in requests.
+                After a session is abandoned, it will not be reflected in the "Session Balancing" chart, but it will continue to exist on the JBossWeb/Tomcat/JBoss AS server until it is removed due to timeout.
+              </para>
+            </footnote>
+          </link> are being hosted by each of your JBossAS/JBossWeb/Tomcat servers.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Stop some of your JBossAS/JBossWeb/Tomcat servers and/or undeploy the load-demo.war from some of the servers and see the effect this has on load balancing.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Restart some of your JBossAS/JBossWeb/Tomcat servers and/or re-deploy the load-demo.war to some of the servers and see the effect this has on load balancing.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Experiment with adding artificial load to one or more servers to see what effect that has on load balancing.
+          See <link linkend="load-generation">Load Generation Scenarios</link> for details.
+        </para>
+      </listitem>
+    </orderedlist>
+    <para>
+      Most of the various panels in application interface also present information on the current status on any client threads.
+      "Total Clients" is the number of client threads created since the last time the "Start" button was pushed.
+      "Live Clients" is the number of threads currently running.
+      "Failed Clients" is the number of clients that terminated abnormally; 
+      i.e. made a request that resulted in something other than an HTTP 200 response.
+    </para>
+  </section>
+
+  <section id="client-config">
+    <title>Client Driver Configuration Options</title>
+    <para>
+      The configuration of the client is driver is done via the application's "Clent Control" tab.
+    </para>
+    <mediaobject><imageobject role="demo-client-control"><imagedata align="center" fileref="images/demo-client-control.jpg" format="JPG" /></imageobject></mediaobject>
+    <para>The panel includes the following options:</para>
+    <orderedlist>
+      <listitem>
+        <para>
+          Proxy Hostname:
+          Hostname of the load balancer or the IP address on which it is listening for requests
+          <footnote>
+            <para>
+              The default value for this field is controlled by the <code>mod_cluster.proxy.host</code> system property, or localhost if not set.
+              Editing the run-demo.sh or run-demo.bat file to change the <code>-Dmod_cluster.proxy.host=localhost</code> passed to java will allow you to avoid re-typing this value every time you launch the demo application.
+            </para>
+          </footnote>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Proxy Port:
+          Port on which the load balancer is listening for requests
+          <footnote>
+            <para>
+              The default value for this field is controlled by the <code>mod_cluster.proxy.port</code> system property, or 8000 if not set.
+              Editing the run-demo.sh or run-demo.bat file to change the <code>-Dmod_cluster.proxy.port=8000</code> passed to java will allow you to avoid re-typing this value every time you launch the demo application.
+            </para>
+          </footnote>
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Context Path:
+          Portion of the request URL that specifies the request is for the load-demo.war
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Session Life:
+          Number of seconds a client thread should use a session before invalidating or abandoning it.
+          Generally it is good to keep this to a small value; otherwise the use of session stickiness will prevent changes in server load from affecting the load balancer's routing decisions.
+          With sticky sessions enabled (strongly recommended), it is the creation of a new session that allows the load balancer to try to balance load.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Invalidate:
+          Controls what the client thread should do when it stops using a session because Session Life has passed.
+          If checked, the driver will send a request that results in the session being invalidated.
+          If unchecked, the session will just be abandoned, and will continue to exist on the server until Session Timeout seconds have passed.
+          In the future this will likely be changed to a percentage input, so X% can be invalidated, the rest abandoned.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Session Timeout:
+          Number of seconds a session can remain unused before the server is free to expire it.
+          Unchecking Invalidate and setting a high value relative to Session Life allows a significant number of unused sessions to accumulate on the server.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Num Threads:
+          Number of client threads to launch.
+          Each thread repeatedly makes requests until the "Stop" button is pushed or a request receives a response other than HTTP 200.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Sleep Time:
+          Number of ms the client threads should sleep between requests.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Startup Time:
+          Number of seconds over which the application should stagger the start of the client threads.
+          Staggering the start advised as it avoids the unnatural situation where for the life of the demonstation all sessions start at about the same time and then are invalidated or abandoned at the same time.
+          Staggering the start allows the load balancer to continually see new sessions and decide how to route them.
+        </para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="load-generation">
+    <title>Load Generation Scenarios</title>
+    <para>
+      You can use the application's GUI to instruct individual servers to artificially generate various types of load, and then track how that load affects request and session balancing.
+      Load generation is controlled via the application's "Server Load Control" tab.
+    </para>
+    <mediaobject><imageobject role="demo-server-load"><imagedata align="center" fileref="images/demo-server-load.jpg" format="JPG"/></imageobject></mediaobject>
+    <para>The panel includes the following options:</para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Target Hostname and Target Port:
+          The hostname or IP address of the server on which you want load generated.
+          There are two strategies for setting these:
+        </para>
+        <orderedlist>
+          <listitem>
+            <para>
+              You can use the hostname and port of the load balancer, in which case the load balancer will pick a backend server and route the request to it.
+              Note the client application does not maintain a session cookie for these requests, so if you invoke another server load generation request, you shouldn't expect the same server to handle it.
+            </para>
+          </listitem>
+          <listitem>
+            <para>
+              If the JBoss AS/JBossWeb/Tomcat servers are running the HttpConnector as well as the AJP connector, you can specify the address and port on which a particular server's HttpConnector is listening.
+              The standard port is 8080.
+            </para>
           </listitem>
         </orderedlist>
       </listitem>
-
       <listitem>
-        <para>Load Creation Action: Specifies the type of load the target
-        server should generate. See below for details on the available load
-        types.</para>
+        <para>
+          Load Creation Action:
+          Specifies the type of load the target server should generate.
+          See below for details on the available load types.
+        </para>
       </listitem>
-
       <listitem>
-        <para>Params: Zero or more parameters to pass to the specified load
-        creation servlet. For example, in the screenshot above, Number of
-        Connections and Duration. How many parameters are displayed, their
-        name and their meaning depend on the selected Load Creation Action.
-        The label for each parameter includes a tooltip that explains its
-        use.</para>
-
+        <para>
+          Params:
+          Zero or more parameters to pass to the specified load creation servlet.
+          For example, in the screenshot above, Number of Connections and Duration.
+          How many parameters are displayed, their name and their meaning depend on the selected Load Creation Action.
+          The label for each parameter includes a tooltip that explains its use.
+        </para>
         <para>The available Load Creation Actions are as follows:</para>
-
-        <para>1. Active Sessions: Generates server load by causing session
-        creation on the target server.</para>
-
-        <para>2. Datasource Use: Generates server load by taking connections
-        from the java:DefaultDS datasource for a period1</para>
-
-        <para>3. Connection Pool Use: Generates server load by tieing up
-        threads in the webserver connections pool for a period</para>
-
-        <para>4. Heap Memory Pool Use: Generates server load by filling 50% of
-        free heap memory for a period</para>
-
-        <para>5. CPU Use: Generates server CPU load by initiating a tight loop
-        in a thread</para>
-
-        <para>6. Server Receive Traffic: Generates server traffic receipt load
-        by POSTing a large byte array to the server once per second for a
-        period</para>
-
-        <para>7. Server Send Traffic: Generates server traffic send load by
-        making a request once per second to which the server responds with a
-        large byte array</para>
-
-        <para>8. Request Count: Generates server load by making numerous
-        requests, increasing the request count on the target server.</para>
-
+        <variablelist>
+          <varlistentry>
+            <term>Active Sessions</term>
+            <listitem><para>Generates server load by causing session creation on the target server.</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Datasource Use</term>
+            <listitem><para>Generates server load by taking connections from the java:DefaultDS datasource for a period</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Connection Pool Use</term>
+            <listitem><para>Generates server load by tieing up threads in the webserver connections pool for a period</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Heap Memory Pool Use</term>
+            <listitem><para>Generates server load by filling 50% of free heap memory for a period</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>CPU Use</term>
+            <listitem><para>Generates server CPU load by initiating a tight loop in a thread</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Server Receive Traffic</term>
+            <listitem><para>Generates server traffic receipt load by POSTing a large byte array to the server once per second for a period</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Server Send Traffic</term>
+            <listitem><para>Generates server traffic send load by making a request once per second to which the server responds with a large byte array</para></listitem>
+          </varlistentry>
+          <varlistentry>
+            <term>Request Count</term>
+            <listitem><para>Generates server load by making numerous requests, increasing the request count on the target server</para></listitem>
+          </varlistentry>
+        </variablelist>
       </listitem>
-    </orderedlist>
-  </sect1>
+    </itemizedlist>
+  </section>
 </chapter>

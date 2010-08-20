@@ -4,8 +4,8 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="nativeinstall">
-  <title>Installation of the httpd part</title>
+<chapter id="native.install">
+  <title>Installing httpd modules</title>
 
   <para>Several bundles are available at <ulink
   url="http://www.jboss.org/mod_cluster/downloads.html">http://www.jboss.org/mod_cluster/downloads.html</ulink>.</para>
@@ -14,20 +14,20 @@
   download area, it is possible to build mod_cluster for the sources. You need
   a distribution of httpd (at least 2.2.8) or (better) a source tarball of
   httpd and the sources of mod_cluster. <link
-  linkend="building">Building</link>
+  linkend="native.building">Building</link>
   explains how to build mod_cluster for it sources.</para>
 
-  <sect1>
+  <section>
     <title>Configuration</title>
 
     <para>A minimal configuration is needed in httpd (See <link
-    linkend="nativeconfig">httpd.conf</link>).
+    linkend="native.config">httpd.conf</link>).
     A listener must be a added in in JBossWEB conf/server.xml (See <link
-    linkend="javaconf">Configuring JBoss
+    linkend="java.config">Configuring JBoss
     AS/Web</link>).</para>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>Installing and using the bundles</title>
 
     <para>The bundles are tar.gz on POSIX platforms just extract them in root
@@ -59,5 +59,5 @@
     <para><programlisting>/opt/jboss/httpd/sbin/apachectl start</programlisting></para>
 
     <para>NOTE: Make sure to use SSL before going in production.</para>
-  </sect1>
+  </section>
 </chapter>

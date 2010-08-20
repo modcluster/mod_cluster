@@ -4,10 +4,10 @@
 <!ENTITY % BOOK_ENTITIES SYSTEM "../../User_Guide.ent">
 %BOOK_ENTITIES;
 ]>
-<chapter id="building">
-  <title>Building mod_cluster from sources</title>
+<chapter id="native.building">
+  <title>Building httpd modules</title>
 
-  <sect1>
+  <section>
     <title>Build a patched httpd from it sources</title>
 
     <para>To build httpd-2.2.x from its sources see <ulink
@@ -36,9 +36,9 @@
              --disable-proxy-balancer</programlisting></para>
 
     <para>Rebuild (make) and reinstall (make install) after that.</para>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>Build the 4 modules of mod_cluster</title>
 
     <para>You need an httpd installation with mod_proxy (--enable-proxy) and
@@ -64,14 +64,14 @@
     <para><programlisting>libtool: install: warning: remember to run `libtool --finish apache_installation_directory/modules'</programlisting></para>
 
     <para>Once that is done use <link
-    linkend="nativeconfig">Apache httpd
+    linkend="native.config">Apache httpd
     configuration</link> to configure mod_cluster.</para>
-  </sect1>
+  </section>
 
-  <sect1>
+  <section>
     <title>Build the mod_proxy module</title>
 
     <para>It is only needed for httpd-2.2.x where x &lt; 11. Process like the
     other mod_cluster modules.</para>
-  </sect1>
+  </section>
 </chapter>
