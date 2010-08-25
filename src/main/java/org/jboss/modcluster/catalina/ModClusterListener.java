@@ -40,7 +40,6 @@ import org.jboss.modcluster.JvmRouteFactory;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.Strings;
-import org.jboss.modcluster.config.LoadConfiguration;
 import org.jboss.modcluster.config.ModClusterConfig;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
@@ -54,7 +53,7 @@ import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
  * @author Paul Ferraro
  */
 public class ModClusterListener extends ModClusterConfig
-   implements LifecycleListener, LoadConfiguration, LoadBalanceFactorProviderFactory, ModClusterServiceMBean
+   implements LifecycleListener, LoadBalanceFactorProviderFactory, ModClusterServiceMBean
 {
    static
    {
@@ -84,7 +83,8 @@ public class ModClusterListener extends ModClusterConfig
    private final ModClusterServiceMBean service;
    private final LifecycleListener listener;
    
-   private Class<? extends LoadMetric<? extends LoadContext>> loadMetricClass = BusyConnectorsLoadMetric.class;
+   @SuppressWarnings("rawtypes")
+   private Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
    private int decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
    private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
    private double capacity = LoadMetric.DEFAULT_CAPACITY;
@@ -115,7 +115,7 @@ public class ModClusterListener extends ModClusterConfig
       try
       {
          @SuppressWarnings("unchecked")
-         LoadMetric<LoadContext> metric = (LoadMetric<LoadContext>) this.loadMetricClass.newInstance();
+         LoadMetric<LoadContext> metric = this.loadMetricClass.newInstance();
          
          metric.setCapacity(this.capacity);
          
@@ -198,26 +198,27 @@ public class ModClusterListener extends ModClusterConfig
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadConfiguration#getLoadMetricClass()
+    * Returns the class name of the configured load metric.
+    * @return the name of a class implementing {@link LoadMetric}
     */
-   public Class<? extends LoadMetric<? extends LoadContext>> getLoadMetricClass()
+   public String getLoadMetricClass()
    {
-      return this.loadMetricClass;
+      return this.loadMetricClass.getName();
    }
 
    /**
     * Sets the class of the desired load metric
     * @param loadMetricClass a class implementing {@link LoadMetric}
+    * @throws ClassNotFoundException 
     */
-   public void setLoadMetricClass(Class<? extends LoadMetric<? extends LoadContext>> loadMetricClass)
+   public void setLoadMetricClass(String loadMetricClass) throws ClassNotFoundException
    {
-      this.loadMetricClass = loadMetricClass;
+      this.loadMetricClass = Class.forName(loadMetricClass).asSubclass(LoadMetric.class);
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadBalanceFactorProviderConfiguration#getDecayFactor()
+    * Returns the factor by which the contribution of historical load values to the load factor calculation should exponentially decay.
+    * @return the configured load decay factor
     */
    public int getLoadDecayFactor()
    {
@@ -234,8 +235,8 @@ public class ModClusterListener extends ModClusterConfig
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadBalanceFactorProviderConfiguration#getHistory()
+    * Returns the number of historic load values used when calculating the load factor.
+    * @return the configured load history
     */
    public int getLoadHistory()
    {
