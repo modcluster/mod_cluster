@@ -43,39 +43,39 @@
       <scope>provided</scope>
     </dependency>
     
-	<!-- Use provided scope, until catalina package is moved to separate module -->
+	<!-- Make optional, until catalina package is moved to separate module -->
     <dependency>
       <groupId>jboss.web</groupId>
       <artifactId>jbossweb</artifactId>
       <version>2.1.7.GA</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
 
-	<!-- Use provided scope, until ha package is moved to separate module -->
+    <!-- Optional, for installation in standalone JBoss Web or Tomcat -->
+    <dependency>
+      <groupId>org.jboss.logging</groupId>
+      <artifactId>jboss-logging-jdk</artifactId>
+      <version>2.1.1.GA</version>
+      <optional>true</optional>
+    </dependency>
+
+	<!-- Make optional, until ha package is moved to separate module -->
     <dependency>
       <groupId>org.jboss.cluster</groupId>
       <artifactId>jboss-ha-server-api</artifactId>
-      <version>1.1.1.GA</version>
-      <scope>provided</scope>
+      <version>1.1.3.Final</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.jboss.microcontainer</groupId>
       <artifactId>jboss-kernel</artifactId>
-      <version>2.0.9.GA</version>
-      <scope>provided</scope>
+      <version>2.0.10.GA</version>
+      <optional>true</optional>
     </dependency>
     <dependency><!-- Required by org.jboss.microcontainer:jboss-kernel on Java 1.5 -->
       <groupId>org.jboss</groupId>
       <artifactId>jbossxb</artifactId>
       <version>2.0.1.GA</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <!--  For installation in standalone JBoss Web or Tomcat -->
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging-jdk</artifactId>
-      <version>2.1.1.GA</version>
       <optional>true</optional>
     </dependency>
     
@@ -95,7 +95,7 @@
     <dependency>
       <groupId>org.jboss.test</groupId>
       <artifactId>jboss-test</artifactId>
-      <version>1.1.7.GA</version>
+      <version>1.1.9.GA</version>
       <scope>test</scope>
     </dependency>
     <!-- jboss-as-server is optional dependency within jboss-server-manager, which is transitive dependency of jboss-test -->
@@ -107,30 +107,24 @@
     </dependency>
     
     <!-- Demo dependencies -->
-    <!-- Use provided scope, until demo is moved to separate module -->
+    <!-- Make optional, until demo is moved to separate module -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
       <version>1.3</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
       <version>3.1</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>jfree</groupId>
       <artifactId>jfreechart</artifactId>
-      <version>1.0.9</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jcommon</artifactId>
       <version>1.0.12</version>
-      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   
