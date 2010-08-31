@@ -36,6 +36,7 @@ import org.apache.catalina.Server;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
+import org.jboss.logging.NullLoggerPlugin;
 import org.jboss.modcluster.JvmRouteFactory;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.ModClusterServiceMBean;
@@ -57,28 +58,22 @@ public class ModClusterListener extends ModClusterConfig
 {
    static
    {
+      Logger logger = Logger.getLogger(ModClusterListener.class);
       // We expect to run in a JBoss Web/Tomcat environment where
       // server logging is done via java.util.logging. So, try to 
       // initialize JBoss Logging to use the JDK logging plugin.
       // But only if it isn't already initialized to something else!
-      if (Logger.getPluginClassName() == null)
+      if (logger.getLoggerPlugin().getClass().equals(NullLoggerPlugin.class))
       {
-         String pluginClass = "org.jboss.logging.jdk.JDK14LoggerPlugin";
+         Logger.setPluginClassName("org.jboss.logging.jdk.JDK14LoggerPlugin");
          
-         try
-         {
-            ModClusterListener.class.getClassLoader().loadClass(pluginClass);
-            // We can load it, so let's use it
-            Logger.setPluginClassName(pluginClass);
-         }
-         catch (Throwable t)
-         {
-            // Cannot load JDK14LoggerPlugin; just fall through to defaults
-         }
+         logger = Logger.getLogger(ModClusterListener.class);
       }
+      
+      log = logger;
    }
    
-   private static final Logger log = Logger.getLogger(ModClusterListener.class);
+   private static final Logger log;
 
    private final ModClusterServiceMBean service;
    private final LifecycleListener listener;
