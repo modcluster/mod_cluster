@@ -170,7 +170,7 @@
     </sect2>
   </sect1>
 
-  <sect1>
+  <sect1 id="mod_proxy_https">
     <title>Using SSL between httpd and JBossWEB</title>
 
     <para>Using https allows to encrypt communications betwen httpd and
@@ -180,6 +180,20 @@
     <para>(See <ulink
     url="http://www.jboss.org/community/docs/DOC-9701">Encrypting connection
     between httpd and TC</ulink> for detailed instructions).</para>
+
+    <para>httpd is configured to be a client for AS/TC so it should provide a certificate AS/TC
+    will accept and have a private key to encrypt the data, it also needs a CA certificate to valid
+    the certificate AS/TC will use for the connection.</para>
+<para><programlisting>SSLProxyEngine On
+SSLProxyVerify require
+SSLProxyCACertificateFile conf/cacert.pem
+SSLProxyMachineCertificateFile conf/proxy.pem</programlisting></para>
+  <para>conf/proxy.pem should contain both key and certificate. The
+  certificate must be trusted by Tomcat via the CA in truststoreFile of &lt;connector/&gt;.</para>
+  <para>conf/cacert.pem must contain the certificat of the CA
+  that signed the AS/TC certificate. The correspond key and certificate are the pair specificed by keyAlias and truststoreFile
+  of the &lt;connector/&gt;. Of course the &lt;connector/&gt; must be the https one (normally on port 8443).</para>
+
   </sect1>
 
   <sect1>

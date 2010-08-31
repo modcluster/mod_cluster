@@ -13,7 +13,6 @@
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/properties.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/load.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/java/install.xml" />
-  <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/native/mod_proxy_https.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/ssl.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_jk.xml" />
   <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="modules/mod_proxy.xml" />
