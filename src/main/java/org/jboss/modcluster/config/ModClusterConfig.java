@@ -191,13 +191,13 @@ public class ModClusterConfig
 
    public String getDomain()
    {
-      this.deprecate("domain", "failoverGroup");
+      this.deprecate("domain", "loadBalancingGroup");
       return this.getLoadBalancingGroup();
    }
    @Deprecated
    public void setDomain(String domain)
    {
-      this.deprecate("domain", "failoverGroup");
+      this.deprecate("domain", "loadBalancingGroup");
       this.setLoadBalancingGroup(domain);
    }
 
