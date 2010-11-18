@@ -28,7 +28,7 @@
 #define MOD_CLUSTERSIZE_H
 
 /* For host.h */
-#define HOSTALIASZ 40
+#define HOSTALIASZ 100
 
 /* For context.h */
 #define CONTEXTSZ 40

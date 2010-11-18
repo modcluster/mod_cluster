@@ -1,6 +1,6 @@
 test.failonerror=true
 BUILDTEST=N
-build_version=1.1.0-SNAPSHOT
+build_version=1.1.1-SNAPSHOT
 root=.
 
 base-apache.loc=http://archive.apache.org/dist/

@@ -56,7 +56,7 @@ public class TestAliases extends TestCase {
         System.out.println("TestAliases Started");
         try {
             String [] Aliases = new String[10];
-            /* HOSTALIASZ is 40 that should be enough */
+            /* HOSTALIASZ is 100 that should be enough */
             Aliases[0] = "alias0";
             Aliases[1] = "alias1";
             Aliases[2] = "alias2";
@@ -74,7 +74,7 @@ public class TestAliases extends TestCase {
             server.addService(service);
 
             Aliases = new String[1];
-            Aliases[0] = "alias012345678901234567890123456789012345out";
+            Aliases[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
             service2 = new JBossWeb("node4",  "localhost", false, "ROOT", Aliases);
             connector2 = service2.addConnector(8014);
             service2.AddContext("/test", "/test");
