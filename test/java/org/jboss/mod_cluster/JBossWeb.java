@@ -46,6 +46,8 @@ import org.apache.catalina.LifecycleListener;
 
 public class JBossWeb extends Embedded {
 
+    private String route = null;
+
     private void copyFile(File in, File out) throws IOException {
         FileInputStream fis  = new FileInputStream(in);
         FileOutputStream fos = new FileOutputStream(out);
@@ -98,7 +100,7 @@ public class JBossWeb extends Embedded {
         copyFiles(in, ou);
     }
 
-    public JBossWeb(String route, String host, boolean nat) throws IOException {
+    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
 
         // Copy native tree...
         if (nat) {
@@ -107,6 +109,7 @@ public class JBossWeb extends Embedded {
 
         setCatalinaBase(route);
         setCatalinaHome(route);
+        this.route = route;
 
         //Create an Engine
         Engine baseEngine = createEngine();
@@ -117,19 +120,19 @@ public class JBossWeb extends Embedded {
         baseEngine.setRealm(null);
 
         // Create node1/webapps/ROOT and index.html
-        File fd = new File ( route + "/webapps/ROOT");
+        File fd = new File ( route + "/webapps/" + webapp);
         fd.mkdirs();
         String docBase = fd.getAbsolutePath();
         String appBase = fd.getParent();
-        fd = new File (route + "/webapps/ROOT" , "index.html");
+        fd = new File (route + "/webapps/" + webapp, "index.html");
         FileWriter out = new FileWriter(fd);
         out.write(route + ":This is a test\n");
         out.close();
 
         // Copy a small servlet for testing.
-        fd = new File ( route + "/webapps/ROOT/WEB-INF/classes");
+        fd = new File ( route + "/webapps/" + webapp + "/WEB-INF/classes");
         fd.mkdirs();
-        fd = new File (route + "/webapps/ROOT/WEB-INF/classes" , "MyCount.class");
+        fd = new File (route + "/webapps/"  + webapp + "/WEB-INF/classes" , "MyCount.class");
         File fdin = new File ("MyCount.class");
         copyFile(fdin, fd);
         
@@ -147,15 +150,31 @@ public class JBossWeb extends Embedded {
         baseEngine.addChild( baseHost );
 
         //Create default context
-        Context rootContext = createContext("/",docBase);
+        Context rootContext;
+        if (webapp.equals("ROOT"))
+            rootContext = createContext("/",docBase );
+        else
+            rootContext = createContext("/" + webapp, docBase );
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
+
+        Wrapper wrapper = rootContext.createWrapper();
+        wrapper.setName("MyCount");
+        wrapper.setServletClass("MyCount");
+        rootContext.addChild(wrapper);
+        rootContext.addServletMapping("/MyCount", "MyCount");
+
         baseHost.addChild( rootContext );
         addEngine( baseEngine );
         baseEngine.setService(this);
         this.setName(host + "Engine" + route);
     }
     void AddContext(String path, String docBase) {
+
+        File fd = new File ( route + "/webapps/" + docBase);
+        fd.mkdirs();
+        docBase = fd.getAbsolutePath();
+
         Context context = createContext(path, docBase);
         Engine engine = (Engine) getContainer();
         Container[] containers = engine.findChildren();
@@ -169,6 +188,10 @@ public class JBossWeb extends Embedded {
 
     public JBossWeb(String route, String host) throws IOException {
         this(route, host, false);
+    }
+
+    public JBossWeb(String route, String host, boolean nat) throws IOException {
+        this(route, host, nat, "ROOT");
     }
 
     public void addWAR(String file, String route) throws IOException {
