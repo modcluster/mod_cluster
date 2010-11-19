@@ -870,6 +870,121 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 }
 
 /**
+ * Find the best nodes for a request (check host and context (and balancer))
+ * @param r the request_rec
+ * @param balance the balancer (balancer to use in that case we check it).
+ * @param route from the sessionid if we have one.
+ * @param use_alias compare alias with server_name
+ * @return a pointer to a list of nodes.
+ */
+static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias)
+{
+    int sizevhost;
+    int *vhosts;
+    int sizecontext;
+    int *contexts;
+    int *length;
+    int i, j, max;
+    int *best, nbest;
+
+    /* read the hosts */
+    sizevhost = host_storage->get_max_size_host();
+    vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
+    sizevhost = host_storage->get_ids_used_host(vhosts);
+    /* read the contexts */
+    sizecontext = context_storage->get_max_size_context();
+    contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
+    length =  apr_palloc(r->pool, sizeof(int)*sizecontext);
+    sizecontext = context_storage->get_ids_used_context(contexts);
+    for (i=0; i<sizevhost; i++) {
+        hostinfo_t *vhost;
+        host_storage->read_host(vhosts[i], &vhost);
+        /* Check the virtual host */
+        if (use_alias) {
+            if (strcmp(ap_get_server_name(r), vhost->host) != 0) {
+                vhosts[i] = -1;
+                /* remove the contexts that won't match */
+                for (j=0; j<sizecontext; j++) {
+                    contextinfo_t *context;
+                    if (contexts[j] == -1) continue;
+                    context_storage->read_context(contexts[j], &context);
+                    if (context->vhost == vhost->vhost && context->node == vhost->node)
+                        contexts[j] = -1;
+                }
+            }
+        }
+    }
+
+    /* Check the contexts */
+    for (j=0; j<sizecontext; j++) {
+        contextinfo_t *context;
+        int len;
+        if (contexts[j] == -1) continue;
+        context_storage->read_context(contexts[j], &context);
+        len = strlen(context->context);
+        if (strncmp(r->uri, context->context, len) == 0) {
+            if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
+                /* Check status */
+                switch (context->status)
+                {
+                  case ENABLED:
+                    length[j] = len;
+                    break;
+                  case DISABLED:
+                    /* Only the request with sessionid ok for it */
+                    if (route != NULL && (*route != '\0'))
+                        length[j] = len;
+                    break;
+                }
+            } else
+                contexts[j] = -1;
+        }
+    }
+
+    /* keep only the contexts corresponding to our balancer */
+    if (balancer != NULL) {
+        for (j=0; j<sizecontext; j++) {
+            contextinfo_t *context;
+            nodeinfo_t *node;
+            char *name;
+            if (contexts[j] == -1) continue;
+            context_storage->read_context(contexts[j], &context);
+            node_storage->read_node(context->node, &node);
+            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
+                contexts[j] = -1;
+        }
+    }
+
+    /* find the best matching context */
+    max = 0;
+    for (j=0; j<sizecontext; j++) {
+        if (contexts[j] == -1) continue;
+        if (length[j] > max) {
+            max = length[j];
+        } 
+    }
+    if (max == 0)
+        return NULL;
+
+    nbest = 1;
+    for (j=0; j<sizecontext; j++)
+        if (length[j] == max)
+            nbest++;
+    best =  apr_palloc(r->pool, sizeof(int)*nbest);
+    nbest  = 0;
+    for (j=0; j<sizecontext; j++)
+        if (length[j] == max) {
+            contextinfo_t *context;
+            context_storage->read_context(contexts[j], &context);
+            best[nbest] = context->node;
+            nbest++;
+        }
+    nbest++;
+    best[nbest] = -1;
+    return best; 
+}
+
+/**
  * Find/Check the balancer corresponding to the request and the node.
  * @param r the request_rec.
  * @param node the node to use.
@@ -1003,15 +1118,22 @@ static char *get_context_host_balancer(request_rec *r)
  * Check that the worker will handle the host/context.
  * The id of the worker is used to find the (slot) node in the shared
  * memory.
- * (See get_context_host_balancer too).
  */ 
-static int iscontext_host_ok(request_rec *r, proxy_balancer *balancer, nodeinfo_t *node)
+static int iscontext_host_ok(request_rec *r, proxy_balancer *balancer, int node)
 {
-    char *balancername = get_balancer_by_node(r, node, NULL, balancer);
-    if (balancername != NULL) {
-        return 1; /* Found */
+    const char *route;
+    int *best;
+    route = apr_table_get(r->notes, "session-route");
+    best = find_node_context_host(r, balancer, route, use_alias);
+    if (best == NULL)
+        return 0;
+    while (*best != -1) {
+        if (*best == node) break;
+        best++;
     }
-    return 0;
+    if (*best == -1)
+        return 0; /* not found */
+    return 1;
 }
 
 /*
@@ -1087,7 +1209,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
                 continue; /* Can't read node */
 
-            if (PROXY_WORKER_IS_USABLE(worker) && iscontext_host_ok(r, balancer, node)) {
+            if (PROXY_WORKER_IS_USABLE(worker) && iscontext_host_ok(r, balancer, worker->id)) {
                 if (!checked_domain) {
                     /* First try only nodes in the domain */
                     if (!isnode_domain_ok(r, node, domain)) {
@@ -1883,7 +2005,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                     nodeinfo_t *node;
                     if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
                         return NULL; /* can't read node */
-                    if (iscontext_host_ok(r, balancer, node))
+                    if (iscontext_host_ok(r, balancer, worker->id))
                        return worker;
                     else
                        return NULL; /* application has been removed from the node */
