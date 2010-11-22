@@ -879,30 +879,29 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
  */
 static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias)
 {
-    int sizevhost;
-    int *vhosts;
     int sizecontext;
     int *contexts;
     int *length;
     int i, j, max;
     int *best, nbest;
 
-    /* read the hosts */
-    sizevhost = host_storage->get_max_size_host();
-    vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
-    sizevhost = host_storage->get_ids_used_host(vhosts);
     /* read the contexts */
     sizecontext = context_storage->get_max_size_context();
     contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     length =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     sizecontext = context_storage->get_ids_used_context(contexts);
-    for (i=0; i<sizevhost; i++) {
-        hostinfo_t *vhost;
-        host_storage->read_host(vhosts[i], &vhost);
-        /* Check the virtual host */
-        if (use_alias) {
+    /* Check the virtual host */
+    if (use_alias) {
+        /* read the hosts */
+        int sizevhost;
+        int *vhosts;
+        sizevhost = host_storage->get_max_size_host();
+        vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
+        sizevhost = host_storage->get_ids_used_host(vhosts);
+        for (i=0; i<sizevhost; i++) {
+            hostinfo_t *vhost;
+            host_storage->read_host(vhosts[i], &vhost);
             if (strcmp(ap_get_server_name(r), vhost->host) != 0) {
-                vhosts[i] = -1;
                 /* remove the contexts that won't match */
                 for (j=0; j<sizecontext; j++) {
                     contextinfo_t *context;
@@ -912,32 +911,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
                         contexts[j] = -1;
                 }
             }
-        }
-    }
-
-    /* Check the contexts */
-    for (j=0; j<sizecontext; j++) {
-        contextinfo_t *context;
-        int len;
-        if (contexts[j] == -1) continue;
-        context_storage->read_context(contexts[j], &context);
-        len = strlen(context->context);
-        if (strncmp(r->uri, context->context, len) == 0) {
-            if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
-                /* Check status */
-                switch (context->status)
-                {
-                  case ENABLED:
-                    length[j] = len;
-                    break;
-                  case DISABLED:
-                    /* Only the request with sessionid ok for it */
-                    if (route != NULL && (*route != '\0'))
-                        length[j] = len;
-                    break;
-                }
-            } else
-                contexts[j] = -1;
         }
     }
 
@@ -955,17 +928,43 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         }
     }
 
-    /* find the best matching context */
+    /* Check the contexts */
     max = 0;
     for (j=0; j<sizecontext; j++) {
+        contextinfo_t *context;
+        int len;
         if (contexts[j] == -1) continue;
-        if (length[j] > max) {
-            max = length[j];
-        } 
+        context_storage->read_context(contexts[j], &context);
+        len = strlen(context->context);
+        if (strncmp(r->uri, context->context, len) == 0) {
+            if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
+                /* Check status */
+                switch (context->status)
+                {
+                  case ENABLED:
+                    length[j] = len;
+                    if (len > max) {
+                        max = len;
+                    } 
+                    break;
+                  case DISABLED:
+                    /* Only the request with sessionid ok for it */
+                    if (route != NULL && (*route != '\0'))
+                        length[j] = len;
+                    if (len > max) {
+                        max = len;
+                    } 
+                    break;
+                }
+            } else
+                contexts[j] = -1;
+        }
     }
     if (max == 0)
         return NULL;
 
+
+    /* find the best matching contexts */
     nbest = 1;
     for (j=0; j<sizecontext; j++)
         if (length[j] == max)
