@@ -1046,33 +1046,32 @@ static char *cluster_get_sessionid(request_rec *r, const char *stickyval, char *
 /**
  * Check that the request has a sessionid (even invalid)
  * @param r the request_rec.
- * @param balancer_name name of the balancer. (to find the balancer)
- * @param conf the proxy configuration. (Could be null 
- * @param balance the balancer (balancer to use).
+ * @param nodeid the node id.
+ * @param route (if received)
  * @return 1 is it finds a sessionid 0 otherwise.
  */
-static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_conf *conf, proxy_balancer *balance)
+static int hassession_byname(request_rec *r, int nodeid, const char *route)
 {
-    proxy_balancer *balancer = balance;
+    proxy_balancer *balancer;
     char *sessionid;
     char *uri;
     char *sticky_used;
     int i;
+    proxy_server_conf *conf;
+    nodeinfo_t *node;
 
-    if (conf == NULL) {
-         void *sconf = r->server->module_config;
-         conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
-    }
+   /* well we already have it */
+    if (route != NULL && (*route != '\0'))
+        return 1;
 
-    if (balancer == NULL) {
-        balancer = (proxy_balancer *)conf->balancers->elts;
-        for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
-            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], balancer_name) == 0)
-                break;
-        }
-        if (i == conf->balancers->nelts)
-            balancer = NULL;
+    conf = (proxy_server_conf *) ap_get_module_config(r->server->module_config, &proxy_module);
+    balancer = (proxy_balancer *)conf->balancers->elts;
+    for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
+        if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) == 0)
+            break;
     }
+    if (i == conf->balancers->nelts)
+        balancer = NULL;
 
     /* XXX: We don't find the balancer, that is BAD */
     if (balancer == NULL)
@@ -1100,136 +1099,120 @@ static int hassession_byname(request_rec *r, char *balancer_name, proxy_server_c
 }
 
 /**
- * Find/Check the balancer corresponding to the request and the node.
- * @param r the request_rec.
- * @param node the node to use.
- * @param conf the proxy configuration.
- * @param balance the balancer (balancer to use in that case we check it).
- * @return the name of the balancer or NULL if not found/not corresponding
+ * Find the best nodes for a request (check host and context (and balancer))
+ * @param r the request_rec
+ * @param balancer the balancer (balancer to use in that case we check it).
+ * @param route from the sessionid if we have one.
+ * @param use_alias compare alias with server_name
+ * @return a pointer to a list of nodes.
  */
+static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias)
+{
+    int sizecontext;
+    int *contexts;
+    int *length;
+    int i, j, max;
+    int *best, nbest;
 
-
-static char *get_balancer_by_node(request_rec *r, nodeinfo_t *node, proxy_server_conf *conf, proxy_balancer *balance)
-{ 
-    int i;
-    int sizevhost;
-    int *vhosts;
-
-    /*
-     * check the hosts and contexts
-     * A node may have several virtual hosts and
-     * each virtual hosts may have several context
-     */
-    sizevhost = host_storage->get_max_size_host();
-    vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
-    sizevhost = host_storage->get_ids_used_host(vhosts);
-#if HAVE_CLUSTER_EX_DEBUG
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                 "get_balancer_by_node testing node %s for %s", node->mess.JVMRoute, r->uri);
-#endif
-    for (i=0; i<sizevhost; i++) {
-        hostinfo_t *vhost;
-        host_storage->read_host(vhosts[i], &vhost);
-        if (vhost->node == node->mess.id) {
-            int j;
-            int sizecontext = context_storage->get_max_size_context();
-            int *contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
-            int *root =  apr_palloc(r->pool, sizeof(int)*sizevhost);
-            int froot = 0;
-            int hasnonroot = 0;
-
-            /* Check the virtual host */
-            if (use_alias) {
-#if HAVE_CLUSTER_EX_DEBUG
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "get_balancer_by_node testing ServerName: %s host: %s", ap_get_server_name(r), vhost->host);
-#endif
-                if (strcmp(ap_get_server_name(r), vhost->host) != 0)
-                    continue;
-            }
-
-            /* Check the contexts */
-            sizecontext = context_storage->get_ids_used_context(contexts);
-#if HAVE_CLUSTER_EX_DEBUG
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "get_balancer_by_node testing host %s", vhost->host);
-#endif
-            for (j=0; j<sizecontext; j++) {
-                contextinfo_t *context;
-                int len;
-                context_storage->read_context(contexts[j], &context);
-                if (context->vhost != vhost->vhost || (context->node != node->mess.id))
-                    continue;
-#if HAVE_CLUSTER_EX_DEBUG
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "get_balancer_by_node testing context %s", context->context);
-#endif
-
-                /* check for /context[/] in the URL */
-                len = strlen(context->context);
-                if (len==1 && context->context[0] == '/' && froot<sizevhost) {
-                    root[froot] = contexts[j];
-                    froot++;
-                    continue;
-                }
-                if (strncmp(r->uri, context->context, len) == 0) {
-                    if (r->uri[len] == '\0' || r->uri[len] == '/') {
-                        hasnonroot = 1;
-                        /* Check status */
-                        switch (context->status)
-                        {
-                          case ENABLED: 
-                                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                                         "get_balancer_by_node found context %s", context->context);
-                            apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
-                            return node->mess.balancer;
-                            break;
-                          case DISABLED:
-                            /* Only the request with sessionid ok for it */
-                            if (hassession_byname(r, node->mess.balancer, conf, NULL)) {
-                                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                                             "get_balancer_by_node found (DISABLED) context %s", context->context);
-                                apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
-                                return node->mess.balancer;
-                            }
-                            break;
-                        }
-                    }
-                } 
-            }
-            /* Check ROOT contexts at last */
-            if (hasnonroot)
-                continue;
-            for (j=0; j<froot; j++) {
-                contextinfo_t *context;
-                context_storage->read_context(root[j], &context);
-                /* Check status */
-                switch (context->status)
-                {
-                  case ENABLED: 
-                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "get_balancer_by_node found context %s", context->context);
-                    apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
-                    return node->mess.balancer;
-                    break;
-                  case DISABLED:
-                    /* Only the request with sessionid ok for it */
-                    if (hassession_byname(r, node->mess.balancer, conf, NULL)) {
-                        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                                     "get_balancer_by_node found (DISABLED) context %s", context->context);
-                        apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", context->id));
-                        return node->mess.balancer;
-                    }
-                    break;
+    /* read the contexts */
+    sizecontext = context_storage->get_max_size_context();
+    contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
+    length =  apr_palloc(r->pool, sizeof(int)*sizecontext);
+    sizecontext = context_storage->get_ids_used_context(contexts);
+    /* Check the virtual host */
+    if (use_alias) {
+        /* read the hosts */
+        int sizevhost;
+        int *vhosts;
+        sizevhost = host_storage->get_max_size_host();
+        vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
+        sizevhost = host_storage->get_ids_used_host(vhosts);
+        for (i=0; i<sizevhost; i++) {
+            hostinfo_t *vhost;
+            host_storage->read_host(vhosts[i], &vhost);
+            if (strcmp(ap_get_server_name(r), vhost->host) != 0) {
+                /* remove the contexts that won't match */
+                for (j=0; j<sizecontext; j++) {
+                    contextinfo_t *context;
+                    if (contexts[j] == -1) continue;
+                    context_storage->read_context(contexts[j], &context);
+                    if (context->vhost == vhost->vhost && context->node == vhost->node)
+                        contexts[j] = -1;
                 }
             }
         }
     }
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                 "get_balancer_by_node balancer NOT found");
-    return NULL;
 
+    /* keep only the contexts corresponding to our balancer */
+    if (balancer != NULL) {
+        for (j=0; j<sizecontext; j++) {
+            contextinfo_t *context;
+            nodeinfo_t *node;
+            char *name;
+            if (contexts[j] == -1) continue;
+            context_storage->read_context(contexts[j], &context);
+            node_storage->read_node(context->node, &node);
+            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
+                contexts[j] = -1;
+        }
+    }
+
+    /* Check the contexts */
+    max = 0;
+    for (j=0; j<sizecontext; j++) {
+        contextinfo_t *context;
+        int len;
+        if (contexts[j] == -1) continue;
+        context_storage->read_context(contexts[j], &context);
+        len = strlen(context->context);
+        if (strncmp(r->uri, context->context, len) == 0) {
+            if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
+                /* Check status */
+                switch (context->status)
+                {
+                  case ENABLED:
+                    length[j] = len;
+                    if (len > max) {
+                        max = len;
+                    } 
+                    break;
+                  case DISABLED:
+                    /* Only the request with sessionid ok for it */
+                    if (hassession_byname(r, context->node, route)) {
+                        length[j] = len;
+                    	if (len > max) {
+                            max = len;
+                        }
+                    } 
+                    break;
+                }
+            } else
+                contexts[j] = -1;
+        }
+    }
+    if (max == 0)
+        return NULL;
+
+
+    /* find the best matching contexts */
+    nbest = 1;
+    for (j=0; j<sizecontext; j++)
+        if (length[j] == max)
+            nbest++;
+    best =  apr_palloc(r->pool, sizeof(int)*nbest);
+    nbest  = 0;
+    for (j=0; j<sizecontext; j++)
+        if (length[j] == max) {
+            contextinfo_t *context;
+            context_storage->read_context(contexts[j], &context);
+            best[nbest] = context->node;
+            nbest++;
+        }
+    nbest++;
+    best[nbest] = -1;
+    return best; 
 }
+
 /**
  * Search the balancer that corresponds to the pair context/host
  * @param r the request_rec.
@@ -1242,22 +1225,20 @@ static char *get_context_host_balancer(request_rec *r)
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    int sizenode = node_storage->get_max_size_node();
-    int n;
-    int *nodes =  apr_palloc(r->pool, sizeof(int)*sizenode);
-    sizenode = node_storage->get_ids_used_node(nodes);
-    for (n=0; n<sizenode; n++) {
+    int *nodes =  find_node_context_host(r, NULL, NULL, use_alias);
+    if (nodes == NULL)
+        return NULL;
+    while (*nodes != -1) {
         nodeinfo_t *node;
         char *ret;
-        if (node_storage->read_node(nodes[n], &node) != APR_SUCCESS)
+        if (node_storage->read_node(*nodes, &node) != APR_SUCCESS)
             continue;
-        ret = get_balancer_by_node(r, node, conf, NULL);
-        if (ret) {
+        if (node->mess.balancer) {
             /* Check that it is in our proxy_server_conf */
-            char *name = apr_pstrcat(r->pool, "balancer://", ret, NULL);
+            char *name = apr_pstrcat(r->pool, "balancer://", node->mess.balancer, NULL);
             proxy_balancer *balancer = ap_proxy_get_balancer(r->pool, conf, name);
             if (balancer)
-                return ret;
+                return node->mess.balancer;
             else
                  ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "get_context_host_balancer: balancer %s not found", name);
@@ -1271,13 +1252,21 @@ static char *get_context_host_balancer(request_rec *r)
  * memory.
  * (See get_context_host_balancer too).
  */ 
-static int iscontext_host_ok(request_rec *r, proxy_balancer *balancer, nodeinfo_t *node)
+static int iscontext_host_ok(request_rec *r, proxy_balancer *balancer, int node)
 {
-    char *balancername = get_balancer_by_node(r, node, NULL, balancer);
-    if (balancername != NULL) {
-        return 1; /* Found */
+    const char *route;
+    int *best;
+    route = apr_table_get(r->notes, "session-route");
+    best = find_node_context_host(r, balancer, route, use_alias);
+    if (best == NULL)
+        return 0;
+    while (*best != -1) {
+        if (*best == node) break;
+        best++;
     }
-    return 0;
+    if (*best == -1)
+        return 0; /* not found */
+    return 1;
 }
 
 /*
@@ -1353,7 +1342,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
                 continue; /* Can't read node */
 
-            if (PROXY_WORKER_IS_USABLE(worker) && iscontext_host_ok(r, balancer, node)) {
+            if (PROXY_WORKER_IS_USABLE(worker) && iscontext_host_ok(r, balancer, worker->id)) {
                 if (!checked_domain) {
                     /* First try only nodes in the domain */
                     if (!isnode_domain_ok(r, node, domain)) {
@@ -1980,7 +1969,7 @@ static int proxy_cluster_trans(request_rec *r)
             }
         }
 
-        /* It is safer to use r->uri and get_balancer_by_node() use r->uri too */
+        /* It is safer to use r->uri */
         r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
         r->handler = "proxy-server";
         r->proxyreq = PROXYREQ_REVERSE;
@@ -2083,7 +2072,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                     nodeinfo_t *node;
                     if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
                         return NULL; /* can't read node */
-                    if (iscontext_host_ok(r, balancer, node))
+                    if (iscontext_host_ok(r, balancer, worker->id))
                        return worker;
                     else
                        return NULL; /* application has been removed from the node */
