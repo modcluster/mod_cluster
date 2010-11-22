@@ -998,8 +998,6 @@ static char *get_context_host_balancer(request_rec *r)
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    int sizenode = node_storage->get_max_size_node();
-    int n;
     /* Get the list of nodes */
     int *nodes =  find_node_context_host(r, NULL, NULL, use_alias);
     if (nodes == NULL)
