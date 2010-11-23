@@ -38,6 +38,24 @@ import javax.servlet.http.*;
 
 public class MyCount extends HttpServlet {
 
+    public void init(ServletConfig config) throws ServletException {
+        String swait = config.getInitParameter("wait");
+        int wait = 0;
+        if (swait != null) {
+            Integer iwait = new Integer(swait);
+            wait = iwait.intValue();
+        }
+
+        if (wait != 0) {
+            Thread me = Thread.currentThread();
+            try {
+                me.sleep(wait);
+            } catch(Exception e) {
+                throw new ServletException("sleep interrupted");
+            }
+        }
+    }
+
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response)
         throws IOException, ServletException

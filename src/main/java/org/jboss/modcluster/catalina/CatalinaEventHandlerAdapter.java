@@ -33,6 +33,9 @@ import javax.management.Notification;
 import javax.management.NotificationListener;
 import javax.management.ObjectName;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
@@ -49,7 +52,7 @@ import org.jboss.modcluster.ContainerEventHandler;
 /**
  * Adapts lifecycle and container listener events to the {@link ContainerEventHandler} interface.
  */
-public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener, NotificationListener
+public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener, NotificationListener, PropertyChangeListener
 {
    private volatile ObjectName serviceObjectName = toObjectName("jboss.web:service=WebServer");
    private volatile ObjectName serverObjectName = toObjectName("jboss.web:type=Server");
@@ -183,6 +186,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Deploying a webapp
             ((Lifecycle) child).addLifecycleListener(this);
+            ((Container) child).addPropertyChangeListener(this);
             
             if (this.start.get())
             {
@@ -206,6 +210,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Undeploying a webapp
             ((Lifecycle) child).removeLifecycleListener(this);
+            ((Container) child).removePropertyChangeListener(this);
             
             if (this.start.get())
             {
@@ -249,15 +254,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       }
       else if (type.equals(Lifecycle.START_EVENT))
       {
-         if (source instanceof Context)
-         {
-            if (this.start.get())
-            {
-               // Start a webapp
-               this.eventHandler.start(new CatalinaContext((Context) source, this.mbeanServer));
-            }
-         }
-         else if (source instanceof Server)
+         if (source instanceof Server)
          {
             if (this.init.compareAndSet(false, true))
             {
@@ -493,5 +490,14 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       {
          throw new IllegalArgumentException(e);
       }
+   }
+   
+   public void propertyChange(PropertyChangeEvent event) {
+	   if (event.getSource() instanceof Context 
+		   && "available".equals(event.getPropertyName())
+		   && Boolean.FALSE.equals(event.getOldValue())
+		   && Boolean.TRUE.equals(event.getNewValue())) {
+		   this.eventHandler.start(new CatalinaContext((Context) event.getSource(), this.mbeanServer));
+	   }
    }
 }

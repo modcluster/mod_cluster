@@ -175,7 +175,7 @@ public class JBossWeb extends Embedded {
         this.setName(host + "Engine" + route);
         setRedirectStreams(false);
     }
-    void AddContext(String path, String docBase) {
+    void AddContext(String path, String docBase, String servletname, boolean wait) {
         File fd = new File ( route + "/webapps/" + docBase);
         fd.mkdirs();
         docBase = fd.getAbsolutePath();
@@ -183,6 +183,20 @@ public class JBossWeb extends Embedded {
         Context context = createContext(path, docBase);
         context.setIgnoreAnnotations(true);
         context.setPrivileged(true);
+
+        if (servletname != null) {
+            Wrapper wrapper = context.createWrapper();
+            wrapper.setName(servletname);
+            wrapper.setServletClass(servletname);
+            if (wait) {
+                wrapper.addInitParameter("wait", "10000");
+                wrapper.setLoadOnStartup(1);
+            }
+            context.addChild(wrapper);
+            context.addServletMapping("/" + servletname, servletname);
+        }
+
+        
         Engine engine = (Engine) getContainer();
         Container[] containers = engine.findChildren();
         for (int j = 0; j < containers.length; j++) {
@@ -191,6 +205,9 @@ public class JBossWeb extends Embedded {
                 host.addChild(context);
             }
         }
+    }
+    void AddContext(String path, String docBase) {
+        AddContext(path, docBase, null, false);
     }
 
     public JBossWeb(String route, String host) throws IOException {
