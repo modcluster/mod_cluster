@@ -169,13 +169,33 @@ public class JBossWeb extends Embedded {
         baseEngine.setService(this);
         this.setName(host + "Engine" + route);
     }
-    void AddContext(String path, String docBase) {
+    void AddContext(String path, String docBase, boolean hasservlet) {
 
         File fd = new File ( route + "/webapps/" + docBase);
         fd.mkdirs();
         docBase = fd.getAbsolutePath();
 
         Context context = createContext(path, docBase);
+        if (hasservlet) {
+             // Copy a small servlet for testing.
+             fd = new File ( route + "/webapps/" + docBase + "/WEB-INF/classes");
+             fd.mkdirs();
+             fd = new File (route + "/webapps/"  + docBase + "/WEB-INF/classes" , "MyCount.class");
+             File fdin = new File ("MyCount.class");
+             try {
+                 copyFile(fdin, fd);
+             } catch(IOException ex) {
+             }
+             /* add mapping */
+             Wrapper wrapper = context.createWrapper();
+             wrapper.setName("MyCount");
+             wrapper.setServletClass("MyCount");
+             context.addChild(wrapper);
+             context.addServletMapping("/MyCount", "MyCount");
+        }
+        context.setIgnoreAnnotations(true);
+        context.setPrivileged(true);
+
         Engine engine = (Engine) getContainer();
         Container[] containers = engine.findChildren();
         for (int j = 0; j < containers.length; j++) {
@@ -184,6 +204,9 @@ public class JBossWeb extends Embedded {
                 host.addChild(context);
             }
         }
+    }
+    void AddContext(String path, String docBase) {
+        AddContext(path, docBase, false);
     }
 
     public JBossWeb(String route, String host) throws IOException {
