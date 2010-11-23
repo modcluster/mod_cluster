@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.jboss</groupId>
     <artifactId>jboss-parent</artifactId>
-    <version>4</version>
+    <version>5</version>
   </parent>
   
   <modelVersion>4.0.0</modelVersion>
@@ -17,12 +17,14 @@
   <scm>
     <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/tags/1.0.5.GA</connection>
     <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/1.0.5.GA</developerConnection>
+    <url>http://fisheye.jboss.org/browse/mod_cluster/tags/1.0.5.GA</url>
   </scm>
 
   <repositories>
     <repository>
       <id>repository.jboss.org</id>
-      <url>http://repository.jboss.org/maven2</url>
+      <name>JBoss Public Repository</name>
+      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
     </repository>
   </repositories>
 
@@ -122,6 +124,14 @@
     </resources>
     <plugins>
       <plugin>
+         <groupId>org.apache.maven.plugins</groupId>
+         <artifactId>maven-compiler-plugin</artifactId>
+         <configuration>
+            <source>1.5</source>
+         </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
@@ -163,14 +173,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>2.0-beta-9</version>
-        <configuration>
-          <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
-        </configuration>
       </plugin>
     </plugins>
     <pluginManagement>
