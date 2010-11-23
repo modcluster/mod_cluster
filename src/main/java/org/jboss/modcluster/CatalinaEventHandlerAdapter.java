@@ -21,6 +21,9 @@
  */
 package org.jboss.modcluster;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
@@ -36,7 +39,7 @@ import org.apache.catalina.Service;
 /**
  * Adapts lifecycle and container listener events to the {@link ContainerEventHandler} interface.
  */
-public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener
+public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener, PropertyChangeListener
 {
    /** Initialization flag. */
    private volatile boolean init = false;
@@ -73,6 +76,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Deploying a webapp
             ((Lifecycle) child).addLifecycleListener(this);
+            ((Container) child).addPropertyChangeListener(this);
             this.eventHandler.addContext((Context) child);
          }
          else if (container instanceof Engine)
@@ -90,6 +94,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Undeploying a webapp
             ((Lifecycle) child).removeLifecycleListener(this);
+            ((Container) child).removePropertyChangeListener(this);
             this.eventHandler.removeContext((Context) child);
          }
          else if (container instanceof Engine)
@@ -113,15 +118,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       Lifecycle source = event.getLifecycle();
       String type = event.getType();
       
-      if (type.equals(Lifecycle.START_EVENT))
-      {
-         if (source instanceof Context)
-         {
-            // Start a webapp
-            this.eventHandler.startContext((Context) source);
-         }
-      }
-      else if (type.equals(Lifecycle.AFTER_START_EVENT))
+      if (type.equals(Lifecycle.AFTER_START_EVENT))
       {
          if (source instanceof Server)
          {
@@ -205,5 +202,14 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             }
          }
       }
+   }
+   
+   public void propertyChange(PropertyChangeEvent event) {
+	   if (event.getSource() instanceof Context 
+		   && "available".equals(event.getPropertyName())
+		   && Boolean.FALSE.equals(event.getOldValue())
+		   && Boolean.TRUE.equals(event.getNewValue())) {
+		   this.eventHandler.startContext((Context) event.getSource());
+	   }
    }
 }

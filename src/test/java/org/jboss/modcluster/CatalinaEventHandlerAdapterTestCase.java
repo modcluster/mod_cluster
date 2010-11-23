@@ -33,6 +33,8 @@ import org.apache.catalina.Service;
 import org.easymock.EasyMock;
 import org.junit.Test;
 
+import java.beans.PropertyChangeEvent;
+
 /**
  * @author Paul Ferraro
  *
@@ -53,6 +55,7 @@ public class CatalinaEventHandlerAdapterTestCase
       ContainerEvent event = new ContainerEvent(host, Container.ADD_CHILD_EVENT, context);
       
       context.addLifecycleListener(this.adapter);
+      context.addPropertyChangeListener(this.adapter);
       this.eventHandler.addContext(context);
       
       EasyMock.replay(this.eventHandler, host, context);
@@ -89,6 +92,7 @@ public class CatalinaEventHandlerAdapterTestCase
       ContainerEvent event = new ContainerEvent(host, Container.REMOVE_CHILD_EVENT, context);
       
       context.removeLifecycleListener(this.adapter);
+      context.removePropertyChangeListener(this.adapter);
       this.eventHandler.removeContext(context);
       
       EasyMock.replay(this.eventHandler, host, context);
@@ -122,12 +126,14 @@ public class CatalinaEventHandlerAdapterTestCase
       LifecycleContext context = EasyMock.createStrictMock(LifecycleContext.class);
       
       LifecycleEvent event = new LifecycleEvent(context, Lifecycle.START_EVENT);
+      PropertyChangeEvent prop = new PropertyChangeEvent(context, "available", Boolean.FALSE, Boolean.TRUE);
       
       this.eventHandler.startContext(context);
       
       EasyMock.replay(this.eventHandler);
       
-      this.adapter.lifecycleEvent(event);
+      // this.adapter.lifecycleEvent(event);
+      this.adapter.propertyChange(prop);
       
       EasyMock.verify(this.eventHandler);
       EasyMock.reset(this.eventHandler);
