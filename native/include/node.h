@@ -68,6 +68,7 @@ struct nodemess {
     /* part updated in httpd */
     int id;                   /* id in table and worker id */
     apr_time_t updatetimelb; /* time of last update of the lbstatus value */
+    int num_failure_idle;    /* number of time the cping/cpong failed while calculating the lbstatus value */
     int oldelected;          /* value of s->elected when calculating the lbstatus */
     apr_time_t lastcleantry; /* time of last unsuccessful try to clean the worker in proxy part */
 };
