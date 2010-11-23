@@ -81,10 +81,17 @@ public class TestFailAppover extends TestCase {
         wait.start();
 
         // Wait until httpd as received the nodes information.
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+        String [] nodes = new String[2];
+        nodes[0] = "node3";
+        nodes[1] = "node4";
+        int countinfo = 0;
+        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            countinfo++;
         }
 
         // Start the client and wait for it.
