@@ -6,7 +6,98 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
-   <sect1><title>1.0.4 (27 Jully 2010)</title>
+   <sect1><title>1.0.5 (23 November 2010)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Alias max length too low (MODCLUSTER-173) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Advertise not configured error message in log is actually a warning (MODCLUSTER-176) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_cluster failover does not work for a /webappcontext when the / root context exists (MODCLUSTER-188) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_cluster issues an ENABLE-APP too early in the webapp lifecycle (MODCLUSTER-190) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_cluster-manager does not update when a node is taken down (MODCLUSTER-195) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Incorrect routing of requests when one context root is the prefix of another (MODCLUSTER-196) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
+   <sect1><title>1.0.4 (27 July 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2"><tbody>
          <row>
