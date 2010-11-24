@@ -59,12 +59,12 @@ public class TestFailAppover extends TestCase {
 
             service = new JBossWeb("node3",  "localhost");
             connector = service.addConnector(8013);
-            service.AddContext("/test", "/test");
+            service.AddContext("/test", "/test", "MyCount", false);
             server.addService(service);
 
             service2 = new JBossWeb("node4",  "localhost");
             connector2 = service2.addConnector(8014);
-            service2.AddContext("/test", "/test");
+            service2.AddContext("/test", "/test", "MyCount", false);
             server.addService(service2);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
@@ -98,7 +98,7 @@ public class TestFailAppover extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/test/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -110,10 +110,10 @@ public class TestFailAppover extends TestCase {
         // Stop the connector that has received the request...
         String node = client.getnode();
         if ("node4".equals(node)) {
-            service2.removeContext("/");
+            service2.removeContext("/test");
             node = "node3";
         } else {
-            service.removeContext("/");
+            service.removeContext("/test");
             node = "node4";
         }
 
