@@ -1113,6 +1113,16 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     int *length;
     int i, j, max;
     int *best, nbest;
+    const char *uri = NULL;
+
+    /* use r->uri (trans) or r->filename (after canon or rewrite) */
+    if (r->filename) {
+        const char *scheme = strstr(r->filename, "://");
+        if (scheme)
+            uri = ap_strchr_c(scheme + 3, '/');
+    }
+    if (!uri)
+       uri = r->uri;
 
     /* read the contexts */
     sizecontext = context_storage->get_max_size_context();
@@ -1165,8 +1175,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         if (contexts[j] == -1) continue;
         context_storage->read_context(contexts[j], &context);
         len = strlen(context->context);
-        if (strncmp(r->uri, context->context, len) == 0) {
-            if (r->uri[len] == '\0' || r->uri[len] == '/' || len==1) {
+        if (strncmp(uri, context->context, len) == 0) {
+            if (uri[len] == '\0' || uri[len] == '/' || len==1) {
                 /* Check status */
                 switch (context->status)
                 {
