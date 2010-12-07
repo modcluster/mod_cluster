@@ -1064,6 +1064,9 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
     if (route != NULL && (*route != '\0'))
         return 1;
 
+    if (node_storage->read_node(nodeid, &node) != APR_SUCCESS)
+        return 0; /* failed */
+
     conf = (proxy_server_conf *) ap_get_module_config(r->server->module_config, &proxy_module);
     balancer = (proxy_balancer *)conf->balancers->elts;
     for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
