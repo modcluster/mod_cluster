@@ -176,11 +176,15 @@ public class Utils
     * Check if the context is started.
     * 
     * @param context
-    * @return true if the context is started (or if we don't know) false otherwise.
+    * @return true if the context is available and started false otherwise.
     */
    public static boolean isContextStarted(Context context)
    {
-      return (serverType == ServerType.TOMCAT6) ? true : context.isStarted();
+      if (serverType == ServerType.TOMCAT6)
+      	return context.getAvailable();
+      if (context.isStarted())
+        return context.getAvailable();
+      return false;
    }
 
    /**
