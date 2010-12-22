@@ -251,7 +251,7 @@ public class  Client extends Thread {
                                             bm.releaseConnection();
                                             return 0;
                                         } else {
-                                            System.out.println("cookie \"second\" time: " + cookie.getValue());
+                                            System.out.println("cookie \"second\" time: " + cookie.getValue() + " : " + jsessionid);
                                             System.out.println("cookie changed");
                                             bm.releaseConnection();
                                             if (checkcookie)
