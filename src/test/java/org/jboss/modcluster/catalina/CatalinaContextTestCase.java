@@ -81,6 +81,7 @@ public class CatalinaContextTestCase
    public void isStarted()
    {
       EasyMock.expect(this.context.isStarted()).andReturn(true);
+      EasyMock.expect(this.context.getAvailable()).andReturn(true);
       
       EasyMock.replay(this.context);
       
