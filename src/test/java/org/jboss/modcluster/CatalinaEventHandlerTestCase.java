@@ -325,6 +325,7 @@ public class CatalinaEventHandlerTestCase
       EasyMock.expect(context.getPath()).andReturn("/context");
       
       EasyMock.expect(context.isStarted()).andReturn(true);
+      EasyMock.expect(context.getAvailable()).andReturn(true);
 
       // Expect log message
       EasyMock.expect(context.getPath()).andReturn("/context");

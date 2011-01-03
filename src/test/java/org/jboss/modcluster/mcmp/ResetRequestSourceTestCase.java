@@ -101,6 +101,7 @@ public class ResetRequestSourceTestCase
       EasyMock.expect(host.findChildren()).andReturn(new Container[] { context });
       EasyMock.expect(context.getPath()).andReturn("/context");
       EasyMock.expect(context.isStarted()).andReturn(true);
+      EasyMock.expect(context.getAvailable()).andReturn(true);
       
       EasyMock.expect(this.requestFactory.createEnableRequest(context)).andReturn(contextRequest);
       
