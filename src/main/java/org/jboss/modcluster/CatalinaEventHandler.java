@@ -33,6 +33,7 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.advertise.AdvertiseListener;
@@ -72,6 +73,7 @@ public class CatalinaEventHandler implements ContainerEventHandler<Server, Engin
    private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
    
    private volatile Server server = null;
+   private volatile Connector connector = null;
    
    private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
    private volatile AdvertiseListener advertiseListener;
@@ -330,7 +332,11 @@ public class CatalinaEventHandler implements ContainerEventHandler<Server, Engin
       this.mcmpHandler.status();
 
       // Send STATUS request
-      int lbf = this.getLoadBalanceFactor();
+      if (this.connector == null)
+         this.connector = Utils.findProxyConnector(engine.getService().findConnectors());
+      int lbf = -1;
+      if (this.connector != null && connector.isAvailable())
+         lbf = this.getLoadBalanceFactor();
       MCMPRequest request = this.requestFactory.createStatusRequest(engine.getJvmRoute(), lbf);
       
       this.mcmpHandler.sendRequest(request);

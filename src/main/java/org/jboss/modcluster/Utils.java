@@ -73,6 +73,8 @@ public class Utils
    public static Connector findProxyConnector(Connector[] connectors)
    {
       int highestMaxThreads = 0;
+      if (connectors == null)
+         return null;
       Connector bestConnector = connectors[0];
       
       for (Connector connector: connectors)

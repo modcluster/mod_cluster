@@ -617,11 +617,13 @@ public class CatalinaEventHandlerTestCase
    }
       
    @Test
-   public void status() throws IOException
+   public void status() throws Exception
    {
+      Service service = EasyMock.createStrictMock(Service.class);
       Engine engine = EasyMock.createStrictMock(Engine.class);
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       Map<MCMPServerState, String> emptyMap = Collections.emptyMap();
+      Connector connector = new Connector("AJP/1.3");
       
       init();
 
@@ -629,11 +631,13 @@ public class CatalinaEventHandlerTestCase
       EasyMock.expect(engine.getName()).andReturn("engine");
       
       this.mcmpHandler.status();
-      
-      EasyMock.expect(this.lbfProvider.getLoadBalanceFactor()).andReturn(10);
+     
+      EasyMock.expect(engine.getService()).andReturn(service);
+      // EasyMock.expect(this.lbfProvider.getLoadBalanceFactor()).andReturn(10);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
-      
-      EasyMock.expect(this.requestFactory.createStatusRequest("host1", 10)).andReturn(request);
+     
+      // The connector is not available... 
+      EasyMock.expect(this.requestFactory.createStatusRequest("host1", -1)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(emptyMap);
       
