@@ -1130,8 +1130,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     /* read the contexts */
     sizecontext = context_storage->get_max_size_context();
     contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
-    length =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     sizecontext = context_storage->get_ids_used_context(contexts);
+    length =  apr_pcalloc(r->pool, sizeof(int)*sizecontext);
     /* Check the virtual host */
     if (use_alias) {
         /* read the hosts */
@@ -1156,20 +1156,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         }
     }
 
-    /* keep only the contexts corresponding to our balancer */
-    if (balancer != NULL) {
-        for (j=0; j<sizecontext; j++) {
-            contextinfo_t *context;
-            nodeinfo_t *node;
-            char *name;
-            if (contexts[j] == -1) continue;
-            context_storage->read_context(contexts[j], &context);
-            node_storage->read_node(context->node, &node);
-            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
-                contexts[j] = -1;
-        }
-    }
-
     /* Check the contexts */
     max = 0;
     for (j=0; j<sizecontext; j++) {
@@ -1177,6 +1163,15 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         int len;
         if (contexts[j] == -1) continue;
         context_storage->read_context(contexts[j], &context);
+
+        /* keep only the contexts corresponding to our balancer */
+        if (balancer != NULL) {
+            nodeinfo_t *node;
+            char *name;
+            node_storage->read_node(context->node, &node);
+            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
+                continue;
+        }
         len = strlen(context->context);
         if (strncmp(uri, context->context, len) == 0) {
             if (uri[len] == '\0' || uri[len] == '/' || len==1) {
@@ -1196,11 +1191,10 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
                     	if (len > max) {
                             max = len;
                         }
-                    } 
+                    }
                     break;
                 }
-            } else
-                contexts[j] = -1;
+            }
         }
     }
     if (max == 0)
@@ -2157,8 +2151,13 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
     if (*route && (**route)) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "cluster: Using route %s", *route);
-    } else
+    } else {
+#if HAVE_CLUSTER_EX_DEBUG
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "cluster:No route found");
+#endif
         return NULL;
+    }
 
     *sticky_used = apr_table_get(r->notes, "session-sticky");
 
@@ -2402,11 +2401,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         }
     }
 
+    /* TODO if we don't have a balancer but a route we should use it directly */
     apr_thread_mutex_lock(lock);
     if (!*balancer &&
         !(*balancer = ap_proxy_get_balancer(r->pool, conf, *url))) {
         apr_thread_mutex_unlock(lock);
-        /* May the node has not be created yet */
+        /* May be the node has not been created yet */
         update_workers_node(conf, r->pool, r->server, 1);
         if (!(*balancer = ap_proxy_get_balancer(r->pool, conf, *url))) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -2595,6 +2595,10 @@ static int proxy_cluster_post_request(proxy_worker *worker,
         if (cookie) {
             if (sessionid && strcmp(cookie, sessionid)) {
                 /* The cookie has changed, remove the old one and store the next one */
+#if HAVE_CLUSTER_EX_DEBUG
+                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "proxy_cluster_post_request sessionid changed (%s to %s)", sessionid, cookie);
+#endif
                 sessionidinfo_t ou;
                 strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
                 ou.id = 0;
