@@ -80,12 +80,37 @@ public class CatalinaContextTestCase
    @Test
    public void isStarted()
    {
+      EasyMock.expect(this.context.isStarted()).andReturn(false);
+      
+      EasyMock.replay(this.context);
+      
+      boolean result = this.catalinaContext.isStarted();
+      
+      EasyMock.verify(this.context);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(this.context);
+      
+      EasyMock.expect(this.context.isStarted()).andReturn(true);
+      EasyMock.expect(this.context.getAvailable()).andReturn(false);
+      
+      EasyMock.replay(this.context);
+      
+      result = this.catalinaContext.isStarted();
+      
+      EasyMock.verify(this.context);
+      
+      Assert.assertFalse(result);
+      
+      EasyMock.reset(this.context);
+      
       EasyMock.expect(this.context.isStarted()).andReturn(true);
       EasyMock.expect(this.context.getAvailable()).andReturn(true);
       
       EasyMock.replay(this.context);
       
-      boolean result = this.catalinaContext.isStarted();
+      result = this.catalinaContext.isStarted();
       
       EasyMock.verify(this.context);
       
