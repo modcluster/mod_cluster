@@ -644,7 +644,7 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
    {
       DistributedReplicantManager drm = this.getHAPartition().getDistributedReplicantManager();
       @SuppressWarnings("unchecked")
-      List<CachableMarshalledValue> values = drm.lookupReplicants(this.getHAServiceKey());
+      List<CachableMarshalledValue> values = (List<CachableMarshalledValue>) drm.lookupReplicants(this.getHAServiceKey());
       
       if (values == null) return null;
       
