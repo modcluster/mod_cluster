@@ -94,4 +94,9 @@ public interface Connector
     * @return a port number
     */
    int getPort();
+
+    /**
+     * Is this connector available for processing requests?
+     */
+   boolean isAvailable();
 }

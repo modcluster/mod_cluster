@@ -1432,11 +1432,12 @@ public class ModClusterServiceTestCase
       MCMPRequest request = EasyMock.createStrictMock(MCMPRequest.class);
       
       this.mcmpHandler.status();
-      
-      EasyMock.expect(this.lbfProvider.getLoadBalanceFactor()).andReturn(10);
+
+      EasyMock.expect(engine.getProxyConnector()).andReturn(null);
+      // EasyMock.expect(this.lbfProvider.getLoadBalanceFactor()).andReturn(10);
       EasyMock.expect(engine.getJvmRoute()).andReturn("host1");
       
-      EasyMock.expect(this.requestFactory.createStatusRequest("host1", 10)).andReturn(request);
+      EasyMock.expect(this.requestFactory.createStatusRequest("host1", -1)).andReturn(request);
       
       EasyMock.expect(this.mcmpHandler.sendRequest(request)).andReturn(Collections.<MCMPServerState, String>emptyMap());
       

@@ -85,6 +85,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    private volatile boolean established = false;
    private volatile boolean autoEnableContexts = true;
    private volatile Server server;
+   private volatile Connector connector = null;
    
    private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
    private volatile AdvertiseListener advertiseListener;
@@ -482,7 +483,14 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
       if (this.established)
       {
          // Send STATUS request
-         this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), this.getLoadBalanceFactor()));
+         if (this.connector == null)
+            this.connector = engine.getProxyConnector();
+
+         int lbf = -1;
+         if (this.connector != null && connector.isAvailable())
+            lbf = this.getLoadBalanceFactor();
+
+         this.mcmpHandler.sendRequest(this.requestFactory.createStatusRequest(engine.getJvmRoute(), lbf));
       }
    }
    

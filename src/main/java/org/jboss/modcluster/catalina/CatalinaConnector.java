@@ -147,4 +147,10 @@ public class CatalinaConnector implements Connector
       
       return protocol.startsWith("AJP") || protocol.startsWith("org.apache.coyote.ajp");
    }
+    /**
+     * Is this connector available for processing requests?
+     */
+    public boolean isAvailable() {
+        return connector.isAvailable();
+    }
 }
