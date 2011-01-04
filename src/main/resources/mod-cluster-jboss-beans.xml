@@ -153,7 +153,7 @@
     <property name="stickySession">true</property>
     <property name="stickySessionForce">false</property>
     <property name="stickySessionRemove">false</property>
-    <property name="maxAttempts">-1</property>
+    <property name="maxAttempts">1</property>
     <property name="workerTimeout">-1</property>
   </bean>
 
