@@ -54,6 +54,8 @@ import org.jboss.modcluster.ContainerEventHandler;
  */
 public class CatalinaEventHandlerAdapter implements LifecycleListener, ContainerListener, NotificationListener, PropertyChangeListener
 {
+   private static final String AVAILABLE = "available";
+   
    private volatile ObjectName serviceObjectName = toObjectName("jboss.web:service=WebServer");
    private volatile ObjectName serverObjectName = toObjectName("jboss.web:type=Server");
    private volatile String connectorsStartedNotificationType = "jboss.tomcat.connectors.started";
@@ -163,8 +165,6 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       }
    }
    
-   // ------------------------------------------------------------- Properties
-
    // ---------------------------------------------- LifecycleListener Methods
 
    /**
@@ -186,6 +186,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Deploying a webapp
             ((Lifecycle) child).addLifecycleListener(this);
+            // MODCLUSTER-190 Use property change listener to detect webapp start/stop
             ((Container) child).addPropertyChangeListener(this);
             
             if (this.start.get())
@@ -210,6 +211,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             // Undeploying a webapp
             ((Lifecycle) child).removeLifecycleListener(this);
+            // MODCLUSTER-190 Use property change listener to detect webapp start/stop
             ((Container) child).removePropertyChangeListener(this);
             
             if (this.start.get())
@@ -266,6 +268,8 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       }
       else if (type.equals(Lifecycle.AFTER_START_EVENT))
       {
+         // MODCLUSTER-190: We can't use AFTER_START_EVENT to detect context start
+         // This is too early still.  Instead, detect Context.setAvailable(true)
          if (source instanceof Server)
          {
             if (this.init.get() && this.start.compareAndSet(false, true))
@@ -276,15 +280,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       }
       else if (type.equals(Lifecycle.BEFORE_STOP_EVENT))
       {
-         if (source instanceof Context)
-         {
-            if (this.start.get())
-            {
-               // Stop a webapp
-               this.eventHandler.stop(new CatalinaContext((Context) source, this.mbeanServer));
-            }
-         }
-         else if (source instanceof Server)
+         if (source instanceof Server)
          {
             if (this.init.get() && this.start.compareAndSet(true, false))
             {
@@ -313,6 +309,33 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          }
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    * Context.setAvailable(boolean) callback.
+    * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
+    */
+   public void propertyChange(PropertyChangeEvent event)
+   {
+      if (this.start.get())
+      {
+         Object source = event.getSource();
+         
+         if ((source instanceof Context) && AVAILABLE.equals(event.getPropertyName()))
+         {
+            CatalinaContext context = new CatalinaContext((Context) source, this.mbeanServer);
+            
+            if (Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue()))
+            {
+               this.eventHandler.start(context);
+            }
+            else if (Boolean.TRUE.equals(event.getOldValue()) && Boolean.FALSE.equals(event.getNewValue()))
+            {
+               this.eventHandler.stop(context);
+            }
+         }
+      }
+   }
 
    /**
     * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so
@@ -321,9 +344,9 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    private void init(Server server)
    {
       this.eventHandler.init(new CatalinaServer(server, this.mbeanServer));
-               
+      
       this.addListeners(server);
-               
+      
       // Register for mbean notifications if JBoss Web server mbean exists
       if (this.mbeanServer.isRegistered(this.serviceObjectName))
       {
@@ -490,14 +513,5 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       {
          throw new IllegalArgumentException(e);
       }
-   }
-   
-   public void propertyChange(PropertyChangeEvent event) {
-	   if (event.getSource() instanceof Context 
-		   && "available".equals(event.getPropertyName())
-		   && Boolean.FALSE.equals(event.getOldValue())
-		   && Boolean.TRUE.equals(event.getNewValue())) {
-		   this.eventHandler.start(new CatalinaContext((Context) event.getSource(), this.mbeanServer));
-	   }
    }
 }
