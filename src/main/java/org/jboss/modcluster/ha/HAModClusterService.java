@@ -52,6 +52,7 @@ import org.jboss.ha.framework.server.HASingletonImpl;
 import org.jboss.ha.framework.server.SimpleCachableMarshalledValue;
 import org.jboss.modcluster.ContainerEventHandler;
 import org.jboss.modcluster.Context;
+import org.jboss.modcluster.Connector;
 import org.jboss.modcluster.Engine;
 import org.jboss.modcluster.Host;
 import org.jboss.modcluster.ModClusterService;
@@ -1155,7 +1156,11 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent> impleme
          
          if (this.isEstablished())
          {
-            HAModClusterService.this.latestLoad = this.getLoadBalanceFactor();
+            Connector connector = engine.getProxyConnector();
+            if (connector != null && connector.isAvailable())
+               HAModClusterService.this.latestLoad = this.getLoadBalanceFactor();
+            else
+               HAModClusterService.this.latestLoad = -1;
          }
          
          if (HAModClusterService.this.isMasterNode())
