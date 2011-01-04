@@ -39,6 +39,7 @@ import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.util.StringManager;
 import org.jboss.beans.metadata.api.annotations.Inject;
 import org.jboss.beans.metadata.api.model.FromContext;
@@ -878,8 +879,12 @@ public class HAModClusterService extends HASingletonImpl<HAServiceEvent>
          this.checkInit();
          
          this.coord.log.debug(this.coord.sm.getString("modcluster.engine.status", engine.getName()));
-         
-         this.coord.latestLoad = this.getLoadBalanceFactor();
+
+         Connector connector = Utils.findProxyConnector(engine.getService().findConnectors());
+         if (connector != null && connector.isAvailable())
+            this.coord.latestLoad = this.getLoadBalanceFactor();
+         else
+            this.coord.latestLoad = -1;
          
          if (this.coord.isMasterNode())
          {
