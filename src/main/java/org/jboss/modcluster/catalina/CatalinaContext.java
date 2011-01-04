@@ -94,18 +94,14 @@ public class CatalinaContext implements Context
     */
    public boolean isStarted()
    {
-      boolean started;
       try
       {
-         started = this.context.isStarted();
+         return this.context.isStarted() && this.context.getAvailable();
       }
       catch (NoSuchMethodError e)
       {
          return this.context.getAvailable();
       }
-      if (started)
-         started = this.context.getAvailable();
-      return started;
    }
    
    /**
