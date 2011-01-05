@@ -6,6 +6,69 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.6 (05 January 2011)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Regressions caused by MODCLUSTER-190 (MODCLUSTER-190) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Default maxAttempts set to -1 instead of 1 (MODCLUSTER-200) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>OK STATUS MCMP messages are send before the connector is started (MODCLUSTER-202) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Quotes in jsessionId causing sticky sessions to fail (MODCLUSTER-203) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
    <sect1><title>1.0.5 (23 November 2010)</title>
    <informaltable frame="all">
       <tgroup cols="2">
