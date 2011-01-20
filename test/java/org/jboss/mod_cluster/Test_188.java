@@ -67,7 +67,7 @@ public class Test_188 extends TestCase {
             service2.AddContext("/", "/ROOT");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("232.0.0.2", 23364, false, "dom1");
+            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
             server.addLifecycleListener(cluster);
             // Maintest.listServices();
 
