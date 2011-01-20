@@ -1114,6 +1114,7 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     int sizecontext;
     int *contexts;
     int *length;
+    int *status;
     int i, j, max;
     int *best, nbest;
     const char *uri = NULL;
@@ -1132,6 +1133,7 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     sizecontext = context_storage->get_ids_used_context(contexts);
     length =  apr_pcalloc(r->pool, sizeof(int)*sizecontext);
+    status =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     /* Check the virtual host */
     if (use_alias) {
         /* read the hosts */
@@ -1175,25 +1177,11 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         len = strlen(context->context);
         if (strncmp(uri, context->context, len) == 0) {
             if (uri[len] == '\0' || uri[len] == '/' || len==1) {
-                /* Check status */
-                switch (context->status)
-                {
-                  case ENABLED:
-                    length[j] = len;
-                    if (len > max) {
-                        max = len;
-                    } 
-                    break;
-                  case DISABLED:
-                    /* Only the request with sessionid ok for it */
-                    if (hassession_byname(r, context->node, route)) {
-                        length[j] = len;
-                    	if (len > max) {
-                            max = len;
-                        }
-                    }
-                    break;
-                }
+                status[j] = context->status;
+                length[j] = len;
+                if (len > max) {
+                    max = len;
+                } 
             }
         }
     }
@@ -1211,10 +1199,27 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     for (j=0; j<sizecontext; j++)
         if (length[j] == max) {
             contextinfo_t *context;
-            context_storage->read_context(contexts[j], &context);
-            best[nbest] = context->node;
-            nbest++;
+            int ok = 0;
+            /* Check status */
+            switch (status[j]) {
+                case ENABLED:
+                    ok = -1;
+                    break;
+                case DISABLED:
+                    /* Only the request with sessionid ok for it */
+                    if (hassession_byname(r, context->node, route)) {
+                        ok = -1;
+                    }
+                    break;
+            }
+            if (ok) {
+                context_storage->read_context(contexts[j], &context);
+                best[nbest] = context->node;
+                nbest++;
+            }
         }
+    if (nbest == 0)
+        return NULL;
     nbest++;
     best[nbest] = -1;
     return best; 
