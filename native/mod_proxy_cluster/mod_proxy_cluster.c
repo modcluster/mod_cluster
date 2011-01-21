@@ -1164,13 +1164,15 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         contextinfo_t *context;
         int len;
         if (contexts[j] == -1) continue;
-        context_storage->read_context(contexts[j], &context);
+        if (context_storage->read_context(contexts[j], &context) != APR_SUCCESS)
+            continue;
 
         /* keep only the contexts corresponding to our balancer */
         if (balancer != NULL) {
             nodeinfo_t *node;
             char *name;
-            node_storage->read_node(context->node, &node);
+            if (node_storage->read_node(context->node, &node) != APR_SUCCESS)
+                continue;
             if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
                 continue;
         }
@@ -1213,7 +1215,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
                     break;
             }
             if (ok) {
-                context_storage->read_context(contexts[j], &context);
+                if (context_storage->read_context(contexts[j], &context)!= APR_SUCCESS)
+                    continue;
                 best[nbest] = context->node;
                 nbest++;
             }
