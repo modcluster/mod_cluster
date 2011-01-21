@@ -205,6 +205,7 @@ case ${EXT} in
     ;;
 esac
 
+INSTWIN=false
 case ${EXT} in
   tar.gz)
     # Arrange the installed files
@@ -236,6 +237,7 @@ case ${EXT} in
     (cd "$BASELOC/httpd-2.2/bin"
      ./installconf.bat
     )
+    INSTWIN=true
     ;;
 esac
 
@@ -252,8 +254,13 @@ else
   # Uncomment out conf stuff
   echo "s/#ServerAdvertise/ServerAdvertise/" > sed.cmd
   echo "s/#Advertise/Advertise/" >> sed.cmd
-  echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
-  echo "s/127.0.0/@SUBIP@/" >> sed.cmd
+  if $INSTWIN
+  then
+    ;
+  else
+    echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
+    echo "s/127.0.0/@SUBIP@/" >> sed.cmd
+  fi
   sed -f sed.cmd "$file" > "$file.new"
 fi
 
