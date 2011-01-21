@@ -148,11 +148,14 @@ cd CERTS/Server</programlisting></para>
             <para>Create a work directory and work for there:<programlisting>mkdir -p CERTS/Client
 cd CERTS/Client</programlisting></para>
           </listitem>
-
           <listitem>
-            <para>Create a new request and sign it for the client certificate
-            and key of the JBossWEB part.<programlisting>mkdir -p CERTS/Client
-cd CERTS/Client</programlisting></para>
+            <para>Create request and key for the JBossWEB part.<programlisting>/etc/pki/tls/misc/CA -newreq</programlisting>
+             That creates 2 files: Request is in newreq.pem, private key is in newkey.pem
+            </para>
+          </listitem>
+          <listitem>
+             <para>Sign the request.<programlisting>/etc/pki/tls/misc/CA -signreq</programlisting>
+             That creates a file: newcert.pem</para>
           </listitem>
           <listitem>
             <para>Don't use a passphrase when creating the client certicate or
