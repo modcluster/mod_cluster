@@ -1202,6 +1202,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         if (length[j] == max) {
             contextinfo_t *context;
             int ok = 0;
+            if (context_storage->read_context(contexts[j], &context)!= APR_SUCCESS)
+                continue;
             /* Check status */
             switch (status[j]) {
                 case ENABLED:
@@ -1215,8 +1217,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
                     break;
             }
             if (ok) {
-                if (context_storage->read_context(contexts[j], &context)!= APR_SUCCESS)
-                    continue;
                 best[nbest] = context->node;
                 nbest++;
             }
