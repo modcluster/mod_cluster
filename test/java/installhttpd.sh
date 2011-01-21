@@ -96,7 +96,6 @@ BASEHTTPD=opt/jboss/httpd
 BASEHTTPDCONF=opt/jboss/httpd/httpd/conf
 BASEHTTPDSBIN=opt/jboss/httpd/sbin
 BASEHTTPDBUILD=opt/jboss/httpd/htdocs/build
-ADDMODULES=false
 case $BUILD_TAG in
    *hpux-parisc2*)
       BASE=mod_cluster-hp-ux-9000_800
@@ -125,7 +124,6 @@ case $BUILD_TAG in
       BASEHTTPD=httpd-2.2
       BASEHTTPDCONF=httpd-2.2/conf
       BASEHTTPDSBIN=httpd-2.2/bin
-      ADDMODULES=true
       ;;
 esac
 #PACKVER=rhel-httpd-2.2.8-1.el5s2
@@ -257,22 +255,6 @@ else
   echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
   echo "s/127.0.0/@SUBIP@/" >> sed.cmd
   sed -f sed.cmd "$file" > "$file.new"
-fi
-
-if $ADDMODULES
-then
-  #Add loadmodule if needed (on windoze).
-  cat >> "$file.new" <<EOF
-LoadModule proxy_module modules/mod_proxy.so
-LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
-LoadModule proxy_http_module modules/mod_proxy_http.so
-
-LoadModule proxy_cluster_module modules/mod_proxy_cluster.so
-
-LoadModule manager_module modules/mod_manager.so
-LoadModule slotmem_module modules/mod_slotmem.so
-LoadModule advertise_module modules/mod_advertise.so
-EOF
 fi
 
 grep MOD_CLUSTER_ADDS "$file"
