@@ -80,11 +80,12 @@ public class Test_196 extends TestCase {
         ServerThread wait = new ServerThread(3000, server);
         wait.start();
 
-        // Wait until httpd as received the nodes information.
-        try {
-            Thread.sleep(30000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
+        // Wait until httpd answers to ping and the 2 nodes are up.
+        String [] nodes = new String[2];
+        nodes[0] = "node3";
+        nodes[1] = "node4";
+        if (!Maintest.WaitForNodes(cluster, nodes)) {
+            fail("can't start nodes");
         }
 
         // Start the client and wait for it.

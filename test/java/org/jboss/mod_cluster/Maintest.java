@@ -421,6 +421,14 @@ public class Maintest extends TestCase {
         } else
             return true;
     }
+    /* Wait until we are able to connect to httpd and then until the node is in the ok status (load>0). */
+    static  boolean WaitForNodes(LifecycleListener lifecycle, String [] nodes) {
+        if (WaitForHttpd(lifecycle, 60) == -1) {
+            System.out.println("can't find PING-RSP in proxy response");
+            return false;
+        }
+        return TestForNodes(lifecycle, nodes);
+    }
 
     // Wait until we are able to PING httpd.
     // tries maxtries and wait 5 s between retries...
