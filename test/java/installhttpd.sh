@@ -256,7 +256,8 @@ else
   echo "s/#Advertise/Advertise/" >> sed.cmd
   if $INSTWIN
   then
-    ;
+    # windoze has 8080 and already the MOD_CLUSTER_ADDS.
+    echo "s/Listen 80.*/Listen @IP@:8000/" > sed.cmd
   else
     echo "s/127.0.0.1:6666/@IP@:6666/" >> sed.cmd
     echo "s/127.0.0/@SUBIP@/" >> sed.cmd
