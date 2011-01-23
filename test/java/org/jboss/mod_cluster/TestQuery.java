@@ -86,7 +86,8 @@ public class TestQuery extends TestCase {
         // Wait until the node is created in httpd.
         String [] nodes = new String[1];
         nodes[0] = "node3";
-        Maintest.TestForNodes(cluster, nodes);
+        if (!Maintest.TestForNodes(cluster, nodes))
+            fail("can't start nodes");
 
         // Start the client and wait for it.
         Client client = new Client();
