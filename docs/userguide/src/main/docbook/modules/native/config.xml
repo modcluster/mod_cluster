@@ -245,11 +245,11 @@ Allow from 127.0.0.1
  Listen 10.33.144.3:6666
  &lt;VirtualHost 10.33.144.3:6666&gt;
  
-   &lt;Directory /&gt;
+   &lt;Location /&gt;
       Order deny,allow
       Deny from all
       Allow from 10.33.144.
-   &lt;/Directory&gt;
+   &lt;/Location&gt;
  
  KeepAliveTimeout 60
  MaxKeepAliveRequests 0
