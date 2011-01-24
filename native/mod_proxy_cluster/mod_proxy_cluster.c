@@ -434,6 +434,8 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         int sizebal, i;
         int *bal;
         bal = apr_pcalloc(pool, sizeof(int) * balancer_storage->get_max_size_balancer());
+        if (bal == 0)
+            return balancer; /* Done broken */
         sizebal = balancer_storage->get_ids_used_balancer(bal);
         for (i=0; i<sizebal; i++) {
             balancerinfo_t *balan;
@@ -601,6 +603,9 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
     }
 
     /* read the ident of the nodes */
+    size = node_storage->get_max_size_node();
+    if (size == 0)
+        return;
     id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
     size = node_storage->get_ids_used_node(id);
 
@@ -823,7 +828,10 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
     now = apr_time_now();
 
     /* read the ident of the nodes */
-    id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
+    size = node_storage->get_max_size_node();
+    if (size == 0)
+        return;
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = node_storage->get_ids_used_node(id);
 
     /* update lbstatus if needed */
@@ -897,6 +905,9 @@ static void remove_timeout_sessionid(proxy_server_conf *conf, apr_pool_t *pool, 
     now = apr_time_sec(apr_time_now());
 
     /* read the ident of the sessionid */
+    size = sessionid_storage->get_max_size_sessionid();
+    if (size == 0)
+        return;
     id = apr_pcalloc(pool, sizeof(int) * sessionid_storage->get_max_size_sessionid());
     size = sessionid_storage->get_ids_used_sessionid(id);
 
@@ -923,7 +934,10 @@ static void remove_timeout_domain(apr_pool_t *pool, server_rec *server)
     now = apr_time_sec(apr_time_now());
 
     /* read the ident of the domain */
-    id = apr_pcalloc(pool, sizeof(int) * domain_storage->get_max_size_domain());
+    size = domain_storage->get_max_size_domain();
+    if (size == 0)
+        return;
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = domain_storage->get_ids_used_domain(id);
 
     for (i=0; i<size; i++) {
@@ -1130,6 +1144,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
 
     /* read the contexts */
     sizecontext = context_storage->get_max_size_context();
+    if (sizecontext == 0)
+        return NULL;
     contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     sizecontext = context_storage->get_ids_used_context(contexts);
     length =  apr_pcalloc(r->pool, sizeof(int)*sizecontext);
@@ -1566,7 +1582,10 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
     apr_time_t now = apr_time_now();
 
     /* read the ident of the nodes */
-    id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
+    size = node_storage->get_max_size_node();
+    if (size == 0)
+        return;
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = node_storage->get_ids_used_node(id);
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
@@ -1601,7 +1620,10 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
     apr_thread_mutex_lock(lock);
 
     /* read the ident of the nodes */
-    id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
+    size = node_storage->get_max_size_node();
+    if (size == 0)
+        return;
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = node_storage->get_ids_used_node(id);
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
