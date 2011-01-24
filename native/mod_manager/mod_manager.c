@@ -191,7 +191,7 @@ static apr_time_t loc_worker_nodes_need_update(void *data, apr_pool_t *pool)
     apr_time_t last = 0;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
 
-    size = get_max_size_node(nodestatsmem);
+    size = loc_get_max_size_node();
     if (size == 0)
         return 0; /* broken */
     id = apr_palloc(pool, sizeof(int) * size);
@@ -219,14 +219,28 @@ static int loc_worker_nodes_are_updated(void *data)
     mconf->last_updated = apr_time_now();
     return (0);
 }
+static int loc_get_max_size_context()
+{
+    if (contextstatsmem)
+        return(get_max_size_context(contextstatsmem));
+    else
+        return 0;
+}
+static int loc_get_max_size_host()
+{
+    if (hoststatsmem)
+        return(get_max_size_host(hoststatsmem));
+    else
+        return 0;
+}
 /* Remove the virtual hosts and contexts corresponding the node */
 static void loc_remove_host_context(int node, apr_pool_t *pool)
 {
     /* for read the hosts */
     int i;
-    int size = get_max_size_host(hoststatsmem);
+    int size = loc_get_max_size_host();
     int *id;
-    int sizecontext = get_max_size_context(contextstatsmem);
+    int sizecontext = loc_get_max_size_context();
     int *idcontext;
 
     if (size == 0)
@@ -275,13 +289,6 @@ static int loc_get_ids_used_context(int *ids)
 {
     return(get_ids_used_context(contextstatsmem, ids)); 
 }
-static int loc_get_max_size_context()
-{
-    if (contextstatsmem)
-        return(get_max_size_context(contextstatsmem));
-    else
-        return 0;
-}
 static const struct context_storage_method context_storage =
 {
     loc_read_context,
@@ -299,13 +306,6 @@ static apr_status_t loc_read_host(int ids, hostinfo_t **host)
 static int loc_get_ids_used_host(int *ids)
 {
     return(get_ids_used_host(hoststatsmem, ids)); 
-}
-static int loc_get_max_size_host()
-{
-    if (hoststatsmem)
-        return(get_max_size_host(hoststatsmem));
-    else
-        return 0;
 }
 static const struct host_storage_method host_storage =
 {
@@ -657,9 +657,9 @@ static void remove_host_context(request_rec *r, int node)
 {
     /* for read the hosts */
     int i;
-    int size = get_max_size_host(hoststatsmem);
+    int size = loc_get_max_size_host();
     int *id;
-    int sizecontext = get_max_size_context(contextstatsmem);
+    int sizecontext = loc_get_max_size_context();
     int *idcontext;
 
 
@@ -961,7 +961,7 @@ static char * process_dump(request_rec *r, int *errtype)
 
     ap_set_content_type(r, "text/plain");
 
-    size = get_max_size_balancer(balancerstatsmem);
+    size = loc_get_max_size_balancer();
     if (size == 0)
        return NULL;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -978,7 +978,7 @@ static char * process_dump(request_rec *r, int *errtype)
                    ou->Maxattempts);
     }
 
-    size = get_max_size_node(nodestatsmem);
+    size = loc_get_max_size_node();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_node(nodestatsmem, id);
     for (i=0; i<size; i++) {
@@ -997,7 +997,7 @@ static char * process_dump(request_rec *r, int *errtype)
                    (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
     }
 
-    size = get_max_size_host(hoststatsmem);
+    size = loc_get_max_size_host();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
     for (i=0; i<size; i++) {
@@ -1008,7 +1008,7 @@ static char * process_dump(request_rec *r, int *errtype)
                   ou->node);
     }
 
-    size = get_max_size_context(contextstatsmem);
+    size = loc_get_max_size_context();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_context(contextstatsmem, id);
     for (i=0; i<size; i++) {
@@ -1033,7 +1033,7 @@ static char * process_info(request_rec *r, int *errtype)
 
     ap_set_content_type(r, "text/plain");
 
-    size = get_max_size_node(nodestatsmem);
+    size = loc_get_max_size_node();
     if (size == 0)
         return NULL;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1076,7 +1076,7 @@ static char * process_info(request_rec *r, int *errtype)
     }
 
     /* Process the Vhosts */
-    size = get_max_size_host(hoststatsmem);
+    size = loc_get_max_size_host();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
     for (i=0; i<size; i++) {
@@ -1088,7 +1088,7 @@ static char * process_info(request_rec *r, int *errtype)
     }
 
     /* Process the Contexts */
-    size = get_max_size_context(contextstatsmem);
+    size = loc_get_max_size_context();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_context(contextstatsmem, id);
     for (i=0; i<size; i++) {
@@ -1121,7 +1121,7 @@ static char * process_node_cmd(request_rec *r, int status, int *errtype, nodeinf
 {
     /* for read the hosts */
     int i,j;
-    int size = get_max_size_host(hoststatsmem);
+    int size = loc_get_max_size_host();
     int *id;
 
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1293,7 +1293,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
 
     /* Remove the host if all the contextes have been removed */
     if (status == REMOVE) {
-        int size = get_max_size_context(contextstatsmem);
+        int size = loc_get_max_size_context();
         int *id = apr_palloc(r->pool, sizeof(int) * size);
         size = get_ids_used_context(contextstatsmem, id);
         for (i=0; i<size; i++) {
@@ -1720,7 +1720,7 @@ static void manager_info_contexts(request_rec *r, int reduce_display, int allow_
     if (!reduce_display)
         ap_rprintf(r, "<h3>Contexts:</h3>");
     ap_rprintf(r, "<pre>");
-    size = get_max_size_context(contextstatsmem);
+    size = loc_get_max_size_context();
     if (size == 0)
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1758,7 +1758,7 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
     int vhost = 0;
 
     /* Process the Vhosts */
-    size = get_max_size_host(hoststatsmem);
+    size = loc_get_max_size_host();
     if (size == 0)
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1798,7 +1798,7 @@ static void manager_sessionid(request_rec *r)
     int *id;
 
     /* Process the Sessionids */
-    size = get_max_size_sessionid(sessionidstatsmem);
+    size = loc_get_max_size_sessionid();
     if (size == 0)
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1829,7 +1829,7 @@ static void manager_domain(request_rec *r, int reduce_display)
     else
         ap_rprintf(r, "<h1>LBGroup:</h1>");
     ap_rprintf(r, "<pre>");
-    size = get_max_size_domain(domainstatsmem);
+    size = loc_get_max_size_domain();
     if (size == 0)
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1855,7 +1855,7 @@ static int count_sessionid(request_rec *r, char *route)
     int count = 0;
 
     /* Count the sessionid corresponding to the route */
-    size = get_max_size_sessionid(sessionidstatsmem);
+    size = loc_get_max_size_sessionid();
     if (size == 0)
         return 0;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -1913,7 +1913,7 @@ static char *process_domain(request_rec *r, char **ptr, int *errtype, const char
     int *id;
     int pos;
     char *errstring = NULL;
-    size = get_max_size_node(nodestatsmem);
+    size = loc_get_max_size_node();
     if (size == 0)
         return NULL;
     id = apr_palloc(r->pool, sizeof(int) * size);
@@ -2144,9 +2144,9 @@ static int manager_info(request_rec *r)
 
     ap_rputs("\n", r);
 
-    sizesessionid = get_max_size_sessionid(sessionidstatsmem);
+    sizesessionid = loc_get_max_size_sessionid();
 
-    size = get_max_size_node(nodestatsmem);
+    size = loc_get_max_size_node();
     if (size == 0)
         return OK;
     id = apr_palloc(r->pool, sizeof(int) * size);
