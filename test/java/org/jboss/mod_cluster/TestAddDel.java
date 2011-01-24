@@ -80,9 +80,15 @@ public class TestAddDel extends TestCase {
         ServerThread wait = new ServerThread(3000, server);
         wait.start();
 
+        // Wait until we are able to connect to httpd.
+        int tries = Maintest.WaitForHttpd(lifecycle, 60);
+        if (tries == -1) {
+            fail("can't find PING-RSP in proxy response");
+        }
+
         // Wait until httpd as received the nodes information.
         try {
-            Thread.sleep(40000);
+            Thread.sleep(tries*1000);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
