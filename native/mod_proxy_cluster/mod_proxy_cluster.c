@@ -433,9 +433,10 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         /* Logic to copy the shared memory information to the balancer */
         int sizebal, i;
         int *bal;
-        bal = apr_pcalloc(pool, sizeof(int) * balancer_storage->get_max_size_balancer());
-        if (bal == 0)
+        sizebal =  balancer_storage->get_max_size_balancer();
+        if (sizebal == 0)
             return balancer; /* Done broken */
+        bal = apr_pcalloc(pool, sizeof(int) * sizebal);
         sizebal = balancer_storage->get_ids_used_balancer(bal);
         for (i=0; i<sizebal; i++) {
             balancerinfo_t *balan;
@@ -604,9 +605,11 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
 
     /* read the ident of the nodes */
     size = node_storage->get_max_size_node();
-    if (size == 0)
+    if (size == 0) {
+        apr_thread_mutex_unlock(lock);
         return;
-    id = apr_pcalloc(pool, sizeof(int) * node_storage->get_max_size_node());
+    }
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = node_storage->get_ids_used_node(id);
 
     /* XXX: How to skip the balancer that aren't controled by mod_manager */
@@ -908,7 +911,7 @@ static void remove_timeout_sessionid(proxy_server_conf *conf, apr_pool_t *pool, 
     size = sessionid_storage->get_max_size_sessionid();
     if (size == 0)
         return;
-    id = apr_pcalloc(pool, sizeof(int) * sessionid_storage->get_max_size_sessionid());
+    id = apr_pcalloc(pool, sizeof(int) * size);
     size = sessionid_storage->get_ids_used_sessionid(id);
 
     /* update lbstatus if needed */
@@ -1621,8 +1624,10 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
 
     /* read the ident of the nodes */
     size = node_storage->get_max_size_node();
-    if (size == 0)
+    if (size == 0) {
+        apr_thread_mutex_unlock(lock);
         return;
+    }
     id = apr_pcalloc(pool, sizeof(int) * size);
     size = node_storage->get_ids_used_node(id);
     for (i=0; i<size; i++) {
