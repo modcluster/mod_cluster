@@ -397,10 +397,9 @@ static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_
     apr_status_t rv;
     apr_size_t vsize = sizeof(void *);
     apr_size_t dsize = sizeof(desc);
-    apr_size_t tsize = sizeof(int) * (desc.item_num + 1);
+    apr_size_t tsize;
 
     dsize = dsize % vsize ? (((dsize / vsize) +1 ) * vsize) : dsize; 
-    tsize = tsize % vsize ? (((tsize / vsize) +1 ) * vsize) : tsize; 
     *item_size = *item_size % vsize ? (((*item_size / vsize) +1 ) * vsize) : *item_size; 
 
     if (globalpool == NULL) {
@@ -446,6 +445,8 @@ static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_
     ptr = apr_shm_baseaddr_get(res->shm);
     memcpy(&desc, ptr, sizeof(desc));
     ptr = ptr + dsize;
+    tsize = sizeof(int) * (desc.item_num + 1);
+    tsize = tsize % vsize ? (((tsize / vsize) +1 ) * vsize) : tsize; 
 
     /* For the chained slotmem stuff */
     res->name = apr_pstrdup(globalpool, fname);

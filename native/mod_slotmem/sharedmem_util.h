@@ -18,3 +18,4 @@
  * This one uses shared memory.
  */
 const slotmem_storage_method *sharedmem_getstorage();
+apr_status_t sharedmem_initialize_child(apr_pool_t *p);
