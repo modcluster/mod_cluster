@@ -25,7 +25,7 @@
             <entry>
               <para>Defines a comma delimited list of httpd proxies with which this node will initially communicate. Value should be of the form: </para>
               <para><emphasis>address1</emphasis>:<emphasis>port1</emphasis>,<emphasis>address2</emphasis>:<emphasis>port2</emphasis></para>
-              <para>Using the default configuration, this property can by manipulated via the jboss.modcluster.proxyList system property.</para>
+              <para>Using the default configuration, this property can by manipulated via the jboss.mod_cluster.proxyList system property.</para>
             </entry>
           </row>
           <row id="excludedContexts">
@@ -34,7 +34,7 @@
             <entry>
               <para>List of contexts to exclude from httpd registration, of the form: </para>
               <para><emphasis>host1</emphasis>:<emphasis>context1</emphasis>,<emphasis>host2</emphasis>:<emphasis>context2</emphasis>,<emphasis>host3</emphasis>:<emphasis>context3</emphasis></para>
-              <para>If no host is indicated, it is assumed to be the default host of the server (e.g. localhost). "ROOT" indicates the root context. Using the default configuration, this property can by manipulated via the jboss.modcluster.excludedContexts system property.</para>
+              <para>If no host is indicated, it is assumed to be the default host of the server (e.g. localhost). "ROOT" indicates the root context. Using the default configuration, this property can by manipulated via the jboss.mod_cluster.excludedContexts system property.</para>
             </entry>
           </row>
           <row>

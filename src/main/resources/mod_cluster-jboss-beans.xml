@@ -39,7 +39,7 @@
     
     <!-- Comma separated list of address:port listing the httpd servers
          where mod_cluster is running. -->
-    <property name="proxyList">${jboss.mod_cluster.proxyList:}</property>
+    <property name="proxyList">${jboss.mod_cluster.proxyList,jboss.modcluster.proxyList:}</property>
     <!-- URL prefix to send with commands to mod_cluster.  Default is no prefix. -->
     <!--property name="proxyURL"></property-->
     
@@ -48,17 +48,17 @@
          ModClusterService to discover the httpd front-end instead of/in 
          addition to having them defined in proxyList. -->
     <!-- Whether to listen for advertise messages -->
-    <property name="advertise">true</property>
+    <property name="advertise">${jboss.mod_cluster.advertise:true}</property>
     <!-- Multicast address on which to listen for advertisements -->
-    <property name="advertiseGroupAddress">${jboss.mod_cluster.advertise.address,jboss.partition.udpGroup:224.0.1.105}</property>
+    <property name="advertiseGroupAddress">${jboss.mod_cluster.advertise.address,jboss.modcluster.advertise.address,jboss.partition.udpGroup:224.0.1.105}</property>
     <!-- Port to listen to for advertisements -->
-    <property name="advertisePort">${jboss.mod_cluster.advertise.port:23364}</property>
+    <property name="advertisePort">${jboss.mod_cluster.advertise.port,jboss.modcluster.advertise.port:23364}</property>
     
     <!-- Comma delimited list of contexts that should *not* be auto-registered with httpd. -->
     <!-- ROOT indicates the root context. -->
     <!-- Context may be qualified by host using a colon, e.g. host1:context1 -->
     <!-- If no host is defined, localhost is assumed. -->
-    <property name="excludedContexts">${jboss.mod_cluster.excludedContexts:ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console}</property>
+    <property name="excludedContexts">${jboss.mod_cluster.excludedContexts,jboss.modcluster.excludedContexts:ROOT,admin-console,invoker,jbossws,jmx-console,juddi,web-console}</property>
     <property name="autoEnableContexts">${jboss.mod_cluster.autoEnableContexts:true}</property>
     
     <!-- Security key the proxy is going to send with advertise messages. 
