@@ -55,7 +55,7 @@
 #endif
 
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
-#define HAVE_CLUSTER_EX_DEBUG 0
+#define HAVE_CLUSTER_EX_DEBUG 1
 
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
@@ -1910,7 +1910,8 @@ static int proxy_cluster_trans(request_rec *r)
             }
         }
 
-        r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->unparsed_uri, NULL);
+        /* It is safer to use r->uri */
+        r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
         r->handler = "proxy-server";
         r->proxyreq = PROXYREQ_REVERSE;
 #if HAVE_CLUSTER_EX_DEBUG
