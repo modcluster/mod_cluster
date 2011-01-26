@@ -155,13 +155,11 @@ public class TestAddDel extends TestCase {
             ex.printStackTrace();
             fail("can't stop service");
         }
+
         // Wait until httpd as received the stop messages.
         System.gc();
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-        }
+        if (!Maintest.TestForNodes(lifecycle, null))
+            ("Can't stop nodes");
 
         if (clienterror)
             fail("Client error");
