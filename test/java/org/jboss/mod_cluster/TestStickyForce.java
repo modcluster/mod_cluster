@@ -164,7 +164,7 @@ public class TestStickyForce extends TestCase {
         Maintest.testPort(8012);
         Maintest.testPort(8011);
         if (!Maintest.TestForNodes(cluster, null))
-            fail("Can't stop...");
+            fail("Can't stop nodes");
         /* XXX:  In fact it doesn't stop correctly ... Something needs to be fixed */
 
         // Test client result.
