@@ -55,7 +55,7 @@
 #endif
 
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
-#define HAVE_CLUSTER_EX_DEBUG 1
+#define HAVE_CLUSTER_EX_DEBUG 0
 
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
