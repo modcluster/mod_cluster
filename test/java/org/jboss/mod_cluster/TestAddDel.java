@@ -159,7 +159,7 @@ public class TestAddDel extends TestCase {
         // Wait until httpd as received the stop messages.
         System.gc();
         if (!Maintest.TestForNodes(lifecycle, null))
-            ("Can't stop nodes");
+            fail("Can't stop nodes");
 
         if (clienterror)
             fail("Client error");
