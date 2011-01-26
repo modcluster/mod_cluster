@@ -47,6 +47,7 @@ public class  Client extends Thread {
     String user = null;
     String pass = null;
     InputStream fd = null;
+    private String VirtualHost = null;
 
     private int nbtest = 10;
     private int delay = 1000;
@@ -193,8 +194,11 @@ public class  Client extends Thread {
                 Integer connectionTimeout = 40000;
                 bm.getParams().setParameter("http.socket.timeout", connectionTimeout);
                 bm.getParams().setParameter("http.connection.timeout", connectionTimeout);
+                if (VirtualHost != null)
+                    bm.getParams().setVirtualHost(VirtualHost);
                 httpClient.getParams().setParameter("http.socket.timeout", connectionTimeout);
                 httpClient.getParams().setParameter("http.connection.timeout", connectionTimeout);
+
                 if (jsessionid != null) {
                     // System.out.println("jsessionid: " + jsessionid);
                     bm.setRequestHeader("Cookie", "JSESSIONID=" + jsessionid);
@@ -329,5 +333,11 @@ public class  Client extends Thread {
         }
         public String getnode() {
             return(node);
+        }
+        public void setVirtualHost(String VirtualHost) {
+            this.VirtualHost = VirtualHost;
+        }
+        public String getVirtualHost() {
+            return(VirtualHost);
         }
 }

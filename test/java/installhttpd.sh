@@ -286,6 +286,15 @@ cat >> "$file.new" <<EOF
   </VirtualHost>
 </IfModule>
 EOF
+
+# Add rewrite tests
+cat >> "$file.new" <<EOF
+LoadModule rewrite_module modules/mod_rewrite.so
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
+RewriteRule ^/$ /myapp/MyCount [PT]
+EOF
+
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd
 echo "s/@SUBIP@/${SUBIP}/" >> sed.cmd
