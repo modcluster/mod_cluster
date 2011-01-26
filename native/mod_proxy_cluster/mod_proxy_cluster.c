@@ -698,6 +698,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 rnew->server = server;
                 rnew->connection = apr_pcalloc(rrp, sizeof(conn_rec));
                 rnew->per_dir_config = server->lookup_defaults;
+                worker->s->error_time = 0; /* Force retry now */
                 rv = proxy_cluster_try_pingpong(rnew, worker, url, conf, ou->mess.ping, ou->mess.timeout);
                 if (rv != APR_SUCCESS) {
                     /* We can't reach the node */
