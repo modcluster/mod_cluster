@@ -73,7 +73,6 @@ public class CatalinaEventHandler implements ContainerEventHandler<Server, Engin
    private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
    
    private volatile Server server = null;
-   private volatile Connector connector = null;
    
    private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
    private volatile AdvertiseListener advertiseListener;
@@ -332,10 +331,9 @@ public class CatalinaEventHandler implements ContainerEventHandler<Server, Engin
       this.mcmpHandler.status();
 
       // Send STATUS request
-      if (this.connector == null)
-         this.connector = Utils.findProxyConnector(engine.getService().findConnectors());
+      Connector connector = Utils.findProxyConnector(engine.getService().findConnectors());
       int lbf = -1;
-      if (this.connector != null && connector.isAvailable())
+      if (connector != null && connector.isAvailable())
          lbf = this.getLoadBalanceFactor();
       MCMPRequest request = this.requestFactory.createStatusRequest(engine.getJvmRoute(), lbf);
       
