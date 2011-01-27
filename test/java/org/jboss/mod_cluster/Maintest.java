@@ -256,7 +256,12 @@ public class Maintest extends TestCase {
             if (map.isEmpty())
                 return null;
             Object results[] = map.values().toArray();
-            result = (String ) results[0];
+            /* We may have several answers return the first one that has PING-RSP in it */
+            for (int i=0; i<results.length; i++) {
+                result = (String) results[i];
+                if (result.indexOf("PING-RSP")>0)
+                    break;
+            }
         }
         return result;
     }
