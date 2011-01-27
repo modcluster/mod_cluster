@@ -2003,6 +2003,16 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
     char *sessionid;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
 
+    if (storage == NULL) {
+        /* that happens when doing a gracefull restart for example after additing/changing the storage provider */
+        /* We should stop here otherwise wrong things will happend */
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "Fatal storage provider not initialized");
+        for (;;)
+            apr_sleep(apr_time_from_sec(60));
+        return;
+    }
+
+
     if (mconf->basefilename) {
         node = apr_pstrcat(p, mconf->basefilename, ".node", NULL);
         context = apr_pstrcat(p, mconf->basefilename, ".context", NULL);
