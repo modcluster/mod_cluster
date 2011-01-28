@@ -77,21 +77,33 @@ tar xvf mod_cluster-1.0.0.CR2-linux2-x86-so.tar.gz</programlisting>
     <section>
       <title>Install in Windows</title>
       <para>
-        To install in Windows unzip the bundle corresponding to your architecture.
+        Unzip the bundle corresponding to your architecture.
+      </para>
+      <para>
+        Change to the bin directory of the subfolder httpd-2.2 where you unzip the bundle
+        and run the installconf.bat shell script.
+      <programlisting>cd httpd-2.2\bin
+       installconf.bat</programlisting>
+      </para>
+      <para>
         You may run httpd directly by using:
       </para>
-      <programlisting>httpd-2.2\bin\httpd.exe -k start</programlisting>
+      <programlisting>httpd.exe</programlisting>
       <para>
         or install Apache httpd as a service:
       </para>
-      <programlisting>httpd-2.2\bin\httpd.exe -k install</programlisting>
+      <programlisting>httpd.exe -k install</programlisting>
       <para>
-        and start the service:
-      </para>
+        and start the service via net start or using httpd.exe:
       <programlisting>net start Apache2.2</programlisting>
+      <programlisting>httpd.exe -k install</programlisting>
+      </para>
       <para>
         Note that in the windows bundles have a flat directory structure, so you have <emphasis>httpd-2.2/modules/</emphasis> instead of
         <code>opt/jboss/httpd/lib/httpd/modules</code>.
+      </para>
+      <para>
+        Note the default port is <emphasis>8080</emphasis> and not <emphasis>8000</emphasis> on windows.
       </para>
     </section>
   </section>
