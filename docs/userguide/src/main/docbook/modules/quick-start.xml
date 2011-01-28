@@ -96,7 +96,7 @@ tar xvf mod_cluster-1.0.0.CR2-linux2-x86-so.tar.gz</programlisting>
       <para>
         and start the service via net start or using httpd.exe:
       <programlisting>net start Apache2.2</programlisting>
-      <programlisting>httpd.exe -k install</programlisting>
+      <programlisting>httpd.exe -k start</programlisting>
       </para>
       <para>
         Note that in the windows bundles have a flat directory structure, so you have <emphasis>httpd-2.2/modules/</emphasis> instead of
