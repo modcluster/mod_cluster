@@ -1,0 +1,3 @@
+    * [MODCLUSTER-185] - Make logging on Tomcat use JDK14LoggerPlugin by default
+    * [MODCLUSTER-201] - update mod_cluster to use HTTP/1.1
+    * [MODCLUSTER-207] - Add support for system properties used in 1.0.x

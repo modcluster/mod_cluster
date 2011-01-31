@@ -7,6 +7,87 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.1.1.Final (31 January 2011)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>NPE when overriding default load metric in ModClusterListener (MODCLUSTER-183) (pferraro)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster failover does not work for a /webappcontext when the / root context exists (MODCLUSTER-188) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster issues an ENABLE-APP too early in the webapp lifecycle (MODCLUSTER-190) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster 1.1.0 docs step 11.1.4.3 is wrong (MODCLUSTER-193) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Incorrect routing of requests when one context root is the prefix of another (MODCLUSTER-196) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Can only rewrite from the root context in httpd if there is a root context deployed in JBoss (MODCLUSTER-198) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>the STATUS MCMP message is send before the connector is started (MODCLUSTER-202) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>The windoze bundle don't have the default configuration (MODCLUSTER-205) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>httpd cores after graceful restart after the mod_cluster configuration is added (MODCLUSTER-206) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Make logging on Tomcat use JDK14LoggerPlugin by default (MODCLUSTER-185) (pferraro)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>update mod_cluster to use HTTP/1.1 (MODCLUSTER-201) (jfclere)</para>
+            </entry>
+          </row>
+           <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Add support for system properties used in 1.0.x (MODCLUSTER-207) (pferraro)</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section>
     <title>1.1.0.Final (13 August 2010)</title>
     <informaltable frame="all">
       <tgroup cols="2">

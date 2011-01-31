@@ -1,0 +1,6 @@
+           <row>
+            <entry><mediaobject><imageobject role="update"><imagedata fileref="images/update.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>@@TEXT@@ (@@JIRA@@) (@@AUTHOR@@)</para>
+            </entry>
+          </row>
