@@ -102,9 +102,6 @@ tar xvf mod_cluster-1.0.0.CR2-linux2-x86-so.tar.gz</programlisting>
         Note that in the windows bundles have a flat directory structure, so you have <emphasis>httpd-2.2/modules/</emphasis> instead of
         <code>opt/jboss/httpd/lib/httpd/modules</code>.
       </para>
-      <para>
-        Note the default port is <emphasis>8080</emphasis> and not <emphasis>8000</emphasis> on windows.
-      </para>
     </section>
   </section>
 
