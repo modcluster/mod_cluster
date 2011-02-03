@@ -13,3 +13,4 @@ The scripts need to be edited: to change the version for example.
     cd ../docs/userguide/target/docbook/publish/en-US
     scp -rp html mod_cluster@filemgmt.jboss.org:/docs_htdocs/mod_cluster/1.x.0
     scp -rp html_single mod_cluster@filemgmt.jboss.org:/docs_htdocs/mod_cluster/1.x.0
+    scp -rp pdf mod_cluster@filemgmt.jboss.org:/docs_htdocs/mod_cluster/1.x.0
