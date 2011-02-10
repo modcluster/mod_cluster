@@ -1242,7 +1242,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         }
     if (nbest == 0)
         return NULL;
-    nbest++;
     best[nbest] = -1;
     return best; 
 }
@@ -1265,8 +1264,10 @@ static char *get_context_host_balancer(request_rec *r)
     while (*nodes != -1) {
         nodeinfo_t *node;
         char *ret;
-        if (node_storage->read_node(*nodes, &node) != APR_SUCCESS)
+        if (node_storage->read_node(*nodes, &node) != APR_SUCCESS) {
+            nodes++;
             continue;
+        }
         if (node->mess.balancer) {
             /* Check that it is in our proxy_server_conf */
             char *name = apr_pstrcat(r->pool, "balancer://", node->mess.balancer, NULL);
@@ -1277,6 +1278,7 @@ static char *get_context_host_balancer(request_rec *r)
                  ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "get_context_host_balancer: balancer %s not found", name);
         }
+        nodes++;
     }
     return NULL;
 }
