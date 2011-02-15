@@ -6,6 +6,55 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.7 (not released)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>STATUS should retry the worker even if there was an error before. (MODCLUSTER-133) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>httpd cores after graceful restart after the mod_cluster configuration is added (MODCLUSTER-206) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_cluster 1.0.0 docs step 12.1.4.3. is wrong (MODCLUSTER-193) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
    <sect1><title>1.0.6 (05 January 2011)</title>
    <informaltable frame="all">
       <tgroup cols="2">
