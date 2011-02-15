@@ -1151,6 +1151,8 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         return NULL;
     contexts =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     sizecontext = context_storage->get_ids_used_context(contexts);
+    if (sizecontext <=0)
+        return NULL;
     length =  apr_pcalloc(r->pool, sizeof(int)*sizecontext);
     status =  apr_palloc(r->pool, sizeof(int)*sizecontext);
     /* Check the virtual host */
@@ -1159,17 +1161,22 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         int sizevhost;
         int *vhosts;
         sizevhost = host_storage->get_max_size_host();
-        vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
-        sizevhost = host_storage->get_ids_used_host(vhosts);
+        if (sizevhost  >0) {
+            vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
+            sizevhost = host_storage->get_ids_used_host(vhosts);
+        } else
+            sizevhost = 0;
         for (i=0; i<sizevhost; i++) {
             hostinfo_t *vhost;
-            host_storage->read_host(vhosts[i], &vhost);
+            if (host_storage->read_host(vhosts[i], &vhost) != APR_SUCCESS)
+                continue;
             if (strcmp(ap_get_server_name(r), vhost->host) != 0) {
                 /* remove the contexts that won't match */
                 for (j=0; j<sizecontext; j++) {
                     contextinfo_t *context;
                     if (contexts[j] == -1) continue;
-                    context_storage->read_context(contexts[j], &context);
+                    if (context_storage->read_context(contexts[j], &context) != APR_SUCCESS)
+                        continue;
                     if (context->vhost == vhost->vhost && context->node == vhost->node)
                         contexts[j] = -1;
                 }
