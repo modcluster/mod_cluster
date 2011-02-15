@@ -6,6 +6,27 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.8 (15 Feb 2011)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_cluster failover does not work for a /webappcontext when the / root context exists REOPENED. (MODCLUSTER-188) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
    <sect1><title>1.0.7 (not released)</title>
    <informaltable frame="all">
       <tgroup cols="2">
