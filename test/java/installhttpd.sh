@@ -298,12 +298,13 @@ then
 EOF
 fi
 
-# Add rewrite tests
+# Add rewrite tests and UseAlias
 cat >> "$file.new" <<EOF
 LoadModule rewrite_module modules/mod_rewrite.so
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
+UseAlias 1
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd

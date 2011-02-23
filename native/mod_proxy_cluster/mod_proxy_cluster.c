@@ -1160,6 +1160,7 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         /* read the hosts */
         int sizevhost;
         int *vhosts;
+        int *contextsok = apr_pcalloc(r->pool, sizeof(int)*sizecontext);
         sizevhost = host_storage->get_max_size_host();
         if (sizevhost  >0) {
             vhosts =  apr_palloc(r->pool, sizeof(int)*sizevhost);
@@ -1170,17 +1171,20 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
             hostinfo_t *vhost;
             if (host_storage->read_host(vhosts[i], &vhost) != APR_SUCCESS)
                 continue;
-            if (strcmp(ap_get_server_name(r), vhost->host) != 0) {
-                /* remove the contexts that won't match */
+            if (strcmp(ap_get_server_name(r), vhost->host) == 0) {
+                /* add the contexts that match */
                 for (j=0; j<sizecontext; j++) {
                     contextinfo_t *context;
-                    if (contexts[j] == -1) continue;
                     if (context_storage->read_context(contexts[j], &context) != APR_SUCCESS)
                         continue;
                     if (context->vhost == vhost->vhost && context->node == vhost->node)
-                        contexts[j] = -1;
+                        contextsok[j] = 1;
                 }
             }
+        }
+        for (j=0; j<sizecontext; j++) {
+            if (!contextsok[j])
+                contexts[j] = -1;
         }
     }
 

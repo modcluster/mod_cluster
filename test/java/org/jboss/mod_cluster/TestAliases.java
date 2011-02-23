@@ -105,8 +105,44 @@ public class TestAliases extends TestCase {
         nodes[1] = "node4";
         Maintest.TestForNodes(cluster, nodes);
 
-        // Start the client and wait for it.
+        // Test wrong Hostname.
         Client client = new Client();
+        client.setVirtualHost("mycluster.domain.com");
+
+        // Wait for it.
+        try {
+            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+                clienterror = true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            clienterror = true;
+        }
+        if (!clienterror)
+            fail("Client should fail (wrong host)");
+
+        // Test long Hostname.
+        client = new Client();
+        client.setVirtualHost("alias0123456789012345678901234567890123456789012345678901234567890123456789012345out");
+        clienterror = false;
+
+        // Wait for it.
+        try {
+            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+                clienterror = true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            clienterror = true;
+        }
+        if (clienterror)
+            fail("Client fail (long host)");
+        String node = client.getnode();
+        if (!"node4".equals(node)) {
+            fail("Fail (long host) wrong node");
+        }
+
+        // Start the client and wait for it.
+        client = new Client();
+        clienterror = false;
 
         // Wait for it.
         try {
@@ -120,7 +156,7 @@ public class TestAliases extends TestCase {
             fail("Client error");
 
         // Stop the connector that has received the request...
-        String node = client.getnode();
+        node = client.getnode();
         if ("node4".equals(node)) {
             service2.removeContext("/");
             node = "node3";
