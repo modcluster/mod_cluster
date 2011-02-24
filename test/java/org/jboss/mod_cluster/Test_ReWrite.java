@@ -49,7 +49,9 @@ public class  Test_ReWrite extends TestCase {
 
         System.out.println("Test_ReWrite Started");
         try {
-            service = new JBossWeb("node1",  "localhost", "myapp");
+            String [] Aliases = new String[1];
+            Aliases[0] = "cluster.domain.com";
+            service = new JBossWeb("node1",  "localhost", false, "myapp", Aliases);
             service.addConnector(8011);
             service.addConnector(8080, "http");
             server.addService(service);
