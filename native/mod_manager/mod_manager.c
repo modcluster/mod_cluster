@@ -2405,30 +2405,50 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
 static const char *cmd_manager_maxcontext(cmd_parms *cmd, void *mconfig, const char *word)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     mconf->maxcontext = atoi(word);
     return NULL;
 }
 static const char *cmd_manager_maxnode(cmd_parms *cmd, void *mconfig, const char *word)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     mconf->maxnode = atoi(word);
     return NULL;
 }
 static const char *cmd_manager_maxhost(cmd_parms *cmd, void *mconfig, const char *word)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     mconf->maxhost = atoi(word);
     return NULL;
 }
 static const char *cmd_manager_maxsessionid(cmd_parms *cmd, void *mconfig, const char *word)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     mconf->maxsessionid = atoi(word);
     return NULL;
 }
 static const char *cmd_manager_memmanagerfile(cmd_parms *cmd, void *mconfig, const char *word)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     mconf->basefilename = apr_pstrdup(cmd->pool, word);
     if (apr_dir_make_recursive(mconf->basefilename, APR_UREAD | APR_UWRITE | APR_UEXECUTE, cmd->pool) != APR_SUCCESS)
         return  "Can't create directory corresponding to MemManagerFile";
@@ -2443,6 +2463,10 @@ static const char *cmd_manager_balancername(cmd_parms *cmd, void *mconfig, const
 static const char*cmd_manager_pers(cmd_parms *cmd, void *dummy, const char *arg)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
     if (strcasecmp(arg, "Off") == 0)
        mconf->persistent = 0;
     else if (strcasecmp(arg, "On") == 0)
