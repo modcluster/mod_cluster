@@ -39,8 +39,6 @@ public class  Test_ReWrite extends TestCase {
 
     /* Test that newly created httpd process work ok without sessions */
 
-    String url = "http://localhost:8000/";
-
     public void test_ReWrite() {
         boolean clienterror = false;
         StandardServer server = Maintest.getServer();
@@ -49,8 +47,10 @@ public class  Test_ReWrite extends TestCase {
 
         System.out.println("Test_ReWrite Started");
         try {
-            String [] Aliases = new String[1];
+            String [] Aliases = new String[3];
             Aliases[0] = "cluster.domain.com";
+            Aliases[1] = "cluster.domain.org";
+            Aliases[2] = "cluster.domain.net";
             service = new JBossWeb("node1",  "localhost", false, "myapp", Aliases);
             service.addConnector(8011);
             service.addConnector(8080, "http");
@@ -80,10 +80,53 @@ public class  Test_ReWrite extends TestCase {
         if (countinfo == 20)
             fail("can't find node in httpd");
 
-        // Start the client
+        // Test RewriteRule ^/$ /myapp/MyCount [PT]
         Client client = new Client();
         client.setVirtualHost("cluster.domain.com");
         try {
+            String url = "http://localhost:8000/";
+            client.runit(url, 100, false, 1);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Failed: can't start client");
+        }
+        System.out.println("making \"second\" requests");
+        client.start();
+        try {
+            client.join();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        if (!client.getresultok()) {
+            fail("Failed: client failed");
+        }
+
+        // Test RewriteRule ^/(.*)$ balancer://mycluster/myapp/$1 [L,PT]
+        client = new Client();
+        client.setVirtualHost("cluster.domain.org");
+        try {
+            String url = "http://localhost:8000/MyCount";
+            client.runit(url, 100, false, 1);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Failed: can't start client");
+        }
+        System.out.println("making \"second\" requests");
+        client.start();
+        try {
+            client.join();
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        if (!client.getresultok()) {
+            fail("Failed: client failed");
+        }
+
+        // Test RewriteRule ^/$ balancer://mycluster/ [L,P]
+        client = new Client();
+        client.setVirtualHost("cluster.domain.net");
+        try {
+            String url = "http://localhost:8000/test/MyCount";
             client.runit(url, 100, false, 1);
         } catch (Exception ex) {
             ex.printStackTrace();

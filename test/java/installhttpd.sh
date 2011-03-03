@@ -304,6 +304,13 @@ LoadModule rewrite_module modules/mod_rewrite.so
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
+
+RewriteCond %{HTTP_HOST} ^cluster\.domain\.org [NC]
+RewriteRule ^/(.*)$ balancer://mycluster/myapp/$1 [L,PT]
+
+RewriteCond %{HTTP_HOST} ^cluster\.domain\.net [NC]
+RewriteRule ^/test/(.*)$ balancer://mycluster/myapp/$1 [L,P]
+
 UseAlias 1
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd

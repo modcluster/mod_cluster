@@ -2025,7 +2025,10 @@ static int proxy_cluster_trans(request_rec *r)
         }
 
         /* It is safer to use r->uri */
-        r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
+        if (strncmp(r->uri, "balancer://",11))
+            r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
+        else
+            r->filename =  apr_pstrcat(r->pool, "proxy:", r->uri, NULL);
         r->handler = "proxy-server";
         r->proxyreq = PROXYREQ_REVERSE;
 #if HAVE_CLUSTER_EX_DEBUG
