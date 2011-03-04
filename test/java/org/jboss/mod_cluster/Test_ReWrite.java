@@ -122,7 +122,7 @@ public class  Test_ReWrite extends TestCase {
             fail("Failed: client failed");
         }
 
-        // Test RewriteRule ^/$ balancer://mycluster/ [L,P]
+        // Test RewriteRule ^/test/(.*)$ balancer://mycluster/myapp/$1 [L,P]
         client = new Client();
         client.setVirtualHost("cluster.domain.net");
         try {

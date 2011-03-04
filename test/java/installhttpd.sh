@@ -295,10 +295,10 @@ RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
 
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.org [NC]
-RewriteRule ^/(.*)$ balancer://mycluster/myapp/$1 [L,PT]
+RewriteRule ^/(.*)$ balancer://mycluster/myapp/\$1 [L,PT]
 
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.net [NC]
-RewriteRule ^/test/(.*)$ balancer://mycluster/myapp/$1 [L,P]
+RewriteRule ^/test/(.*)$ balancer://mycluster/myapp/\$1 [L,P]
 
 UseAlias 1
 EOF
