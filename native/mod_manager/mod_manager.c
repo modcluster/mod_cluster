@@ -2268,7 +2268,7 @@ static int manager_handler(request_rec *r)
 
     /* Use a buffer to read the message */
     buff = apr_pcalloc(r->pool, MAXMESSSIZE);
-    input_brigade = apr_brigade_create(r->connection->pool, r->connection->bucket_alloc);
+    input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
     status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, MAXMESSSIZE);
     if (status != APR_SUCCESS) {
         errstring = apr_psprintf(r->pool, SREADER, r->method);
