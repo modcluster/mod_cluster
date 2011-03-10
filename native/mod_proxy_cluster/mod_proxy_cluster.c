@@ -209,7 +209,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     /* build the name (scheme and port) when needed */
     url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
 
-    *worker = ap_proxy_get_worker(conf->pool, conf, url);
+    *worker = ap_proxy_get_worker(pool, conf, url);
     if ((*worker) == NULL) {
 
         /* creates it */ 
