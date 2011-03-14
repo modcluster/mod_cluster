@@ -35,7 +35,9 @@ import java.util.Random;
 import org.apache.commons.httpclient.*;
 import org.apache.commons.httpclient.methods.*;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
-
+import java.util.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class  Client extends Thread {
 
@@ -87,7 +89,7 @@ public class  Client extends Thread {
                         System.err.println("missing command line arguments");
                         System.exit(1);
                 }
-                Client client[] = new Client[500];
+                Client client[] = new Client[50];
                 for (int i=0; i<client.length; i++) {
                         client[i] = new Client();  
                         client[i].runit(args[0], 100000, true, Integer.parseInt(args[1]));
@@ -173,6 +175,7 @@ public class  Client extends Thread {
                 PostMethod pm = null;
                 GetMethod gm = null;
                 HttpMethodBase bm = null;
+                long starttime, endtime;
                 if (httpClient == null)
                      httpClient = new HttpClient();
                 if (fd != null) {
@@ -221,10 +224,14 @@ public class  Client extends Thread {
                 try {
                     if (gm == null) {
                         pm.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
+                        starttime  = System.currentTimeMillis();
                         httpResponseCode = httpClient.executeMethod(pm);
+                        endtime = System.currentTimeMillis();
                     } else {
                         gm.getParams().setParameter("http.protocol.cookie-policy", CookiePolicy.BROWSER_COMPATIBILITY);
+                        starttime  = System.currentTimeMillis();
                         httpResponseCode = httpClient.executeMethod(gm);
+                        endtime = System.currentTimeMillis();
                     }
 
                     if (httpResponseCode == 200) {
@@ -247,7 +254,13 @@ public class  Client extends Thread {
                                     } else {
                                         if (jsessionid.compareTo(cookie.getValue()) == 0) {
                                             if (logok)
-                                                System.out.println("cookie ok: " + bm.getResponseHeader("Date"));
+                                                if (bm.getResponseHeader("Date") != null)
+                                                    System.out.println("cookie ok: " + bm.getResponseHeader("Date").toString().replace('\r', ' ').replace('\n', ' ') + " response time: " + (endtime - starttime));
+                                                else {
+                                                     DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                                                     Date date = new Date();
+                                                     System.out.println("cookie ok: " + dateFormat.format(date) +  " response time: " + (endtime - starttime));
+                                                     }
                                             bm.releaseConnection();
                                             return 0;
                                         } else {
