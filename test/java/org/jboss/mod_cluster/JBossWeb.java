@@ -174,29 +174,29 @@ public class JBossWeb extends Embedded {
         baseEngine.setService(this);
         this.setName(host + "Engine" + route);
     }
-    void AddContext(String path, String docBase, boolean hasservlet) {
+    void AddContext(String path, String docBase, String servletName) {
 
         File fd = new File ( route + "/webapps/" + docBase);
         fd.mkdirs();
         docBase = fd.getAbsolutePath();
 
         Context context = createContext(path, docBase);
-        if (hasservlet) {
+        if (servletName != null) {
              // Copy a small servlet for testing.
              fd = new File ( route + "/webapps/" + docBase + "/WEB-INF/classes");
              fd.mkdirs();
-             fd = new File (route + "/webapps/"  + docBase + "/WEB-INF/classes" , "MyCount.class");
-             File fdin = new File ("MyCount.class");
+             fd = new File (route + "/webapps/"  + docBase + "/WEB-INF/classes" , servletName + ".class");
+             File fdin = new File (servletName + ".class");
              try {
                  copyFile(fdin, fd);
              } catch(IOException ex) {
              }
              /* add mapping */
              Wrapper wrapper = context.createWrapper();
-             wrapper.setName("MyCount");
-             wrapper.setServletClass("MyCount");
+             wrapper.setName(servletName);
+             wrapper.setServletClass(servletName);
              context.addChild(wrapper);
-             context.addServletMapping("/MyCount", "MyCount");
+             context.addServletMapping("/" + servletName, servletName);
         }
         context.setIgnoreAnnotations(true);
         context.setPrivileged(true);
@@ -211,7 +211,13 @@ public class JBossWeb extends Embedded {
         }
     }
     void AddContext(String path, String docBase) {
-        AddContext(path, docBase, false);
+        AddContext(path, docBase, null);
+    }
+    void AddContext(String path, String docBase, boolean hasservlet) {
+        if (hasservlet)
+            AddContext(path, docBase, "MyCount");
+        else
+            AddContext(path, docBase, null);
     }
 
     public JBossWeb(String route, String host) throws IOException {

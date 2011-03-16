@@ -62,6 +62,8 @@ public class  Client extends Thread {
     public String requestedSessionId = null;
 
     private HttpClient httpClient = null;
+
+    private String response = null;
     /*
      *  
      * Usage:
@@ -212,6 +214,7 @@ public class  Client extends Thread {
                     }
 
                     if (httpResponseCode == 200) {
+                        response = bm.getResponseBodyAsString();
                         Cookie[] cookies = httpClient.getState().getCookies();
                         // System.out.println( "Cookies: " + cookies);
                         if (cookies != null && cookies.length!=0) {
@@ -339,5 +342,8 @@ public class  Client extends Thread {
         }
         public String getVirtualHost() {
             return(VirtualHost);
+        }
+        public String getResponse() {
+            return(response);
         }
 }
