@@ -58,7 +58,9 @@ public class TestQuery extends TestCase {
         LifecycleListener cluster = null;
         System.out.println("TestQuery Started");
         try {
-            service = new JBossWeb("node3",  "localhost", false, "ROOT");
+            String [] Aliases = new String[1];
+            Aliases[0] = "cluster.domain.info";
+            service = new JBossWeb("node3",  "localhost", false, "ROOT", Aliases);
             connector = service.addConnector(8013);
             service.AddContext("/test", "/test");
             service.AddContext("/testtest", "/testtest");
@@ -106,6 +108,30 @@ public class TestQuery extends TestCase {
         // Check for the result.
         String response = client.getResponse();
         if (response.indexOf("name=edwin&state=NY") == -1) {
+            System.out.println("response: " + client.getResponse());
+            fail("Can't find the query string in the response");
+        }
+
+        // Try with the rewrite rule.
+        // RewriteCond %{HTTP_HOST} ^cluster\.domain\.info [NC]
+        // ^/?([^/.]+)/(.*)$ balancer://mycluster/$2?partnerpath=/$1 [P,QSA]
+        client = new Client();
+        client.setVirtualHost("cluster.domain.info");
+
+        // Do a request.
+        try {
+            if (client.runit("/hisname/MyTest?name=edwin&state=NY", 1, false, false) != 0)
+                clienterror = true;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            clienterror = true;
+        }
+        if (clienterror)
+            fail("Client error");
+
+        // Check for the result.
+        response = client.getResponse();
+        if (response.indexOf("partnerpath=/hisname&name=edwin&state=NY") == -1) {
             System.out.println("response: " + client.getResponse());
             fail("Can't find the query string in the response");
         }

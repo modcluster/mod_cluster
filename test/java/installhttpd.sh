@@ -311,6 +311,9 @@ RewriteRule ^/(.*)$ balancer://mycluster/myapp/$1 [L,PT]
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.net [NC]
 RewriteRule ^/test/(.*)$ balancer://mycluster/myapp/$1 [L,P]
 
+RewriteCond %{HTTP_HOST} ^cluster\.domain\.info [NC]
+RewriteRule ^/?([^/.]+)/(.*)$ balancer://mycluster/test/\$2?partnerpath=/\$1 [P,QSA]
+
 UseAlias 1
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd
