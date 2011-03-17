@@ -6,6 +6,70 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.9 (17 March 2011)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Query strings are not forwarded to nodes. (MODCLUSTER-118) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>memory usage growning. (MODCLUSTER-214) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>mod_rewrite PT doesn't work. (MODCLUSTER-213) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>UseAlias broken. (MODCLUSTER-212) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
+
    <sect1><title>1.0.8 (15 Feb 2011)</title>
    <informaltable frame="all">
       <tgroup cols="2">
