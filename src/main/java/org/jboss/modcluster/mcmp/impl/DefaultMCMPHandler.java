@@ -647,7 +647,7 @@ public class DefaultMCMPHandler implements MCMPHandler
             {
                // Retry failed read/write with fresh connection
                proxy.closeConnection();
-               line = sendRequest(proxy, head, body);
+               line = sendRequest(proxy, proxyhead, body);
             }
 
             BufferedReader reader = proxy.getConnectionReader();
