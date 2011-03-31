@@ -288,6 +288,11 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     helperping->ping_timeout = node->mess.ping;
     helperping->ping_timeout_set = 1;
 #endif
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
+    /* For MODCLUSTER-217 */
+    (*worker)->conn_timeout_set = 1;
+    (*worker)->conn_timeout = node->mess.ping;
+#endif
     (*worker)->keepalive = 1;
     (*worker)->keepalive_set = 1;
     (*worker)->is_address_reusable = 1;
