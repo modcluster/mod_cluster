@@ -61,6 +61,8 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    
    private final ContainerEventHandler eventHandler;
    private final MBeanServer mbeanServer;
+   private final Server server;
+   private final Service service;
    
    // Flags used to ignore redundant or invalid events
    private final AtomicBoolean init = new AtomicBoolean(false);
@@ -83,6 +85,14 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    {
       this.eventHandler = eventHandler;
       this.mbeanServer = mbeanServer;
+      this.server = null;
+      this.service = null;
+   }
+   public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, Server server, Service service) {
+      this.eventHandler = eventHandler;
+      this.mbeanServer = null;
+      this.server = server;
+      this.service = service;
    }
    
    public void start() throws JMException
@@ -151,6 +161,8 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
    
    private Server findServer() throws JMException
    {
+      if (this.server != null)
+         return server;
       try
       {
          Service[] services = (Service[]) this.mbeanServer.invoke(this.serverObjectName, "findServices", null, null);
@@ -325,7 +337,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       this.addListeners(server);
                
       // Register for mbean notifications if JBoss Web server mbean exists
-      if (this.mbeanServer.isRegistered(this.serviceObjectName))
+      if (this.mbeanServer != null && this.mbeanServer.isRegistered(this.serviceObjectName))
       {
          try
          {
@@ -343,7 +355,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
       this.removeListeners(server);
 
       // Unregister for mbean notifications if JBoss Web server mbean exists
-      if (this.mbeanServer.isRegistered(this.serviceObjectName))
+      if (this.mbeanServer != null && this.mbeanServer.isRegistered(this.serviceObjectName))
       {
          try
          {
