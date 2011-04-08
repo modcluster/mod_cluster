@@ -249,7 +249,7 @@ Allow from 127.0.0.1
     url="http://httpd.apache.org/docs/2.2/vhosts/name-based.html">Name-based
     Virtual Host</ulink> or when VirtualHost is not used.</para>
     <para>ServerAdvertise Off: Don't use the advertise mechanism.</para>
-    <para>Default: On. (Any Advertise directive in a VirtualHost sets it to On in the VirtualHost)</para>
+    <para>Default: Off. (Any Advertise directive in a VirtualHost sets it to On in the VirtualHost)</para>
     </section>
 
     <section><title>AdvertiseGroup</title>
