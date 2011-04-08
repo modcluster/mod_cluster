@@ -132,6 +132,11 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
 
             this.init = true;
          }
+         else if (source instanceof Context)
+         {
+            // Start a web-app via the /manager (tomcat) application.
+            this.eventHandler.startContext((Context) source);
+         }
       }
       else if (type.equals(Lifecycle.BEFORE_STOP_EVENT))
       {
