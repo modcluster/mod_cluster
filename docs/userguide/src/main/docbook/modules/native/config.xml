@@ -122,29 +122,36 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
   <section>
     <title>mod_manager</title>
 
+    <para>The Context of a mod_manger directive is VirtualHost except mentioned otherwise.
+          <code>server config</code> means that it must be outside a VirtualHost configuration.
+          If not an error message will be displayed and httpd won't start.
+    </para>
+
     <section><title>MemManagerFile</title>
     <para>MemManagerFile: That is the base name for the names mod_manager will
     use to store configuration, generate keys for shared memory or lock files.
     That must be an absolute path name; the directories will created if
     needed. It is highly recommended that those files are placed on a local
-    drive and not an NFS share.</para>
+    drive and not an NFS share. (Context: server config)</para>
     <para>Default: $server_root/logs/</para>
     </section>
 
     <section><title>Maxcontext</title>
     <para>Maxcontext: That is the number max of contexts supported by
-    mod_cluster.</para>
+    mod_cluster. (Context: server config)</para>
     <para>Default: 100</para>
     </section>
 
     <section><title>Maxnode</title>
-    <para>Maxnode: That is the number max nodes supported by mod_cluster.</para>
+    <para>Maxnode: That is the number max nodes supported by mod_cluster.
+          (Context: server config)</para>
     <para>Default: 20</para>
     </section>
 
     <section><title>Maxhost</title>
     <para>Maxhost: That is the number max host (Aliases) supported by
-    mod_cluster. That is also the max number of balancers.</para>
+    mod_cluster. That is also the max number of balancers.
+    (Context: server config)</para>
     <para>Default: 10</para>
     </section>
 
@@ -152,7 +159,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>Maxsessionid: That is the number of active sessionid we store to
     give number of active sessions in the mod_cluster-manager handler. A
     session is unactive when mod_cluster doesn't receive any information from
-    the session in 5 minutes.</para>
+    the session in 5 minutes. (Context: server config)</para>
     <para>Default: 0 (the logic is not activated).</para>
     </section>
 
@@ -164,7 +171,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
 
     <section><title>PersistSlots</title>
     <para>PersistSlots: Tell mod_slotmem to persist the nodes, Alias and
-    Context in files.</para>
+    Context in files. (Context: server config)</para>
     <para>Default: Off</para>
     </section>
 
