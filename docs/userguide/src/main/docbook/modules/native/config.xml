@@ -121,25 +121,32 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
   <sect1>
     <title>mod_manager</title>
 
+   <para>The Context of a mod_manger directive is VirtualHost except mentioned otherwise.
+          <code>server config</code> means that it must be outside a VirtualHost configuration.
+          If not an error message will be displayed and httpd won't start.
+   </para>
+
+
     <para>MemManagerFile: That is the base name for the names mod_manager will
     use to store configuration, generate keys for shared memory or lock files.
     That must be an absolute path name; the directories will created if
     needed. It is highly recommended that those files are placed on a local
-    drive and not an NFS share. Default: $server_root/logs/</para>
+    drive and not an NFS share. (Context: server config) Default: $server_root/logs/</para>
 
     <para>Maxcontext: That is the number max of contexts supported by
-    mod_cluster. Default: 100</para>
+    mod_cluster. (Context: server config) Default: 100</para>
 
     <para>Maxnode: That is the number max nodes supported by mod_cluster.
+          (Context: server config)
     Default: 20</para>
 
     <para>Maxhost: That is the number max host (Aliases) supported by
-    mod_cluster. That is also the max number of balancers. Default: 10</para>
+    mod_cluster. That is also the max number of balancers. (Context: server config) Default: 10</para>
 
     <para>Maxsessionid: That is the number of active sessionid we store to
     give number of active sessions in the mod_cluster-manager handler. A
     session is unactive when mod_cluster doesn't receive any information from
-    the session in 5 minutes. Default: 0 (the logic is not activated).</para>
+    the session in 5 minutes. (Context: server config) Default: 0 (the logic is not activated).</para>
 
     <para>ManagerBalancerName: That is the name of balancer to use when the
     JBoss AS/JBossWeb/Tomcat doesn't provide a balancer name. That is not
@@ -147,7 +154,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     mycluster</para>
 
     <para>PersistSlots: Tell mod_slotmem to persist the nodes, Alias and
-    Context in files. Default: Off</para>
+    Context in files. (Context: server config) Default: Off</para>
 
     <para>CheckNonce: Switch check of nonce when using mod_cluster-manager
     handler on | off (Default: on Nonce checked) Since 1.1.0.CR1</para>
