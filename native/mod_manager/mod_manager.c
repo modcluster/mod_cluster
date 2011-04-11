@@ -85,6 +85,7 @@
 #define MNODERD "MEM: Can't read node"
 #define MHOSTRD "MEM: Can't read host alias"
 #define MHOSTUI "MEM: Can't update or insert host alias"
+#define MCONTUI "MEM: Can't update or insert context"
 
 /* Protocol version supported */
 #define VERSION_PROTOCOL "0.2.0"
@@ -585,13 +586,16 @@ static apr_status_t  insert_update_hosts(mem_t *mem, char *str, int node, int vh
 }
 /*
  * Insert the context from Context information
- * Note that if status is REMOVE remove_context will be called.
+ * Note:
+ * 1 - if status is REMOVE remove_context will be called.
+ * 2 - return codes of REMOVE are ignored (always success).
+ *
  */
-static int  insert_update_contexts(mem_t *mem, char *str, int node, int vhost, int status)
+static apr_status_t  insert_update_contexts(mem_t *mem, char *str, int node, int vhost, int status)
 {
     char *ptr = str;
     char *previous = str;
-    int ret = 0;
+    apr_status_t ret = APR_SUCCESS;
     contextinfo_t info;
     char empty[2] = {'/','\0'};
 
@@ -607,13 +611,13 @@ static int  insert_update_contexts(mem_t *mem, char *str, int node, int vhost, i
             *ptr = '\0';
             info.id = 0;
             strncpy(info.context, previous, sizeof(info.context));
-            if (status != REMOVE)
-                insert_update_context(mem, &info); 
-            else
+            if (status != REMOVE) {
+                ret = insert_update_context(mem, &info);
+                if (ret != APR_SUCCESS)
+                    return ret;
+            } else
                 remove_context(mem, &info);
 
-            if (!ret)
-                ret = info.id;
             previous = ptr + 1;
         }
         ptr ++;
@@ -621,7 +625,7 @@ static int  insert_update_contexts(mem_t *mem, char *str, int node, int vhost, i
     info.id = 0;
     strncpy(info.context, previous, sizeof(info.context));
     if (status != REMOVE)
-        insert_update_context(mem, &info); 
+        ret = insert_update_context(mem, &info); 
     else
         remove_context(mem, &info);
     return ret;
@@ -944,8 +948,10 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     if (phost->host == NULL && phost->context == NULL)
         return NULL; /* Alias and Context missing */
     while (phost) {
-        insert_update_hosts(hoststatsmem, phost->host, id, vid);
-        insert_update_contexts(contextstatsmem, phost->context, id, vid, STOPPED);
+        if (insert_update_hosts(hoststatsmem, phost->host, id, vid) != APR_SUCCESS)
+            return MHOSTUI;
+        if (insert_update_contexts(contextstatsmem, phost->context, id, vid, STOPPED) != APR_SUCCESS)
+            return MCONTUI;
         phost = phost->next;
         vid++;
     }
@@ -1289,7 +1295,10 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
     }
 
     /* Now update each context from Context: part */
-    insert_update_contexts(contextstatsmem, vhost->context, node->mess.id, host->vhost, status);
+    if (insert_update_contexts(contextstatsmem, vhost->context, node->mess.id, host->vhost, status) != APR_SUCCESS) {
+        *errtype = TYPEMEM;
+        return MCONTUI; 
+    }
 
     /* Remove the host if all the contextes have been removed */
     if (status == REMOVE) {
@@ -1885,7 +1894,7 @@ static void process_error(request_rec *r, char *errstring, int errtype)
          break;
     }
     apr_table_setn(r->err_headers_out, "Mess", errstring);
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, r->server,
             "manager_handler %s error: %s", r->method, errstring);
 }
 static void sort_nodes(nodeinfo_t *nodes, int nbnodes)
