@@ -773,11 +773,16 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
    {
       EnablableRequestListener listener = this.requestListeners.get(context);
 
-      if (listener == null) return false;
-      
       boolean noTimeout = (start >= end);
       
       MCMPRequest request = this.requestFactory.createStopRequest(context);
+      
+      if (listener == null)
+      {
+         // Just send a STOP (for example with TC6 we don't have a listener)
+         this.stop(request);
+         return false;
+      }
       
       synchronized (listener)
       {
