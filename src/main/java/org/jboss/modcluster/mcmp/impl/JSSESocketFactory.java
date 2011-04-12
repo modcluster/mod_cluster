@@ -56,7 +56,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
-import org.apache.tomcat.util.res.StringManager;
+import org.apache.catalina.util.StringManager;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.config.SSLConfiguration;
 
@@ -81,7 +81,7 @@ import org.jboss.modcluster.config.SSLConfiguration;
  */
 public class JSSESocketFactory extends SocketFactory
 {
-   private static StringManager sm = StringManager.getManager("org.apache.tomcat.util.net.jsse.res");
+   private static final StringManager sm = StringManager.getManager("org.jboss.modcluster");
 
    static Logger log = Logger.getLogger(JSSESocketFactory.class);
 
