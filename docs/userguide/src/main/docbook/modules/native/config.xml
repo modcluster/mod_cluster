@@ -212,7 +212,7 @@ Allow from 127.0.0.1
     url="http://httpd.apache.org/docs/2.2/vhosts/name-based.html">Name-based
     Virtual Host</ulink> or when VirtualHost is not used.</para>
     <para>ServerAdvertise Off: Don't use the advertise mechanism.</para>
-    <para>Default: Off.</para>
+    <para>Default: Off. (Any Advertise directive in a VirtualHost sets it to On in the VirtualHost)</para>
 
     <para>AdvertiseGroup IP:port: That is the multicast address to use
     (something like 232.0.0.2:8888 for example). IP should correspond to
