@@ -34,7 +34,6 @@ import org.apache.catalina.util.StringManager;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.config.LoadConfiguration;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadContext;
@@ -48,7 +47,6 @@ import org.jboss.modcluster.mcmp.MCMPRequestFactory;
  * @author Paul Ferraro
  */
 public class ModClusterListener extends AbstractModClusterService
-   implements LoadConfiguration
 {
    static
    {
@@ -77,7 +75,8 @@ public class ModClusterListener extends AbstractModClusterService
 
    private final StringManager sm = StringManager.getManager(Constants.Package);
 
-   private Class<? extends LoadMetric<? extends LoadContext>> loadMetricClass = BusyConnectorsLoadMetric.class;
+   @SuppressWarnings("rawtypes")
+   private Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
    private int decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
    private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
    private double capacity = LoadMetric.DEFAULT_CAPACITY;
@@ -175,22 +174,28 @@ public class ModClusterListener extends AbstractModClusterService
    }
 
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadConfiguration#getLoadMetricClass()
+    * Returns the class name of the configured load metric.
+    *  @return the name of a class implementing {@link LoadMetric}
     */
-   public Class<? extends LoadMetric<? extends LoadContext>> getLoadMetricClass()
+   public String getLoadMetricClass()
    {
-      return this.loadMetricClass;
+      return this.loadMetricClass.getName();
    }
 
-   public void setLoadMetricClass(Class<? extends LoadMetric<? extends LoadContext>> loadMetricClass)
+    /**
+     * Sets the class of the desired load metric
+     * @param loadMetricClass a class implementing {@link LoadMetric}
+     * @throws ClassNotFoundException 
+     */
+
+   public void setLoadMetricClass(String loadMetricClass) throws ClassNotFoundException
    {
-      this.loadMetricClass = loadMetricClass;
+      this.loadMetricClass = Class.forName(loadMetricClass).asSubclass(LoadMetric.class);
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadBalanceFactorProviderConfiguration#getDecayFactor()
+    * Returns the factor by which the contribution of historical load values to the load factor calculation should exponentially decay.
+    * @return the configured load decay factor
     */
    public int getLoadDecayFactor()
    {
@@ -203,8 +208,8 @@ public class ModClusterListener extends AbstractModClusterService
    }
    
    /**
-    * @{inheritDoc}
-    * @see org.jboss.modcluster.config.LoadBalanceFactorProviderConfiguration#getHistory()
+    * Returns the number of historic load values used when calculating the load factor.
+    * @return the configured load history
     */
    public int getLoadHistory()
    {

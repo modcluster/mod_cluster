@@ -58,9 +58,9 @@ public class ModClusterListenerTestCase
    private final ModClusterListener listener = new ModClusterListener(this.mcmpHandler, this.requestFactory, this.serverProvider, this.lifecycleListener);
    
    @Test
-   public void createLoadBalanceFactorProvider()
+   public void createLoadBalanceFactorProvider() throws ClassNotFoundException
    {
-      this.listener.setLoadMetricClass(ActiveSessionsLoadMetric.class);
+      this.listener.setLoadMetricClass(ActiveSessionsLoadMetric.class.getName());
       this.listener.setLoadMetricCapacity(100);
       this.listener.setLoadDecayFactor(3);
       this.listener.setLoadHistory(5);
