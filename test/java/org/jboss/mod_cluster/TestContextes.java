@@ -125,6 +125,6 @@ public class TestContextes extends TestCase {
 
         Maintest.testPort(8013);
         Maintest.testPort(8014);
-        System.out.println("TestAliases Done");
+        System.out.println("TestContextes Done");
     }
 }
