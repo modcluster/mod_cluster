@@ -260,9 +260,9 @@ public class ModClusterListener extends ModClusterConfig
     * Sets the capacity (i.e. maximum expected value) of the load values returned by the load metric specified by {@link #getLoadMetricClass()}
     * @param capacity a load capacity
     */
-   public void setLoadMetricCapacity(double capacity)
+   public void setLoadMetricCapacity(String capacity)
    {
-      this.capacity = capacity;
+      this.capacity = Double.parseDouble(capacity);
    }
 
    /**
