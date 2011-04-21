@@ -458,7 +458,7 @@
         <tbody>
           <row>
             <entry>loadMetricClass</entry>
-            <entry>org.jboss.load.metric.impl.BusyConnectorsLoadMetric</entry>
+            <entry>org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric</entry>
             <entry>
               <para>Class name of an object implementing org.jboss.load.metric.LoadMetric</para>
             </entry>
