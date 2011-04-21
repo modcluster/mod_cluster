@@ -1,5 +1,5 @@
 # Adding  (bin)  1.0.0.CR1/mod_cluster-1.0.0.CR1-windows-x86-ssl.zip
-VERSION=1.0.9.GA
+VERSION=1.0.10.GA
 count=0
 # Print a file entry in the project.xml file
 # $1 file name
