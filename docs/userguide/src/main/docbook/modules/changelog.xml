@@ -6,6 +6,112 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.10 (14 April 2011)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Apache with mod_cluster refuses to start at first, after 7 retries it starts up (MODCLUSTER-120) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>NPE when overriding default load metric in ModClusterListener (MODCLUSTER-183) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Only 100 webapps are detected : Maxcontext doesn't seem to be read (MODCLUSTER-221) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>when using tomcat manager webapp to stop/start an application the start is ignored by mod_cluster (MODCLUSTER-224) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="fix">
+                              <imagedata fileref="images/fix.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Tomcat6 throws java.lang.NoSuchMethodError instead a localised error messages. (MODCLUSTER-228) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Add a note explaining where Maxcontext must be put in httpd.conf and error when it is in wrong place. (MODCLUSTER-225) (jfclere)</para>
+            </entry>
+         </row>
+         <row>
+            <entry>
+               <para>
+                  <mediaobject>
+                      <imageobject role="add">
+                              <imagedata fileref="images/add.jpg" format="JPG" align="center"/>
+                      </imageobject>
+                  </mediaobject>
+               </para>
+            </entry>
+            <entry>
+               <para>Make mod_cluster manager tolerant to F5 page refresh when disabled context. (MODCLUSTER-218) (jfclere)</para>
+            </entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
+
    <sect1><title>1.0.9 (17 March 2011)</title>
    <informaltable frame="all">
       <tgroup cols="2">
