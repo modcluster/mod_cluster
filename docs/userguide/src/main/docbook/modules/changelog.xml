@@ -7,6 +7,75 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.1.2.Final (21 April 2011)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster failover does not work for a /webappcontext when the / root context exists (MODCLUSTER-188) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>UseAlias broken (MODCLUSTER-212) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_rewrite PT doesn't work (MODCLUSTER-213) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>memory usage growning in httpd (MODCLUSTER-214) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Second attempt to connect from Jboss to apache module sends incomplete Host Header (MODCLUSTER-216) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>when using tomcat manager webapp to stop/start an application the start is ignored by mod_cluster (MODCLUSTER-224) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Unable to override load properties when running in Tomcat 6 (MODCLUSTER-232) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Documentation contains wrong default loadMetric class name (MODCLUSTER-233) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster should issue a warning when Maxcontext is reached and no more context will be taken (MODCLUSTER-223) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>add a note explaining where Maxcontext must be put in httpd.conf and issue error if in wrong location (MODCLUSTER-225) (jfclere)</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+  <section>
     <title>1.1.1.Final (31 January 2011)</title>
     <informaltable frame="all">
       <tgroup cols="2">
