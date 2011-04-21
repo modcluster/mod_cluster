@@ -555,7 +555,7 @@
                <para>loadMetricClass</para>
             </entry>
             <entry>
-               <para>org.jboss.load.metric.impl.BusyConnectorsLoadMetric</para>
+               <para>org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric</para>
             </entry>
             <entry>
                <para>Class name of an object implementing org.jboss.load.metric.LoadMetric</para>
