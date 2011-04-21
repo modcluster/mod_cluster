@@ -230,8 +230,8 @@ public class ModClusterListener extends AbstractModClusterService
       return this.capacity;
    }
 
-   public void setLoadMetricCapacity(double capacity)
+   public void setLoadMetricCapacity(String capacity)
    {
-      this.capacity = capacity;
+      this.capacity = Double.parseDouble(capacity);
    }
 }
