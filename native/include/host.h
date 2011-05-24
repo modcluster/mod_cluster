@@ -145,5 +145,9 @@ int (* get_ids_used_host)(int *ids);
  * read the max number of hosts in the shared table
  */
 int (*get_max_size_host)();
+/*
+ * Remove the host from shared memory (free the slotmem)
+ */
+int (*remove_host)(hostinfo_t *host);
 };
 #endif /*HOST_H*/

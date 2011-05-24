@@ -227,11 +227,16 @@ static int loc_get_max_size_context()
 {
     return(get_max_size_context(contextstatsmem));
 }
+static apr_status_t loc_remove_context(contextinfo_t *context)
+{
+    return (remove_context(contextstatsmem, context));
+}
 static const struct context_storage_method context_storage =
 {
     loc_read_context,
     loc_get_ids_used_context,
-    loc_get_max_size_context
+    loc_get_max_size_context,
+    loc_remove_context
 };
 
 /*
@@ -249,11 +254,16 @@ static int loc_get_max_size_host()
 {
     return(get_max_size_host(hoststatsmem));
 }
+static apr_status_t loc_remove_host(hostinfo_t *host)
+{
+    return (remove_host(hoststatsmem, host));
+}
 static const struct host_storage_method host_storage =
 {
     loc_read_host,
     loc_get_ids_used_host,
-    loc_get_max_size_host
+    loc_get_max_size_host,
+    loc_remove_host
 };
 
 /*

@@ -1532,6 +1532,44 @@ static const struct balancer_method balancerhandler =
 /*
  * Remove node that have beeen marked removed for more than 10 seconds.
  */
+static void  remove_node_host_context(apr_pool_t *pool, nodeinfo_t *ou)
+{
+    int sizevhost;
+    int sizecontext;
+    apr_thread_mutex_lock(lock);
+
+    /* read the hosts */
+    sizevhost = host_storage->get_max_size_host();
+    if (sizevhost > 0) {
+        int *vhosts;
+        int i;
+        vhosts =  apr_palloc(pool, sizeof(int)*sizevhost);
+        sizevhost = host_storage->get_ids_used_host(vhosts);
+        for (i=0; i<sizevhost; i++) {
+            hostinfo_t *vhost;
+            if (host_storage->read_host(vhosts[i], &vhost) != APR_SUCCESS)
+                continue;
+            if (vhost->node == ou->mess.id)
+                host_storage->remove_host(vhost);
+        }
+    }
+    sizecontext = context_storage->get_max_size_context();
+    if (sizecontext > 0) {
+        int *contexts;
+        int i;
+        contexts = apr_palloc(pool, sizeof(int)*sizecontext);
+        sizecontext = context_storage->get_ids_used_context(contexts);
+        for (i=0; i<sizecontext; i++) {
+            contextinfo_t *context;
+            if (context_storage->read_context(contexts[i], &context) != APR_SUCCESS)
+                continue;
+            if (context->node == ou->mess.id)
+                context_storage->remove_context(context);
+        }
+    }
+    node_storage->remove_node(ou);
+    apr_thread_mutex_unlock(lock);
+}
 static void remove_removed_node(apr_pool_t *pool, server_rec *server)
 {
     int *id, size, i;
@@ -1561,8 +1599,8 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
                     domain_storage->insert_update_domain(&dom);
                 }
             }
-            /* remove the node from the shared memory */
-            node_storage->remove_node(ou);
+            /* remove the node from the shared memory: we remove context and vhost too */
+            remove_node_host_context(pool, ou);
         }
     }
 }

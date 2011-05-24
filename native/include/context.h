@@ -152,5 +152,9 @@ int (* get_ids_used_context)(int *ids);
  * read the max number of contexts in the shared table
  */
 int (*get_max_size_context)();
+/*
+ *  * Remove the context from shared memory (free the slotmem)
+ *   */
+int (*remove_context)(contextinfo_t *context);
 };
 #endif /*CONTEXT_H*/
