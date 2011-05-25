@@ -1280,6 +1280,7 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
     apr_size_t written = 5;
     apr_interval_time_t org; 
     apr_status_t status;
+    apr_status_t ret;
 
     /* built the cping message */
     buf[0] = 0x12;
@@ -1290,13 +1291,13 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
 
     status = apr_socket_send(sock, buf, &written);
     if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "ajp_cping_cpong(): send failed");
         return status;
     }
     status = apr_socket_timeout_get(sock, &org);
     if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "ajp_cping_cpong(): apr_socket_timeout_get failed");
         return status;
     }
@@ -1319,11 +1320,11 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
         status = APR_EGENERAL;
     }
 cleanup:
-    status = apr_socket_timeout_set(sock, org);
-    if (status != APR_SUCCESS) {
+    ret = apr_socket_timeout_set(sock, org);
+    if (ret != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                "ajp_cping_cpong: apr_socket_timeout_set failed");
-        return status;
+        return ret;
     }
 
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
