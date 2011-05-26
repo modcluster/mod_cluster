@@ -1,6 +1,6 @@
 for file in `cat files.list`
 do
-  HTTPFILE=`echo $file | sed 's:-1.0.0-:-1.0.10.GA-:'`
+  HTTPFILE=`echo $file | sed 's:-1.0.0-:-1.1.2.Final-:'`
   FILE=${HTTPFILE}
   case $FILE in
      *hpux-parisc2*)
@@ -54,7 +54,7 @@ do
   esac
   echo $FILE
   echo $BASE
-  (cd 1.0.10.GA
+  (cd 1.1.2.Final
    wget http://hudson.qa.jboss.com/hudson/view/Mod_cluster/job/${BASE}/lastSuccessfulBuild/artifact/jbossnative/build/unix/output/$HTTPFILE || exit 1
    if [ $HTTPFILE != $FILE ]; then
      mv $HTTPFILE $FILE

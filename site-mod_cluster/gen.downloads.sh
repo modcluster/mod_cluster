@@ -1,5 +1,5 @@
 # Adding  (bin)  1.0.0.CR1/mod_cluster-1.0.0.CR1-windows-x86-ssl.zip
-VERSION=1.0.10.GA
+VERSION=1.1.2.Final
 count=0
 # Print a file entry in the project.xml file
 # $1 file name
@@ -63,7 +63,7 @@ cat firstnode.xml | sed "s:@node@:downloads:"
 cat itemdownload.xml
 
 # For the java part
-printfile ${VERSION}/mod-cluster-${VERSION}-bin.tar.gz "java bundles" "java mod_cluster $VERSION"
+printfile ${VERSION}/mod_cluster-${VERSION}-bin.tar.gz "java bundles" "java mod_cluster $VERSION"
 
 # Sources in tarball format.
 printfile ${VERSION}/mod_cluster-${VERSION}-src-ssl.tar.gz "source tarball" "mod_cluster $VERSION sources"
