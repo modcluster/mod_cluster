@@ -677,13 +677,13 @@ static apr_status_t ajp_handle_cping_cpong(apr_socket_t *sock,
 
     status = apr_socket_send(sock, buf, &written);
     if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "ajp_cping_cpong(): send failed");
         return status;
     }
     status = apr_socket_timeout_get(sock, &org);
     if (status != APR_SUCCESS) {
-        ap_log_error(APLOG_MARK, APLOG_ERR, status, NULL,
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "ajp_cping_cpong(): apr_socket_timeout_get failed");
         return status;
     }
