@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.native</groupId>
   <artifactId>mod-cluster</artifactId>
-  <version>1.0.11-SNAPSHOT</version>
+  <version>1.0.10.GA_CP01</version>
   
   <name>mod_cluster</name>
   <description />
