@@ -143,7 +143,9 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             {
                Context context = (Context) container;
                String path = context.getPath();
-               
+               if (path.equals(""))
+                  path = "/";
+
                Set<String> excludedPaths = this.excludedContexts.get(hostName);
                
                if ((excludedPaths != null) && excludedPaths.contains(path))
@@ -184,7 +186,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource
                {
                   for (String context: obsoleteContexts)
                   {
-                     engineRequests.add(this.requestFactory.createRequest(MCMPRequestType.REMOVE_APP, jvmRoute, responseAliases, context));
+                     engineRequests.add(0, this.requestFactory.createRequest(MCMPRequestType.REMOVE_APP, jvmRoute, responseAliases, context));
                   }
                }
             }
