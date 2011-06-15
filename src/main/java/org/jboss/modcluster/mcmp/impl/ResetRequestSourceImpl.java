@@ -130,7 +130,9 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             for (Context context: host.getContexts())
             {
                String path = context.getPath();
-               
+               if (path.equals(""))
+                  path = "/";
+
                if ((excludedHostContexts == null) || !excludedHostContexts.contains(path))
                {
                   obsoleteContexts.remove(path);
@@ -167,7 +169,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource
                {
                   for (String context: obsoleteContexts)
                   {
-                     engineRequests.add(this.requestFactory.createRemoveContextRequest(jvmRoute, responseAliases, context));
+                     engineRequests.add(0, this.requestFactory.createRemoveContextRequest(jvmRoute, responseAliases, context));
                   }
                }
             }
