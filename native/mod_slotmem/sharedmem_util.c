@@ -188,6 +188,10 @@ apr_status_t cleanup_slotmem(void *param)
             store_slotmem(next);
             apr_shm_destroy(next->shm);
             /* XXX: remove the lock file ? */
+            if (next->global_lock) {
+                apr_file_close(next->global_lock);
+                next->global_lock = 0;
+            }
             next = next->next;
         }
     }
