@@ -23,6 +23,7 @@ package org.jboss.modcluster.catalina;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.lang.reflect.Method;
 
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
@@ -151,6 +152,27 @@ public class CatalinaConnector implements Connector
      * Is this connector available for processing requests?
      */
     public boolean isAvailable() {
-        return connector.isAvailable();
+        try
+        {
+           return connector.isAvailable();
+        }
+        catch (NoSuchMethodError e)
+        {
+           try
+           {
+              // Tomcat 7 doesn't have isAvailable but the Lifecycle has it.
+              String methodName = "getState";
+              Class clazz = connector.getClass();
+              Method method = clazz.getMethod("getState" , (Class [])null);
+              Object obj = method.invoke(connector, (Object []) null);
+
+              clazz = Class.forName("org.apache.catalina.LifecycleState");
+              method = clazz.getMethod("isAvailable", (Class [])null);
+              boolean ret = (Boolean) method.invoke(obj, (Object []) null);
+              return ret;
+           } catch (Exception ex) {
+              return true; // Assume OK.
+           } 
+        } 
     }
 }
