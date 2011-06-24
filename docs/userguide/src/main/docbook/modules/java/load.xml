@@ -220,7 +220,7 @@
       <title><code>ReceiveTrafficLoadMetric</code></title>
       <itemizedlist>
         <listitem>
-          <para>Returns the incoming request traffic in KB/sec</para>
+          <para>Returns the incoming request POST traffic in KB/sec (the application needs to read POST data)</para>
         </listitem>
         <listitem>
           <para>Requires an explicit capacity</para>

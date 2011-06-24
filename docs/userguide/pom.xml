@@ -77,4 +77,13 @@
   <properties>
     <translation>en</translation>
   </properties>
+
+  <pluginRepositories>
+    <pluginRepository>
+        <id>old jboss.org</id>
+        <name>JBoss Public Old Repository</name>
+        <url>http://repository.jboss.org/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
 </project>
