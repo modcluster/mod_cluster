@@ -15,7 +15,8 @@
     <para>
       Using JBoss AS 5.x, you must copy the <code>mod_cluster.sar</code> directory from the server-side binary distribution into your target profile's deploy directory.
     </para-->
-    <para>mod_cluster's configuration resides within the following file:</para>
+    <para>mod_cluster is supported in AS7 via the modcluster subsystem See  <link linkend="AS7config">AS7</link>.</para>
+    <para>In other AS version mod_cluster's configuration resides within the following file:</para>
     <para><code>$JBOSS_HOME/server/$PROFILE/deploy/mod_cluster.sar/META-INF/mod_cluster-jboss-beans.xml</code> file.</para>
     <para>
       The entry point for mod_cluster's server-side configuration is the <code>ModClusterListener</code> bean, which delegates web container (i.e. JBoss Web) specific events to a container agnostic event handler.

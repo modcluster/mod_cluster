@@ -159,7 +159,7 @@
   
   <section>
     <title>Web Container metrics</title>
-    <section>
+    <section id="ActiveSessionsLoadMetric">
       <title><code>ActiveSessionsLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -188,7 +188,7 @@
   </constructor>
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="BusyConnectorsLoadMetric">
       <title><code>BusyConnectorsLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -216,7 +216,7 @@
   </constructor>
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="ReceiveTrafficLoadMetric">
       <title><code>ReceiveTrafficLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -250,7 +250,7 @@
   </constructor>
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="SendTrafficLoadMetric">
       <title><code>SendTrafficLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -276,7 +276,7 @@
   <property name="capacity">512</property>
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="RequestCountLoadMetric">
       <title><code>RequestCountLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -306,7 +306,7 @@
   </section>
   <section>
     <title>System/JVM metrics</title>
-    <section>
+    <section id="AverageSystemLoadMetric">
       <title><code>AverageSystemLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -329,7 +329,7 @@
 <bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand">
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="SystemMemoryUsageLoadMetric">
       <title><code>SystemMemoryUsageLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -350,7 +350,7 @@
   </constructor>
 </bean>]]></programlisting>
     </section>
-    <section>
+    <section id="HeapMemoryUsageLoadMetric">
       <title><code>HeapMemoryUsageLoadMetric</code></title>
       <itemizedlist>
         <listitem>
@@ -365,7 +365,7 @@
   </section>
   <section>
     <title>Other metrics</title>
-    <section>
+    <section id="ConnectionPoolUsageLoadMetric">
       <title><code>ConnectionPoolUsageLoadMetric</code></title>
       <itemizedlist>
         <listitem>
