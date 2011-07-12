@@ -10,11 +10,12 @@
     <title>Proxy Discovery Configuration</title>
     <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
     <informaltable frame="all">
-      <tgroup cols="3">
+      <tgroup cols="4">
         <thead>
           <row>
             <entry>Attribute</entry>
             <entry>Default</entry>
+            <entry>Scope</entry>
             <entry>Description</entry>
            </row>
         </thead>
@@ -22,6 +23,7 @@
           <row id="proxyList">
             <entry>proxyList</entry>
             <entry><emphasis>None</emphasis></entry>
+            <entry>Configuration</entry>
             <entry>
               <para>Defines a comma delimited list of httpd proxies with which this node will initially communicate. Value should be of the form: </para>
               <para><emphasis>address1</emphasis>:<emphasis>port1</emphasis>,<emphasis>address2</emphasis>:<emphasis>port2</emphasis></para>
@@ -31,6 +33,7 @@
           <row id="excludedContexts">
             <entry>excludedContexts</entry>
             <entry>ROOT, admin-console, invoker, bossws, jmx-console, juddi, web-console</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>List of contexts to exclude from httpd registration, of the form: </para>
               <para><emphasis>host1</emphasis>:<emphasis>context1</emphasis>,<emphasis>host2</emphasis>:<emphasis>context2</emphasis>,<emphasis>host3</emphasis>:<emphasis>context3</emphasis></para>
@@ -40,6 +43,7 @@
           <row>
             <entry>autoEnableContexts</entry>
             <entry>true</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>If false the contexts are registered disabled in httpd, they need to be enabled via the enable() mbean method or via mod_cluster_manager.</para>
             </entry>
@@ -47,6 +51,7 @@
           <row id="stopContextTimeout">
             <entry>stopContextTimeout</entry>
             <entry>10</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>The amount of time, measure in units specified by <link linkend="stopContextTimeoutUnit">stopContextTimeoutUnit</link>, for which to wait for clean shutdown of a context (completion of pending requests for a distributable context; or destruction/expiration of active sessions for a non-distributable context).</para>
             </entry>
@@ -54,6 +59,7 @@
           <row id="stopContextTimeoutUnit">
             <entry>stopContextTimeoutUnit</entry>
             <entry>TimeUnit.SECONDS</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>The unit of time for use with <link linkend="stopContextTimeout">stopContextTimeout</link></para>
             </entry>
@@ -61,6 +67,7 @@
           <row>
             <entry>sessionDrainingStrategy</entry>
             <entry>org.jboss.modcluster.SessionDrainingStrategyEnum.DEFAULT</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>
                 Indicates the session draining strategy used during undeployment of a web application.
@@ -91,6 +98,7 @@
           <row>
             <entry>proxyURL</entry>
             <entry><emphasis>None</emphasis></entry>
+            <entry>Apache HTTPD</entry>
             <entry>
               <para>If defined, this value will be prepended to the URL of MCMP commands.</para>
             </entry>
@@ -98,6 +106,7 @@
           <row>
             <entry>socketTimeout</entry>
             <entry>20000</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>Number of milliseconds to wait for a response from an httpd proxy to MCMP commands before timing out, and flagging the proxy as in error.</para>
             </entry>
@@ -105,6 +114,7 @@
          <row id="advertise">
             <entry>advertise</entry>
             <entry>true, if <link linkend="proxyList">proxyList</link> is undefined, false otherwise</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>If enabled, httpd proxies will be auto-discovered via multicast announcements. This can be used either in concert or in place of a static <link linkend="proxyList">proxyList</link>.</para>
             </entry>
@@ -112,6 +122,7 @@
           <row>
             <entry>advertiseGroupAddress</entry>
             <entry>224.0.1.105</entry>
+            <entry>Apache HTTPD</entry>
             <entry>
               <para>UDP address on which to listen for httpd proxy multicast advertisements</para>
             </entry>
@@ -119,6 +130,7 @@
           <row>
             <entry>advertisePort</entry>
             <entry>23364</entry>
+            <entry>Apache HTTPD</entry>
             <entry>
               <para>UDP port on which to listen for httpd proxy multicast advertisements</para>
             </entry>
@@ -126,6 +138,7 @@
           <row>
             <entry>advertiseSecurityKey</entry>
             <entry><emphasis>None</emphasis></entry>
+            <entry>Apache HTTPD</entry>
             <entry>
               <para>If specified, httpd proxy advertisements checksums will be verified using this value as a salt</para>
             </entry>
@@ -133,6 +146,7 @@
           <row>
             <entry>advertiseThreadFactory</entry>
             <entry>Executors.defaultThreadFactory()</entry>
+            <entry>Configuration</entry>
             <entry>
               <para>The thread factory used to create the background advertisement listener.</para>
             </entry>
@@ -140,6 +154,7 @@
           <row>
             <entry>jvmRouteFactory</entry>
             <entry>new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory(), "jboss.mod_cluster.jvmRoute")</entry>
+            <entry>Configuration</entry>
             <entry>
              Defines the strategy for determing the jvm route of a node, if none was specified in server.xml.
              The default factory first consults the <code>jboss.mod_cluster.jvmRoute</code> system property.
@@ -154,20 +169,20 @@
     <title>Proxy Configuration</title>
     <para>The following configuration values are sent to proxies during server startup, when a proxy is detected via the advertise mechanism, or during the resetting of a proxy's configuration during error recovery.</para>
     <informaltable frame="all">
-      <tgroup cols="3">
+      <tgroup cols="4">
         <thead>
           <row>
             <entry>Attribute</entry>
             <entry>Default</entry>
-            <entry>
-              <para>Description</para>
-            </entry>
+            <entry>Scope</entry>
+            <entry>Description</entry>
            </row>
         </thead>
         <tbody>
           <row id="stickySession">
             <entry>stickySession</entry>
             <entry>true</entry>
+            <entry>Balancer</entry>
             <entry>
               <para>Indicates whether subsequent requests for a given session should be routed to the same node, if possible.</para>
             </entry>
@@ -175,6 +190,7 @@
           <row>
             <entry>stickySessionRemove</entry>
             <entry>false</entry>
+            <entry>Balancer</entry>
             <entry>
               <para>Indicates whether the httpd proxy should remove session stickiness in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
@@ -182,6 +198,7 @@
           <row>
             <entry>stickySessionForce</entry>
             <entry>true</entry>
+            <entry>Balancer</entry>
             <entry>
               <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
             </entry>
@@ -189,6 +206,7 @@
           <row>
             <entry>workerTimeout</entry>
             <entry>-1</entry>
+            <entry>Balancer</entry>
             <entry>
               <para>Number of seconds to wait for a worker to become available to handle a request. When all the workers of a balancer are usable, mod_cluster will retry after a while (workerTimeout/100) to find an usable worker. That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
             </entry>
@@ -196,6 +214,7 @@
           <row>
             <entry>maxAttempts</entry>
             <entry>1</entry>
+            <entry>Balancer</entry>
             <entry>
               <para>Number of times an httpd proxy will attempt to send a given request to a worker before giving up. The minimum value is 1, meaning try only once. (Note that mod_proxy default is also 1: no retry).</para>
             </entry>
@@ -203,6 +222,7 @@
           <row>
             <entry>flushPackets</entry>
             <entry>false</entry>
+            <entry>Node</entry>
             <entry>
               <para>Enables/disables packet flushing</para>
             </entry>
@@ -210,6 +230,7 @@
           <row>
             <entry>flushWait</entry>
             <entry>-1</entry>
+            <entry>Node</entry>
             <entry>
               <para>
                 Time to wait before flushing packets.
@@ -220,6 +241,7 @@
           <row>
             <entry>ping</entry>
             <entry>10</entry>
+            <entry>Node</entry>
             <entry>
               <para>Time (in seconds) in which to wait for a pong answer to a ping</para>
             </entry>
@@ -227,6 +249,7 @@
           <row>
             <entry>smax</entry>
             <entry>Determined by httpd configuration</entry>
+            <entry>Node</entry>
             <entry>
               <para>Soft maximum idle connection count (that is the smax in worker mod_proxy documentation). The maximum value depends on the httpd thread configuration (ThreadsPerChild or 1).</para>
             </entry>
@@ -234,6 +257,7 @@
           <row>
             <entry>ttl</entry>
             <entry>60</entry>
+            <entry>Node</entry>
             <entry>
               <para>Time to live (in seconds) for idle connections above smax</para>
             </entry>
@@ -241,6 +265,7 @@
           <row>
             <entry>nodeTimeout</entry>
             <entry>-1</entry>
+            <entry>Node</entry>
             <entry>
               <para>
                 Timeout (in seconds) for proxy connections to a node.
@@ -254,6 +279,7 @@
           <row>
             <entry>balancer</entry>
             <entry>mycluster</entry>
+            <entry>Node</entry>
             <entry>
               <para>The balancer name</para>
             </entry>
@@ -261,6 +287,7 @@
           <row id="lbGroup">
             <entry>loadBalancingGroup</entry>
             <entry><emphasis>None</emphasis></entry>
+            <entry>Node</entry>
             <entry>
               <para>
                 If specified, load will be balanced among jvmRoutes withing the same load balancing group.
