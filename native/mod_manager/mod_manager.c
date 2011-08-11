@@ -56,7 +56,7 @@
 #define DEFMAXNODE      20
 #define DEFMAXHOST      20
 #define DEFMAXSESSIONID 0 /* it has performance/security impact */
-#define MAXMESSSIZE     1024
+#define MAXMESSSIZE     8192
 
 /* Error messages */
 #define TYPESYNTAX 1
