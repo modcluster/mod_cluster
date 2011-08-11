@@ -6,6 +6,34 @@
 ]>
 <chapter id="changelog">
   <title>Change Log</title>
+   <sect1><title>1.0.10 CP01 (10 June 2011)</title>
+   <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+         <row>
+            <entry><para><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPG" align="center"/></imageobject></mediaobject></para></entry>
+            <entry><para>requests hang when a node is killed in EC2 (MODCLUSTER-217) (jfclere)</para></entry>
+         </row>
+         <row>
+            <entry><para><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPG" align="center"/></imageobject></mediaobject></para></entry>
+            <entry><para>Unable to override load properties when running in Tomcat 6 (MODCLUSTER-232) (jfclere)</para></entry>
+         </row>
+         <row>
+            <entry><para><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPG" align="center"/></imageobject></mediaobject></para></entry>
+            <entry><para>Documentation: wrong default loadMetricClass (MODCLUSTER-233) (jfclere)</para></entry>
+         </row>
+         <row>
+            <entry><para><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPG" align="center"/></imageobject></mediaobject></para></entry>
+            <entry><para>contexts and hosts for a broken node are not removed (MODCLUSTER-238) (jfclere)</para></entry>
+         </row>
+         <row>
+            <entry><para><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPG" align="center"/></imageobject></mediaobject></para></entry>
+            <entry><para>Failover triggers 500 Internal Server Error (MODCLUSTER-239) (jfclere)</para></entry>
+         </row>
+        </tbody>
+      </tgroup>
+   </informaltable></sect1>
+
    <sect1><title>1.0.10 (14 April 2011)</title>
    <informaltable frame="all">
       <tgroup cols="2">
