@@ -6,8 +6,8 @@ mod_cluster-1.0.0-solaris64-sparcv9-ssl.tar.gz
 mod_cluster-1.0.0-solaris64-sparcv9-so.tar.gz
 mod_cluster-1.0.0-solaris9-sparcv9-ssl.tar.gz
 mod_cluster-1.0.0-solaris9-sparcv9-so.tar.gz
-mod_cluster-1.0.0-solaris-x86-ssl.tar.gz
-mod_cluster-1.0.0-solaris-x86-so.tar.gz
+mod_cluster-1.0.0-solaris10-x86-ssl.tar.gz
+mod_cluster-1.0.0-solaris10-x86-so.tar.gz
 mod_cluster-1.0.0-hpux-parisc2-ssl.tar.gz
 mod_cluster-1.0.0-hpux-parisc2-so.tar.gz
 mod_cluster-1.0.0-hpux-i64-ssl.tar.gz

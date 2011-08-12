@@ -36,7 +36,7 @@ do
         FILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris-sparc64-:'`
         HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris9-sparcv9-:'`
         ;;
-     *solaris-x86*)
+     *solaris*-x86*)
         BASE=mod_cluster-solaris-x86
         ;;
      *macosx-x86*)
