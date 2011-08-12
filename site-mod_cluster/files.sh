@@ -1,6 +1,6 @@
 for file in `cat files.list`
 do
-  HTTPFILE=`echo $file | sed 's:-1.0.0-:-1.1.2.Final-:'`
+  HTTPFILE=`echo $file | sed 's:-1.0.0-:-1.1.3.Final-:'`
   FILE=${HTTPFILE}
   case $FILE in
      *hpux-parisc2*)
@@ -18,23 +18,23 @@ do
      *linux2-x64*)
         BASE=mod_cluster-linux-x86_64
         ;;
-     *solaris-sun4v*)
+     *solaris10-sun4v*)
         BASE=mod_cluster-solaris10-sparc
         FILE=`echo ${HTTPFILE} | sed 's:-solaris-sun4v-:-solaris10-sparc-:'`
         ;;
      *solaris64-sun4v*)
         BASE=mod_cluster-solaris10-sparc64
         FILE=`echo ${HTTPFILE} | sed 's:-solaris64-sun4v-:-solaris10-sparc64-:'`
-        HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sun4v-:-solaris-sun4v-:'`
+        HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sun4v-:-solaris10-sun4v-:'`
         ;;
-     *solaris-sparcv9*)
+     *solaris9-sparcv9*)
         BASE=mod_cluster-solaris-sparc
         FILE=`echo ${HTTPFILE} | sed 's:-solaris-sparcv9-:-solaris-sparc-:'`
         ;;
      *solaris64-sparcv9*)
         BASE=mod_cluster-solaris-sparc64
         FILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris-sparc64-:'`
-        HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris-sparcv9-:'`
+        HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris9-sparcv9-:'`
         ;;
      *solaris-x86*)
         BASE=mod_cluster-solaris-x86
@@ -54,7 +54,7 @@ do
   esac
   echo $FILE
   echo $BASE
-  (cd 1.1.2.Final
+  (cd 1.1.3.Final
    wget http://hudson.qa.jboss.com/hudson/view/Mod_cluster/job/${BASE}/lastSuccessfulBuild/artifact/jbossnative/build/unix/output/$HTTPFILE || exit 1
    if [ $HTTPFILE != $FILE ]; then
      mv $HTTPFILE $FILE
