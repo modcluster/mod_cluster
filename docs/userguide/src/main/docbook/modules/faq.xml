@@ -182,4 +182,18 @@ GET /
       </orderedlist>
     </section>
   </section>
+
+  <section>
+    <title>Redirect is not working:</title>
+    <para>
+      When using http/https instead AJP proxyname, proxyhost and redirect must be configured in the Connector.
+      Something like:
+      <programlisting><![CDATA[    <Connector port="8080" protocol="HTTP/1.1" 
+               connectionTimeout="20000"
+               proxyName="httpd_host_name"
+               proxyPort="8000"
+               redirectPort="443" />]]></programlisting>
+    </para>
+  </section>
+
 </chapter>
