@@ -7,6 +7,40 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.1.3.Final (12 August 2011)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>request hang with a node is stopped in EC2 (MODCLUSTER-217) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Extra ENABLE-APP/REMOVE-APP event after failover (MODCLUSTER-220) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster does not work with Tomcat 7 due to API Change in Connector (MODCLUSTER-240) (jfclere)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>kill -HUP httpd process increase the number of open locks (MODCLUSTER-241) (jfclere)</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.1.2.Final (21 April 2011)</title>
     <informaltable frame="all">
       <tgroup cols="2">
