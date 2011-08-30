@@ -976,7 +976,7 @@ static char * process_dump(request_rec *r, int *errtype)
         balancerinfo_t *ou;
         if (get_balancer(balancerstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d Maxattempts: %d\n",
+        ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d maxAttempts: %d\n",
                    id[i], (int) sizeof(ou->balancer), ou->balancer, ou->StickySession,
                    (int) sizeof(ou->StickySessionCookie), ou->StickySessionCookie, (int) sizeof(ou->StickySessionPath), ou->StickySessionPath,
                    ou->StickySessionRemove, ou->StickySessionForce,

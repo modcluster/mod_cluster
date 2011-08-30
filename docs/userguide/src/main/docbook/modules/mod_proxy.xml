@@ -232,7 +232,7 @@ ProxyPassReverse /foo http://foo.example.com/bar</programlisting></para>
 
             <entry><para>maxAttempts</para></entry>
 
-            <entry><para>Default 3</para></entry>
+            <entry><para>Default 1</para></entry>
           </row>
 
           <row>
