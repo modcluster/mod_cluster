@@ -808,7 +808,7 @@ public class ModClusterServiceTestCase
       paths = contexts.get(localhost);
       Assert.assertNotNull(paths);
       Assert.assertEquals(1, paths.size());
-      Assert.assertTrue(paths.contains("/"));
+      Assert.assertTrue(paths.contains(""));
       
       EasyMock.reset(server, engine, host1, host2, localhost, this.mcmpHandler, this.advertiseListenerFactory, this.mcmpConfig, this.lbfProviderFactory, this.advertiseListener, this.source);
    }
