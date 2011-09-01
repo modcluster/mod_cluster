@@ -129,12 +129,12 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             
             for (Context context: host.getContexts())
             {
-               String path = context.getPath();
-               if (path.equals(""))
-                  path = "/";
+               String contextPath = context.getPath();
 
-               if ((excludedHostContexts == null) || !excludedHostContexts.contains(path))
+               if ((excludedHostContexts == null) || !excludedHostContexts.contains(contextPath))
                {
+                  String path = (contextPath.length() == 0) ? "/" : contextPath;
+                  
                   obsoleteContexts.remove(path);
                   
                   ResetRequestSource.Status status = responseContexts.get(path);
