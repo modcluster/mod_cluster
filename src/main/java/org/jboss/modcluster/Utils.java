@@ -157,7 +157,7 @@ public class Utils
             trimmedContext = parts[1].trim();
          }
          
-         String path = trimmedContext.equals(ROOT_CONTEXT) ? "" : "/" + trimmedContext;
+         String path = trimmedContext.equals(ROOT_CONTEXT) ? "/" : "/" + trimmedContext;
          
          Set<String> paths = map.get(host);
          
