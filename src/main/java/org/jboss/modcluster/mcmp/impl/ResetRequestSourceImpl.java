@@ -143,8 +143,6 @@ public class ResetRequestSourceImpl implements ResetRequestSource
             {
                Context context = (Context) container;
                String path = context.getPath();
-               if (path.equals(""))
-                  path = "/";
 
                Set<String> excludedPaths = this.excludedContexts.get(hostName);
                
@@ -153,6 +151,8 @@ public class ResetRequestSourceImpl implements ResetRequestSource
                   continue;
                }
                
+               if (path.equals(""))
+                  path = "/";
                obsoleteContexts.remove(path);
                
                ResetRequestSource.Status status = responseContexts.get(path);
