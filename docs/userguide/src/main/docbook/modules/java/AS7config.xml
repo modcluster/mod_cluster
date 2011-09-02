@@ -267,5 +267,44 @@
 
     </section>
     
+    <section id="UsingJBossConsole">
+     <title>load-metric Configuration with the jboss admin console</title>
+     <para>The load-metric have 4 commands to add / remove metrics</para>
+     <section id="AddMetric">
+       <title>add-metric</title>
+       <para>Allows to add a <code>load-metric</code> to the <code>dynamic-load-provider</code></para>
+       <para>For example:</para>
+       <programlisting>
+       ./:add-metric(type=cpu, weight=2, capacity=1)
+       </programlisting>
+     </section>
+       
+     <section id="RemoveMetric">
+       <title>remove-metric</title>
+       <para>Allows to remove a <code>load-metric</code> from the <code>dynamic-load-provider</code></para>
+       <para>For example:</para>
+       <programlisting>
+       ./:remove-metric(type=cpu)
+       </programlisting>
+     </section>
+
+     <section id="AddCustomMetric">
+       <title>add-custom-metric</title>
+       <para>Allows to add a <code>load-custom-metric</code> to the <code>dynamic-load-provider</code></para>
+       <para>For example:</para>
+       <programlisting>
+       ./:add-custom-metric(class=myclass, weight=2, capacity=1, property=[("pool" => "mypool"), ("var" => "myvariable")])
+       </programlisting>
+     </section>
+
+     <section id="RemoveCustomMetric">
+       <title>remove-custom-metric</title>
+       <para>Allows to remove a <code>load-custom-metric</code> from the <code>dynamic-load-provider</code></para>
+       <para>For example:</para>
+       <programlisting>
+       ./:remove-custom-metric(class=myclass)
+       </programlisting>
+     </section>
+    </section>
   </section>
 </chapter>
