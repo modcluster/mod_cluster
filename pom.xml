@@ -26,6 +26,22 @@
       <name>JBoss Public Repository</name>
       <url>http://repository.jboss.org/nexus/content/groups/public/</url>
     </repository>
+
+    <repository>
+      <id>jboss-deprecated-repository</id>
+      <name>JBoss Deprecated Maven Repository</name>
+      <url>https://repository.jboss.org/nexus/content/repositories/deprecated/</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+        <updatePolicy>never</updatePolicy>
+      </snapshots>
+    </repository>
+
   </repositories>
 
   <dependencies>
