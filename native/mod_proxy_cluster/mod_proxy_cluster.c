@@ -1904,6 +1904,12 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf)
             if ((route = strchr(sessionid, '.')) != NULL )
                 route++;
             if (route && *route) {
+                /* Nice we have a route, but make sure we have to serve it */
+                int *nodes = find_node_context_host(r, balancer, route, use_alias);
+                if (nodes == NULL)
+                    return NULL; /* we can't serve context/host for the request */
+            }
+            if (route && *route) {
                 char *domain = NULL;
 #if HAVE_CLUSTER_EX_DEBUG
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
