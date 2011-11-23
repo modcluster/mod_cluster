@@ -105,20 +105,9 @@
   <!-- Analogous to method=B in mod_jk -->
   <bean name="BusyConnectorsLoadMetric" class="org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=BusyConnectors",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="ThreadPoolLoadMetricSource"/></parameter>
-    </constructor>
     <!-- The weight determines the significance of this metric with respect
          to others in the overall load balance factor calculation -->
     <property name="weight">2</property>
-  </bean>
-  <!-- Queries all JBossWeb ThreadPool mbeans -->
-  <bean name="ThreadPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ThreadPoolLoadMetricSource" mode="On Demand">
-    <constructor>
-      <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
-      <!-- Object name pattern for connector thread pools -->
-      <!--parameter>jboss.web:type=ThreadPool,*</parameter-->
-    </constructor>
   </bean>
   
   <!-- The heap memory usage as a ratio of used heap to max heap size -->
@@ -150,20 +139,11 @@
   <!-- Perhaps the best metric for determining system load - but only available on Java 1.6 or later -->
   <bean name="AverageSystemLoadMetric" class="org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=AverageSystemLoad",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="OperatingSystemLoadMetricSource"/></parameter>
-    </constructor>
   </bean>
   <!-- The system memory usage as ratio of used memory to total memory size -->
   <!-- Requires com.sun.management.OperatingSystemMXBean, i.e. Sun or OpenJDK JVM -->
   <bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=SystemMemoryUsage",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="OperatingSystemLoadMetricSource"/></parameter>
-    </constructor>
-  </bean>
-  <!-- Uses the platform's OperatingSystemMXBean -->
-  <bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand">
   </bean>
 
 
@@ -171,10 +151,6 @@
   <!-- Analogous to method=R in mod_jk -->
   <bean name="RequestCountLoadMetric" class="org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=RequestCount",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
-      <!--parameter>requestCount</parameter-->
-    </constructor>
     <!-- This metric requires an explicit capacity, e.g. maximum capacity of 1000 requests/sec -->
     <property name="capacity">1000</property>
   </bean>
@@ -182,30 +158,14 @@
   <!-- Analogous to method=T in mod_jk -->
   <bean name="ReceiveTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=ReceiveTraffic",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
-      <!--parameter>bytesReceived</parameter-->
-    </constructor>
     <!-- This metric requires an explicit capacity, e.g. max capacity of 1024 KB/s -->
     <property name="capacity">1024</property>
   </bean>
   <!-- The outgoing traffic sent by JBossWeb connectors in KB/sec, with respect to the defined capacity -->
   <bean name="SendTrafficLoadMetric" class="org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=SendTraffic",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource"><inject bean="RequestProcessorLoadMetricSource"/></parameter>
-      <!--parameter>bytesSent</parameter-->
-    </constructor>
     <!-- This metric requires an explicit capacity, e.g. max capacity of 512 KB/s -->
     <property name="capacity">512</property>
-  </bean>
-  <!-- Queries all JBossWeb GlobalRequestProcessor mbeans -->
-  <bean name="RequestProcessorLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.RequestProcessorLoadMetricSource" mode="On Demand">
-    <constructor>
-      <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
-      <!-- Object name pattern for request processors -->
-      <!--parameter>jboss.web:type=GlobalRequestProcessor,*</parameter-->
-    </constructor>
   </bean>
 
 
@@ -213,39 +173,8 @@
   <!-- Analogous to method=S in mod_jk -->
   <bean name="ActiveSessionsLoadMetric" class="org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=ActiveSessions",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="SessionLoadMetricSource"/></parameter>
-      <!--parameter>activeSessions</parameter-->
-    </constructor>
     <!-- This metric requires an explicit capacity, e.g. max capacity of 1000 active sessions -->
     <property name="capacity">1000</property>
-  </bean>
-  <!-- Queries all JBossWeb session manager mbeans -->
-  <bean name="SessionLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.SessionLoadMetricSource" mode="On Demand">
-    <constructor>
-      <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
-      <!-- Object name pattern for session managers -->
-      <!--parameter>jboss.web:type=Manager,*</parameter-->
-    </constructor>
-  </bean>
-
-  
-  <!-- Returns the connection pool usage as a ratio of used to max pool size -->
-  <bean name="ConnectionPoolUsageMetric" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolUsageLoadMetric" mode="On Demand">
-    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=ConnectionPoolUsage",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="ConnectionPoolLoadMetricSource"/></parameter>
-      <!--parameter>InUseConnectionCount</parameter-->
-      <!--parameter>MaxSize</parameter-->
-    </constructor>
-  </bean>
-  <!-- Queries all JCA connection pools -->
-  <bean name="ConnectionPoolLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.ConnectionPoolLoadMetricSource" mode="On Demand">
-    <constructor>
-      <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
-      <!-- Object name pattern for connector thread pools -->
-      <!--parameter>jboss.jca:service=ManagedConnectionPool,*</parameter-->
-    </constructor>
   </bean>
 
   <!-- Generic load metrics/sources -->
@@ -254,10 +183,8 @@
        mbean matching the query, with respect to a defined capacity. -->
   <bean name="MBeanAttributeLoadMetric" class="org.jboss.modcluster.load.metric.impl.MBeanAttributeLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=MBeanAttribute",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="MBeanQueryLoadMetricSource"/></parameter>
-      <parameter><!-- mbean attribute --></parameter>
-    </constructor>
+    <property name="pattern"><!-- mbean name pattern --></property>
+    <property name="attribute"><!-- mbean attribute --></property>
     <property name="capacity">1</property>
   </bean>
   <!-- Uses the ratio of the sum of the values of the specified dividend attribute,
@@ -265,18 +192,9 @@
        matching the query. -->
   <bean name="MBeanAttributeRatioLoadMetric" class="org.jboss.modcluster.load.metric.impl.MBeanAttributeRatioLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=MBeanAttributeRatio",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-    <constructor>
-      <parameter><inject bean="MBeanQueryLoadMetricSource"/></parameter>
-      <parameter><!-- dividend attribute --></parameter>
-      <parameter><!-- divisor attribute --></parameter>
-    </constructor>
-  </bean>
-  <!-- Queries for mbeans matching the specified pattern -->
-  <bean name="MBeanQueryLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.MBeanQueryLoadMetricSource" mode="On Demand">
-    <constructor>
-      <parameter><!-- ObjectName pattern --></parameter>
-      <parameter><inject bean="JMXKernel" property="mbeanServer"/></parameter>
-    </constructor>
+    <property name="pattern"><!-- mbean name pattern --></property>
+    <property name="dividendAttribute"><!-- mbean attribute --></property>
+    <property name="divisorAttribute"><!-- mbean attribute --></property>
   </bean>
 
 </deployment>
