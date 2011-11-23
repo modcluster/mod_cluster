@@ -1,142 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <parent>
-    <groupId>org.jboss</groupId>
-    <artifactId>jboss-parent</artifactId>
-    <version>5</version>
-  </parent>
+    <parent>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-parent</artifactId>
+        <version>5</version>
+    </parent>
   
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.jboss.mod_cluster</groupId>
-  <artifactId>mod_cluster</artifactId>
-  <version>1.1.4-SNAPSHOT</version>
-  <packaging>jar</packaging>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.jboss.mod_cluster</groupId>
+    <artifactId>mod_cluster-parent</artifactId>
+    <version>1.2.0.Beta1-SNAPSHOT</version>
+    <packaging>pom</packaging>
   
-  <name>mod_cluster</name>
-  <description>An httpd-based load balancer</description>
-  <url>http://jboss.org/mod_cluster</url>
+    <name>mod_cluster</name>
+    <description>An httpd-based load balancer</description>
+    <url>http://jboss.org/mod_cluster</url>
   
-  <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
-    <url>http://fisheye.jboss.org/browse/mod_cluster/trunk</url>
-  </scm>
+    <scm>
+        <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/trunk</connection>
+        <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
+        <url>http://fisheye.jboss.org/browse/mod_cluster/trunk</url>
+    </scm>
 
-  <repositories>
-    <repository>
-      <id>repository.jboss.org</id>
-      <name>JBoss Public Repository</name>
-      <url>http://repository.jboss.org/nexus/content/groups/public/</url>
-    </repository>
-    <repository>
-      <id>old jboss.org</id>
-      <name>JBoss Public Old Repository</name>
-      <url>http://repository.jboss.org/maven2</url>
-    </repository>
-  </repositories>
-  
-  <dependencies>
-    <dependency>
-      <groupId>net.jcip</groupId>
-      <artifactId>jcip-annotations</artifactId>
-      <version>1.0</version>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
-      <version>2.5</version>
-      <scope>provided</scope>
-    </dependency>
-    
-	<!-- Make optional, until catalina package is moved to separate module -->
-    <dependency>
-      <groupId>jboss.web</groupId>
-      <artifactId>jbossweb</artifactId>
-      <version>2.1.7.GA</version>
-      <optional>true</optional>
-    </dependency>
+    <repositories>
+        <repository>
+            <id>repository.jboss.org</id>
+            <name>JBoss Public Repository</name>
+            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+        </repository>
+    </repositories>
 
-    <!-- Optional, for installation in standalone JBoss Web or Tomcat -->
-    <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging-jdk</artifactId>
-      <version>2.1.1.GA</version>
-      <optional>true</optional>
-    </dependency>
+    <modules>
+        <module>container-spi</module>
+        <module>core</module>
+        <module>container</module>
+        <module>ha</module>
+        <module>demo</module>
+    </modules>
 
-	<!-- Make optional, until ha package is moved to separate module -->
-    <dependency>
-      <groupId>org.jboss.cluster</groupId>
-      <artifactId>jboss-ha-server-api</artifactId>
-      <version>1.1.1.GA</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.microcontainer</groupId>
-      <artifactId>jboss-kernel</artifactId>
-      <version>2.0.10.GA</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency><!-- Required by org.jboss.microcontainer:jboss-kernel on Java 1.5 -->
-      <groupId>org.jboss</groupId>
-      <artifactId>jbossxb</artifactId>
-      <version>2.0.1.GA</version>
-      <optional>true</optional>
-    </dependency>
-    
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.easymock</groupId>
-      <artifactId>easymock</artifactId>
-      <version>3.0</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.test</groupId>
-      <artifactId>jboss-test</artifactId>
-      <version>1.1.9.GA</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- jboss-as-server is optional dependency within jboss-server-manager, which is transitive dependency of jboss-test -->
-    <dependency>
-      <groupId>org.jboss.jbossas</groupId>
-      <artifactId>jboss-as-server</artifactId>
-      <version>5.1.0.GA</version>
-      <scope>test</scope>
-    </dependency>
-    
-    <!-- Demo dependencies -->
-    <!-- Make optional, until demo is moved to separate module -->
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.3</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>commons-httpclient</groupId>
-      <artifactId>commons-httpclient</artifactId>
-      <version>3.1</version>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>jfree</groupId>
-      <artifactId>jfreechart</artifactId>
-      <version>1.0.12</version>
-      <optional>true</optional>
-    </dependency>
-  </dependencies>
-  
+    <properties>
+        <version.jboss-logging>3.0.1.GA</version.jboss-logging>
+        <version.tomcat>5.5.23</version.tomcat>
+        <version.tomcat6>6.0.33</version.tomcat6>
+        <version.tomcat7>7.0.8</version.tomcat7>
+        <version.jbossweb>2.1.11.GA</version.jbossweb>
+        <version.commons-codec>1.3</version.commons-codec>
+        <version.commons-http-client>3.1</version.commons-http-client>
+        <version.jfreechart>1.0.12</version.jfreechart>
+        <version.jcip-annotations>1.0</version.jcip-annotations>
+        <version.junit>4.9</version.junit>
+        <version.mockito>1.8.5</version.mockito>
+        <version.javax.servlet-3.0>1.0.0.Final</version.javax.servlet-3.0>
+        <version.jboss-ha-server-api>2.0.0.Final</version.jboss-ha-server-api>
+        <version.jboss-kernel>2.0.6.GA</version.jboss-kernel>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.jboss.spec.javax.servlet</groupId>
+                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+                <version>${version.javax.servlet-3.0}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging</artifactId>
+                <version>${version.jboss-logging}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.microcontainer</groupId>
+                <artifactId>jboss-kernel</artifactId>
+                <version>${version.jboss-kernel}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.cluster</groupId>
+                <artifactId>jboss-ha-server-api</artifactId>
+                <version>${version.jboss-ha-server-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>catalina</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>tomcat-coyote</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>tomcat-ajp</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>tomcat-http</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            <dependency>
+                <groupId>tomcat</groupId>
+                <artifactId>tomcat-util</artifactId>
+                <version>${version.tomcat}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>catalina</artifactId>
+                <version>${version.tomcat6}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>coyote</artifactId>
+                <version>${version.tomcat6}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-catalina</artifactId>
+                <version>${version.tomcat7}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-coyote</artifactId>
+                <version>${version.tomcat7}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-util</artifactId>
+                <version>${version.tomcat7}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>jboss.web</groupId>
+                <artifactId>jbossweb</artifactId>
+                <version>${version.jbossweb}</version>
+            </dependency>
+            <dependency>
+                <groupId>jboss.web</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>${version.jbossweb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-codec</groupId>
+                <artifactId>commons-codec</artifactId>
+                <version>${version.commons-codec}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-httpclient</groupId>
+                <artifactId>commons-httpclient</artifactId>
+                <version>${version.commons-http-client}</version>
+            </dependency>
+            <dependency>
+                <groupId>jfree</groupId>
+                <artifactId>jfreechart</artifactId>
+                <version>${version.jfreechart}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.jcip</groupId>
+                <artifactId>jcip-annotations</artifactId>
+                <version>${version.jcip-annotations}</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${version.junit}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${version.mockito}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
   <build>
     <resources>
       <resource>
-        <directory>src/main/java</directory>
+        <directory>${project.build.sourceDirectory}</directory>
         <excludes>
           <exclude>**/*.java</exclude>
         </excludes>
@@ -144,7 +202,7 @@
       </resource>
     </resources>
     <plugins>
-      <plugin>
+      <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
@@ -160,8 +218,6 @@
           <includes>
             <include>**/*TestCase.java</include>
           </includes>
-          <!-- Integration tests are in the "test" package; don't
-               run those during the normal surefire run -->
           <excludes>
             <exclude>**/test/**/*.java</exclude>
           </excludes>
@@ -200,102 +256,11 @@
         <configuration>
           <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
         </configuration>
-      </plugin>
+      </plugin-->
     </plugins>
   </build>
   
   <profiles>
-    <profile>
-      <id>integration-test</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <!-- Unpack requisite build scripts -->
-              <execution>
-                <id>unpack-build-scripts</id>
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>unpack</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.jboss.test</groupId>
-                      <artifactId>jboss-test</artifactId>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/dependencies/unpacked/jboss-test</outputDirectory>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                </configuration>
-              </execution>
-              <!--  Copy jboss-test JAR -->
-              <execution>
-                <id>copy-jboss-test</id>
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
-                <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.jboss.test</groupId>
-                      <artifactId>jboss-test</artifactId>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                  <stripVersion>true</stripVersion>
-                  <excludeTransitive>false</excludeTransitive>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-      
-          <!-- The individual integration tests are built and run using Ant -->
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>build-tests</id>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <phase>integration-test</phase>
-                <configuration>
-                  <tasks>
-                  
-                    <!-- Execute the Test Build -->
-                    <ant antfile="build-test.xml" target="main" />
-                    
-                    <ant antfile="build-test.xml" target="tests-apache-integration" />
-                    
-                    <!-- Execute the integration tests that require httpd -->
-                    <!--ant antfile="build-test.xml" target="tests-clustering-unit" /-->
-                    
-                  </tasks>
-                </configuration>
-              </execution>
-            </executions>
-            <!-- maven-antrun-plugin does not include optional jars by default -->
-            <dependencies>
-              <dependency>
-                <groupId>org.apache.ant</groupId>
-                <artifactId>ant-junit</artifactId>
-                <version>1.7.1</version>
-              </dependency>
-            </dependencies>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
     <profile>
       <id>dist</id>
       <activation>
@@ -317,7 +282,7 @@
                   <artifactItems>
                     <artifactItem>
                       <groupId>org.jboss.mod_cluster</groupId>
-                      <artifactId>mod_cluster</artifactId>
+                      <artifactId>mod_cluster-parent</artifactId>
                     </artifactItem>
                   </artifactItems>
                   <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
