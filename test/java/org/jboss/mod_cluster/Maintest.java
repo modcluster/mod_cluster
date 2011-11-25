@@ -180,14 +180,15 @@ public class Maintest extends TestCase {
                                                    boolean stickySessionForce, String advertiseSecurityKey) {
         LifecycleListener lifecycle = null;
         ClusterListener jcluster = null;
-        org.jboss.modcluster.ModClusterListener pcluster = null;
+        org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = null;
 
+        /* For the moment test only jbossweb 
         if (isJBossWEB) {
             jcluster = new ClusterListener();
             jcluster.setAdvertiseGroupAddress(groupa);
             jcluster.setAdvertisePort(groupp);
             jcluster.setSsl(ssl);
-            jcluster.setDomain(domain);
+            jcluster.setLoadBalancingGroup(domain);
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
@@ -196,11 +197,12 @@ public class Maintest extends TestCase {
                 jcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = jcluster;
         } else {
-            pcluster = new org.jboss.modcluster.ModClusterListener();
+        */
+            pcluster = new org.jboss.modcluster.container.catalina.standalone.ModClusterListener();
             pcluster.setAdvertiseGroupAddress(groupa);
             pcluster.setAdvertisePort(groupp);
             pcluster.setSsl(ssl);
-            pcluster.setDomain(domain);
+            pcluster.setLoadBalancingGroup(domain);
             pcluster.setStickySession(stickySession);
             pcluster.setStickySessionRemove(stickySessionRemove);
             pcluster.setStickySessionForce(stickySessionForce);
@@ -208,8 +210,6 @@ public class Maintest extends TestCase {
             if (advertiseSecurityKey != null)
                 pcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = pcluster;
-
-        }
 
         return lifecycle;
     }
@@ -220,7 +220,7 @@ public class Maintest extends TestCase {
             ClusterListener jcluster = (ClusterListener) lifecycle;
             result = jcluster.doProxyPing(null);
         } else {
-            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.ping();
             if (map.isEmpty())
                 return null;
@@ -236,7 +236,7 @@ public class Maintest extends TestCase {
             ClusterListener jcluster = (ClusterListener) lifecycle;
             result = jcluster.doProxyPing(JvmRoute);
         } else {
-            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.ping(JvmRoute);
             if (map.isEmpty())
                 return null;
@@ -256,7 +256,7 @@ public class Maintest extends TestCase {
             ClusterListener jcluster = (ClusterListener) lifecycle;
             result = jcluster.doProxyPing(scheme + "://" + host + String.valueOf(port));
         } else {
-            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.ping(scheme, host, port);
             if (map.isEmpty())
                 return null;
@@ -299,7 +299,7 @@ public class Maintest extends TestCase {
             ClusterListener jcluster = (ClusterListener) lifecycle;
             result = jcluster.getProxyInfo();
         } else {
-            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
             if (map.isEmpty())
                 return null;
@@ -323,7 +323,7 @@ public class Maintest extends TestCase {
                 System.out.println(results);
             }
         } else {
-            org.jboss.modcluster.ModClusterListener pcluster = (org.jboss.modcluster.ModClusterListener) lifecycle;
+            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
             if (!map.isEmpty()) {
                 Object results[] = map.keySet().toArray();;

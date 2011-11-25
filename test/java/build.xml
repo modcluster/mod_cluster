@@ -54,6 +54,9 @@
 
    <!-- Paul stuff -->
     <pathelement location="${mod_cluster.jar}"/>
+    <pathelement location="${mod_cluster_spi.jar}"/>
+    <pathelement location="${mod_cluster_catalina.jar}"/>
+    <pathelement location="${mod_cluster_catalina_standalone.jar}"/>
 <!--
     <fileset dir="${jbossweb.build}/bin/">
       <include name="tomcat-juli.jar"/>
