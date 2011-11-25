@@ -37,6 +37,7 @@ import org.jboss.modcluster.container.Server;
  * @author Paul Ferraro
  */
 public class CatalinaEngine implements Engine {
+    protected final CatalinaFactoryRegistry registry;
     protected final org.apache.catalina.Engine engine;
     protected final Server server;
 
@@ -45,7 +46,8 @@ public class CatalinaEngine implements Engine {
      * 
      * @param engine a catalina engine
      */
-    public CatalinaEngine(org.apache.catalina.Engine engine, Server server) {
+    public CatalinaEngine(CatalinaFactoryRegistry registry, org.apache.catalina.Engine engine, Server server) {
+        this.registry = registry;
         this.engine = engine;
         this.server = server;
     }
@@ -67,7 +69,7 @@ public class CatalinaEngine implements Engine {
 
             @Override
             public Host next() {
-                return CatalinaFactory.HOST_FACTORY.createHost((org.apache.catalina.Host) children.next(), CatalinaEngine.this);
+                return CatalinaEngine.this.registry.getHostFactory().createHost(CatalinaEngine.this.registry, (org.apache.catalina.Host) children.next(), CatalinaEngine.this);
             }
 
             @Override
@@ -111,7 +113,7 @@ public class CatalinaEngine implements Engine {
 
             @Override
             public Connector next() {
-                return CatalinaFactory.CONNECTOR_FACTORY.createConnector(connectors.next());
+                return CatalinaEngine.this.registry.getConnectorFactory().createConnector(connectors.next());
             }
 
             @Override
@@ -134,7 +136,7 @@ public class CatalinaEngine implements Engine {
         Connector bestConnector = null;
 
         for (org.apache.catalina.connector.Connector connector : this.engine.getService().findConnectors()) {
-            Connector catalinaConnector = CatalinaFactory.CONNECTOR_FACTORY.createConnector(connector);
+            Connector catalinaConnector = CatalinaEngine.this.registry.getConnectorFactory().createConnector(connector);
 
             if (CatalinaConnector.isAJP(connector) || catalinaConnector.isReverse()) {
                 return catalinaConnector;
@@ -159,7 +161,7 @@ public class CatalinaEngine implements Engine {
     public Host findHost(String name) {
         org.apache.catalina.Host host = (org.apache.catalina.Host) this.engine.findChild(name);
 
-        return (host != null) ? CatalinaFactory.HOST_FACTORY.createHost(host, this) : null;
+        return (host != null) ? this.registry.getHostFactory().createHost(this.registry, host, this) : null;
     }
 
     @Override

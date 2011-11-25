@@ -191,157 +191,127 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-  <build>
-    <resources>
-      <resource>
-        <directory>${project.build.sourceDirectory}</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-    <plugins>
-      <!--plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <configuration>
-          <source>1.5</source>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <printSummary>true</printSummary>
-          <disableXmlReport>false</disableXmlReport>
-          <includes>
-            <include>**/*TestCase.java</include>
-          </includes>
-          <excludes>
-            <exclude>**/test/**/*.java</exclude>
-          </excludes>
-          <systemProperties>
-            <property>
-              <name>java.net.preferIPv4Stack</name>
-              <value>true</value>
-            </property>
-          </systemProperties>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>sar</id>
-            <goals>
-              <goal>directory-inline</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <finalName>${project.artifactId}.sar</finalName>
-              <appendAssemblyId>false</appendAssemblyId>
-              <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
-              <descriptors>
-                <descriptor>src/assembly/sar.xml</descriptor>
-              </descriptors>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <configuration>
-          <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
-        </configuration>
-      </plugin-->
-    </plugins>
-  </build>
-  
-  <profiles>
-    <profile>
-      <id>dist</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
+    <build>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${project.build.sourceDirectory}</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>copy-core-dependencies</id>
-                <phase>process-resources</phase>
-                <goals>
-                  <goal>copy-dependencies</goal>
-                </goals>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>sar</id>
+                        <goals>
+                            <goal>directory-inline</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <finalName>${project.artifactId}.sar</finalName>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
+                            <descriptors>
+                                <descriptor>src/assembly/sar.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
                 <configuration>
-                  <artifactItems>
-                    <artifactItem>
-                      <groupId>org.jboss.mod_cluster</groupId>
-                      <artifactId>mod_cluster-parent</artifactId>
-                    </artifactItem>
-                  </artifactItems>
-                  <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-                  <overWriteIfNewer>true</overWriteIfNewer>
-                  <stripVersion>true</stripVersion>
+                    <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
                 </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>build-demo</id>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <tasks>
-              
-                    <!-- Execute the Test Build -->
-                    <ant antfile="build-demo.xml" target="main" />
-              
-                    <!-- Create the JBossWeb-Tomcat install structure -->
-                    <ant antfile="build-jbossweb.xml" target="all">
-                       <property name="mod_cluster.jar.name" value="${project.build.finalName}" />
-                    </ant>
-                
-                    <!-- Execute the demo that require httpd -->
-                    <!--ant antfile="build-demo.xml" target="run-demo" /-->
-                
-                  </tasks>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <inherited>false</inherited>
-            <executions>
-              <execution>
-                <id>bin</id>
-                <goals>
-                  <goal>attached</goal>
-                </goals>
-                <phase>package</phase>
-                <configuration>
-                  <descriptors>
-                    <descriptor>src/assembly/bin.xml</descriptor>
-                  </descriptors>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
+            </plugin>
         </plugins>
-      </build>
-    </profile>
-  </profiles>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-core-dependencies</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactItems>
+                                        <artifactItem>
+                                            <groupId>org.jboss.mod_cluster</groupId>
+                                            <artifactId>mod_cluster-parent</artifactId>
+                                        </artifactItem>
+                                    </artifactItems>
+                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
+                                    <overWriteIfNewer>true</overWriteIfNewer>
+                                    <stripVersion>true</stripVersion>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-demo</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <tasks>
+                                        <!-- Execute the Test Build -->
+                                        <ant antfile="build-demo.xml" target="main" />
+                                        <!-- Create the JBossWeb-Tomcat install structure -->
+                                        <ant antfile="build-jbossweb.xml" target="all">
+                                             <property name="mod_cluster.jar.name" value="${project.build.finalName}" />
+                                        </ant>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>bin</id>
+                                <goals>
+                                    <goal>attached</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <descriptors>
+                                        <descriptor>src/assembly/bin.xml</descriptor>
+                                    </descriptors>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

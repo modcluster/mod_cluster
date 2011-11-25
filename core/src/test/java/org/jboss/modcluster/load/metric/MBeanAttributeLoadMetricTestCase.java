@@ -35,7 +35,6 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.modcluster.container.Engine;
-import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.load.metric.impl.MBeanAttributeLoadMetric;
 import org.junit.Test;
 
@@ -45,27 +44,23 @@ import org.junit.Test;
 public class MBeanAttributeLoadMetricTestCase {
     @Test
     public void getLoad() throws Exception {
+        MBeanServer server = mock(MBeanServer.class);
         ObjectName pattern = ObjectName.getInstance("domain:*");
         String attribute = "attribute";
 
         MBeanAttributeLoadMetric metric = new MBeanAttributeLoadMetric();
+        metric.setMBeanServer(server);
         metric.setPattern(pattern);
         metric.setAttribute(attribute);
 
         ObjectName name1 = ObjectName.getInstance("domain:name=test1");
         ObjectName name2 = ObjectName.getInstance("domain:name=test2");
 
-        MBeanServer mbeanServer = mock(MBeanServer.class);
         Engine engine = mock(Engine.class);
-        Server server = mock(Server.class);
 
-        when(engine.getServer()).thenReturn(server);
-        when(server.getMBeanServer()).thenReturn(mbeanServer);
-        when(mbeanServer.queryNames(same(pattern), (QueryExp) isNull())).thenReturn(
-                new LinkedHashSet<ObjectName>(Arrays.asList(name1, name2)));
-
-        when(mbeanServer.getAttribute(same(name1), same(attribute))).thenReturn(1);
-        when(mbeanServer.getAttribute(same(name2), same(attribute))).thenReturn(2);
+        when(server.queryNames(same(pattern), (QueryExp) isNull())).thenReturn(new LinkedHashSet<ObjectName>(Arrays.asList(name1, name2)));
+        when(server.getAttribute(same(name1), same(attribute))).thenReturn(1);
+        when(server.getAttribute(same(name2), same(attribute))).thenReturn(2);
 
         double load = metric.getLoad(engine);
 

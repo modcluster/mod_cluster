@@ -21,12 +21,14 @@
  */
 package org.jboss.modcluster.container.catalina;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
-
-import javax.management.MBeanServer;
 
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Engine;
@@ -38,61 +40,32 @@ import org.junit.Test;
  * 
  */
 public class ServerTestCase {
-    private org.apache.catalina.Server server = mock(org.apache.catalina.Server.class);
-    private MBeanServer mbeanServer = mock(MBeanServer.class);
+    protected final CatalinaFactoryRegistry registry = mock(CatalinaFactoryRegistry.class);
+    protected final org.apache.catalina.Server server = mock(org.apache.catalina.Server.class);
 
-    private Server catalinaServer = this.createServer(this.server, this.mbeanServer);
+    protected final Server catalinaServer = this.createServer(this.server);
 
-    protected Server createServer(org.apache.catalina.Server server, MBeanServer mbeanServer) {
-        return new CatalinaServer(this.server, this.mbeanServer);
+    protected Server createServer(org.apache.catalina.Server server) {
+        return new CatalinaServer(this.registry, server);
     }
     
     @Test
     public void getEngines() {
         Service service = mock(Service.class);
         org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
-
+        EngineFactory engineFactory = mock(EngineFactory.class);
+        Engine expected = mock(Engine.class);
+        
         when(this.server.findServices()).thenReturn(new Service[] { service });
-
+        when(service.getContainer()).thenReturn(engine);
+        when(this.registry.getEngineFactory()).thenReturn(engineFactory);
+        when(engineFactory.createEngine(same(this.registry), same(engine), same(this.catalinaServer))).thenReturn(expected);
         Iterable<Engine> result = this.catalinaServer.getEngines();
 
         Iterator<Engine> engines = result.iterator();
 
         assertTrue(engines.hasNext());
-
-        when(service.getContainer()).thenReturn(engine);
-
-        engines.next();
-
+        assertSame(expected, engines.next());
         assertFalse(engines.hasNext());
-    }
-
-    @Test
-    public void getMBeanServer() {
-        MBeanServer result = this.catalinaServer.getMBeanServer();
-
-        assertSame(this.mbeanServer, result);
-    }
-
-    @Test
-    public void getDomain() {
-        when(this.mbeanServer.getDefaultDomain()).thenReturn("domain");
-
-        String result = this.catalinaServer.getDomain();
-
-        assertEquals("domain", result);
-
-        DomainServer server = mock(DomainServer.class);
-        Server catalinaServer = new CatalinaServer(server, this.mbeanServer);
-
-        when(server.getDomain()).thenReturn("domain");
-
-        result = catalinaServer.getDomain();
-
-        assertEquals("domain", result);
-    }
-
-    private interface DomainServer extends org.apache.catalina.Server {
-        String getDomain();
     }
 }

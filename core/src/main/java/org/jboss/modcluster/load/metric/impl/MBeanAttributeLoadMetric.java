@@ -23,36 +23,26 @@ package org.jboss.modcluster.load.metric.impl;
 
 import java.util.List;
 
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import javax.management.JMException;
 
-import org.jboss.modcluster.container.Engine;
+import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * Generic {@link LoadMetric} whose load is the aggregated value of an mbean attribute.
  * 
  * @author Paul Ferraro
  */
-public class MBeanAttributeLoadMetric extends AbstractLoadMetric {
-    private MBeanQuerySupport querySupport;
+public class MBeanAttributeLoadMetric extends AbstractMBeanLoadMetric {
     private String attribute;
-
-    public void setPattern(ObjectName pattern) {
-        this.querySupport = new MBeanQuerySupport(pattern);
-    }
-
-    public void setPattern(String pattern) throws MalformedObjectNameException {
-        this.querySupport = new MBeanQuerySupport(pattern);
-    }
 
     public void setAttribute(String attribute) {
         this.attribute = attribute;
     }
 
     @Override
-    public double getLoad(Engine engine) throws Exception {
+    protected double getLoad() throws JMException {
         double load = 0;
-        List<Number> results = this.querySupport.getAttributes(engine.getServer().getMBeanServer(), this.attribute, Number.class);
+        List<Number> results = this.getAttributes(this.attribute, Number.class);
         for (Number result : results) {
             load += result.doubleValue();
         }

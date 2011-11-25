@@ -38,6 +38,7 @@ import org.jboss.modcluster.container.Host;
  * @author Paul Ferraro
  */
 public class CatalinaHost implements Host {
+    protected final CatalinaFactoryRegistry registry;
     protected final org.apache.catalina.Host host;
     protected final Engine engine;
 
@@ -47,7 +48,8 @@ public class CatalinaHost implements Host {
      * @param host a catalina host
      * @param engine the parent container
      */
-    public CatalinaHost(org.apache.catalina.Host host, Engine engine) {
+    public CatalinaHost(CatalinaFactoryRegistry registry, org.apache.catalina.Host host, Engine engine) {
+        this.registry = registry;
         this.host = host;
         this.engine = engine;
     }
@@ -84,7 +86,7 @@ public class CatalinaHost implements Host {
 
             @Override
             public Context next() {
-                return CatalinaFactory.CONTEXT_FACTORY.createContext((org.apache.catalina.Context) children.next(), CatalinaHost.this);
+                return CatalinaHost.this.registry.getContextFactory().createContext((org.apache.catalina.Context) children.next(), CatalinaHost.this);
             }
 
             @Override
@@ -115,7 +117,7 @@ public class CatalinaHost implements Host {
     public Context findContext(String path) {
         org.apache.catalina.Context context = (org.apache.catalina.Context) this.host.findChild(path);
 
-        return (context != null) ? CatalinaFactory.CONTEXT_FACTORY.createContext(context, this) : null;
+        return (context != null) ? CatalinaHost.this.registry.getContextFactory().createContext(context, this) : null;
     }
 
     @Override

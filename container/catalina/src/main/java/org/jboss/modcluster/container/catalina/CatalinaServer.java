@@ -24,10 +24,7 @@ package org.jboss.modcluster.container.catalina;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import javax.management.MBeanServer;
-
 import org.apache.catalina.Service;
-import org.apache.catalina.core.StandardServer;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
 
@@ -37,17 +34,17 @@ import org.jboss.modcluster.container.Server;
  * @author Paul Ferraro
  */
 public class CatalinaServer implements Server {
+    protected final CatalinaFactoryRegistry registry;
     protected final org.apache.catalina.Server server;
-    protected final MBeanServer mbeanServer;
 
     /**
      * Constructs a new CatalinaServer wrapping the specified catalina server.
      * 
      * @param host a catalina server
      */
-    public CatalinaServer(org.apache.catalina.Server server, MBeanServer mbeanServer) {
+    public CatalinaServer(CatalinaFactoryRegistry registry, org.apache.catalina.Server server) {
+        this.registry = registry;
         this.server = server;
-        this.mbeanServer = mbeanServer;
     }
 
     @Override
@@ -62,7 +59,7 @@ public class CatalinaServer implements Server {
 
             @Override
             public Engine next() {
-                return CatalinaFactory.ENGINE_FACTORY.createEngine((org.apache.catalina.Engine) services.next().getContainer(), CatalinaServer.this);
+                return CatalinaServer.this.registry.getEngineFactory().createEngine(CatalinaServer.this.registry, (org.apache.catalina.Engine) services.next().getContainer(), CatalinaServer.this);
             }
 
             @Override
@@ -77,16 +74,6 @@ public class CatalinaServer implements Server {
                 return engines;
             }
         };
-    }
-
-    @Override
-    public MBeanServer getMBeanServer() {
-        return this.mbeanServer;
-    }
-
-    @Override
-    public String getDomain() {
-        return (this.server instanceof StandardServer) ? ((StandardServer) this.server).getDomain() : this.mbeanServer.getDefaultDomain();
     }
 
     @Override

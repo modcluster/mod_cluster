@@ -39,37 +39,46 @@ import static org.mockito.Mockito.*;
  * 
  */
 public class EngineTestCase {
+    protected final CatalinaFactoryRegistry registry = mock(CatalinaFactoryRegistry.class);
     protected final org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
     protected final Server server = mock(Server.class);
 
-    protected final Engine catalinaEngine = this.createEngine(this.engine, this.server);
+    protected final Engine catalinaEngine = this.createEngine();
 
-    protected Engine createEngine(org.apache.catalina.Engine engine, Server server) {
-        return new CatalinaEngine(this.engine, this.server);
+    protected Engine createEngine() {
+        return new CatalinaEngine(this.registry, this.engine, this.server);
     }
 
     @Test
     public void findHost() {
         org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
-
+        HostFactory hostFactory = mock(HostFactory.class);
+        Host expected = mock(Host.class);
+        
         when(this.engine.findChild("host")).thenReturn(host);
-
+        when(this.registry.getHostFactory()).thenReturn(hostFactory);
+        when(hostFactory.createHost(same(this.registry), same(host), same(this.catalinaEngine))).thenReturn(expected);
+        
         Host result = this.catalinaEngine.findHost("host");
 
-        assertSame(this.catalinaEngine, result.getEngine());
+        assertSame(expected, result);
     }
 
     @Test
     public void getHosts() {
         org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
+        HostFactory hostFactory = mock(HostFactory.class);
+        Host expected = mock(Host.class);
 
         when(this.engine.findChildren()).thenReturn(new Container[] { host });
+        when(this.registry.getHostFactory()).thenReturn(hostFactory);
+        when(hostFactory.createHost(same(this.registry), same(host), same(this.catalinaEngine))).thenReturn(expected);
 
         Iterable<Host> result = this.catalinaEngine.getHosts();
 
         Iterator<Host> hosts = result.iterator();
         assertTrue(hosts.hasNext());
-        assertSame(this.catalinaEngine, hosts.next().getEngine());
+        assertSame(expected, hosts.next());
         assertFalse(hosts.hasNext());
     }
 
@@ -99,13 +108,17 @@ public class EngineTestCase {
     public void getProxyConnector() throws Exception {
         org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
         Service service = mock(Service.class);
-
+        Connector expected = mock(Connector.class);
+        ConnectorFactory factory = mock(ConnectorFactory.class);
+        
         when(this.engine.getService()).thenReturn(service);
         when(service.findConnectors()).thenReturn(new org.apache.catalina.connector.Connector[] { connector });
-
+        when(this.registry.getConnectorFactory()).thenReturn(factory);
+        when(factory.createConnector(same(connector))).thenReturn(expected);
+        
         Connector result = this.catalinaEngine.getProxyConnector();
 
-        assertSame(Connector.Type.AJP, result.getType());
+        assertSame(expected, result);
     }
 
     @Test

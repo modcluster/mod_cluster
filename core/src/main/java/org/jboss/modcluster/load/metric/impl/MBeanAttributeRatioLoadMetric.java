@@ -23,11 +23,8 @@ package org.jboss.modcluster.load.metric.impl;
 
 import java.util.List;
 
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
+import javax.management.JMException;
 
-import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
@@ -35,18 +32,9 @@ import org.jboss.modcluster.load.metric.LoadMetric;
  * 
  * @author Paul Ferraro
  */
-public class MBeanAttributeRatioLoadMetric extends AbstractLoadMetric {
-    private MBeanQuerySupport querySupport;
+public class MBeanAttributeRatioLoadMetric extends AbstractMBeanLoadMetric {
     private String dividendAttribute;
     private String divisorAttribute;
-
-    public void setPattern(ObjectName pattern) {
-        this.querySupport = new MBeanQuerySupport(pattern);
-    }
-
-    public void setPattern(String pattern) throws MalformedObjectNameException {
-        this.querySupport = new MBeanQuerySupport(pattern);
-    }
 
     public void setDividendAttribute(String attribute) {
         this.dividendAttribute = attribute;
@@ -57,16 +45,15 @@ public class MBeanAttributeRatioLoadMetric extends AbstractLoadMetric {
     }
 
     @Override
-    public double getLoad(Engine engine) throws Exception {
-        MBeanServer server = engine.getServer().getMBeanServer();
+    public double getLoad() throws JMException {
         double dividend = 0;
-        List<Number> results = this.querySupport.getAttributes(server, this.dividendAttribute, Number.class);
+        List<Number> results = this.getAttributes(this.dividendAttribute, Number.class);
         for (Number result : results) {
             dividend += result.doubleValue();
         }
 
         double divisor = 0;
-        results = this.querySupport.getAttributes(server, this.divisorAttribute, Number.class);
+        results = this.getAttributes(this.divisorAttribute, Number.class);
         for (Number result : results) {
             divisor += result.doubleValue();
         }

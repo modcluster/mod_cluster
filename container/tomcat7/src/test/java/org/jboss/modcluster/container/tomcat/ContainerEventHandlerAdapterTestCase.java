@@ -21,13 +21,12 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import javax.management.MBeanServer;
-
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
-import org.apache.catalina.Server;
 import org.jboss.modcluster.container.ContainerEventHandler;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandler;
+import org.jboss.modcluster.container.catalina.CatalinaFactory;
+import org.jboss.modcluster.container.catalina.ServerProvider;
 
 
 /**
@@ -37,13 +36,8 @@ import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase {
     
     @Override
-    protected CatalinaEventHandlerAdapter createEventHandler(ContainerEventHandler eventHandler, Server server, MBeanServer mbeanServer) {
-        return new TomcatEventHandlerAdapter(eventHandler, server, mbeanServer);
-    }
-    
-    @Override
-    protected CatalinaEventHandlerAdapter createEventHandler(ContainerEventHandler eventHandler, MBeanServer mbeanServer) {
-        return new TomcatEventHandlerAdapter(eventHandler, mbeanServer);
+    protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
+        return new TomcatEventHandlerAdapter(eventHandler, provider, factory);
     }
 
     @Override

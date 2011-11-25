@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
 import javax.management.MalformedObjectNameException;
@@ -42,7 +43,8 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.modcluster.container.catalina.CatalinaLifecycleListenerFactory;
+import org.jboss.modcluster.container.catalina.LifecycleListenerFactory;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
@@ -88,7 +90,14 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         ModClusterService service = new ModClusterService(this, this);
 
         this.service = service;
-        this.listener = new CatalinaEventHandlerAdapter(service);
+        this.listener = this.loadFactory().createListener(service);
+    }
+
+    private LifecycleListenerFactory loadFactory() {
+        for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class)) {
+            return factory;
+        }
+        return new CatalinaLifecycleListenerFactory();
     }
 
     protected ModClusterListener(ModClusterServiceMBean mbean, LifecycleListener listener) {

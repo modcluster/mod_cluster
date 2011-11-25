@@ -21,30 +21,17 @@
  */
 package org.jboss.modcluster.container;
 
-import javax.management.MBeanServer;
 
 /**
  * SPI for a web application server, defined as a collection of one or more Engines.
  * 
  * @author Paul Ferraro
  */
-public interface Server
-{
-   /**
-    * Returns the servlet engines associated with this server.
-    * @return the server's engines
-    */
-   Iterable<Engine> getEngines();
-   
-   /**
-    * Returns the mbean server with which this server's mbeans are registered
-    * @return an mbean server
-    */
-   MBeanServer getMBeanServer();
-   
-   /**
-    * The domain under which this server's mbeans are registered
-    * @return an mbean domain
-    */
-   String getDomain();
+public interface Server {
+    /**
+     * Returns the servlet engines associated with this server.
+     * 
+     * @return the server's engines
+     */
+    Iterable<Engine> getEngines();
 }

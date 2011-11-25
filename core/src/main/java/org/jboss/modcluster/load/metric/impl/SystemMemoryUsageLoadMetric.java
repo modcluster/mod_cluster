@@ -42,6 +42,12 @@ public class SystemMemoryUsageLoadMetric extends AbstractLoadMetric {
 
     private Logger logger = Logger.getLogger(this.getClass());
 
+    private volatile MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+    
+    public void setMBeanServer(MBeanServer server) {
+        this.server = server;
+    }
+    
     /**
      * {@inheritDoc}
      * 
@@ -49,11 +55,10 @@ public class SystemMemoryUsageLoadMetric extends AbstractLoadMetric {
      */
     @Override
     public double getLoad(Engine engine) throws Exception {
-        MBeanServer server = engine.getServer().getMBeanServer();
         try {
             ObjectName name = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
-            double free = ((Number) server.getAttribute(name, FREE_MEMORY)).doubleValue();
-            double total = ((Number) server.getAttribute(name, TOTAL_MEMORY)).doubleValue();
+            double free = ((Number) this.server.getAttribute(name, FREE_MEMORY)).doubleValue();
+            double total = ((Number) this.server.getAttribute(name, TOTAL_MEMORY)).doubleValue();
             return (total - free) / total;
         } catch (AttributeNotFoundException e) {
             this.logger.warn(this.getClass().getSimpleName() + " requires com.sun.management.OperatingSystemMXBean.");

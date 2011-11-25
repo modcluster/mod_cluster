@@ -32,7 +32,6 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.jboss.modcluster.container.Engine;
-import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 import org.junit.Test;
 
@@ -43,25 +42,21 @@ import org.junit.Test;
 public class SystemMemoryUsageLoadMetricTestCase {
     @Test
     public void getLoad() throws Exception {
+        MBeanServer server = mock(MBeanServer.class);
         SystemMemoryUsageLoadMetric metric = new SystemMemoryUsageLoadMetric();
+        metric.setMBeanServer(server);
         ObjectName name = ObjectName.getInstance(ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME);
 
-        MBeanServer mbeanServer = mock(MBeanServer.class);
         Engine engine = mock(Engine.class);
-        Server server = mock(Server.class);
 
-        when(engine.getServer()).thenReturn(server);
-        when(server.getMBeanServer()).thenReturn(mbeanServer);
-
-        when(mbeanServer.getAttribute(name, SystemMemoryUsageLoadMetric.FREE_MEMORY)).thenReturn(256);
-        when(mbeanServer.getAttribute(name, SystemMemoryUsageLoadMetric.TOTAL_MEMORY)).thenReturn(1024);
+        when(server.getAttribute(name, SystemMemoryUsageLoadMetric.FREE_MEMORY)).thenReturn(256);
+        when(server.getAttribute(name, SystemMemoryUsageLoadMetric.TOTAL_MEMORY)).thenReturn(1024);
 
         double load = metric.getLoad(engine);
 
         assertEquals(0.75, load, 0.0);
 
-        when(mbeanServer.getAttribute(name, SystemMemoryUsageLoadMetric.FREE_MEMORY)).thenThrow(
-                new AttributeNotFoundException());
+        when(server.getAttribute(name, SystemMemoryUsageLoadMetric.FREE_MEMORY)).thenThrow(new AttributeNotFoundException());
 
         load = metric.getLoad(engine);
 

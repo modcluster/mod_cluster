@@ -21,12 +21,8 @@
  */
 package org.jboss.modcluster.container.catalina;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -42,24 +38,29 @@ import org.junit.Test;
  * 
  */
 public class HostTestCase {
+    protected final CatalinaFactoryRegistry registry = mock(CatalinaFactoryRegistry.class);
     protected final org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
     protected final Engine engine = mock(Engine.class);
 
-    protected final Host catalinaHost = this.createHost(this.host, this.engine);
+    protected final Host catalinaHost = this.createHost();
 
-    protected Host createHost(org.apache.catalina.Host host, Engine engine) {
-        return new CatalinaHost(this.host, this.engine);
+    protected Host createHost() {
+        return new CatalinaHost(this.registry, this.host, this.engine);
     }
     
     @Test
     public void findContext() {
         org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
-
+        Context expected = mock(Context.class);
+        ContextFactory contextFactory = mock(ContextFactory.class);
+        
         when(this.host.findChild("path")).thenReturn(context);
-
+        when(this.registry.getContextFactory()).thenReturn(contextFactory);
+        when(contextFactory.createContext(same(context), same(this.catalinaHost))).thenReturn(expected);
+        
         Context result = this.catalinaHost.findContext("path");
 
-        assertSame(this.catalinaHost, result.getHost());
+        assertSame(expected, result);
     }
 
     @Test
@@ -79,14 +80,18 @@ public class HostTestCase {
     @Test
     public void getContexts() {
         org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
+        Context expected = mock(Context.class);
+        ContextFactory contextFactory = mock(ContextFactory.class);
 
         when(this.host.findChildren()).thenReturn(new Container[] { context });
+        when(this.registry.getContextFactory()).thenReturn(contextFactory);
+        when(contextFactory.createContext(same(context), same(this.catalinaHost))).thenReturn(expected);
 
         Iterable<Context> result = this.catalinaHost.getContexts();
 
         Iterator<Context> contexts = result.iterator();
         assertTrue(contexts.hasNext());
-        assertSame(this.catalinaHost, contexts.next().getHost());
+        assertSame(expected, contexts.next());
         assertFalse(contexts.hasNext());
     }
 

@@ -5,7 +5,7 @@ import org.jboss.modcluster.container.Host;
 
 public class CatalinaHostFactory implements HostFactory {
     @Override
-    public Host createHost(org.apache.catalina.Host host, Engine engine) {
-        return new CatalinaHost(host, engine);
+    public Host createHost(CatalinaFactoryRegistry registry, org.apache.catalina.Host host, Engine engine) {
+        return new CatalinaHost(registry, host, engine);
     }
 }

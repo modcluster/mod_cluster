@@ -21,18 +21,13 @@
  */
 package org.jboss.modcluster.container.catalina;
 
+import java.beans.PropertyChangeEvent;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.InstanceNotFoundException;
-import javax.management.JMException;
-import javax.management.ListenerNotFoundException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
-import javax.management.Notification;
 import javax.management.ObjectName;
-
-import java.beans.PropertyChangeEvent;
 
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
@@ -51,19 +46,13 @@ import org.jboss.modcluster.container.ContainerEventHandler;
  */
 public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
 
-    private volatile ObjectName serviceObjectName = toObjectName("jboss.web:service=WebServer");
-    private volatile ObjectName serverObjectName = toObjectName("jboss.web:type=Server");
-    private volatile String connectorsStartedNotificationType = "jboss.tomcat.connectors.started";
-    private volatile String connectorsStoppedNotificationType = "jboss.tomcat.connectors.stopped";
-
     protected final ContainerEventHandler eventHandler;
-    protected final MBeanServer mbeanServer;
-    protected volatile Server server;
-    private final CatalinaFactory factory;
+    protected final ServerProvider provider;
+    protected final CatalinaFactory factory;
 
     // Flags used to ignore redundant or invalid events
-    private final AtomicBoolean init = new AtomicBoolean(false);
-    private final AtomicBoolean start = new AtomicBoolean(false);
+    protected final AtomicBoolean init = new AtomicBoolean(false);
+    protected final AtomicBoolean start = new AtomicBoolean(false);
 
     // ----------------------------------------------------------- Constructors
 
@@ -73,65 +62,64 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
      * @param eventHandler an event handler
      */
     public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler) {
-        this(eventHandler, (Server) null);
+        this(eventHandler, ManagementFactory.getPlatformMBeanServer());
     }
 
     public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer) {
-        this(eventHandler, null, mbeanServer);
+        this(eventHandler, new JMXServerProvider(mbeanServer, toObjectName("Catalina:type=Server")));
     }
 
     public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, Server server) {
-        this(eventHandler, server, ManagementFactory.getPlatformMBeanServer());
+        this(eventHandler, new SimpleServerProvider(server), new ServiceLoaderCatalinaFactory());
     }
 
-    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, Server server, MBeanServer mbeanServer) {
+    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider) {
+        this(eventHandler, provider, new ServiceLoaderCatalinaFactory());
+    }
+
+    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
         this.eventHandler = eventHandler;
-        this.server = server;
-        this.mbeanServer = mbeanServer;
-        this.factory = new CatalinaFactory(mbeanServer);
+        this.provider = provider;
+        this.factory = factory;
     }
 
     @Override
     public void start() {
-        if (this.server == null) {
-            this.server = this.findServer();
+        Server server = this.provider.getServer();
+
+        if (!(server instanceof Lifecycle)) throw new IllegalStateException();
+
+        Lifecycle lifecycle = (Lifecycle) server;
+
+        if (!this.containsListener(lifecycle)) {
+            lifecycle.addLifecycleListener(this);
         }
 
-        if (this.server != null) {
-            if (!(this.server instanceof Lifecycle)) throw new IllegalStateException();
+        if (this.init.compareAndSet(false, true)) {
+            this.init(server);
+        }
 
-            Lifecycle lifecycle = (Lifecycle) this.server;
-
-            if (!this.containsListener(lifecycle)) {
-                lifecycle.addLifecycleListener(this);
-            }
-
-            if (this.init.compareAndSet(false, true)) {
-                this.init(this.server);
-            }
-
-            if (this.start.compareAndSet(false, true)) {
-                this.eventHandler.start(this.factory.createServer(this.server));
-            }
+        if (this.start.compareAndSet(false, true)) {
+            this.eventHandler.start(this.factory.createServer(server));
         }
     }
 
     @Override
     public void stop() {
-        if (this.server != null) {
-            if (!(this.server instanceof Lifecycle)) throw new IllegalStateException();
+        Server server = this.provider.getServer();
 
-            Lifecycle lifecycle = (Lifecycle) this.server;
+        if (!(server instanceof Lifecycle)) throw new IllegalStateException();
 
-            lifecycle.removeLifecycleListener(this);
+        Lifecycle lifecycle = (Lifecycle) server;
 
-            if (this.init.get() && this.start.compareAndSet(true, false)) {
-                this.eventHandler.stop(this.factory.createServer(this.server));
-            }
+        lifecycle.removeLifecycleListener(this);
 
-            if (this.init.compareAndSet(true, false)) {
-                this.destroy(this.server);
-            }
+        if (this.init.get() && this.start.compareAndSet(true, false)) {
+            this.eventHandler.stop(this.factory.createServer(server));
+        }
+
+        if (this.init.compareAndSet(true, false)) {
+            this.destroy(server);
         }
     }
 
@@ -143,15 +131,6 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         }
 
         return false;
-    }
-
-    private Server findServer() {
-        try {
-            Service[] services = (Service[]) this.mbeanServer.invoke(this.serverObjectName, "findServices", null, null);
-            return (services.length > 0) ? services[0].getServer() : null;
-        } catch (JMException e) {
-            return null;
-        }
     }
 
     // ------------------------------------------------------------- Properties
@@ -221,7 +200,6 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
             if (source instanceof Server) {
                 if (this.init.compareAndSet(false, true)) {
                     Server server = (Server) source;
-
                     init(server);
                 }
             }
@@ -229,7 +207,6 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
             if (source instanceof Server) {
                 if (this.init.compareAndSet(false, true)) {
                     Server server = (Server) source;
-
                     init(server);
                 }
             }
@@ -273,34 +250,14 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
      * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so you could start (restart) one that needs
      * initializations...
      */
-    private void init(Server server) {
+    protected void init(Server server) {
         this.eventHandler.init(this.factory.createServer(server));
 
         this.addListeners(server);
-
-        // Register for mbean notifications if JBoss Web server mbean exists
-        if (this.mbeanServer != null && this.mbeanServer.isRegistered(this.serviceObjectName)) {
-            try {
-                this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
-            } catch (InstanceNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
-        }
     }
 
-    private void destroy(Server server) {
+    protected void destroy(Server server) {
         this.removeListeners(server);
-
-        // Unregister for mbean notifications if JBoss Web server mbean exists
-        if (this.mbeanServer != null && this.mbeanServer.isRegistered(this.serviceObjectName)) {
-            try {
-                this.mbeanServer.removeNotificationListener(this.serviceObjectName, this);
-            } catch (InstanceNotFoundException e) {
-                throw new IllegalStateException(e);
-            } catch (ListenerNotFoundException e) {
-                throw new IllegalStateException(e);
-            }
-        }
 
         this.eventHandler.shutdown();
     }
@@ -339,73 +296,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see javax.management.NotificationListener#handleNotification(javax.management.Notification, java.lang.Object)
-     */
-    @Override
-    public void handleNotification(Notification notification, Object object) {
-        String type = notification.getType();
-
-        if (type != null) {
-            if (type.equals(this.connectorsStartedNotificationType)) {
-                // In JBoss AS, connectors are the last to start, so trigger a status event to reset the proxy
-                if (this.start.get()) {
-                    for (Service service : ((Server) object).findServices()) {
-                        this.eventHandler.status(this.factory.createEngine((Engine) service.getContainer()));
-                    }
-                }
-            } else if (type.equals(this.connectorsStoppedNotificationType)) {
-                // In JBoss AS, connectors are the first to stop, so handle this notification as a server stop event.
-                if (this.init.get() && this.start.compareAndSet(true, false)) {
-                    this.eventHandler.stop(this.factory.createServer((Server) object));
-                }
-            }
-        }
-    }
-
-    /**
-     * @param serviceObjectName the name to serverObjectName
-     */
-    public void setServiceObjectName(ObjectName serviceObjectName) {
-        this.serviceObjectName = serviceObjectName;
-    }
-
-    /**
-     * @param serverObjectName the serverObjectName to set
-     */
-    public void setServerObjectName(ObjectName serverObjectName) {
-        this.serverObjectName = serverObjectName;
-    }
-
-    /**
-     * @param notificationType the notificationType to set
-     */
-    public void setConnectorsStoppedNotificationType(String type) {
-        this.connectorsStoppedNotificationType = type;
-    }
-
-    /**
-     * @param connectorsStartedNotificationType the connectorsStartedNotificationType to set
-     */
-    public void setConnectorsStartedNotificationType(String type) {
-        this.connectorsStartedNotificationType = type;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * @see java.lang.Object#hashCode()
-     */
-    @Override
-    public int hashCode() {
-        // Hack to encourage this notification listener
-        // to trigger *after* any listener with 0 hashCode.
-        return 1;
-    }
-
-    private static ObjectName toObjectName(String name) {
+    protected static ObjectName toObjectName(String name) {
         try {
             return ObjectName.getInstance(name);
         } catch (MalformedObjectNameException e) {

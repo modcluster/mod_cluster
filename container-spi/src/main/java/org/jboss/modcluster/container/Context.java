@@ -26,56 +26,60 @@ import javax.servlet.http.HttpSessionListener;
 
 /**
  * SPI for a web application context.
+ * 
  * @author Paul Ferraro
  */
-public interface Context
-{
-   /**
-    * @return
-    */
-   Host getHost();
-   
-   /**
-    * @return
-    */
-   String getPath();
-   
-   /**
-    * @return
-    */
-   boolean isStarted();
-   
-   /**
-    * @param listener
-    */
-   void addRequestListener(ServletRequestListener listener);
-   
-   /**
-    * @param listener
-    */
-   void removeRequestListener(ServletRequestListener listener);
-   
-   /**
-    * Adds the specified session listener to this context.
-    * @param listener a session listener
-    */
-   void addSessionListener(HttpSessionListener listener);
-   
-   /**
-    * Removes the specified session listener to this context.
-    * @param listener a session listener
-    */
-   void removeSessionListener(HttpSessionListener listener);
-   
-   /**
-    * Returns the number of active sessions for this context.
-    * @return the active session count
-    */
-   int getActiveSessionCount();
-   
-   /**
-    * Indicates whether this context is distributable.
-    * @return true, if this context distributes sessions, false otherwise
-    */
-   boolean isDistributable();
+public interface Context {
+    /**
+     * @return
+     */
+    Host getHost();
+
+    /**
+     * @return
+     */
+    String getPath();
+
+    /**
+     * @return
+     */
+    boolean isStarted();
+
+    /**
+     * @param listener
+     */
+    void addRequestListener(ServletRequestListener listener);
+
+    /**
+     * @param listener
+     */
+    void removeRequestListener(ServletRequestListener listener);
+
+    /**
+     * Adds the specified session listener to this context.
+     * 
+     * @param listener a session listener
+     */
+    void addSessionListener(HttpSessionListener listener);
+
+    /**
+     * Removes the specified session listener to this context.
+     * 
+     * @param listener a session listener
+     */
+    void removeSessionListener(HttpSessionListener listener);
+
+    /**
+     * Returns the number of active sessions for this context.
+     * 
+     * @return the active session count
+     */
+    int getActiveSessionCount();
+
+    /**
+     * Indicates whether this context is distributable.
+     * 
+     * @return true, if this context distributes sessions, false otherwise
+     */
+    boolean isDistributable();
 }

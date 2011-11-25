@@ -4,5 +4,5 @@ import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
 
 public interface EngineFactory {
-    Engine createEngine(org.apache.catalina.Engine engine, Server server);
+    Engine createEngine(CatalinaFactoryRegistry registry, org.apache.catalina.Engine engine, Server server);
 }
