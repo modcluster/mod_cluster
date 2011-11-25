@@ -6,7 +6,7 @@
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
   <!-- Entry point: catalina lifecycle listener -->
-  <bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter">
+  <bean name="ModClusterListener" class="org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter">
     <constructor>
       <parameter class="org.jboss.modcluster.ContainerEventHandler"><inject bean="HAModClusterService"/></parameter>
       <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
