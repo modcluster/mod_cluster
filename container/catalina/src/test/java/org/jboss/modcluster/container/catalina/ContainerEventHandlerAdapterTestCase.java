@@ -22,10 +22,7 @@
 package org.jboss.modcluster.container.catalina;
 
 import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.beans.PropertyChangeEvent;
 
@@ -47,10 +44,10 @@ import org.mockito.Mockito;
  * 
  */
 public class ContainerEventHandlerAdapterTestCase {
-    private final ContainerEventHandler eventHandler = mock(ContainerEventHandler.class);
-    private final LifecycleServer server = mock(LifecycleServer.class);
-    private final CatalinaFactory factory = mock(CatalinaFactory.class);
-    private final ServerProvider provider = mock(ServerProvider.class);
+    protected final ContainerEventHandler eventHandler = mock(ContainerEventHandler.class);
+    protected final LifecycleServer server = mock(LifecycleServer.class);
+    protected final CatalinaFactory factory = mock(CatalinaFactory.class);
+    protected final ServerProvider provider = mock(ServerProvider.class);
 
     protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
         return new CatalinaEventHandlerAdapter(eventHandler, provider, factory);
@@ -87,7 +84,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void stop() {
+    public void stop() throws Exception {
         Server server = mock(Server.class);
         Service service = mock(Service.class);
         LifecycleEngine engine = mock(LifecycleEngine.class);
@@ -274,9 +271,11 @@ public class ContainerEventHandlerAdapterTestCase {
         this.initServer(handler, server);
 
         handler.lifecycleEvent(this.createAfterInitEvent(server));
+        
+        verifyZeroInteractions(this.eventHandler);
     }
 
-    private void initServer(CatalinaEventHandler handler, LifecycleServer server) {
+    protected void initServer(CatalinaEventHandler handler, LifecycleServer server) {
         Service service = mock(Service.class);
         LifecycleEngine engine = mock(LifecycleEngine.class);
         Container container = mock(Container.class);
@@ -318,7 +317,7 @@ public class ContainerEventHandlerAdapterTestCase {
         Mockito.verifyZeroInteractions(this.eventHandler);
     }
 
-    private void startServer(CatalinaEventHandler handler, LifecycleServer server) {
+    protected void startServer(CatalinaEventHandler handler, LifecycleServer server) {
         Server catalinaServer = mock(Server.class);
         
         when(this.factory.createServer(same(server))).thenReturn(catalinaServer);
@@ -467,15 +466,15 @@ public class ContainerEventHandlerAdapterTestCase {
         verify(this.eventHandler).status(same(catalinaEngine));
     }
 
-    interface LifecycleContext extends Lifecycle, org.apache.catalina.Context {
+    protected interface LifecycleContext extends Lifecycle, org.apache.catalina.Context {
     }
 
-    interface LifecycleServer extends Lifecycle, org.apache.catalina.Server {
+    protected interface LifecycleServer extends Lifecycle, org.apache.catalina.Server {
     }
 
-    interface LifecycleEngine extends Lifecycle, org.apache.catalina.Engine {
+    protected interface LifecycleEngine extends Lifecycle, org.apache.catalina.Engine {
     }
 
-    interface LifecycleContainer extends Lifecycle, org.apache.catalina.Container {
+    protected interface LifecycleContainer extends Lifecycle, org.apache.catalina.Container {
     }
 }
