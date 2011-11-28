@@ -270,29 +270,6 @@
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>build-demo</id>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <phase>package</phase>
-                                <configuration>
-                                    <tasks>
-                                        <!-- Execute the Test Build -->
-                                        <ant antfile="build-demo.xml" target="main" />
-                                        <!-- Create the JBossWeb-Tomcat install structure -->
-                                        <ant antfile="build-jbossweb.xml" target="all">
-                                             <property name="mod_cluster.jar.name" value="${project.build.finalName}" />
-                                        </ant>
-                                    </tasks>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
                         <inherited>false</inherited>
                         <executions>
