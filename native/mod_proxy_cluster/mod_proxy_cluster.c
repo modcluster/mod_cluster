@@ -1880,7 +1880,9 @@ static apr_status_t find_nodedomain(request_rec *r, char **domain, char *route, 
 /**
  * Find the balancer corresponding to the node information
  */
-static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf)
+static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
+                                      proxy_vhost_table *vhost_table,
+                                      proxy_context_table *context_table)
 {
     proxy_balancer *balancer;
     char *route = NULL;
@@ -1905,7 +1907,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf)
                 route++;
             if (route && *route) {
                 /* Nice we have a route, but make sure we have to serve it */
-                int *nodes = find_node_context_host(r, balancer, route, use_alias);
+                int *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table);
                 if (nodes == NULL)
                     return NULL; /* we can't serve context/host for the request */
             }
@@ -2057,11 +2059,11 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
-    balancer = get_route_balancer(r, conf);
+    balancer = get_route_balancer(r, conf, &vhost_table, &context_table);
     if (!balancer) {
         /* May be the balancer has not been created (XXX: use shared memory to find the balancer ...) */
         update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf);
+        balancer = get_route_balancer(r, conf, &vhost_table, &context_table);
     }
     if (!balancer)
         balancer = get_context_host_balancer(r, &vhost_table, &context_table);
