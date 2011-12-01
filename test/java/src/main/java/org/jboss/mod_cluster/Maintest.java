@@ -182,13 +182,14 @@ public class Maintest extends TestCase {
         ClusterListener jcluster = null;
         org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = null;
 
-        /* For the moment test only jbossweb 
+ 
         if (isJBossWEB) {
             jcluster = new ClusterListener();
             jcluster.setAdvertiseGroupAddress(groupa);
             jcluster.setAdvertisePort(groupp);
             jcluster.setSsl(ssl);
-            jcluster.setLoadBalancingGroup(domain);
+            jcluster.setDomain(domain);
+            // jcluster.setLoadBalancingGroup(domain);
             jcluster.setStickySession(stickySession);
             jcluster.setStickySessionRemove(stickySessionRemove);
             jcluster.setStickySessionForce(stickySessionForce);
@@ -196,8 +197,7 @@ public class Maintest extends TestCase {
             if (advertiseSecurityKey != null)
                 jcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = jcluster;
-        } else {
-        */
+        } else  {
             pcluster = new org.jboss.modcluster.container.catalina.standalone.ModClusterListener();
             pcluster.setAdvertiseGroupAddress(groupa);
             pcluster.setAdvertisePort(groupp);
@@ -210,6 +210,7 @@ public class Maintest extends TestCase {
             if (advertiseSecurityKey != null)
                 pcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
             lifecycle = pcluster;
+        }
 
         return lifecycle;
     }
@@ -219,6 +220,18 @@ public class Maintest extends TestCase {
         if (isJBossWEB) {
             ClusterListener jcluster = (ClusterListener) lifecycle;
             result = jcluster.doProxyPing(null);
+            if (result.equals(""))
+            	return null;
+            /* The format is like:
+             *   Proxy[0]: [/10.33.144.3:6666]:
+             *   Type=PING-RSP&State=OK&id=-30009174
+             *   
+             *   Proxy[1]: etc...
+             */
+            String [] records = result.split("\n");
+            if (records.length < 1)
+            	return null;
+            result = (String ) records[1];
         } else {
             org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
             Map<InetSocketAddress, String> map = pcluster.ping();
