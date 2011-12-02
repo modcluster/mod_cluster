@@ -80,7 +80,7 @@
          source="${compile.source}"
          optimize="${compile.optimize}">
          <classpath refid="jbossweb.test.classpath" />
-         <include name="org/jboss/mod_cluster/**" />
+         <include name="src/main/java/org/jboss/mod_cluster/**" />
          <include name="Advertize.java" />
          <include name="SAdvertize.java" />
   </javac>
