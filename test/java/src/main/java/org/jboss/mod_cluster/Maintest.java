@@ -60,12 +60,13 @@ public class Maintest extends TestCase {
        
        // Read the -Dcluster=true/false.
        String jbossweb = System.getProperty("cluster");
-       if (jbossweb != null && jbossweb.equalsIgnoreCase("false")) {
-            System.out.println("Running tests with jbossweb listener");
-    	    isJBossWEB = true;
-       } else {
+       if (jbossweb != null && jbossweb.equalsIgnoreCase("true")) {
             System.out.println("Running tests with mod_cluster listener");
     	    isJBossWEB = false;
+       }
+       else {
+            System.out.println("Running tests with jbossweb listener");
+    	    isJBossWEB = true;
        }
 
        // Read the -Dtest="value".
