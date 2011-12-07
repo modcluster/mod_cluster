@@ -125,13 +125,11 @@ public class CatalinaConnector implements Connector {
 
     @Override
     public int getMaxThreads() {
-        // max thread is in Protocol since 6.0.x get it directly. (tc5.5.x is EOL).
-        return (Integer) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "maxThreads");
+        return this.getEndpointProperty("maxThreads", Number.class).intValue();
     }
 
     @Override
     public int getBusyThreads() {
-    	// TODO this won't work.
         return this.getEndpointProperty("curThreadsBusy", Number.class).intValue();
     }
     
