@@ -126,8 +126,8 @@ public class CatalinaConnector implements Connector {
 
     @Override
     public int getMaxThreads() {
-        Object endpoint = this.getEndpoint();
-        return (endpoint != null) ? (Integer) IntrospectionUtils.getProperty(endpoint, "maxThreads") : 0;
+        Integer result = (Integer) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "maxThreads");
+        return (result != null) ? result.intValue() : 0;
     }
 
     @Override
@@ -137,7 +137,7 @@ public class CatalinaConnector implements Connector {
     }
     
     protected Object getEndpoint() {
-        return this.getProtocolHandlerProperty("ep");
+        return this.getProtocolHandlerProperty("endpoint");
     }
     
     protected Object getProtocolHandlerProperty(String property) {
@@ -186,7 +186,7 @@ public class CatalinaConnector implements Connector {
     }
     
     protected RequestGroupInfo getRequestGroupInfo() {
-        Object connectionHandler = this.getProtocolHandlerProperty("cHandler");
+        Object connectionHandler = this.getConnectionHandler();
         if (connectionHandler == null) return null;
         return this.getRequestGroupInfo(connectionHandler);
     }

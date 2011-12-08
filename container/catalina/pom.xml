@@ -45,13 +45,6 @@
             <artifactId>catalina</artifactId>
             <scope>provided</scope>
         </dependency>
-<!-- What ? Why ?
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>servlet-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
- -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>coyote</artifactId>

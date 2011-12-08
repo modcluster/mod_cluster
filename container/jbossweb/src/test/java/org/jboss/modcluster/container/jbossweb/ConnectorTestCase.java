@@ -21,22 +21,10 @@
  */
 package org.jboss.modcluster.container.jbossweb;
 
-import org.apache.tomcat.util.IntrospectionUtils;
-import org.jboss.modcluster.container.Connector;
 import org.junit.Assert;
 
 public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.ConnectorTestCase {
-    
-    @Override
-    protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        return new JBossWebConnector(connector);
-    }
 
-    @Override
-    protected void setSecure(org.apache.catalina.connector.Connector connector, boolean secure) {
-        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "secure", Boolean.toString(secure));
-    }
-    
     @Override
     public void getMaxThreads() {
         Assert.assertEquals(2048, this.httpConnector.getMaxThreads());

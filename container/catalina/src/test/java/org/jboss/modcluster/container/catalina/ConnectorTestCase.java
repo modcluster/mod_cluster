@@ -21,12 +21,9 @@
  */
 package org.jboss.modcluster.container.catalina;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.container.Connector;
 import org.junit.Assert;
@@ -57,14 +54,7 @@ public class ConnectorTestCase {
     }
 
     protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        return new TomcatConnector(connector);
-    }
-
-    @Test
-    public void getAddress() throws UnknownHostException {
-        Assert.assertNull(this.ajpConnector.getAddress());
-        Assert.assertNull(this.httpConnector.getAddress());
-        Assert.assertNull(this.httpsConnector.getAddress());
+        return new CatalinaConnector(connector);
     }
 
     @Test
@@ -90,17 +80,18 @@ public class ConnectorTestCase {
 
     @Test
     public void setAddress() throws UnknownHostException {
+        String address = "127.0.0.1";
         Assert.assertNull(this.ajpConnector.getAddress());
-        this.ajpConnector.setAddress(InetAddress.getByName("127.0.0.1"));
-        Assert.assertEquals("127.0.0.1", this.ajpConnector.getAddress().getHostAddress());
+        this.ajpConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.ajpConnector.getAddress().getHostAddress());
 
         Assert.assertNull(this.httpConnector.getAddress());
-        this.httpConnector.setAddress(InetAddress.getByName("127.0.0.1"));
-        Assert.assertEquals("127.0.0.1", this.httpConnector.getAddress().getHostAddress());
+        this.httpConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.httpConnector.getAddress().getHostAddress());
 
         Assert.assertNull(this.httpsConnector.getAddress());
-        this.httpsConnector.setAddress(InetAddress.getByName("127.0.0.1"));
-        Assert.assertEquals("127.0.0.1", this.httpsConnector.getAddress().getHostAddress());
+        this.httpsConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.httpsConnector.getAddress().getHostAddress());
     }
     
     @Test
