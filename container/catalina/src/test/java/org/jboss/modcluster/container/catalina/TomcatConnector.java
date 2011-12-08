@@ -1,4 +1,4 @@
-package org.jboss.modcluster.container.tomcat;
+package org.jboss.modcluster.container.catalina;
 
 import java.net.InetAddress;
 

@@ -40,7 +40,6 @@
 
     <properties>
         <version.jboss-logging>3.0.1.GA</version.jboss-logging>
-        <version.tomcat>5.5.23</version.tomcat>
         <version.tomcat6>6.0.33</version.tomcat6>
         <version.tomcat7>7.0.8</version.tomcat7>
         <version.jbossweb>2.1.11.GA</version.jbossweb>
@@ -78,37 +77,6 @@
                 <version>${version.jboss-ha-server-api}</version>
             </dependency>
 
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>catalina</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>servlet-api</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>tomcat-coyote</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>tomcat-ajp</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>tomcat-http</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            <dependency>
-                <groupId>tomcat</groupId>
-                <artifactId>tomcat-util</artifactId>
-                <version>${version.tomcat}</version>
-            </dependency>
-            
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>catalina</artifactId>

@@ -41,33 +41,20 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>tomcat</groupId>
+            <groupId>org.apache.tomcat</groupId>
             <artifactId>catalina</artifactId>
             <scope>provided</scope>
         </dependency>
+<!-- What ? Why ?
         <dependency>
-            <groupId>tomcat</groupId>
+            <groupId>org.apache.tomcat</groupId>
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+ -->
         <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>tomcat-coyote</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>tomcat-ajp</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>tomcat-http</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>tomcat</groupId>
-            <artifactId>tomcat-util</artifactId>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>coyote</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>

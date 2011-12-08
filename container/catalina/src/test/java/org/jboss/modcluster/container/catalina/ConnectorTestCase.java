@@ -57,27 +57,7 @@ public class ConnectorTestCase {
     }
 
     protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        CatalinaConnector result = new CatalinaConnector(connector);
-        ProtocolHandler handler = connector.getProtocolHandler();
-        try {
-            Method method = handler.getClass().getDeclaredMethod("createConnectionHandler");
-            method.setAccessible(true);
-            Object connectionHandler = method.invoke(handler);
-            Field field = result.findField(handler.getClass(), "cHandler");
-            field.setAccessible(true);
-            field.set(handler, connectionHandler);
-            Object endpoint = result.getEndpoint();
-            method = endpoint.getClass().getDeclaredMethod("setConnectionHandler", endpoint.getClass().getDeclaredMethod("getConnectionHandler").getReturnType());
-            method.setAccessible(true);
-            method.invoke(endpoint, connectionHandler);
-        } catch (NoSuchMethodException e) {
-            if (!handler.getClass().getName().equals("org.apache.jk.server.JkCoyoteHandler")) {
-                throw new IllegalStateException(e);
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
-        return result;
+        return new TomcatConnector(connector);
     }
 
     @Test
