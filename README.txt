@@ -1,6 +1,21 @@
 mod_cluster
 ===========
 
+Project structure:
+container-spi (contains no dependencies on a specific web container)
+container
+  catalina (base Tomcat/JBW container impl, based on Tomcat 5.5)
+  catalina-standalone (contains ModClusterListener, used for standalone Tomcat/JBW installations)
+  jbossweb (JBoss Web container impl, all versions)
+  tomcat6 (Tomcat 6.0 container impl)
+  tomcat7 (Tomcat 7.0 container impl)
+core
+ha
+demo
+  client
+  server
+
+
 Instructions
 ------------
 
