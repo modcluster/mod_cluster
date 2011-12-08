@@ -24,6 +24,7 @@
  */
 import java.net.MulticastSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.DatagramPacket;
 
 public class Advertize
@@ -33,17 +34,31 @@ public class Advertize
      */
     public static void main(String[] args) throws Exception
     {
-        if (args.length !=2) {
-            System.out.println("Usage: Advertize multicastaddress port");
+        if (args.length != 2 && args.length != 3) {
+            System.out.println("Usage: Advertize multicastaddress port [bindaddress]");
             System.out.println("java Advertize 224.0.1.105 23364");
+            System.out.println("or");
+            System.out.println("java Advertize 224.0.1.105 23364 10.33.144.3");
             System.out.println("receive from 224.0.1.105:23364");
             System.exit(1);
         }
  
         InetAddress group = InetAddress.getByName(args[0]);
         int port = Integer.parseInt(args[1]);
-        MulticastSocket s = new MulticastSocket(port);
-        s.setTimeToLive(16);
+        InetAddress socketInterface = null;
+        if (args.length == 3)
+            socketInterface = InetAddress.getByName(args[2]);
+        MulticastSocket s = null;
+        String value = System.getProperty("os.name");
+        if ((value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("mac") || value.toLowerCase().startsWith("hp"))) {
+           System.out.println("Linux like OS");
+           s = new MulticastSocket(new InetSocketAddress(group, port));
+        } else
+           s = new MulticastSocket(port);
+        s.setTimeToLive(0);
+        if (socketInterface != null) {
+            s.setInterface(socketInterface);
+        }
         s.joinGroup(group);
         boolean ok = true;
         System.out.println("ready waiting...");
