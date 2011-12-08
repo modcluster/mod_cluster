@@ -16,11 +16,33 @@
       <outputDirectory>mod_cluster.sar</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>target/demo</directory>
-      <outputDirectory>demo</outputDirectory>
+      <directory>demo/client/target/dependencies/lib</directory>
+      <outputDirectory>demo/client/lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>demo/client/target</directory>
+      <outputDirectory>demo/client/lib</outputDirectory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
       </excludes>
+    </fileSet>
+    <fileSet>
+      <directory>demo/client/target/classes</directory>
+      <outputDirectory>demo/client</outputDirectory>
+      <includes>
+        <include>*.bat</include>
+        <include>*.sh</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>demo/server/target</directory>
+      <outputDirectory>demo/server</outputDirectory>
+      <includes>
+        <include>*.war</include>
+      </includes>
     </fileSet>
     <fileSet>
       <directory>target/JBossWeb-Tomcat</directory>
