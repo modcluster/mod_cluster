@@ -31,31 +31,6 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>database</servlet-name>
-    <servlet-class>org.jboss.modcluster.demo.servlet.ConnectionPoolLoadServlet</servlet-class>
-    <init-param>
-      <param-name>datasource</param-name>
-      <param-value>java:/DefaultDS</param-value>
-    </init-param>
-    <init-param>
-      <param-name>user</param-name>
-      <param-value></param-value>
-    </init-param>
-    <init-param>
-      <param-name>password</param-name>
-      <param-value></param-value>
-    </init-param>
-    <init-param>
-      <param-name>count</param-name>
-      <param-value>20</param-value>
-    </init-param>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>database</servlet-name>
-    <url-pattern>/database</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
     <servlet-name>connectors</servlet-name>
     <servlet-class>org.jboss.modcluster.demo.servlet.BusyConnectorsLoadServlet</servlet-class>
     <init-param>
