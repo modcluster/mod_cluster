@@ -5,7 +5,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.catalina.connector.Connector;
+import org.apache.coyote.RequestGroupInfo;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.threads.ResizableExecutor;
 import org.jboss.modcluster.container.catalina.CatalinaConnector;
 
@@ -49,5 +51,11 @@ public class TomcatConnector extends CatalinaConnector {
             }
         }
         return 0;
+    }
+
+    @Override
+    protected RequestGroupInfo getRequestGroupInfo(Object connectionHandler) {
+        AbstractEndpoint.Handler handler = (AbstractEndpoint.Handler) connectionHandler;
+        return (RequestGroupInfo) handler.getGlobal();
     }
 }

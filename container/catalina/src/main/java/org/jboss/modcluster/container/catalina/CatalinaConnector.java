@@ -21,6 +21,7 @@
  */
 package org.jboss.modcluster.container.catalina;
 
+import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -125,36 +126,79 @@ public class CatalinaConnector implements Connector {
 
     @Override
     public int getMaxThreads() {
-        return this.getEndpointProperty("maxThreads", Number.class).intValue();
+        Object endpoint = this.getEndpoint();
+        return (endpoint != null) ? (Integer) IntrospectionUtils.getProperty(endpoint, "maxThreads") : 0;
     }
 
     @Override
     public int getBusyThreads() {
-        return this.getEndpointProperty("curThreadsBusy", Number.class).intValue();
+        Object endpoint = this.getEndpoint();
+        return (endpoint != null) ? (Integer) IntrospectionUtils.getProperty(endpoint, "currentThreadsBusy") : 0;
     }
     
-    private <T> T getEndpointProperty(String property, Class<T> targetClass) {
-        Object endpoint = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "endpoint");
-        return targetClass.cast(IntrospectionUtils.getProperty(endpoint, property));
+    protected Object getEndpoint() {
+        return this.getProtocolHandlerProperty("ep");
+    }
+    
+    protected Object getProtocolHandlerProperty(String property) {
+        Field field = this.findField(this.connector.getProtocolHandler().getClass(), property);
+        if (field == null) {
+            return null;
+        }
+        field.setAccessible(true);
+        try {
+            return field.get(this.connector.getProtocolHandler());
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        } 
+    }
+    
+    Field findField(Class<?> targetClass, String name) {
+        if ((targetClass == null) || Object.class.equals(targetClass)) return null;
+        for (Field field: targetClass.getDeclaredFields()) {
+            if (field.getName().equals(name)) {
+                return field;
+            }
+        }
+        return this.findField(targetClass.getSuperclass(), name);
     }
     
     @Override
     public long getBytesSent() {
-        return this.getRequestGroupInfo().getBytesSent();
+        RequestGroupInfo info = this.getRequestGroupInfo();
+        return (info != null) ? this.getRequestGroupInfo().getBytesSent() : 0;
     }
 
     @Override
     public long getBytesReceived() {
-        return this.getRequestGroupInfo().getBytesReceived();
+        RequestGroupInfo info = this.getRequestGroupInfo();
+        return (info != null) ? this.getRequestGroupInfo().getBytesReceived() : 0;
     }
 
     @Override
     public long getRequestCount() {
-        return this.getRequestGroupInfo().getRequestCount();
+        RequestGroupInfo info = this.getRequestGroupInfo();
+        return (info != null) ? this.getRequestGroupInfo().getRequestCount() : 0;
     }
 
-    private RequestGroupInfo getRequestGroupInfo() {
-        Object handler = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "cHandler");
-        return (RequestGroupInfo) IntrospectionUtils.getProperty(handler, "global");
+    protected Object getConnectionHandler() {
+        return this.getProtocolHandlerProperty("cHandler");
+    }
+    
+    protected RequestGroupInfo getRequestGroupInfo() {
+        Object connectionHandler = this.getProtocolHandlerProperty("cHandler");
+        if (connectionHandler == null) return null;
+        return this.getRequestGroupInfo(connectionHandler);
+    }
+    
+    protected RequestGroupInfo getRequestGroupInfo(Object connectionHandler) {
+        Field field = this.findField(connectionHandler.getClass(), "global");
+        if (field == null) return null;
+        field.setAccessible(true);
+        try {
+            return (RequestGroupInfo) field.get(connectionHandler);
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }

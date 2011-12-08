@@ -21,9 +21,12 @@
  */
 package org.jboss.modcluster.container.catalina;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.container.Connector;
 import org.junit.Assert;
@@ -40,7 +43,7 @@ public class ConnectorTestCase {
         this.setSecure(connector, secure);
         return this.createConnector(connector);
     }
-
+    
     protected org.apache.catalina.connector.Connector createConnector(String protocol) {
         try {
             return new org.apache.catalina.connector.Connector(protocol);
@@ -54,7 +57,27 @@ public class ConnectorTestCase {
     }
 
     protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        return new CatalinaConnector(connector);
+        CatalinaConnector result = new CatalinaConnector(connector);
+        ProtocolHandler handler = connector.getProtocolHandler();
+        try {
+            Method method = handler.getClass().getDeclaredMethod("createConnectionHandler");
+            method.setAccessible(true);
+            Object connectionHandler = method.invoke(handler);
+            Field field = result.findField(handler.getClass(), "cHandler");
+            field.setAccessible(true);
+            field.set(handler, connectionHandler);
+            Object endpoint = result.getEndpoint();
+            method = endpoint.getClass().getDeclaredMethod("setConnectionHandler", endpoint.getClass().getDeclaredMethod("getConnectionHandler").getReturnType());
+            method.setAccessible(true);
+            method.invoke(endpoint, connectionHandler);
+        } catch (NoSuchMethodException e) {
+            if (!handler.getClass().getName().equals("org.apache.jk.server.JkCoyoteHandler")) {
+                throw new IllegalStateException(e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        return result;
     }
 
     @Test
@@ -98,5 +121,40 @@ public class ConnectorTestCase {
         Assert.assertNull(this.httpsConnector.getAddress());
         this.httpsConnector.setAddress(InetAddress.getByName("127.0.0.1"));
         Assert.assertEquals("127.0.0.1", this.httpsConnector.getAddress().getHostAddress());
+    }
+    
+    @Test
+    public void getMaxThreads() {
+        Assert.assertEquals(200, this.httpConnector.getMaxThreads());
+        Assert.assertEquals(200, this.httpsConnector.getMaxThreads());
+        Assert.assertEquals(0, this.ajpConnector.getMaxThreads());
+    }
+    
+    @Test
+    public void getBusyThreads() {
+        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
+        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
+        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
+    }
+    
+    @Test
+    public void getBytesSent() {
+        Assert.assertEquals(0, this.httpConnector.getBytesSent());
+        Assert.assertEquals(0, this.httpsConnector.getBytesSent());
+        Assert.assertEquals(0, this.ajpConnector.getBytesSent());
+    }
+    
+    @Test
+    public void getBytesReceived() {
+        Assert.assertEquals(0, this.httpConnector.getBytesReceived());
+        Assert.assertEquals(0, this.httpsConnector.getBytesReceived());
+        Assert.assertEquals(0, this.ajpConnector.getBytesReceived());
+    }
+    
+    @Test
+    public void getRequestCount() {
+        Assert.assertEquals(0, this.httpConnector.getRequestCount());
+        Assert.assertEquals(0, this.httpsConnector.getRequestCount());
+        Assert.assertEquals(0, this.ajpConnector.getRequestCount());
     }
 }

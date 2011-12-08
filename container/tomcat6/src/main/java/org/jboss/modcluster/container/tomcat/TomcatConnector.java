@@ -14,7 +14,13 @@ public class TomcatConnector extends CatalinaConnector {
 
     @Override
     public int getMaxThreads() {
-        return (Integer) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "maxThreads");
+        Integer result = (Integer) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "maxThreads");
+        return (result != null) ? result.intValue() : 0;
+    }
+    
+    @Override
+    protected Object getEndpoint() {
+        return this.getProtocolHandlerProperty("endpoint");
     }
 
     @Override
