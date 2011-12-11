@@ -11,6 +11,8 @@
         <include>*.txt</include>
       </includes>
     </fileSet>
+
+    <!-- Demo -->
     <fileSet>
       <directory>target/mod_cluster.sar</directory>
       <outputDirectory>mod_cluster.sar</outputDirectory>
@@ -44,9 +46,78 @@
         <include>*.war</include>
       </includes>
     </fileSet>
+
+    <!-- Tomcat6/7 and jbossweb standalone -->
     <fileSet>
-      <directory>target/JBossWeb-Tomcat</directory>
-      <outputDirectory>JBossWeb-Tomcat</outputDirectory>
+      <directory>container-spi/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>core/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>container/catalina/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>container/catalina-standalone/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>container/tomcat6/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>container/tomcat7/target/</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
+    </fileSet>
+    <!-- AS5/6 sar file -->
+    <fileSet>
+      <directory>sar/target/mod_cluster-sar.sar</directory>
+      <excludes>
+        <exclude>classes/**</exclude>
+        <exclude>dependencies/**</exclude>
+        <exclude>maven-archiver/**</exclude>
+        <exclude>*-sources.jar</exclude>
+      </excludes>
+      <outputDirectory>mod_cluster.sar</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>
