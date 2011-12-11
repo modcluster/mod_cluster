@@ -36,6 +36,7 @@
         <module>container</module>
         <module>ha</module>
         <module>demo</module>
+        <module>sar</module>
     </modules>
 
     <properties>
@@ -159,6 +160,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <resources>
             <resource>
@@ -173,27 +175,6 @@
             </resource>
         </resources>
         <plugins>
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>sar</id>
-                        <goals>
-                            <goal>directory-inline</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <finalName>${project.artifactId}.sar</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
-                            <descriptors>
-                                <descriptor>src/assembly/sar.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
