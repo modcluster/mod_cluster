@@ -1,6 +1,6 @@
 test.failonerror=true
 BUILDTEST=N
-build_version=1.2.0.Beta1-SNAPSHOT
+build_version=1.2.0.Beta3-SNAPSHOT
 root=.
 
 base-apache.loc=http://archive.apache.org/dist/
@@ -24,7 +24,7 @@ base-junit.home=${base.path}/junit-${junit.version}
 
 # Location of jbossweb jar files.
 base-jbossweb.loc=http://repository.jboss.org/maven2/jboss/web/
-jbossweb.version=2.1.6.GA
+jbossweb.version=2.1.13.TEST
 base-jbossweb.home=${base.path}/${jbossweb.version}/lib
 
 jbossweb.jar.loc=${base-jbossweb.loc}/jbossweb/${jbossweb.version}/jbossweb-${jbossweb.version}.jar 
