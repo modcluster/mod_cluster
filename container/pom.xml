@@ -8,11 +8,29 @@
     </parent>
     <artifactId>mod_cluster-container</artifactId>
     <packaging>pom</packaging>
-    <modules>
-        <module>catalina</module>
-        <module>catalina-standalone</module>
-        <module>tomcat6</module>
-        <module>tomcat7</module>
-        <module>jbossweb</module>
-    </modules>
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>catalina</module>
+                <module>catalina-standalone</module>
+                <module>tomcat6</module>
+                <module>tomcat7</module>
+                <module>jbossweb</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>AS7</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>catalina</module>
+                <module>jbossweb</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>

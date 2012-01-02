@@ -30,15 +30,6 @@
         </repository>
     </repositories>
 
-    <modules>
-        <module>container-spi</module>
-        <module>core</module>
-        <module>container</module>
-        <module>ha</module>
-        <module>demo</module>
-        <module>sar</module>
-    </modules>
-
     <properties>
         <version.jboss-logging>3.0.1.GA</version.jboss-logging>
         <version.tomcat6>6.0.33</version.tomcat6>
@@ -187,10 +178,43 @@
 
     <profiles>
         <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+                <module>ha</module>
+                <module>demo</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>AS7</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+                <module>demo</module>
+            </modules>
+        </profile>
+        <profile>
             <id>dist</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+                <module>ha</module>
+                <module>demo</module>
+                <module>sar</module>
+            </modules>
             <build>
                 <plugins>
                     <plugin>
