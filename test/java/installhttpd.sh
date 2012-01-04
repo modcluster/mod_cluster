@@ -299,7 +299,12 @@ EOF
 fi
 
 # Add rewrite tests and UseAlias
+# Add ProxyPass to test MODCLUSTER-274 (2 should be enough :)).
 cat >> "$file.new" <<EOF
+ProxyPass /testappli1 http://testhost1:8080/
+ProxyPass /testappli2 http://testhost2:8080/
+ProxyPass /testappli3 http://testhost3:8080/
+ProxyPass /testappli4 http://testhost4:8080/
 LoadModule rewrite_module modules/mod_rewrite.so
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
