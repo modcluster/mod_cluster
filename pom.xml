@@ -35,6 +35,7 @@
         <version.tomcat6>6.0.33</version.tomcat6>
         <version.tomcat7>7.0.8</version.tomcat7>
         <version.jbossweb>2.1.11.GA</version.jbossweb>
+        <version.jbossweb7>7.0.7.Final</version.jbossweb7>
         <version.commons-codec>1.3</version.commons-codec>
         <version.commons-http-client>3.1</version.commons-http-client>
         <version.jfreechart>1.0.12</version.jfreechart>
@@ -105,6 +106,12 @@
                 <groupId>jboss.web</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>${version.jbossweb}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.web</groupId>
+                <artifactId>jbossweb</artifactId>
+                <version>${version.jbossweb7}</version>
             </dependency>
 
             <dependency>
