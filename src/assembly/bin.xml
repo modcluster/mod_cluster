@@ -29,6 +29,7 @@
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
     </fileSet>
     <fileSet>
@@ -57,6 +58,7 @@
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
@@ -69,6 +71,7 @@
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
@@ -76,9 +79,12 @@
       <directory>container/catalina/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
@@ -86,9 +92,12 @@
       <directory>container/catalina-standalone/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
@@ -96,9 +105,12 @@
       <directory>container/tomcat6/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
     </fileSet>
@@ -106,9 +118,12 @@
       <directory>container/tomcat7/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
     </fileSet>
@@ -120,6 +135,7 @@
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>mod_cluster.sar</outputDirectory>
     </fileSet>
