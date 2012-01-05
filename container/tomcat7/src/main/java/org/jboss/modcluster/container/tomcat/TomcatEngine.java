@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.modcluster.container.tomcat;
 
-import org.jboss.modcluster.container.Engine;
-
+import org.apache.catalina.Engine;
+import org.apache.catalina.core.ApplicationSessionCookieConfig;
+import org.jboss.modcluster.container.Server;
+import org.jboss.modcluster.container.catalina.CatalinaEngine;
+import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
 
 /**
+ * Custom engine implementation for Tomcat 7.
  * @author Paul Ferraro
- *
  */
-public class EngineTestCase extends org.jboss.modcluster.container.catalina.EngineTestCase {
+public class TomcatEngine extends CatalinaEngine {
+
+    public TomcatEngine(CatalinaFactoryRegistry registry, Engine engine, Server server) {
+        super(registry, engine, server);
+    }
 
     @Override
-    protected Engine createEngine() {
-        return new TomcatEngine(this.registry, this.engine, this.server);
+    public String getSessionCookieName() {
+        return ApplicationSessionCookieConfig.getSessionCookieName(null);
+    }
+
+    @Override
+    public String getSessionParameterName() {
+        return ApplicationSessionCookieConfig.getSessionUriParamName(null);
     }
 }

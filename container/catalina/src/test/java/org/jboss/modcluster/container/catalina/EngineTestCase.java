@@ -134,4 +134,14 @@ public class EngineTestCase {
 
         assertSame(this.server, result);
     }
+    
+    @Test
+    public void getSessionCookieName() {
+        assertEquals("JSESSIONID", this.catalinaEngine.getSessionCookieName());
+    }
+    
+    @Test
+    public void getSessionParameterName() {
+        assertEquals("jsessionid", this.catalinaEngine.getSessionParameterName());
+    }
 }

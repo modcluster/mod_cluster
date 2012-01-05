@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.modcluster.container.tomcat;
 
 import org.jboss.modcluster.container.Engine;
-
+import org.jboss.modcluster.container.Server;
+import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
+import org.jboss.modcluster.container.catalina.EngineFactory;
 
 /**
  * @author Paul Ferraro
- *
  */
-public class EngineTestCase extends org.jboss.modcluster.container.catalina.EngineTestCase {
+public class TomcatEngineFactory implements EngineFactory {
 
     @Override
-    protected Engine createEngine() {
-        return new TomcatEngine(this.registry, this.engine, this.server);
+    public Engine createEngine(CatalinaFactoryRegistry registry, org.apache.catalina.Engine engine, Server server) {
+        return new TomcatEngine(registry, engine, server);
     }
 }
