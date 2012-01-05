@@ -52,6 +52,8 @@
       <directory>container-spi/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>
@@ -62,6 +64,8 @@
       <directory>core/target/</directory>
       <excludes>
         <exclude>classes/**</exclude>
+        <exclude>test-classes/**</exclude>
+        <exclude>surefire-reports/**</exclude>
         <exclude>dependencies/**</exclude>
         <exclude>maven-archiver/**</exclude>
         <exclude>*-sources.jar</exclude>

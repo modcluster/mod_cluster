@@ -43,8 +43,13 @@ JBoss Web / Tomcat
    http://www.jboss.org/mod_cluster/java/config.html
 
 Building:
-    mvn -P dist package
-    ant -f build-demo.xml 
+    It is possible to build a single platform build (AS7/TC7/TC6/JBossWeb(2.1.x)).
+    * AS7:
+      mvn -P AS7 install (it will use JBossWeb 7.0.x).
+    * distribution package:
+      mvn -P dist package
+    * the demo is in sub projects demo/client demo/server
+      mvn install in demo should be both projects.
 
 Native:
 
