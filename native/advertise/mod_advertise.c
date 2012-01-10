@@ -698,7 +698,7 @@ static void  child_init_hook(apr_pool_t *p, server_rec *s)
 /*
  * Provide information for "status" logic
  */
-static void advertise_info(request_rec *r)
+static const void advertise_info(request_rec *r)
 {
     server_rec *s = main_server;
     /* Find the VirtualHost (Server) that does the Advertise */

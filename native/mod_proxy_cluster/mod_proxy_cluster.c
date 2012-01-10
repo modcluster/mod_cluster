@@ -1152,7 +1152,7 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
 }
 
 
-static void *read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
+static void read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
 {
     int i;
     int size;
@@ -1176,7 +1176,7 @@ static void *read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
 }
 
 /* Read the context table from shared memory */
-static void *read_context_table(request_rec *r, proxy_context_table *context_table)
+static void read_context_table(request_rec *r, proxy_context_table *context_table)
 {
     int i;
     int size;
@@ -1745,6 +1745,8 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
             ap_get_module_config(sconf, &proxy_module);
         apr_time_t last;
 
+        if (!conf)
+           break;
         apr_sleep(apr_time_make(1, 0));
         apr_pool_create(&pool, conf->pool);
         last = node_storage->worker_nodes_need_update(main_server, pool);
