@@ -203,4 +203,60 @@ public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.c
 
         handler.handleNotification(notification, server);
     }
+
+    @Override
+    protected LifecycleEvent createAfterInitEvent(Lifecycle lifecycle) {
+        return new LifecycleEvent(lifecycle, Lifecycle.INIT_EVENT, null);
+    }
+    @Override
+    protected LifecycleEvent createBeforeDestroyInitEvent(Lifecycle lifecycle) {
+        return new LifecycleEvent(lifecycle, Lifecycle.DESTROY_EVENT, null);
+    }
+
+    /* From catalina ContainerEventHandlerAdapterTestCase.java */
+    @Test
+    public void start() {
+        super.start();
+    }
+    @Test
+    public void stop() throws Exception {
+        super.stop();
+    }
+    @Test
+    public void deployWebApp() throws Exception {
+        super.deployWebApp();
+    }
+    @Test
+    public void deployHost() {
+        super.deployHost();
+    }
+    @Test
+    public void undeployWebApp() throws Exception {
+        super.undeployWebApp();
+    }
+    @Test
+    public void undeployHost() {
+        super.undeployHost();
+    }
+    @Test
+    public void startWebApp() throws Exception {
+        super.startWebApp();
+    }
+    @Test
+    public void startServer() throws Exception {
+        super.startServer();
+    }
+    @Test
+    public void stopWebApp() throws Exception {
+        super.stopWebApp();
+    }
+    @Test
+    public void stopServer() throws Exception {
+        super.stopServer();
+    }
+    @Test
+    public void periodicEvent() throws Exception {
+        super.periodicEvent();
+    }
+    
 }

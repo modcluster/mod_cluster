@@ -121,7 +121,7 @@ public class CatalinaConnector implements Connector {
 
     @Override
     public boolean isAvailable() {
-        return this.connector.isAvailable();
+        return false;
     }
 
     @Override

@@ -22,13 +22,21 @@
 package org.jboss.modcluster.container.jbossweb;
 
 import org.junit.Assert;
+import org.junit.Test;
 
 public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.ConnectorTestCase {
 
-    @Override
+    @Test
     public void getMaxThreads() {
         Assert.assertEquals(2048, this.httpConnector.getMaxThreads());
         Assert.assertEquals(2048, this.httpsConnector.getMaxThreads());
         Assert.assertEquals(2048, this.ajpConnector.getMaxThreads());
+    }
+
+    @Test
+    public void getBusyThreads() {
+        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
+        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
+        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
     }
 }

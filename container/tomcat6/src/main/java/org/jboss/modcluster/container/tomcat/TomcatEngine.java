@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,19 +22,29 @@
 
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertSame;
-
+import org.apache.catalina.Engine;
+import org.apache.catalina.Globals;
+import org.jboss.modcluster.container.Server;
+import org.jboss.modcluster.container.catalina.CatalinaEngine;
 import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
-import org.jboss.modcluster.container.catalina.CatalinaHostFactory;
-import org.jboss.modcluster.container.catalina.CatalinaServerFactory;
 
-public class ServiceLoaderCatalinaFactoryTestCase extends org.jboss.modcluster.container.catalina.ServiceLoaderCatalinaFactoryTestCase {
+/**
+ * Custom engine implementation for Tomcat 6.
+ * @author Paul Ferraro
+ */
+public class TomcatEngine extends CatalinaEngine {
+
+    public TomcatEngine(CatalinaFactoryRegistry registry, Engine engine, Server server) {
+        super(registry, engine, server);
+    }
+
     @Override
-    protected void verifyCatalinaFactoryTypes(CatalinaFactoryRegistry registry) {
-        assertSame(registry.getServerFactory().getClass(), CatalinaServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), TomcatEngineFactory.class);
-        assertSame(registry.getHostFactory().getClass(), CatalinaHostFactory.class);
-        assertSame(registry.getContextFactory().getClass(), TomcatContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), TomcatConnectorFactory.class);
+    public String getSessionCookieName() {
+        return Globals.SESSION_COOKIE_NAME;
+    }
+
+    @Override
+    public String getSessionParameterName() {
+        return Globals.SESSION_PARAMETER_NAME;
     }
 }

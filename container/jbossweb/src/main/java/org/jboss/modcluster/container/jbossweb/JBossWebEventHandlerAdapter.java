@@ -12,6 +12,8 @@ import javax.management.ObjectName;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.Lifecycle;
+import org.apache.catalina.LifecycleEvent;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
@@ -143,5 +145,12 @@ public class JBossWebEventHandlerAdapter extends CatalinaEventHandlerAdapter imp
         // Hack to encourage this notification listener
         // to trigger *after* any listener with 0 hashCode.
         return 1;
+    }
+     protected boolean isAfterInit(LifecycleEvent event) {
+         return event.getType().equals(Lifecycle.INIT_EVENT);
+     }
+    @Override
+    protected boolean isBeforeDestroy(LifecycleEvent event) {
+        return event.getType().equals(Lifecycle.DESTROY_EVENT);
     }
 }

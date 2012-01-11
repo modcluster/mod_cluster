@@ -196,7 +196,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         Lifecycle source = event.getLifecycle();
         String type = event.getType();
 
-        if (this.isAfterInit(event)) {
+        if (isAfterInit(event)) {
             if (source instanceof Server) {
                 if (this.init.compareAndSet(false, true)) {
                     Server server = (Server) source;
@@ -227,7 +227,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
                     this.eventHandler.stop(this.factory.createServer((Server) source));
                 }
             }
-        } else if (type.equals(Lifecycle.DESTROY_EVENT)) {
+        } else if (isBeforeDestroy(event)) {
             if (source instanceof Server) {
                 if (this.init.compareAndSet(true, false)) {
                     this.destroy((Server) source);
@@ -242,8 +242,12 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         }
     }
 
+    /* to be overrided in the "real" class. */
     protected boolean isAfterInit(LifecycleEvent event) {
-        return event.getType().equals(Lifecycle.INIT_EVENT);
+        return false;
+    }
+    protected boolean isBeforeDestroy(LifecycleEvent event) {
+        return false;
     }
 
     /**

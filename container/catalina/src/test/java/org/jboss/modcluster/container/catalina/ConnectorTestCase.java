@@ -95,20 +95,6 @@ public class ConnectorTestCase {
     }
     
     @Test
-    public void getMaxThreads() {
-        Assert.assertEquals(200, this.httpConnector.getMaxThreads());
-        Assert.assertEquals(200, this.httpsConnector.getMaxThreads());
-        Assert.assertEquals(0, this.ajpConnector.getMaxThreads());
-    }
-    
-    @Test
-    public void getBusyThreads() {
-        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
-        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
-        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
-    }
-    
-    @Test
     public void getBytesSent() {
         Assert.assertEquals(0, this.httpConnector.getBytesSent());
         Assert.assertEquals(0, this.httpsConnector.getBytesSent());

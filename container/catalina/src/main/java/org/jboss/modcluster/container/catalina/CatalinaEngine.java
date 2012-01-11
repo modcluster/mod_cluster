@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Globals;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -166,12 +165,12 @@ public class CatalinaEngine implements Engine {
 
     @Override
     public String getSessionCookieName() {
-        return Globals.SESSION_COOKIE_NAME;
+        return "JSESSIONID";
     }
 
     @Override
     public String getSessionParameterName() {
-        return Globals.SESSION_PARAMETER_NAME;
+        return "jsessionid";
     }
 
     @Override

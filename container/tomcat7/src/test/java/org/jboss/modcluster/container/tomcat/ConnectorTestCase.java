@@ -24,6 +24,7 @@ package org.jboss.modcluster.container.tomcat;
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.container.Connector;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.ConnectorTestCase {
     
@@ -37,10 +38,18 @@ public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.C
         IntrospectionUtils.setProperty(connector.getProtocolHandler(), "secure", Boolean.toString(secure));
     }
     
-    @Override
+    @Test
     public void getMaxThreads() {
         Assert.assertEquals(0, this.httpConnector.getMaxThreads());
         Assert.assertEquals(0, this.httpsConnector.getMaxThreads());
         Assert.assertEquals(0, this.ajpConnector.getMaxThreads());
     }
+
+    @Test
+    public void getBusyThreads() {
+        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
+        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
+        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
+    }
+
 }

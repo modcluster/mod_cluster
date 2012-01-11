@@ -20,21 +20,14 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.modcluster.container.tomcat;
+package org.jboss.modcluster.container.jbossweb;
 
-import static org.junit.Assert.assertSame;
+import org.jboss.modcluster.container.Connector;
+import org.jboss.modcluster.container.catalina.ConnectorFactory;
 
-import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
-import org.jboss.modcluster.container.catalina.CatalinaHostFactory;
-import org.jboss.modcluster.container.catalina.CatalinaServerFactory;
-
-public class ServiceLoaderCatalinaFactoryTestCase extends org.jboss.modcluster.container.catalina.ServiceLoaderCatalinaFactoryTestCase {
+public class TomcatConnectorFactory implements ConnectorFactory {
     @Override
-    protected void verifyCatalinaFactoryTypes(CatalinaFactoryRegistry registry) {
-        assertSame(registry.getServerFactory().getClass(), CatalinaServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), TomcatEngineFactory.class);
-        assertSame(registry.getHostFactory().getClass(), CatalinaHostFactory.class);
-        assertSame(registry.getContextFactory().getClass(), TomcatContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), TomcatConnectorFactory.class);
+    public Connector createConnector(org.apache.catalina.connector.Connector connector) {
+        return new TomcatConnector(connector);
     }
 }
