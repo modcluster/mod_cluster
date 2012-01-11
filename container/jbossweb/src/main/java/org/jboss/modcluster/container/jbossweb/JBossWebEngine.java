@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.modcluster.container.tomcat;
+package org.jboss.modcluster.container.jbossweb;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Globals;
@@ -29,12 +29,12 @@ import org.jboss.modcluster.container.catalina.CatalinaEngine;
 import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
 
 /**
- * Custom engine implementation for Tomcat 7.
+ * Custom engine implementation for JBossWeb
  * @author Paul Ferraro
  */
-public class TomcatEngine extends CatalinaEngine {
+public class JBossWebEngine extends CatalinaEngine {
 
-    public TomcatEngine(CatalinaFactoryRegistry registry, Engine engine, Server server) {
+    public JBossWebEngine(CatalinaFactoryRegistry registry, Engine engine, Server server) {
         super(registry, engine, server);
     }
 

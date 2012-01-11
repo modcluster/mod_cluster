@@ -22,12 +22,17 @@
 
 package org.jboss.modcluster.container.jbossweb;
 
-import org.jboss.modcluster.container.Connector;
-import org.jboss.modcluster.container.catalina.ConnectorFactory;
+import org.apache.catalina.connector.Connector;
+import org.jboss.modcluster.container.catalina.CatalinaConnector;
 
-public class TomcatConnectorFactory implements ConnectorFactory {
+public class JBossWebConnector extends CatalinaConnector {
+
+    public JBossWebConnector(Connector connector) {
+        super(connector);
+    }
+
     @Override
-    public Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        return new TomcatConnector(connector);
+    public boolean isAvailable() {
+        return this.connector.isAvailable();
     }
 }

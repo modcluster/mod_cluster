@@ -11,9 +11,9 @@ public class ServiceLoaderCatalinaFactoryTestCase extends org.jboss.modcluster.c
     @Override
     protected void verifyCatalinaFactoryTypes(CatalinaFactoryRegistry registry) {
         assertSame(registry.getServerFactory().getClass(), CatalinaServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), CatalinaEngineFactory.class);
+        assertSame(registry.getEngineFactory().getClass(), JBossWebEngineFactory.class);
         assertSame(registry.getHostFactory().getClass(), CatalinaHostFactory.class);
         assertSame(registry.getContextFactory().getClass(), JBossWebContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), TomcatConnectorFactory.class);
+        assertSame(registry.getConnectorFactory().getClass(), JBossWebConnectorFactory.class);
     }
 }
