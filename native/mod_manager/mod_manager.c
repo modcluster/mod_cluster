@@ -148,6 +148,8 @@ typedef struct mod_manager_config
     int allow_cmd;
     /* don't context in first status page */
     int reduce_display;  
+    /* maximum message size */
+    int maxmesssize;
 
 } mod_manager_config;
 
@@ -2260,10 +2262,12 @@ static int manager_handler(request_rec *r)
     char *errstring = NULL;
     int errtype = 0;
     char *buff;
-    apr_size_t bufsiz=MAXMESSSIZE;
+    apr_size_t bufsiz;
     apr_status_t status;
     int global = 0;
     char **ptr;
+    void *sconf = r->server->module_config;
+    mod_manager_config *mconf;
   
     if (strcmp(r->handler, "mod_cluster-manager") == 0) {
         /* Display the nodes information */
@@ -2276,9 +2280,20 @@ static int manager_handler(request_rec *r)
         return DECLINED;
 
     /* Use a buffer to read the message */
-    buff = apr_pcalloc(r->pool, MAXMESSSIZE);
+    mconf = ap_get_module_config(sconf, &manager_module);
+    if (mconf->maxmesssize)
+       bufsiz = mconf->maxmesssize;
+    else {
+       /* we calculate it */
+       bufsiz = 9 + JVMROUTESZ;
+       bufsiz = bufsiz + (mconf->maxhost * HOSTALIASZ) + 7;
+       bufsiz = bufsiz + (mconf->maxcontext * CONTEXTSZ) + 8;
+    }
+    if (bufsiz< MAXMESSSIZE)
+       bufsiz = MAXMESSSIZE;
+    buff = apr_pcalloc(r->pool, bufsiz);
     input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
-    status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, MAXMESSSIZE);
+    status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, bufsiz);
     if (status != APR_SUCCESS) {
         errstring = apr_psprintf(r->pool, SREADER, r->method);
         r->status_line = apr_psprintf(r->pool, "ERROR");
@@ -2539,6 +2554,19 @@ static const char*cmd_manager_reduce_display(cmd_parms *cmd, void *dummy, const 
     }
     return NULL;
 }
+static const char*cmd_manager_maxmesssize(cmd_parms *cmd, void *mconfig, const char *word)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+    mconf->maxmesssize = atoi(word);
+    if (mconf->maxmesssize < MAXMESSSIZE)
+       return "MaxMCMPMessSize must bigger than 1024";
+    return NULL;
+}
+
 
 static const command_rec  manager_cmds[] =
 {
@@ -2618,6 +2646,13 @@ static const command_rec  manager_cmds[] =
         NULL,
         OR_ALL,
         "ReduceDisplay - Don't contexts in the main mod_cluster-manager page. on | off (Default: off Context displayed)"
+    ),
+   AP_INIT_TAKE1(
+        "MaxMCMPMessSize",
+        cmd_manager_maxmesssize,
+        NULL,
+        OR_ALL,
+        "MaxMCMPMaxMessSize - Maximum size of MCMP messages. (Default: calculated min value: 1024)"
     ),
     {NULL}
 };
