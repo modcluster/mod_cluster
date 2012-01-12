@@ -28,9 +28,10 @@ public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.C
 
     @Test
     public void getMaxThreads() {
-        Assert.assertEquals(2048, this.httpConnector.getMaxThreads());
-        Assert.assertEquals(2048, this.httpsConnector.getMaxThreads());
-        Assert.assertEquals(2048, this.ajpConnector.getMaxThreads());
+        int maxthreads = 512 * Runtime.getRuntime().availableProcessors();
+        Assert.assertEquals(maxthreads, this.httpConnector.getMaxThreads());
+        Assert.assertEquals(maxthreads, this.httpsConnector.getMaxThreads());
+        Assert.assertEquals(maxthreads, this.ajpConnector.getMaxThreads());
     }
 
     @Test
