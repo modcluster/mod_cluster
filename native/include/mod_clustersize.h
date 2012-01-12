@@ -31,7 +31,7 @@
 #define HOSTALIASZ 100
 
 /* For context.h */
-#define CONTEXTSZ 40
+#define CONTEXTSZ 80
 
 /* For node.h */
 #define BALANCERSZ 40
