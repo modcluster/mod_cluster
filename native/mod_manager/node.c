@@ -42,12 +42,7 @@
 #include "slotmem.h"
 #include "node.h"
 
-struct mem {
-    ap_slotmem_t *slotmem;
-    const slotmem_storage_method *storage;
-    int num;
-    apr_pool_t *p;
-};
+#include "mod_manager.h"
 
 static mem_t * create_attach_mem_node(char *string, int *num, int type, apr_pool_t *p, slotmem_storage_method *storage) {
     mem_t *ptr;
@@ -67,12 +62,26 @@ static mem_t * create_attach_mem_node(char *string, int *num, int type, apr_pool
         rv = ptr->storage->ap_slotmem_attach(&ptr->slotmem, storename, &size, num, p);
     }
     if (rv != APR_SUCCESS) {
-        return NULL;
+        ptr->laststatus = rv;
+        return ptr;
     }
+    ptr->laststatus = APR_SUCCESS;
     ptr->num = *num;
     ptr->p = p;
     return ptr;
 }
+
+/**
+ * return the last stored in the mem structure
+ * @param pointer to the shared table
+ * @return APR_SUCCESS if all went well
+ *
+ */
+apr_status_t get_last_mem_error(mem_t *mem) {
+    return mem->laststatus;
+}
+
+
 /**
  * Insert(alloc) and update a node record in the shared table
  * @param pointer to the shared table.

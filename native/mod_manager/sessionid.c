@@ -42,12 +42,7 @@
 #include "slotmem.h"
 #include "sessionid.h"
 
-struct mem {
-    ap_slotmem_t *slotmem;
-    const slotmem_storage_method *storage;
-    int num;
-    apr_pool_t *p;
-};
+#include "mod_manager.h"
 
 static mem_t * create_attach_mem_sessionid(char *string, int *num, int type, apr_pool_t *p, slotmem_storage_method *storage) {
     mem_t *ptr;

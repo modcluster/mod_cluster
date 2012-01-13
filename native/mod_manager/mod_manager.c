@@ -480,6 +480,12 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_node %s failed", node);
         return  !OK;
     }
+    if (get_last_mem_error(nodestatsmem) != APR_SUCCESS) {
+        char buf[120];
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_node %s failed: %s",
+                     node, apr_strerror(get_last_mem_error(nodestatsmem), buf, sizeof(buf)));
+        return  !OK;
+    }
 
     contextstatsmem = create_mem_context(context, &mconf->maxcontext, mconf->persistent, p, storage);
     if (contextstatsmem == NULL) {
