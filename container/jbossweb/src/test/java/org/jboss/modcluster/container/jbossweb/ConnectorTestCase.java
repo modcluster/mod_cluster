@@ -28,10 +28,20 @@ public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.C
 
     @Test
     public void getMaxThreads() {
-        int maxthreads = 512 * Runtime.getRuntime().availableProcessors();
-        Assert.assertEquals(maxthreads, this.httpConnector.getMaxThreads());
-        Assert.assertEquals(maxthreads, this.httpsConnector.getMaxThreads());
-        Assert.assertEquals(maxthreads, this.ajpConnector.getMaxThreads());
+        /* it is 32 * processor if APR and 512 if not */
+        int maxjiothreads = 512 * Runtime.getRuntime().availableProcessors();
+        int maxaprthreads = 32 * Runtime.getRuntime().availableProcessors();
+        if (maxaprthreads != this.httpConnector.getMaxThreads() && maxjiothreads != this.httpConnector.getMaxThreads())
+        	Assert.fail("expected:<" + maxjiothreads + "> or <" + maxaprthreads + "  but was:" + this.httpConnector.getMaxThreads());
+        
+        if (maxaprthreads != this.ajpConnector.getMaxThreads() && maxjiothreads != this.ajpConnector.getMaxThreads())
+        	Assert.fail("expected:<" + maxjiothreads + "> or <" + maxaprthreads + "  but was:" + this.ajpConnector.getMaxThreads());
+
+        if (maxaprthreads != this.httpsConnector.getMaxThreads() && maxjiothreads != this.httpsConnector.getMaxThreads())
+        	Assert.fail("expected:<" + maxjiothreads + "> or <" + maxaprthreads + "  but was:" + this.httpsConnector.getMaxThreads());
+        
+        if (maxaprthreads != this.ajpConnector.getMaxThreads() && maxjiothreads != this.ajpConnector.getMaxThreads())
+        	Assert.fail("expected:<" + maxjiothreads + "> or <" + maxaprthreads + "  but was:" + this.ajpConnector.getMaxThreads());
     }
 
     @Test
