@@ -2,9 +2,11 @@
   <parent>
     <groupId>org.jboss.mod_cluster</groupId>
     <artifactId>mod_cluster-parent</artifactId>
-    <version>1.2.0.Beta1-SNAPSHOT</version>
+    <version>1.2.0.Beta4-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
+
+  <modelVersion>4.0.0</modelVersion>
   <artifactId>org.jboss.mod_cluster-docs</artifactId>
   <packaging>pom</packaging>
   
