@@ -195,6 +195,7 @@
                 <module>container</module>
                 <module>ha</module>
                 <module>demo</module>
+                <module>docs</module>
             </modules>
         </profile>
         <profile>
@@ -243,6 +244,7 @@
                 <module>ha</module>
                 <module>demo</module>
                 <module>sar</module>
+                <module>docs</module>
             </modules>
             <build>
                 <plugins>
