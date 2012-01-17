@@ -31,18 +31,19 @@
   </section>
 
   <section>
-    <title>Installing in JBoss Web or Tomcat</title>
+    <title>Installing in Tomcat</title>
     <para>
-      Assuming $CATALINA_HOME indicates the root of your JBossWeb or Tomcat install:
+      Assuming $CATALINA_HOME indicates the root of your Tomcat install:
     </para>
-    <programlisting>cp -r /tmp/mod_cluster/JBossWeb-Tomcat/lib/* $CATALINA_HOME/lib/ </programlisting>
-  </section>
-
-  <section>
-    <title>Installing in JBoss AS 4.2.x or 4.3.x</title>
-    <para>
-      Assuming $JBOSS_HOME indicates the root of your JBoss AS install and that you want to use mod_cluster in the AS's all config:
-    </para>
-    <programlisting>cp -r /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster.jar $JBOSS_HOME/server/all/deploy/jboss-web.deployer</programlisting>
+    <programlisting>
+    cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/jboss-logging.jar $CATALINA_HOME/lib/
+    cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster-container-catalina* $CATALINA_HOME/lib/
+    cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster-container-spi* $CATALINA_HOME/lib/
+    cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster-core* $CATALINA_HOME/lib/
+    </programlisting>
+    and additionally for Tomcat6:
+    <programlisting>cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster-container-tomcat6* $CATALINA_HOME/lib </programlisting>
+    and additionally for Tomcat7:
+    <programlisting>cp /tmp/mod_cluster/JBossWeb-Tomcat/lib/mod_cluster-container-tomcat7* $CATALINA_HOME/lib </programlisting>
   </section>
 </chapter>

@@ -193,21 +193,14 @@ Listen 10.33.144.3:6666
     </section>
 
     <section>
-      <title>Installing in JBoss Web or Tomcat</title>
+      <title>Installing in Tomcat</title>
       <para>
         Assuming $CATALINA_HOME indicates the root of your JBoss Web or Tomcat install:
       </para>
 
-      <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/*
-      $CATALINA_HOME/lib/ </programlisting>
-    </section>
-
-    <section>
-      <title>Installing in JBoss AS 4.2.x or 4.3.x</title>
-      <para>
-        Assuming $JBOSS_HOME indicates the root of your JBoss AS install and that you want to use mod_cluster in the AS's all config:
-      </para>
-      <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/mod-cluster.jar $JBOSS_HOME/server/all/deploy/jboss-web.deployer</programlisting>
+      <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/* $CATALINA_HOME/lib/ </programlisting>
+      Note that you should remove the $CATALINA_HOME/lib/ the mod_cluster-container-tomcat6* file in Tomcat7 and
+      the mod_cluster-container-tomcat7* in Tomcat 6.
     </section>
   </section>
 

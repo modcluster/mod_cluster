@@ -15,7 +15,7 @@
     <para>
       Using JBoss AS 5.x, you must copy the <code>mod_cluster.sar</code> directory from the server-side binary distribution into your target profile's deploy directory.
     </para-->
-    <para>mod_cluster is supported in AS7 via the modcluster subsystem See  <link linkend="AS7config">AS7</link>.</para>
+    <para>mod_cluster is supported in AS7 via the modcluster subsystem See  <link linkend="java.AS7config">AS7</link>.</para>
     <para>In other AS version mod_cluster's configuration resides within the following file:</para>
     <para><code>$JBOSS_HOME/server/$PROFILE/deploy/mod_cluster.sar/META-INF/mod_cluster-jboss-beans.xml</code> file.</para>
     <para>
@@ -36,9 +36,9 @@
       </listitem>
     </orderedlist>
     <para>e.g.</para>
-<programlisting><![CDATA[<bean name="ModClusterListener" class="org.jboss.modcluster.catalina.CatalinaEventHandlerAdapter"> 
+<programlisting><![CDATA[<bean name="ModClusterListener" class="org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter"> 
   <constructor> 
-    <parameter class="org.jboss.modcluster.ContainerEventHandler"> 
+    <parameter class="org.jboss.modcluster.container.ContainerEventHandler"> 
       <inject bean="ModClusterService"/><!-- Non-clustered mode --> 
       <!--inject bean="HAModClusterService"/--><!-- Clustered mode --> 
     </parameter> 
@@ -240,7 +240,7 @@
         For the complete list of configuration properties and their default values, see the chapter entitled <link linkend="java.properties" endterm="java.properties.title"/>.
       </para>
       <para>e.g.</para>
-      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.catalina.ModClusterListener" advertise="true"/>]]></programlisting>
+      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" advertise="true"/>]]></programlisting>
     </section>
 
     <section>
@@ -250,6 +250,29 @@
       in Tomcat. Consequently, to use mod_cluster with Tomcat, it is necessary
       to add <ulink url="http://repository.jboss.org/nexus/content/groups/public-jboss/org/jboss/logging/jboss-logging-spi/">jboss-logging-spi.jar</ulink>
       to $CATALINA_HOME/lib.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Migrating from 1.1.x</title>
+    <para>
+      In mod_cluster 1.2.x the web containers now are separed cleanly, that requires you to change
+      standalone and mbean configuration a little.
+    </para>
+    <section>
+      <title>mod_cluster-jboss-beans.xml</title>
+      <para>
+        The JBoss microcontainer configuration for mod_cluster 1.1.x is *not* compatible with the configuration for 1.2.x.
+        you need to change the ModClusterListener mbean class to:
+        "org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter".
+      </para>
+    </section>
+    <section>
+      <title>server.xml</title>
+      <para>
+       You need to change the  <![CDATA[<Listener/>]]> element className to:
+       "org.jboss.modcluster.container.catalina.standalone.ModClusterListener".
+      </para>
     </section>
   </section>
 
