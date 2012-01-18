@@ -520,7 +520,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
 
         if (!balancer && (creat_bal == CREAT_NONE ||
-            creat_bal == CREAT_ROOT && s!=main_server)) {
+            (creat_bal == CREAT_ROOT && s!=main_server))) {
             s = s->next;
             continue;
         }
@@ -802,6 +802,9 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         savetimeout = worker->conn_timeout;
         worker->conn_timeout = timeout;
         worker->conn_timeout_set = 1;
+    } else {
+        savetimeout_set = 0;
+        savetimeout = 0;
     }
 #else
     /* XXX: side effects the worker may be used in another socket */
@@ -1237,7 +1240,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     if (use_alias) {
         /* read the hosts */
         int sizevhost;
-        int *vhosts;
         int *contextsok = apr_pcalloc(r->pool, sizeof(int)*sizecontext);
         sizevhost = vhost_table->sizevhost;
         for (i=0; i<sizevhost; i++) {
@@ -1268,7 +1270,6 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         /* keep only the contexts corresponding to our balancer */
         if (balancer != NULL) {
             nodeinfo_t *node;
-            char *name;
             if (node_storage->read_node(context->node, &node) != APR_SUCCESS)
                 continue;
             if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
@@ -1342,7 +1343,6 @@ static char *get_context_host_balancer(request_rec *r,
         return NULL;
     while (*nodes != -1) {
         nodeinfo_t *node;
-        char *ret;
         if (node_storage->read_node(*nodes, &node) != APR_SUCCESS) {
             nodes++;
             continue;
