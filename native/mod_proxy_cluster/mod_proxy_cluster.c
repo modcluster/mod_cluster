@@ -87,7 +87,7 @@ static int use_alias = 0; /* 1 : Compare Alias with server_name */
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
-#define WAITFORREMOVE 10 /* seconds */
+static apr_time_t wait_for_remove =  apr_time_from_sec(10); /* wait until that before removing a removed node */
 
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
@@ -1690,8 +1690,8 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
             continue;
-        if (ou->mess.remove && (now - ou->updatetime) >= apr_time_from_sec(WAITFORREMOVE) &&
-            (now - ou->mess.lastcleantry) >= apr_time_from_sec(WAITFORREMOVE)) {
+        if (ou->mess.remove && (now - ou->updatetime) >= wait_for_remove &&
+            (now - ou->mess.lastcleantry) >= wait_for_remove) {
             /* if it has a domain store it in the domain */
 #if HAVE_CLUSTER_EX_DEBUG
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
@@ -2866,6 +2866,17 @@ static const char*cmd_proxy_cluster_lbstatus_recalc_time(cmd_parms *cmd, void *d
     return NULL;
 }
 
+static const char*cmd_proxy_cluster_wait_for_remove(cmd_parms *cmd, void *dummy, const char *arg)
+{
+    int val = atoi(arg);
+    if (val<10) {
+        return "WaitForRemove must be greater than 10";
+    } else {
+        wait_for_remove = apr_time_from_sec(val);
+    }
+    return NULL;
+}
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -2888,6 +2899,13 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "LBstatusRecalTime - Time interval in seconds for loadbalancing logic to recalculate the status of a node: (Default: 5 seconds)"
+    ),
+    AP_INIT_TAKE1(
+        "WaitBeforeRemove",
+        cmd_proxy_cluster_wait_for_remove,
+        NULL,
+        OR_ALL,
+        "WaitBeforeRemove - Time in seconds before a node removed is forgotten by httpd: (Default: 10 seconds)"
     ),
     {NULL}
 };
