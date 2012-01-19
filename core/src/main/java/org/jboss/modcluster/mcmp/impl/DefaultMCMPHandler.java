@@ -588,6 +588,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 String errorType = null;
                 int contentLength = 0;
                 boolean close = false;
+                boolean chuncked = false;
                 if (line != null) {
                     try {
                         int spaceIndex = line.indexOf(' ');
@@ -608,6 +609,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
                                 contentLength = Integer.parseInt(headerValue);
                             } else if ("connection".equalsIgnoreCase(headerName)) {
                                 close = "close".equalsIgnoreCase(headerValue);
+                            } else if ("Transfer-Encoding".equalsIgnoreCase(headerName)) {
+                            	if ("chunked".equalsIgnoreCase(headerValue))
+                            		chuncked = true;
                             }
                             line = reader.readLine();
                         }
@@ -638,7 +642,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
                 if (close) {
                     contentLength = Integer.MAX_VALUE;
-                } else if (contentLength == 0) {
+                } else if (contentLength == 0 && ! chuncked) {
                     return null;
                 }
 
@@ -646,14 +650,35 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 StringBuilder result = new StringBuilder();
                 char[] buffer = new char[512];
 
-                while (contentLength > 0) {
-                    int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+                if (chuncked) {
+                	boolean skipcrlf = false;
+                	for (;;) {
+                 		if (skipcrlf)
+                			reader.readLine(); // Skip CRLF
+                 		else
+                 			skipcrlf = true;
+                		line = reader.readLine();
+                		contentLength = Integer.parseInt(line, 16);
+                		if (contentLength == 0)
+                			break;
+                		while (contentLength > 0) {
+                			int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+                			if (bytes <= 0)
+                				break;
+                			result.append(buffer, 0, bytes);
+                			contentLength -= bytes;
+                		}
+                	}
+                } else {
+                	while (contentLength > 0) {
+                		int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
 
-                    if (bytes <= 0)
-                        break;
+                		if (bytes <= 0)
+                			break;
 
-                    result.append(buffer, 0, bytes);
-                    contentLength -= bytes;
+                		result.append(buffer, 0, bytes);
+                		contentLength -= bytes;
+                	}
                 }
 
                 if (proxy.getState() == State.OK) {
