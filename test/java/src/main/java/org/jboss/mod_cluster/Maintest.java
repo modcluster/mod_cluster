@@ -50,7 +50,7 @@ import org.jboss.web.cluster.ClusterListener;
 public class Maintest extends TestCase {
 
     static StandardServer server = null;
-    static boolean isJBossWEB = true;
+    static boolean isJBossWEB = false;
     public static void main( String args[] ) {
        TestRunner.run(suite());
     }
@@ -58,7 +58,7 @@ public class Maintest extends TestCase {
        TestSuite suite = new TestSuite();
        server = (StandardServer) ServerFactory.getServer();
        
-       // Read the -Dcluster=true/false.
+       // Read the -Dcluster=true/false. (cluster means mod_cluster here).
        String jbossweb = System.getProperty("cluster");
        if (jbossweb != null && jbossweb.equalsIgnoreCase("true")) {
             System.out.println("Running tests with mod_cluster listener");
@@ -93,26 +93,23 @@ public class Maintest extends TestCase {
             System.gc();
             suite.addTest(new TestSuite(Testmod_cluster_manager.class));
             System.gc();
-            /* It is broken with 2.1.12
             suite.addTest(new TestSuite(TestPing.class));
             System.gc();
-             */
             suite.addTest(new TestSuite(Test_ReWrite.class));
             System.gc();
             suite.addTest(new TestSuite(TestContexts.class));
             System.gc();
             suite.addTest(new TestSuite(TestAliases.class));
             System.gc();
-            /* It is broken with 2.1.12
             suite.addTest(new TestSuite(TestDigest.class));
             System.gc();
-             */
             suite.addTest(new TestSuite(TestQuery.class));
             System.gc();
             suite.addTest(new TestSuite(Test_188.class));
             System.gc();
             suite.addTest(new TestSuite(Test_196.class));
             System.gc();
+
             /* XXX The JBWEB_117 tests are not really related to mod_cluster
              * Run them one by one using ant one -Dtest=test
             suite.addTest(new TestSuite(TestJBWEB_117.class));
@@ -122,6 +119,10 @@ public class Maintest extends TestCase {
             suite.addTest(new TestSuite(Test_Chunk_JBWEB_117.class));
             System.gc();
             */
+
+            /* MODCLUSTER-267 */
+            suite.addTest(new TestSuite(TestChunkedMCPM.class))
+            System.gc();
        }
        return suite;
     }
