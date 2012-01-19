@@ -49,3 +49,4 @@ mod_cluster.jar=../../core/target/mod_cluster-core-${build_version}.jar
 mod_cluster_spi.jar=../../container-spi/target/mod_cluster-container-spi-${build_version}.jar
 mod_cluster_catalina.jar=../../container/catalina/target/mod_cluster-container-catalina-${build_version}.jar
 mod_cluster_catalina_standalone.jar=../../container/catalina-standalone/target/mod_cluster-container-catalina-standalone-${build_version}.jar
+mod_cluster_jbossweb.jar=../../container/jbossweb/target/mod_cluster-container-jbossweb-${build_version}.jar
