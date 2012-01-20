@@ -121,7 +121,7 @@ public class Maintest extends TestCase {
             */
 
             /* MODCLUSTER-267 */
-            suite.addTest(new TestSuite(TestChunkedMCPM.class))
+            suite.addTest(new TestSuite(TestChunkedMCPM.class));
             System.gc();
        }
        return suite;
