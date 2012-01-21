@@ -204,13 +204,20 @@ static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
     worker->cp = cp;
 }
 
-/*
- * Create/Get the worker before using it
+/**
+ * Add a node to the worker conf
  * XXX: Contains code of ap_proxy_initialize_worker (proxy_util.c)
  * XXX: If something goes wrong the worker can't be used and we leak memory... in a pool
+ * NOTE: pool is the request pool or any temporary pool. Use conf->pool for any data that live longer.
+ * @param node the pointer to the node structure
+ * @param conf a proxy_server_conf.
+ * @param balancer the balancer to update.
+ * @param pool a temporary pool.
+ * @server the server rec for logging purposes.
+ *
  */
 static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balancer,
-                          server_rec *server, proxy_worker **worker,
+                          server_rec *server,
                           nodeinfo_t *node, apr_pool_t *pool)
 {
     char *url;
@@ -224,7 +231,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
 #if APR_HAS_THREADS
     int mpm_threads;
 #endif
-
+    proxy_worker **worker;
     /* build the name (scheme and port) when needed */
     url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
 
@@ -487,22 +494,7 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
     }
     return balancer;
 }
-/**
- * Add a node to the worker conf
- * NOTE: pool is the request pool or any temporary pool. Use conf->pool for any data that live longer.
- * @param node the pointer to the node structure
- * @param conf a proxy_server_conf.
- * @param balancer the balancer to update.
- * @param pool a temporary pool.
- * @server the server rec for logging purposes.
- *
- */
-static void add_workers_node(nodeinfo_t *node, proxy_server_conf *conf, proxy_balancer *balancer,
-                             apr_pool_t *pool, server_rec *server)
-{
-    proxy_worker *worker = NULL;
-    create_worker(conf, balancer, server, &worker, node, pool);
-}
+
 /*
  * Adds the balancers and the workers to the VirtualHosts corresponding to node
  * Note that the calling routine should lock before calling us.
@@ -527,7 +519,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
         if (!balancer)
             balancer = add_balancer_node(node, conf, pool, s);
         if (balancer)
-            add_workers_node(node, conf, balancer, pool, s);
+            create_worker(conf, balancer, s, node, pool);
         s = s->next;
     }
 }
