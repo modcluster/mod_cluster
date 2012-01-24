@@ -66,6 +66,16 @@
         </para>
       </listitem>
       <listitem>
+        <para>
+          In AS7 you have to set org.apache.tomcat.util.ENABLE_MODELER to true, Something like:
+          <programlisting>
+    &lt;system-properties&gt;
+       &lt;property name="org.apache.tomcat.util.ENABLE_MODELER" value="true"/&gt;
+    &lt;/system-properties&gt;
+          </programlisting>
+        </para>
+      </listitem>
+      <listitem>
         <para>Start httpd and your JBossAS/JBossWeb/Tomcat servers</para>
       </listitem>
       <listitem>
