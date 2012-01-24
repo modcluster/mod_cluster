@@ -571,9 +571,9 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 {
     int i;
     char *pptr = (char *) node;
-    pptr = pptr + node->offset;
     proxy_cluster_helper *helper;
     proxy_worker *worker = (proxy_worker *)conf->workers->elts;
+    pptr = pptr + node->offset;
     for (i = 0; i < conf->workers->nelts; i++) {
         if (worker->id == node->mess.id && worker->s == (proxy_worker_stat *) pptr)
             break;
