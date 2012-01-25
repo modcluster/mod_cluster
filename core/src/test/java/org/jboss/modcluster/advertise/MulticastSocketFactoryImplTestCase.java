@@ -58,8 +58,7 @@ public class MulticastSocketFactoryImplTestCase {
 
         // Validate cross-talking behavior on linux only
         if ((os != null)
-                && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("mac") || os.trim()
-                        .toLowerCase().startsWith("hp"))) {
+                && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("hp"))) {
             System.setProperty("os.name", "OtherOS");
 
             try {
