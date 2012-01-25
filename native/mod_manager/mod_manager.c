@@ -150,6 +150,8 @@ typedef struct mod_manager_config
     int reduce_display;  
     /* maximum message size */
     int maxmesssize;
+    /* Enable MCPM receiver */
+    int enable_mcpm_receive;
 
 } mod_manager_config;
 
@@ -1625,6 +1627,8 @@ static int manager_trans(request_rec *r)
     core_dir_config *conf =
         (core_dir_config *)ap_get_module_config(r->per_dir_config,
                                                 &core_module);
+    mod_manager_config *mconf = ap_get_module_config(r->server->module_config,
+                                                     &manager_module);
  
     if (conf && conf->handler && r->method_number == M_GET &&
         strcmp(conf->handler, "mod_cluster-manager") == 0) {
@@ -1634,6 +1638,8 @@ static int manager_trans(request_rec *r)
     }
     if (r->method_number != M_INVALID)
         return DECLINED;
+    if (!mconf->enable_mcpm_receive)
+        return DECLINED; /* Not allowed to receive MCMP */
 
     if (strcasecmp(r->method, "CONFIG") == 0)
         ours = 1;
@@ -2375,7 +2381,6 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
     char *sessionid;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
 
-
     if (storage == NULL) {
         /* that happens when doing a gracefull restart for example after additing/changing the storage provider */
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "Fatal storage provider not initialized");
@@ -2572,6 +2577,14 @@ static const char*cmd_manager_maxmesssize(cmd_parms *cmd, void *mconfig, const c
        return "MaxMCMPMessSize must bigger than 1024";
     return NULL;
 }
+static const char*cmd_manager_enable_mcpm_receive(cmd_parms *cmd, void *dummy)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    if (!cmd->server->is_virtual)
+        return "EnableMCPMReceive must be in a VirtualHost";
+    mconf->enable_mcpm_receive = -1;
+    return NULL;
+}
 
 
 static const command_rec  manager_cmds[] =
@@ -2660,6 +2673,13 @@ static const command_rec  manager_cmds[] =
         OR_ALL,
         "MaxMCMPMaxMessSize - Maximum size of MCMP messages. (Default: calculated min value: 1024)"
     ),
+    AP_INIT_NO_ARGS(
+        "EnableMCPMReceive",
+         cmd_manager_enable_mcpm_receive,
+         NULL,
+         OR_ALL,
+         "EnableMCPMReceive - Allow the VirtualHost to receive MCPM."
+    ),
     {NULL}
 };
 
@@ -2710,6 +2730,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->allow_display = 0;
     mconf->allow_cmd = -1;
     mconf->reduce_display = 0;
+    mconf->enable_mcpm_receive = 0;
     return mconf;
 }
 
@@ -2789,6 +2810,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->reduce_display = mconf2->reduce_display;
     else if (mconf1->reduce_display != 0)
         mconf->reduce_display = mconf1->reduce_display;
+
+    if (mconf2->enable_mcpm_receive != 0)
+        mconf->enable_mcpm_receive = mconf2->enable_mcpm_receive;
+    else if (mconf1->enable_mcpm_receive != 0)
+        mconf->enable_mcpm_receive = mconf1->enable_mcpm_receive;
 
     return mconf;
 }
