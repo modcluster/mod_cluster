@@ -45,7 +45,7 @@
       <sv:value>mod_cluster</sv:value>
     </sv:property>
     <sv:property sv:name="mgnl:template" sv:type="String">
-      <sv:value>jbossORGProjectTemplate</sv:value>
+      <sv:value>jbossorgProjectSubPage</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="orgLayoutHeader">
