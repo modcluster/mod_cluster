@@ -1,3 +1,0 @@
-That is mod_proxy code httpd-2.2.13 (patched).
-The mod_proxy modules are need if your httpd is older than 2.2.13.
-We test it with 2.2.3 :-)
