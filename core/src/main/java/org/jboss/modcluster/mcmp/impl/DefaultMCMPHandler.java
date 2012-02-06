@@ -592,6 +592,14 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 if (line != null) {
                     try {
                         int spaceIndex = line.indexOf(' ');
+
+                        /* Ignore everything until we have a HTTP headers */
+                        while (spaceIndex == -1) {
+                            line = reader.readLine();
+                            if (line == null)
+                                return null; // Connection closed...
+                            spaceIndex = line.indexOf(' ');
+                        }
                         String responseStatus = line.substring(spaceIndex + 1, line.indexOf(' ', spaceIndex + 1));
                         status = Integer.parseInt(responseStatus);
                         line = reader.readLine();
@@ -659,8 +667,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
                  			skipcrlf = true;
                 		line = reader.readLine();
                 		contentLength = Integer.parseInt(line, 16);
-                		if (contentLength == 0)
+                		if (contentLength == 0) {
+                                        reader.readLine(); // Skip last CRLF.
                 			break;
+                                }
                 		while (contentLength > 0) {
                 			int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
                 			if (bytes <= 0)
