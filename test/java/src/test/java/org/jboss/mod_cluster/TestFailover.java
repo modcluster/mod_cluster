@@ -59,10 +59,12 @@ public class TestFailover extends TestCase {
 
             service = new JBossWeb("node3",  "localhost");
             connector = service.addConnector(8011);
+            service.AddContext("/prova", "/prova", "MyCount", false);
             server.addService(service);
 
             service2 = new JBossWeb("node4",  "localhost");
             connector2 = service2.addConnector(8010);
+            service2.AddContext("/prova", "/prova", "MyCount", false);
             server.addService(service2);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
@@ -90,14 +92,15 @@ public class TestFailover extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/prova/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
             clienterror = true;
         }
-        if (clienterror)
+        if (clienterror) {
             fail("Client error");
+        }
 
         // Stop the connector that has received the request...
         String node = client.getnode();
