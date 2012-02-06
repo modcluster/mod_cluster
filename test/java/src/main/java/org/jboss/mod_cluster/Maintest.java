@@ -47,85 +47,10 @@ import org.apache.catalina.LifecycleListener;
 
 import org.jboss.web.cluster.ClusterListener;
 
-public class Maintest extends TestCase {
+public class Maintest {
 
     static StandardServer server = null;
     static boolean isJBossWEB = false;
-    public static void main( String args[] ) {
-       TestRunner.run(suite());
-    }
-    public static Test suite() {
-       TestSuite suite = new TestSuite();
-       server = (StandardServer) ServerFactory.getServer();
-       
-       // Read the -Dcluster=true/false. (cluster means mod_cluster here).
-       String jbossweb = System.getProperty("cluster");
-       if (jbossweb != null && jbossweb.equalsIgnoreCase("false")) {
-            System.out.println("Running tests with jbossweb listener");
-    	    isJBossWEB = true;
-       }
-       else {
-            System.out.println("Running tests with mod_cluster listener");
-    	    isJBossWEB = false;
-       }
-
-       // Read the -Dtest="value".
-       String test = System.getProperty("test");
-       if (test != null) {
-            System.out.println("Running single test: " + test);
-            try {
-                Class clazz = Class.forName("org.jboss.mod_cluster." + test);
-                suite.addTest(new TestSuite(clazz));
-            } catch (ClassNotFoundException ex) {
-                System.out.println("Running single test: " + test + " Not found");
-                return null;
-            }
-       } else {
-            suite.addTest(new TestSuite(TestAddDel.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestBase.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestFailover.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestStickyForce.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestFailAppover.class));
-            System.gc();
-            suite.addTest(new TestSuite(Testmod_cluster_manager.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestPing.class));
-            System.gc();
-            suite.addTest(new TestSuite(Test_ReWrite.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestContexts.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestAliases.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestDigest.class));
-            System.gc();
-            suite.addTest(new TestSuite(TestQuery.class));
-            System.gc();
-            suite.addTest(new TestSuite(Test_188.class));
-            System.gc();
-            suite.addTest(new TestSuite(Test_196.class));
-            System.gc();
-
-            /* XXX The JBWEB_117 tests are not really related to mod_cluster
-             * Run them one by one using ant one -Dtest=test
-            suite.addTest(new TestSuite(TestJBWEB_117.class));
-            System.gc();
-            suite.addTest(new TestSuite(Test_Native_JBWEB_117.class));
-            System.gc();
-            suite.addTest(new TestSuite(Test_Chunk_JBWEB_117.class));
-            System.gc();
-            */
-
-            /* MODCLUSTER-267 */
-            suite.addTest(new TestSuite(TestChunkedMCPM.class));
-            System.gc();
-       }
-       return suite;
-    }
     static StandardServer getServer() {
         if (server == null) {
             server = (StandardServer) ServerFactory.getServer();
