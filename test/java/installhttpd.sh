@@ -285,7 +285,6 @@ then
     AdvertiseFrequency 5
     AdvertiseSecurityKey secret
     AdvertiseGroup @ADVIP@:23364
-    EnableMCPMReceive
 
     <Location /mod_cluster_manager>
        SetHandler mod_cluster-manager
