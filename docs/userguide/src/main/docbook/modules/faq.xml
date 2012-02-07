@@ -196,4 +196,15 @@ GET /
     </para>
   </section>
 
+  <section>
+    <title>I have more than one Connector mod_cluster does use the right one</title>
+    <para>
+      Mod_cluster tries to use the first AJP connector configured. If there isn't any AJP connector
+      it uses the http or https that has the biggest maxthreads value. That is "maxThreads" in Tomcat and JBossAS4/5/6:
+      <programlisting><![CDATA[    <Connector port="8080" protocol="HTTP/1.1" maxThreads="201" />]]></programlisting>
+      Or "max-connections" in AS7: (32 * processor + 1 for native and 512 * processor + 1 for JIO).
+      <programlisting><![CDATA[    <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http" max-connections="513" />]]></programlisting>
+    </para>
+  </section>
+
 </chapter>
