@@ -49,13 +49,11 @@ tar xvf mod-cluster-1.0.0-linux2-x86-ssl.tar.gz</programlisting>
         copy them directory to your httpd install's module directory.
       </para>
       <programlisting>cd /tmp
-tar xvf mod_cluster-1.0.0.CR2-linux2-x86-so.tar.gz</programlisting>
+tar xvf mod_cluster-1.2.0.Final-linux2-x86-so.tar.gz</programlisting>
       <para>
         And then you have to copy the files below to you module directory:
       </para>
       <itemizedlist>
-        <listitem><para>mod_proxy.so</para></listitem>
-        <listitem><para>mod_proxy_ajp.so</para></listitem>
         <listitem><para>mod_slotmem.so</para></listitem>
         <listitem><para>mod_manager.so</para></listitem>
         <listitem><para>mod_proxy_cluster.so</para></listitem>
