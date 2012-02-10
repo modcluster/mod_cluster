@@ -1,5 +1,5 @@
 # Change the version 1.2.0.Beta4
-VERSION=1.2.0.Beta4
+VERSION=1.2.0.Final
 export VERSION
 mkdir -p ${VERSION}
 for file in `cat files.list`
@@ -40,8 +40,11 @@ do
         FILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris-sparc64-:'`
         HTTPFILE=`echo ${HTTPFILE} | sed 's:-solaris64-sparcv9-:-solaris9-sparcv9-:'`
         ;;
-     *solaris*-x86*)
-        BASE=mod_cluster-solaris-x86
+     *solaris9-x86*)
+        BASE=mod_cluster-solaris9-x86
+        ;;
+     *solaris10-x86*)
+        BASE=mod_cluster-solaris10-x86
         ;;
      *macosx-x86*)
         BASE=mod_cluster-macosx
