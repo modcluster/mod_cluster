@@ -57,6 +57,7 @@ do
         ;;
       *.tar.gz)
         BASE=mod_cluster-linux-i686
+        HTTPFILE=mod_cluster-parent-${VERSION}-bin.tar.gz
         ;;
   esac
   echo $FILE
