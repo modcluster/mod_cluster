@@ -184,6 +184,25 @@ GET /
   </section>
 
   <section>
+    <title>I have "HTTP/1.1 501 Method Not Implemented"</title>
+    <para>You need to configure <link linkend="EnableMCPMReceive">EnableMCPMReceive</link> in
+      the VirtualHost where you received the MCMP elements in the Apache httpd configuration.
+      Something like:
+    </para>
+    <programlisting><![CDATA[
+<VirtualHost localhost:6666>
+    <Directory />
+     Order deny,allow
+     Deny from all
+     Allow from 127.0.0.1
+    </Directory>
+    ServerAdvertise on http://localhost:6666
+    EnableMCPMReceive
+</VirtualHost>
+]]></programlisting>
+  </section>
+
+  <section>
     <title>Redirect is not working:</title>
     <para>
       When using http/https instead AJP proxyname, proxyhost and redirect must be configured in the Connector.

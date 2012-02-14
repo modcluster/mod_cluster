@@ -127,7 +127,8 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
           If not an error message will be displayed and httpd won't start.
     </para>
 
-    <section><title>EnableMCPMReceive</title>
+    <section id="EnableMCPMReceive">
+    <title>EnableMCPMReceive</title>
     <para>EnableMCPMReceive - Allow the VirtualHost to receive MCPM.
     Allow the VirtualHost to receive the MCPM from the nodes. You need
     one EnableMCPMReceive in your httpd configuration to allow mod_cluster
@@ -329,6 +330,7 @@ Allow from 127.0.0.1
  
  ManagerBalancerName mycluster
  ServerAdvertise On
+ EnableMCPMReceive
  
  &lt;/VirtualHost&gt;</programlisting></para>
   </section>
