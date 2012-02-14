@@ -172,6 +172,12 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>Default: 0 (the logic is not activated).</para>
     </section>
 
+    <section><title>MaxMCMPMaxMessSize</title>
+    <para>MaxMCMPMaxMessSize:  Maximum size of MCMP messages.
+     from other Max directives.</para>
+    <para>Default: calculated from other Max directives. Min: 1024</para>
+    </section>
+
     <section><title>ManagerBalancerName</title>
     <para>ManagerBalancerName: That is the name of balancer to use when the
     JBoss AS/JBossWeb/Tomcat doesn't provide a balancer name.</para>

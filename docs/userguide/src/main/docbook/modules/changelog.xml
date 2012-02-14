@@ -7,6 +7,116 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.2.0.Final (06 February 2012)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_proxy code for old httpd versions needs to be updated. (MODCLUSTER-227)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Missing Documentation For mod_cluster with JBoss AS5. (MODCLUSTER-248)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>sticky-session-force change requires httpd restart. (MODCLUSTER-273)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster management console/Status does not show exact mod_cluster version. (MODCLUSTER-256)</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
+    <title>1.2.0.Beta4 (26 January 2012)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>read-attribute and :write-attribute Error in AS7. (MODCLUSTER-246)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>routing table lookup creates performance issues.. (MODCLUSTER-252)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Error 503 using mod_cluster: CVE-2011-3348. (MODCLUSTER-258)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>warning while compiling on some lab boxes. (MODCLUSTER-266)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>String index out of range: -1 with a lot of nodes/deploymentswarning while compiling on some lab boxes. (MODCLUSTER-266)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>404 while/just after removing a node. (MODCLUSTER-272)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>ProxyPass doesn't work with mod_cluster whne mixing mod_cluster and other scheme handlers404 while/just after removing a node. (MODCLUSTER-274)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>mod_cluster forgets removed node too fast. (MODCLUSTER-231)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Allow context lengths greater than 40 (MODCLUSTER-236)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Increase the MAXMESSSIZE and allow it to be configurable via a parameter. (MODCLUSTER-244)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="add"><imagedata fileref="images/add.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>Calculate the MAXMESSSIZE dynamically. (MODCLUSTER-245)</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.1.3.Final (12 August 2011)</title>
     <informaltable frame="all">
       <tgroup cols="2">
