@@ -127,6 +127,14 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
           If not an error message will be displayed and httpd won't start.
     </para>
 
+    <section><title>EnableMCPMReceive</title>
+    <para>EnableMCPMReceive - Allow the VirtualHost to receive MCPM.
+    Allow the VirtualHost to receive the MCPM from the nodes. You need
+    one EnableMCPMReceive in your httpd configuration to allow mod_cluster
+    to work, put it in the VirtualHost where you configure advertise.
+    </para>
+    </section>
+    
     <section><title>MemManagerFile</title>
     <para>MemManagerFile: That is the base name for the names mod_manager will
     use to store configuration, generate keys for shared memory or lock files.
