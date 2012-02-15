@@ -193,12 +193,19 @@ Listen 10.33.144.3:6666
     <section>
       <title>Installing in Tomcat</title>
       <para>
-        Assuming $CATALINA_HOME indicates the root of your JBoss Web or Tomcat install:
+        Assuming $CATALINA_HOME indicates the root of your Tomcat install:
       </para>
 
       <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/* $CATALINA_HOME/lib/ </programlisting>
-      Note that you should remove the $CATALINA_HOME/lib/ the mod_cluster-container-tomcat6* file in Tomcat7 and
+      Note that you should remove in the $CATALINA_HOME/lib/ directory the mod_cluster-container-tomcat6* file in Tomcat7 and
       the mod_cluster-container-tomcat7* in Tomcat 6.
+    </section>
+
+    <section>
+      <title>Installing in JBoss AS 4.2.x or 4.3.x</title>
+      <para>Assuming $JBOSS_HOME indicates the root of your JBoss AS install and that you want to use mod_cluster in the AS's all config:
+      </para>
+      <programlisting>cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/* $JBOSS_HOME/server/all/deploy/jboss-web.deployer/ </programlisting>
     </section>
   </section>
 
@@ -217,7 +224,7 @@ Listen 10.33.144.3:6666
       <para>
         Edit the <code>$CATALINA_HOME/conf/server.xml</code> file, adding the following next to the other <![CDATA[<Listener/>]]> elements:
       </para>
-      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.catalina.ModClusterListener" advertise="true"/>]]></programlisting>
+      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" advertise="true"/>]]></programlisting>
     </section>
 
     <section>
@@ -225,7 +232,7 @@ Listen 10.33.144.3:6666
       <para>
         Edit the <code>$JBOSS_HOME/server/all/deploy/jboss-web.deployer/server.xml</code> file, adding the following next to the other <![CDATA[<Listener/>]]> elements:
       </para>
-      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.catalina.ModClusterListener" advertise="true"/>]]></programlisting>
+      <programlisting><![CDATA[<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" advertise="true"/>]]></programlisting>
     </section>
   </section>
 

@@ -43,7 +43,7 @@ X-Manager-Host: 10.33.144.3</programlisting>
     </para>
     <programlisting><![CDATA[<property name="proxyList">10.33.144.3:6666,10.33.144.1:6666</property>
 <property name="advertise">false</property>]]></programlisting>
-    <para>In server.xml (with JBossweb/Tomcat) <programlisting><![CDATA[<Listener className="org.jboss.modcluster.catalina.ModClusterListener" advertise="true"/>]]></programlisting></para>
+    <para>In server.xml (with JBossweb/Tomcat) <programlisting><![CDATA[<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" advertise="true"/>]]></programlisting></para>
   </section>
 
   <section>
@@ -120,7 +120,7 @@ X-Manager-Host: test.example.com</programlisting>
           </para>
           <programlisting><![CDATA[<property name="proxyList">test.example.com:6666</property>]]></programlisting>
           <para>or in server.xml:</para>
-          <programlisting><![CDATA[<Listener className="org.jboss.modcluster.catalina.ModClusterListener" proxyList="test.example.com:6666"/>]]></programlisting>
+          <programlisting><![CDATA[<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" proxyList="test.example.com:6666"/>]]></programlisting>
         </listitem>
       </orderedlist>
     </section>
