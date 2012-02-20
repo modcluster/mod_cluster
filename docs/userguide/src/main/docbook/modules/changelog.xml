@@ -14,6 +14,12 @@
           <row>
             <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
+              <para>Fix CVE-2011-4608: Add EnableMCPMReceive in configuration. (JBPAPP-7708)</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
               <para>mod_proxy code for old httpd versions needs to be updated. (MODCLUSTER-227)</para>
             </entry>
           </row>
