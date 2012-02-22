@@ -111,7 +111,7 @@ public class TestAliases extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -127,7 +127,7 @@ public class TestAliases extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -146,7 +146,7 @@ public class TestAliases extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();

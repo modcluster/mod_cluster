@@ -135,13 +135,13 @@ public class JBossWeb extends Embedded {
         fd = new File (route + "/webapps/" + webapp + "/WEB-INF/classes" , "MyCount.class");
         File fdin = new File ("MyCount.class");
         if (!fdin.exists())
-            fdin = new File ("output/classes/MyCount.class");
+            fdin = new File ("target/classes/MyCount.class");
         copyFile(fdin, fd);
         // Simple tests...
         fd = new File (route + "/webapps/" + webapp + "/WEB-INF/classes" , "MyTest.class");
         fdin = new File ("MyTest.class");
         if (!fdin.exists())
-            fdin = new File ("output/classes/MyTest.class");
+            fdin = new File ("target/classes/MyTest.class");
         copyFile(fdin, fd);
 
         //Create Host
@@ -169,6 +169,19 @@ public class JBossWeb extends Embedded {
             rootContext = createContext("/" + webapp, docBase );
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
+        
+        Wrapper testwrapper = rootContext.createWrapper();
+        testwrapper.setName("MyCount");
+        testwrapper.setServletClass("MyCount");
+        rootContext.addChild(testwrapper);
+        rootContext.addServletMapping("/MyCount", "MyCount");
+        
+        Wrapper wrapper = rootContext.createWrapper();
+        wrapper.setName("MyTest");
+        wrapper.setServletClass("MyTest");
+        rootContext.addChild(wrapper);
+        rootContext.addServletMapping("/MyTest", "MyTest");       
+        
         baseHost.addChild( rootContext );
         addEngine( baseEngine );
         baseEngine.setService(this);

@@ -117,7 +117,7 @@ public class Testmod_cluster_manager extends TestCase {
         // Start the client and wait for it.
         Client client = new Client();
         try {
-            if (client.runit("/ROOT/MyCount", 20, true) != 0)
+            if (client.runit("/MyCount", 20, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -149,7 +149,7 @@ public class Testmod_cluster_manager extends TestCase {
         // Start the client and wait for it.
         client = new Client();
         try {
-            if (client.runit("/ROOT/MyCount", 20, true) != 0)
+            if (client.runit("/MyCount", 20, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();

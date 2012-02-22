@@ -96,7 +96,7 @@ public class TestBase extends TestCase {
 
         // Wait for it.
         try {
-            client.runit("/ROOT/MyCount", 20, true);
+            client.runit("/MyCount", 20, true);
             client.start();
             client.join();
         } catch (Exception ex) {
