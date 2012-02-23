@@ -499,7 +499,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.stickySessionRemove = stickySessionRemove;
     }
 
-    private boolean stickySessionForce = true;
+    private boolean stickySessionForce = false;
 
     @Override
     public boolean getStickySessionForce() {

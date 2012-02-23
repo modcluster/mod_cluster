@@ -197,7 +197,7 @@
            </row>
           <row>
             <entry>stickySessionForce</entry>
-            <entry>true</entry>
+            <entry>false</entry>
             <entry>Balancer</entry>
             <entry>
               <para>Indicates whether the httpd proxy should return an error in the event that the balancer is unable to route a request to the node to which it is stuck. This property is ignored if <link linkend="stickySession">stickySession</link> is false.</para>
