@@ -226,4 +226,50 @@ GET /
     </para>
   </section>
 
+  <section>
+    <title>Using mod_cluster and SELinux.</title>
+    <para>
+     Mod_cluster needs to open port and create shared memory and files, therefore some permissions
+     have to be added, you need to configure something like:
+<programlisting><![CDATA[
+policy_module(mod_cluster, 1.0)
+
+require {
+        type unconfined_java_t;
+        type httpd_log_t;
+        type httpd_t;
+        type http_port_t;
+        class udp_socket node_bind;
+        class file write;
+}
+
+#============= httpd_t ==============
+
+allow httpd_t httpd_log_t:file write;
+corenet_tcp_bind_generic_port(httpd_t)
+corenet_tcp_bind_soundd_port(httpd_t)
+corenet_udp_bind_generic_port(httpd_t)
+corenet_udp_bind_http_port(httpd_t)
+
+#============= unconfined_java_t ==============
+allow unconfined_java_t http_port_t:udp_socket node_bind;
+]]></programlisting>
+     Put the above in a file for example mod_cluster.te and generate the mod_cluster.pp file (for example in Fedora 16):
+<programlisting><![CDATA[
+[jfclere@jfcpc docs]$ make -f /usr/share/selinux/devel/Makefile
+Compiling targeted mod_cluster module
+/usr/bin/checkmodule:  loading policy configuration from tmp/mod_cluster.tmp
+/usr/bin/checkmodule:  policy configuration loaded
+/usr/bin/checkmodule:  writing binary representation (version 14) to tmp/mod_cluster.mod
+Creating targeted mod_cluster.pp policy package
+rm tmp/mod_cluster.mod.fc tmp/mod_cluster.mod
+]]></programlisting>
+     The mod_cluster.pp file should be proceeded by semodule as root:
+<programlisting><![CDATA[
+root@jfcpc docs]# semodule -i mod_cluster.pp
+[root@jfcpc docs]# 
+]]></programlisting>
+    </para>
+  </section>
+
 </chapter>
