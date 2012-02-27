@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
-import org.apache.catalina.startup.Embedded;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.Context;
@@ -42,14 +41,14 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.*;
 import org.apache.catalina.startup.HostConfig;
 
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 
 public class StartJBossWeb {
 
     /* Start a JBossWEB with domain */
     public static void main(String[] args) {
 
-        StandardServer server = null;
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         int port = 8009;
         int serverport = 8005;
@@ -64,26 +63,22 @@ public class StartJBossWeb {
         System.out.println("Starting JBossWEB on " + port + " " + node + " " + domain + " " + serverport);
 
         try {
-            server = (StandardServer) ServerFactory.getServer();
-            server.setPort(serverport);
+            // TO DO need our own logic ....server.setPort(serverport);
 
             service = new JBossWeb(node,  "localhost");
             service.addConnector(port);
             server.addService(service);
  
-            LifecycleListener cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, domain, true, false, true, "secret");
-            server.addLifecycleListener(cluster);
+            ModClusterService cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, domain, true, false, true, "secret");
 
             server.start();
 
-        } catch(IOException ex) {
-            ex.printStackTrace();
-        } catch (LifecycleException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
         }
 
         // Wait until we are stopped...
-        server.await();
+        // TODO server.await();
 
         // Stop the server or services.
         try {

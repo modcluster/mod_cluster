@@ -34,12 +34,12 @@ import java.io.FileInputStream;
 import java.io.ByteArrayInputStream;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
+
+import org.jboss.modcluster.ModClusterService;
 
 import org.apache.catalina.core.AprLifecycleListener;
 
@@ -62,7 +62,7 @@ public class ClientBasicAuthen {
         boolean clienterror = false;
         StandardServer server = Maintest.getServer();
         JBossWeb service = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
         try {
             // server = (StandardServer) ServerFactory.getServer();
 
@@ -76,7 +76,6 @@ public class ClientBasicAuthen {
             server.addService(service);
  
             cluster =  Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
-            server.addLifecycleListener(cluster);
 
             // Add AprLifecycleListener.
             if (nat) {
@@ -84,10 +83,7 @@ public class ClientBasicAuthen {
                 server.addLifecycleListener((LifecycleListener) listener);
             }
 
-            // Debug Stuff
-            // Maintest.listServices();
-
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             return("can't start service");
         }
@@ -126,7 +122,6 @@ public class ClientBasicAuthen {
             wait.join();
 
             server.removeService(service);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
             return("can't stop service");
@@ -138,6 +133,7 @@ public class ClientBasicAuthen {
             return("Should get 401 code");
 
         // Wait until httpd as received the stop messages.
+        Maintest.StopClusterListener();
         System.gc();
         try {
             Thread.sleep(20000);

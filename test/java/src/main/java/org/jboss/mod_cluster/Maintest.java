@@ -37,42 +37,28 @@ import java.net.Socket;
 import java.net.InetSocketAddress;
 import java.util.Map;
 
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.Engine;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.connector.Connector;
 
-import org.apache.catalina.LifecycleListener;
-
-import org.jboss.web.cluster.ClusterListener;
+import org.jboss.modcluster.ModClusterService;
+import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
+import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 
 public class Maintest {
 
-    static StandardServer server = null;
-    static boolean isJBossWEB = false;
+	static StandardServer server = null;
+	static CatalinaEventHandlerAdapter adapter = null;
     static StandardServer getServer() {
-        if (server == null) {
-            server = (StandardServer) ServerFactory.getServer();
-            // Read the -Dcluster=true/false.
-            String jbossweb = System.getProperty("cluster");
-            if (jbossweb != null && jbossweb.equalsIgnoreCase("false")) {
-                 System.out.println("Running tests with jbossweb listener");
-    	         isJBossWEB = true;
-            } else {
-                 System.out.println("Running tests with mod_cluster listener");
-    	         isJBossWEB = false;
-            }
-
-        }
+    	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+    	server = new StandardServer();
         return server;
     }
-    static boolean isJBossWEB() {
-    	return isJBossWEB;
-    }
-
+    
     /* Print the service and connectors the server knows */
-    static void listServices() {
+    static void listServices(StandardServer server) {
             Service[] services = server.findServices();
             for (int i = 0; i < services.length; i++) {
                 System.out.println("service[" + i + "]: " + services[i]);
@@ -85,13 +71,13 @@ public class Maintest {
                 }
             }
     }
-    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl) {
+    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl) {
     	return createClusterListener(groupa, groupp, ssl, null);
     }
-    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain) {
+    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain) {
     	return createClusterListener(groupa, groupp, ssl, domain, true, false, true, null);
     }
-    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce) {
     	return createClusterListener(groupa, groupp, ssl, domain, stickySession, stickySessionRemove, stickySessionForce, null);
@@ -106,113 +92,75 @@ public class Maintest {
      * stickySessionForce: return an error if we have to failover to another node.
      * advertiseSecurityKey: Key for the digest logic.
      */ 
-    static LifecycleListener createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey) {
-        LifecycleListener lifecycle = null;
-        ClusterListener jcluster = null;
-        org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = null;
-
- 
-        if (isJBossWEB) {
-            jcluster = new ClusterListener();
-            jcluster.setAdvertiseGroupAddress(groupa);
-            jcluster.setAdvertisePort(groupp);
-            jcluster.setSsl(ssl);
-            jcluster.setDomain(domain);
-            // jcluster.setLoadBalancingGroup(domain);
-            jcluster.setStickySession(stickySession);
-            jcluster.setStickySessionRemove(stickySessionRemove);
-            jcluster.setStickySessionForce(stickySessionForce);
-            jcluster.setNodeTimeout(20000);
-            if (advertiseSecurityKey != null)
-                jcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
-            lifecycle = jcluster;
-        } else  {
-            pcluster = new org.jboss.modcluster.container.catalina.standalone.ModClusterListener();
-            pcluster.setAdvertiseGroupAddress(groupa);
-            pcluster.setAdvertisePort(groupp);
-            pcluster.setSsl(ssl);
-            pcluster.setLoadBalancingGroup(domain);
-            pcluster.setStickySession(stickySession);
-            pcluster.setStickySessionRemove(stickySessionRemove);
-            pcluster.setStickySessionForce(stickySessionForce);
-            pcluster.setNodeTimeout(20000);
-            if (advertiseSecurityKey != null)
-                pcluster.setAdvertiseSecurityKey(advertiseSecurityKey);
-            lifecycle = pcluster;
-        }
-
-        return lifecycle;
+        ModClusterConfig config = new ModClusterConfig();
+        config.setAdvertiseGroupAddress(groupa);
+        config.setAdvertisePort(groupp);
+        config.setSsl(ssl);
+        config.setLoadBalancingGroup(domain);
+        config.setStickySession(stickySession);
+        config.setStickySessionRemove(stickySessionRemove);
+        config.setStickySessionForce(stickySessionForce);
+        config.setNodeTimeout(20000);
+        if (advertiseSecurityKey != null)
+        	config.setAdvertiseSecurityKey(advertiseSecurityKey);
+        SimpleLoadBalanceFactorProvider load = new SimpleLoadBalanceFactorProvider();
+        load.setLoadBalanceFactor(1);
+        ModClusterService service = new ModClusterService(config, load);
+        adapter = new CatalinaEventHandlerAdapter(service, server);
+        adapter.start();
+        
+        return service;
+    }
+    
+    /*
+     * Stop the adapter for the ClusterListener
+     */
+    static void StopClusterListener() {
+    	if (adapter != null)
+    		adapter.stop();
+    	adapter = null;
     }
     /* ping httpd */
-    static String doProxyPing(LifecycleListener lifecycle) {
+    static String doProxyPing(ModClusterService pcluster) {
         String result = null;
-        if (isJBossWEB) {
-            ClusterListener jcluster = (ClusterListener) lifecycle;
-            result = jcluster.doProxyPing(null);
-            if (result.equals(""))
-            	return null;
-            /* The format is like:
-             *   Proxy[0]: [/10.33.144.3:6666]:
-             *   Type=PING-RSP&State=OK&id=-30009174
-             *   
-             *   Proxy[1]: etc...
-             */
-            String [] records = result.split("\n");
-            if (records.length < 1)
-            	return null;
-            result = (String ) records[1];
-            if (result.startsWith("null"))
-                return null;
-        } else {
-            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
-            Map<InetSocketAddress, String> map = pcluster.ping();
-            if (map.isEmpty())
-                return null;
-            Object results[] = map.values().toArray();
-            result = (String ) results[0];
-        }
+        
+        Map<InetSocketAddress, String> map = pcluster.ping();
+        if (map.isEmpty())
+        	return null;
+        Object results[] = map.values().toArray();
+        result = (String ) results[0];
+
         return result;
     }
     /* ping a node (via JVmRoute). */
-    static String doProxyPing(LifecycleListener lifecycle, String JvmRoute) {
-        String result = null;
-        if (isJBossWEB) {
-            ClusterListener jcluster = (ClusterListener) lifecycle;
-            result = jcluster.doProxyPing(JvmRoute);
-        } else {
-            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
-            Map<InetSocketAddress, String> map = pcluster.ping(JvmRoute);
-            if (map.isEmpty())
-                return null;
-            Object results[] = map.values().toArray();
-            /* We may have several answers return the first one that has PING-RSP in it */
-            for (int i=0; i<results.length; i++) {
-                result = (String) results[i];
-                if (result.indexOf("PING-RSP")>0)
-                    break;
-            }
-        }
+    static String doProxyPing(ModClusterService pcluster, String JvmRoute) {
+    	String result = null;
+     	Map<InetSocketAddress, String> map = pcluster.ping(JvmRoute);
+    	if (map.isEmpty())
+    		return null;
+    	Object results[] = map.values().toArray();
+    	/* We may have several answers return the first one that has PING-RSP in it */
+    	for (int i=0; i<results.length; i++) {
+    		result = (String) results[i];
+    		if (result.indexOf("PING-RSP")>0)
+    			break;
+    	}
         return result;
     }
-    static String doProxyPing(LifecycleListener lifecycle, String scheme, String host, int port) {
+    static String doProxyPing(ModClusterService pcluster, String scheme, String host, int port) {
         String result = null;
-        if (isJBossWEB) {
-            ClusterListener jcluster = (ClusterListener) lifecycle;
-            result = jcluster.doProxyPing(scheme,  host , port);
-        } else {
-            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
-            Map<InetSocketAddress, String> map = pcluster.ping(scheme, host, port);
-            if (map.isEmpty())
-                return null;
-            Object results[] = map.values().toArray();
-            /* We may have several answers return the first one that has PING-RSP in it */
-            for (int i=0; i<results.length; i++) {
-                result = (String) results[i];
-                if (result.indexOf("PING-RSP")>0)
-                    break;
-            }
+        Map<InetSocketAddress, String> map = pcluster.ping(scheme, host, port);
+        if (map.isEmpty())
+        	return null;
+        Object results[] = map.values().toArray();
+        /* We may have several answers return the first one that has PING-RSP in it */
+        for (int i=0; i<results.length; i++) {
+        	result = (String) results[i];
+        	if (result.indexOf("PING-RSP")>0)
+        		break;
         }
         return result;
     }
@@ -239,49 +187,30 @@ public class Maintest {
 
         return false;
     }
-    static String getProxyInfo(LifecycleListener lifecycle) {
+    static String getProxyInfo(ModClusterService pcluster) {
         String result = null;
-        if (isJBossWEB) {
-            ClusterListener jcluster = (ClusterListener) lifecycle;
-            result = jcluster.getProxyInfo();
-        } else {
-            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
-            Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
-            if (map.isEmpty())
-                return null;
-            Object results[] = map.values().toArray();
-            result = (String) results[0];
-        }
+
+         Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
+        if (map.isEmpty())
+        	return null;
+        Object results[] = map.values().toArray();
+        result = (String) results[0];
         return result;
     }
-    static String  getProxyAddress(LifecycleListener lifecycle) {
+    static String  getProxyAddress(ModClusterService pcluster) {
         String proxy = null;
-        if (isJBossWEB) {
-            ClusterListener jcluster = (ClusterListener) lifecycle;
-            String result = jcluster.getProxyInfo();
-            String [] records = result.split("\n");
-            String [] results = records[0].split(": \\[.*\\/");
-            if (results.length >=2 ) {
-                records = results[1].split("\\]");
-                proxy = records[0];
-            } else {
-                /* We get something unexpected */
-                System.out.println(results);
-            }
-        } else {
-            org.jboss.modcluster.container.catalina.standalone.ModClusterListener pcluster = (org.jboss.modcluster.container.catalina.standalone.ModClusterListener) lifecycle;
-            Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
-            if (!map.isEmpty()) {
-                Object results[] = map.keySet().toArray();;
-                InetSocketAddress result = (InetSocketAddress) results[0];
-                proxy = result.getHostName() + ":" + result.getPort();
-            }
+
+        Map<InetSocketAddress, String> map = pcluster.getProxyInfo();
+        if (!map.isEmpty()) {
+        	Object results[] = map.keySet().toArray();;
+        	InetSocketAddress result = (InetSocketAddress) results[0];
+        	proxy = result.getHostName() + ":" + result.getPort();
         }
         return proxy;
     }
     /* Check that the nodes are returned by the INFO command */
-    static boolean checkProxyInfo(LifecycleListener lifecycle, String [] nodes) {
-        String result = getProxyInfo(lifecycle);
+    static boolean checkProxyInfo(ModClusterService pcluster, String [] nodes) {
+        String result = getProxyInfo(pcluster);
         return checkProxyInfo(result, nodes);
     }
     static boolean checkProxyInfo(String result, String [] nodes) {
@@ -361,9 +290,9 @@ public class Maintest {
         return ret;
     }
     /* Wait until the node is in the ok status (load>0). */
-    static  boolean TestForNodes(LifecycleListener lifecycle, String [] nodes) {
+    static  boolean TestForNodes(ModClusterService pcluster, String [] nodes) {
         int countinfo = 0;
-        while ((!Maintest.checkProxyInfo(lifecycle, nodes)) && countinfo < 80) {
+        while ((!Maintest.checkProxyInfo(pcluster, nodes)) && countinfo < 80) {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
@@ -372,27 +301,27 @@ public class Maintest {
             countinfo++;
         }
         if (countinfo == 80) {
-            System.out.println("TestForNodes failed: " + getProxyInfo(lifecycle));
+            System.out.println("TestForNodes failed: " + getProxyInfo(pcluster));
             return false;
         } else
             return true;
     }
     /* Wait until we are able to connect to httpd and then until the node is in the ok status (load>0). */
-    static  boolean WaitForNodes(LifecycleListener lifecycle, String [] nodes) {
-        if (WaitForHttpd(lifecycle, 60) == -1) {
+    static  boolean WaitForNodes(ModClusterService pcluster, String [] nodes) {
+        if (WaitForHttpd(pcluster, 60) == -1) {
             System.out.println("can't find PING-RSP in proxy response");
             return false;
         }
-        return TestForNodes(lifecycle, nodes);
+        return TestForNodes(pcluster, nodes);
     }
 
     // Wait until we are able to PING httpd.
     // tries maxtries and wait 5 s between retries...
-    static int WaitForHttpd(LifecycleListener cluster, int maxtries) {
+    static int WaitForHttpd(ModClusterService pcluster, int maxtries) {
         String result = null;
         int tries = 0;
         while (result == null && tries<maxtries) {
-            result = doProxyPing(cluster);
+            result = doProxyPing(pcluster);
             if (result != null) {
                 if (Maintest.checkProxyPing(result))
                     break; // Done

@@ -32,9 +32,8 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
@@ -52,7 +51,7 @@ public class TestStickyRemove extends TestCase {
         JBossWeb service2 = null;
         Connector connector = null;
         Connector connector2 = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
         System.out.println("TestStickyRemove Started");
         try {
             // server = (StandardServer) ServerFactory.getServer();
@@ -66,10 +65,8 @@ public class TestStickyRemove extends TestCase {
             server.addService(service2);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, true, false, "secret");
-            server.addLifecycleListener(cluster);
-            // Maintest.listServices();
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");
         }
@@ -139,7 +136,6 @@ public class TestStickyRemove extends TestCase {
             wait.join();
             server.removeService(service);
             server.removeService(service2);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -150,6 +146,7 @@ public class TestStickyRemove extends TestCase {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+        Maintest.StopClusterListener();
 
         // Test client result.
         if (clienterror)

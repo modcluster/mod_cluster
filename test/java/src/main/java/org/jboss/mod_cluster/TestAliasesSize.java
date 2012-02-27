@@ -32,9 +32,8 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
@@ -50,7 +49,7 @@ public class TestAliasesSize extends TestCase {
         server = Maintest.getServer();
         JBossWeb service = null;
         Connector connector = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
         System.out.println("TestAliasesSize Started");
         try {
             String [] Aliases = new String[19];
@@ -66,10 +65,8 @@ public class TestAliasesSize extends TestCase {
             server.addService(service);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
-            server.addLifecycleListener(cluster);
-            // Maintest.listServices();
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");
         }
@@ -125,13 +122,13 @@ public class TestAliasesSize extends TestCase {
             wait.stopit();
             wait.join();
             server.removeService(service);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
 
         // Wait until httpd as received the stop messages.
         Maintest.TestForNodes(cluster, null);
+        Maintest.StopClusterListener();
 
         // Test client result.
         if (clienterror)

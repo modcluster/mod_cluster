@@ -27,14 +27,7 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
-import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
-import org.apache.catalina.Service;
-import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 
 public class  ServerThread extends Thread {

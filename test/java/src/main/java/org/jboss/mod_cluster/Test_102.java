@@ -32,7 +32,7 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.catalina.core.StandardServer;
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 
 
 public class  Test_102 extends TestCase {
@@ -45,7 +45,7 @@ public class  Test_102 extends TestCase {
         boolean clienterror = false;
         StandardServer server = Maintest.getServer();
         JBossWeb service = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
 
         System.out.println("Test_102 Started");
         try {
@@ -53,8 +53,7 @@ public class  Test_102 extends TestCase {
             service.addConnector(8011);
             server.addService(service);
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
-            server.addLifecycleListener(cluster);
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");
         }
@@ -111,7 +110,6 @@ public class  Test_102 extends TestCase {
             wait.join();
 
             server.removeService(service);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
             fail("can't stop service");
@@ -128,6 +126,7 @@ public class  Test_102 extends TestCase {
             }
             countinfo++;
         }
+        Maintest.StopClusterListener();
         System.gc();
         System.out.println("Test_102 Done");
     }

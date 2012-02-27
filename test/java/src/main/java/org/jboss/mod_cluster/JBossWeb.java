@@ -33,18 +33,20 @@ import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
-import org.apache.catalina.startup.Embedded;
-import org.apache.catalina.Engine;
-import org.apache.catalina.Host;
-import org.apache.catalina.Context;
+import org.apache.tomcat.InstanceManager;
+
+import java.lang.reflect.InvocationTargetException;
+import javax.naming.NamingException;
+
+import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.*;
 import org.apache.catalina.startup.HostConfig;
 
-import org.apache.catalina.LifecycleListener;
+import org.apache.tomcat.util.IntrospectionUtils;
 
-public class JBossWeb extends Embedded {
+public class JBossWeb extends StandardService {
 
     private String route = null;
 
@@ -106,12 +108,12 @@ public class JBossWeb extends Embedded {
             copyNativeDir(route);
         }
 
-        setCatalinaBase(route);
-        setCatalinaHome(route);
+        System.setProperty( "catalina.base", route);
+        System.setProperty( "catalina.home", route);
         this.route = route;
 
         //Create an Engine
-        Engine baseEngine = createEngine();
+        Engine baseEngine = new StandardEngine();
 
         baseEngine.setName(host + "Engine" + route);
         baseEngine.setDefaultHost(host);
@@ -145,13 +147,17 @@ public class JBossWeb extends Embedded {
         copyFile(fdin, fd);
 
         //Create Host
-        Host baseHost =  createHost( host, appBase);
-        baseHost.setDeployOnStartup(true);
+        StandardHost baseHost = new StandardHost();
+        baseHost.setAppBase(appBase);
+        baseHost.setName(host);
+
+        // createHost( host, appBase);
+        // baseHost.setDeployOnStartup(true);
         baseHost.setBackgroundProcessorDelay(1);
         StandardHost stdhost = (StandardHost)baseHost;
-        stdhost.setDeployXML(true);
+        // stdhost.setDeployXML(true);
         stdhost.setConfigClass("org.apache.catalina.startup.ContextConfig");
-        stdhost.setUnpackWARs(true);
+        // stdhost.setUnpackWARs(true);
         if (Aliases != null && Aliases.length>0) {
             for (int j = 0; j < Aliases.length; j++) {
                 stdhost.addAlias(Aliases[j]);    
@@ -162,38 +168,50 @@ public class JBossWeb extends Embedded {
         baseEngine.addChild( baseHost );
 
         //Create default context
-        Context rootContext;
+        Context rootContext = new StandardContext();
+        rootContext.setDocBase(docBase);
         if (webapp.equals("ROOT"))
-            rootContext = createContext("/",docBase );
+            rootContext.setPath("/");
         else
-            rootContext = createContext("/" + webapp, docBase );
+            rootContext.setPath("/" + webapp);
+        ContextConfig config = new ContextConfig();
+        ((Lifecycle) rootContext).addLifecycleListener(config);
+        
         rootContext.setIgnoreAnnotations(true);
         rootContext.setPrivileged(true);
+        rootContext.setInstanceManager(new LocalInstanceManager());
         
         Wrapper testwrapper = rootContext.createWrapper();
         testwrapper.setName("MyCount");
         testwrapper.setServletClass("MyCount");
+        testwrapper.setLoadOnStartup(0);
         rootContext.addChild(testwrapper);
         rootContext.addServletMapping("/MyCount", "MyCount");
         
         Wrapper wrapper = rootContext.createWrapper();
         wrapper.setName("MyTest");
         wrapper.setServletClass("MyTest");
+        wrapper.setLoadOnStartup(0);
         rootContext.addChild(wrapper);
         rootContext.addServletMapping("/MyTest", "MyTest");       
-        
         baseHost.addChild( rootContext );
-        addEngine( baseEngine );
+        // addEngine( baseEngine );
+        this.container = baseEngine;
         baseEngine.setService(this);
         this.setName(host + "Engine" + route);
-        setRedirectStreams(false);
+        // setRedirectStreams(false);
     }
     void AddContext(String path, String docBase, String servletname, boolean wait) {
         File fd = new File ( route + "/webapps/" + docBase);
         fd.mkdirs();
         docBase = fd.getAbsolutePath();
 
-        Context context = createContext(path, docBase);
+        Context context = new StandardContext();
+        context.setDocBase(docBase);
+        context.setPath(path);
+        context.setInstanceManager(new LocalInstanceManager());
+        ContextConfig config = new ContextConfig();
+        ((Lifecycle) context).addLifecycleListener(config);
         context.setIgnoreAnnotations(true);
         context.setPrivileged(true);
 
@@ -250,19 +268,29 @@ public class JBossWeb extends Embedded {
         copyFile(fdin, fd);
     }
 
-    public Connector addConnector(int port) throws IOException {
+    public Connector addConnector(int port) throws Exception {
         return addConnector(port, "ajp");
     }
 
-    public Connector addConnector(int port, String scheme) throws IOException {
+    public Connector addConnector(int port, String scheme) throws Exception {
         return addConnector(port, scheme, null);
     }
 
-    public Connector addConnector(int port, String scheme, String address) throws IOException {
+    public Connector addConnector(int port, String protocol, String address) throws Exception {
     
 
-        Connector connector = createConnector( address,
-                                              port, scheme);
+        Connector connector = null;
+        if (protocol.equals("ajp")) {
+        	connector= new Connector("org.apache.coyote.ajp.AjpProtocol");
+        } else if (protocol.equals("http")) {
+        	connector= new Connector(protocol);
+        }
+        if (address != null) {
+            IntrospectionUtils.setProperty(connector, "address",
+                                           "" + address);
+        }
+
+        IntrospectionUtils.setProperty(connector, "port", "" + port);
 
         // Look in StandardService to see why it works ;-)
         addConnector( connector );
@@ -275,9 +303,34 @@ public class JBossWeb extends Embedded {
         for (int j = 0; j < containers.length; j++) {
             if (containers[j] instanceof StandardHost) {
                 StandardHost host = (StandardHost) containers[j];
-                Context context = host.map(path);
+                Context context = (Context) host.findChild(path);
                 containers[j].removeChild(context);
             }
+        }
+    }
+    private static class LocalInstanceManager implements InstanceManager {
+        @Override
+        public Object newInstance(String className) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
+            return Class.forName(className).newInstance();
+        }
+
+        @Override
+        public Object newInstance(String fqcn, ClassLoader classLoader) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException, ClassNotFoundException {
+            return Class.forName(fqcn, false, classLoader).newInstance();
+        }
+
+        @Override
+        public Object newInstance(Class<?> c) throws IllegalAccessException, InvocationTargetException, NamingException, InstantiationException {
+            return c.newInstance();
+        }
+
+        @Override
+        public void newInstance(Object o) throws IllegalAccessException, InvocationTargetException, NamingException {
+            throw new IllegalStateException();
+        }
+
+        @Override
+        public void destroyInstance(Object o) throws IllegalAccessException, InvocationTargetException {
         }
     }
 }

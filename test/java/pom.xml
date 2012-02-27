@@ -41,9 +41,9 @@
         </dependency>
 
         <dependency>
-            <groupId>jboss.web</groupId>
+            <groupId>org.jboss.web</groupId>
             <artifactId>jbossweb</artifactId>
-            <version>${version.jbossweb}</version>
+            <version>${version.jbossweb7}</version>
         </dependency>
         <dependency>
             <groupId>jboss.web</groupId>

@@ -32,12 +32,13 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
+
+import org.jboss.modcluster.ModClusterService;
 
 public class TestContextes extends TestCase {
 
@@ -52,7 +53,7 @@ public class TestContextes extends TestCase {
         JBossWeb service2 = null;
         Connector connector = null;
         Connector connector2 = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
         System.out.println("TestContextes Started");
         try {
 
@@ -63,9 +64,8 @@ public class TestContextes extends TestCase {
             server.addService(service);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true);
-            server.addLifecycleListener(cluster);
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");
         }
@@ -111,13 +111,13 @@ public class TestContextes extends TestCase {
             wait.join();
             server.removeService(service);
             server.removeService(service2);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
 
         // Wait until httpd as received the stop messages.
         Maintest.TestForNodes(cluster, null);
+        Maintest.StopClusterListener();
 
         // Test client result.
         if (clienterror)

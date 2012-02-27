@@ -34,9 +34,8 @@ import java.util.ArrayList;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
@@ -50,31 +49,25 @@ public class TestChunkedMCPM extends TestCase {
         int numbnodes = 30;
         String [] nodenames = new String [numbnodes];
         JBossWeb [] service = new JBossWeb[numbnodes];
-        LifecycleListener lifecycle = null;
+        ModClusterService lifecycle = null;
 
         System.out.println("TestChunkedMCPM Started");
         StandardServer server = Maintest.getServer();
         for (int i=0; i<numbnodes; i++) {
             try {
-                // server = (StandardServer) ServerFactory.getServer();
                 String name = "node" + i;
                 nodenames[i] = name;
                 service[i] = new JBossWeb(name,  "localhost");
                 service[i].addConnector(8010 + i);
                 server.addService(service[i]);
  
-            } catch(IOException ex) {
+            } catch(Exception ex) {
                 ex.printStackTrace();
                 fail("can't start service");
             }
         }
 
         lifecycle = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
-
-        server.addLifecycleListener(lifecycle);
-
-        // Debug Stuff
-        // Maintest.listServices();
 
         // start the server thread.
         ServerThread wait = new ServerThread(3000, server);
@@ -150,17 +143,20 @@ public class TestChunkedMCPM extends TestCase {
             for (int i=0; i<numbnodes; i++) {
                 server.removeService(service[i]);
             }
-            server.removeLifecycleListener(lifecycle);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
             fail("can't stop service");
         }
 
         // Wait until httpd as received the stop messages.
-        System.gc();
         if (!Maintest.TestForNodes(lifecycle, null))
             fail("Can't stop nodes");
+        Maintest.StopClusterListener();
+        System.gc();
 
+        for (int i=0; i<numbnodes; i++) {
+            Maintest.testPort(8010+i);
+        }
         if (clienterror)
             fail("Client error");
         System.out.println("TestChunkedMCPM Done");

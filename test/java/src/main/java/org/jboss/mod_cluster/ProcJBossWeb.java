@@ -35,7 +35,6 @@ import java.io.FileOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-import org.apache.catalina.startup.Embedded;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.Context;
@@ -44,13 +43,13 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.*;
 import org.apache.catalina.startup.HostConfig;
 
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 
 public class ProcJBossWeb {
 
     StandardServer server = null;
     JBossWeb service = null;
-    LifecycleListener cluster = null;
+    ModClusterService cluster = null;
 
     static InputStreamReader input;
     static BufferedReader bufferedreader;
@@ -84,7 +83,7 @@ public class ProcJBossWeb {
                     server.addService(service);
                 } else if (cmd[0].compareToIgnoreCase("addLifecycleListener") == 0) {
                     cluster = Maintest.createClusterListener(cmd[1], Integer.parseInt(cmd[2]), false, null, true, false, true, "secret");
-                    server.addLifecycleListener(cluster);
+                    // TODO server.addLifecycleListener(cluster);
                 } else if (cmd[0].compareToIgnoreCase("start") == 0) {
                     wait = new ServerThread(3000, server);
                     wait.start();
@@ -92,7 +91,7 @@ public class ProcJBossWeb {
                     wait.stopit();
                     wait.join();
                     server.removeService(service);
-                    server.removeLifecycleListener(cluster);
+                    // TODO server.removeLifecycleListener(cluster);
                 } else if (cmd[0].compareToIgnoreCase("getProxyInfo") == 0) {
                     String result = Maintest.getProxyInfo(cluster);
                     if (result == null) {

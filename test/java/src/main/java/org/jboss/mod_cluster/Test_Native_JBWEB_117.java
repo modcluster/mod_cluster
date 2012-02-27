@@ -33,7 +33,6 @@ import java.io.File;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleException;

@@ -32,9 +32,8 @@ import java.io.IOException;
 import junit.framework.TestCase;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.ServerFactory;
 import org.apache.catalina.Service;
-import org.apache.catalina.LifecycleListener;
+import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
@@ -52,10 +51,9 @@ public class TestStickyForce extends TestCase {
         JBossWeb service2 = null;
         Connector connector = null;
         Connector connector2 = null;
-        LifecycleListener cluster = null;
+        ModClusterService cluster = null;
         System.out.println("TestStickyForce Started");
         try {
-            // server = (StandardServer) ServerFactory.getServer();
 
             service = new JBossWeb("sticky3",  "localhost");
             connector = service.addConnector(8012);
@@ -68,10 +66,8 @@ public class TestStickyForce extends TestCase {
             server.addService(service2);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
-            server.addLifecycleListener(cluster);
-            // Maintest.listServices();
 
-        } catch(IOException ex) {
+        } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");
         }
@@ -155,7 +151,6 @@ public class TestStickyForce extends TestCase {
             wait.join();
             server.removeService(service);
             server.removeService(service2);
-            server.removeLifecycleListener(cluster);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -165,6 +160,7 @@ public class TestStickyForce extends TestCase {
         Maintest.testPort(8011);
         if (!Maintest.TestForNodes(cluster, null))
             fail("Can't stop nodes");
+        Maintest.StopClusterListener();
         /* XXX:  In fact it doesn't stop correctly ... Something needs to be fixed */
 
         // Test client result.
