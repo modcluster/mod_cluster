@@ -154,24 +154,24 @@ public class JBossWeb extends StandardService {
         // createHost( host, appBase);
         // baseHost.setDeployOnStartup(true);
         baseHost.setBackgroundProcessorDelay(1);
-        StandardHost stdhost = (StandardHost)baseHost;
+        //StandardHost stdhost = (StandardHost)baseHost;
         // stdhost.setDeployXML(true);
-        stdhost.setConfigClass("org.apache.catalina.startup.ContextConfig");
+        baseHost.setConfigClass("org.apache.catalina.startup.ContextConfig");
         // stdhost.setUnpackWARs(true);
         if (Aliases != null && Aliases.length>0) {
             for (int j = 0; j < Aliases.length; j++) {
-                stdhost.addAlias(Aliases[j]);    
+            	baseHost.addAlias(Aliases[j]);    
             }
         }
         HostConfig hostConfig = new HostConfig();
-        stdhost.addLifecycleListener(hostConfig);
-        baseEngine.addChild( baseHost );
+        baseHost.addLifecycleListener(hostConfig);
+        baseEngine.addChild(baseHost);
 
         //Create default context
         Context rootContext = new StandardContext();
         rootContext.setDocBase(docBase);
         if (webapp.equals("ROOT"))
-            rootContext.setPath("/");
+            rootContext.setPath("");
         else
             rootContext.setPath("/" + webapp);
         ContextConfig config = new ContextConfig();
@@ -238,7 +238,7 @@ public class JBossWeb extends StandardService {
         }
     }
     void AddContext(String path, String docBase) {
-        AddContext(path, docBase, null, false);
+        AddContext(path, docBase, "MyCount", false);
     }
 
     public JBossWeb(String route, String host) throws IOException {
