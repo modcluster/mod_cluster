@@ -10,10 +10,11 @@
     <title>Proxy Discovery Configuration</title>
     <para>The list of proxies from which an application expects to receive AJP connections is either defined statically, via the addresses defined in the <link linkend="proxyList">proxyList</link> configuration property; or discovered dynamically via the advertise mechanism. Using a special mod_advertise module, proxies can advertise their existence by periodically broadcasting a multicast message containing its address/port. This functionality is enabled via the <link linkend="advertise">advertise</link> configuration property. If configured to listen, a server can learn of the proxy's existence, then notify that proxy of its own existence, and update its configuration accordingly. This frees both the proxy <emphasis>and</emphasis> the server from having to define static, environment-specific configuration values.</para>
     <informaltable frame="all">
-      <tgroup cols="4">
+      <tgroup cols="5">
         <thead>
           <row>
             <entry>Attribute</entry>
+            <entry>AS7 Attribute</entry>
             <entry>Default</entry>
             <entry>Scope</entry>
             <entry>Description</entry>
@@ -22,6 +23,7 @@
         <tbody>
           <row id="proxyList">
             <entry>proxyList</entry>
+            <entry>proxy-list</entry>
             <entry><emphasis>None</emphasis></entry>
             <entry>Configuration</entry>
             <entry>
@@ -32,6 +34,7 @@
           </row>
           <row id="excludedContexts">
             <entry>excludedContexts</entry>
+            <entry>excluded-contexts</entry>
             <entry>ROOT, admin-console, invoker, bossws, jmx-console, juddi, web-console</entry>
             <entry>Configuration</entry>
             <entry>
@@ -42,6 +45,7 @@
           </row>
           <row>
             <entry>autoEnableContexts</entry>
+            <entry>auto-enable-contexts</entry>
             <entry>true</entry>
             <entry>Configuration</entry>
             <entry>
@@ -50,6 +54,7 @@
           </row>
           <row id="stopContextTimeout">
             <entry>stopContextTimeout</entry>
+            <entry>stop-context-timeout</entry>
             <entry>10</entry>
             <entry>Configuration</entry>
             <entry>
@@ -58,6 +63,7 @@
           </row>
           <row id="stopContextTimeoutUnit">
             <entry>stopContextTimeoutUnit</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>TimeUnit.SECONDS</entry>
             <entry>Configuration</entry>
             <entry>
@@ -66,6 +72,7 @@
           </row>
           <row>
             <entry>sessionDrainingStrategy</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>org.jboss.modcluster.SessionDrainingStrategyEnum.DEFAULT</entry>
             <entry>Configuration</entry>
             <entry>
@@ -97,6 +104,7 @@
           </row>
           <row>
             <entry>proxyURL</entry>
+            <entry>proxy-url</entry>
             <entry><emphasis>None</emphasis></entry>
             <entry>Apache HTTPD</entry>
             <entry>
@@ -105,6 +113,7 @@
           </row>
           <row>
             <entry>socketTimeout</entry>
+            <entry>socket-timeout</entry>
             <entry>20000</entry>
             <entry>Configuration</entry>
             <entry>
@@ -112,6 +121,7 @@
             </entry>
           </row>
          <row id="advertise">
+            <entry>advertise</entry>
             <entry>advertise</entry>
             <entry>true, if <link linkend="proxyList">proxyList</link> is undefined, false otherwise</entry>
             <entry>Configuration</entry>
@@ -121,14 +131,17 @@
           </row>
           <row>
             <entry>advertiseGroupAddress</entry>
+            <entry>advertise-socket</entry>
             <entry>224.0.1.105</entry>
             <entry>Apache HTTPD</entry>
             <entry>
               <para>UDP address on which to listen for httpd proxy multicast advertisements</para>
+              <para>In AS7 that corresponding to the name of a socket-binding</para>
             </entry>
           </row>
           <row>
             <entry>advertisePort</entry>
+            <entry>See advertise-socket</entry>
             <entry>23364</entry>
             <entry>Apache HTTPD</entry>
             <entry>
@@ -137,6 +150,7 @@
           </row>
           <row>
             <entry>advertiseSecurityKey</entry>
+            <entry>advertise-security-key</entry>
             <entry><emphasis>None</emphasis></entry>
             <entry>Apache HTTPD</entry>
             <entry>
@@ -145,6 +159,7 @@
           </row>
           <row>
             <entry>advertiseThreadFactory</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>Executors.defaultThreadFactory()</entry>
             <entry>Configuration</entry>
             <entry>
@@ -153,6 +168,7 @@
           </row>
           <row>
             <entry>jvmRouteFactory</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory(), "jboss.mod_cluster.jvmRoute")</entry>
             <entry>Configuration</entry>
             <entry>
@@ -169,10 +185,11 @@
     <title>Proxy Configuration</title>
     <para>The following configuration values are sent to proxies during server startup, when a proxy is detected via the advertise mechanism, or during the resetting of a proxy's configuration during error recovery.</para>
     <informaltable frame="all">
-      <tgroup cols="4">
+      <tgroup cols="5">
         <thead>
           <row>
             <entry>Attribute</entry>
+            <entry>AS7 Attribute</entry>
             <entry>Default</entry>
             <entry>Scope</entry>
             <entry>Description</entry>
@@ -181,6 +198,7 @@
         <tbody>
           <row id="stickySession">
             <entry>stickySession</entry>
+            <entry>sticky-session</entry>
             <entry>true</entry>
             <entry>Balancer</entry>
             <entry>
@@ -189,6 +207,7 @@
            </row>
           <row>
             <entry>stickySessionRemove</entry>
+            <entry>sticky-session-remove</entry>
             <entry>false</entry>
             <entry>Balancer</entry>
             <entry>
@@ -197,6 +216,7 @@
            </row>
           <row>
             <entry>stickySessionForce</entry>
+            <entry>sticky-session-force</entry>
             <entry>false</entry>
             <entry>Balancer</entry>
             <entry>
@@ -205,6 +225,7 @@
            </row>
           <row>
             <entry>workerTimeout</entry>
+            <entry>node-timeout</entry>
             <entry>-1</entry>
             <entry>Balancer</entry>
             <entry>
@@ -213,6 +234,7 @@
            </row>
           <row>
             <entry>maxAttempts</entry>
+            <entry>max-attempts</entry>
             <entry>1</entry>
             <entry>Balancer</entry>
             <entry>
@@ -221,6 +243,7 @@
            </row>
           <row>
             <entry>flushPackets</entry>
+            <entry>flush-packets</entry>
             <entry>false</entry>
             <entry>Node</entry>
             <entry>
@@ -229,16 +252,18 @@
            </row>
           <row>
             <entry>flushWait</entry>
+            <entry>flush-wait</entry>
             <entry>-1</entry>
             <entry>Node</entry>
             <entry>
               <para>
-                Time to wait before flushing packets.
+                Time to wait before flushing packets in millseconds.
                 A value of -1 means wait forever.
               </para>
             </entry>
            </row>
           <row>
+            <entry>ping</entry>
             <entry>ping</entry>
             <entry>10</entry>
             <entry>Node</entry>
@@ -248,6 +273,7 @@
            </row>
           <row>
             <entry>smax</entry>
+            <entry>smax</entry>
             <entry>Determined by httpd configuration</entry>
             <entry>Node</entry>
             <entry>
@@ -255,6 +281,7 @@
             </entry>
            </row>
           <row>
+            <entry>ttl</entry>
             <entry>ttl</entry>
             <entry>60</entry>
             <entry>Node</entry>
@@ -264,6 +291,7 @@
            </row>
           <row>
             <entry>nodeTimeout</entry>
+            <entry>node-timeout</entry>
             <entry>-1</entry>
             <entry>Node</entry>
             <entry>
@@ -278,6 +306,7 @@
            </row>
           <row>
             <entry>balancer</entry>
+            <entry>balancer</entry>
             <entry>mycluster</entry>
             <entry>Node</entry>
             <entry>
@@ -286,6 +315,7 @@
            </row>
           <row id="lbGroup">
             <entry>loadBalancingGroup</entry>
+            <entry>domain</entry>
             <entry><emphasis>None</emphasis></entry>
             <entry>Node</entry>
             <entry>
@@ -319,10 +349,11 @@
       </para>
     </note>
     <informaltable frame="all">
-      <tgroup cols="3">
+      <tgroup cols="4">
         <thead>
           <row>
             <entry>Attribute</entry>
+            <entry>AS7 Attribute</entry>
             <entry>Default</entry>
             <entry>Description</entry>
            </row>
@@ -330,6 +361,7 @@
         <tbody>
           <row id="ssl-property">
             <entry>ssl</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>false</entry>
             <entry>
               <para>Should connection to proxy use a secure socket layer</para>
@@ -337,6 +369,7 @@
            </row>
           <row>
             <entry>sslCiphers</entry>
+            <entry>cipher-suite</entry>
             <entry><emphasis>The default JSSE cipher suites</emphasis></entry>
             <entry>
               <para>Overrides the cipher suites used to init an SSL socket ignoring any unsupported ciphers</para>
@@ -344,13 +377,15 @@
            </row>
           <row>
             <entry>sslProtocol</entry>
-            <entry>TLS</entry>
+            <entry>protocol</entry>
+            <entry>TLS (ALL in AS7)</entry>
             <entry>
               <para>Overrides the default SSL socket protocol.</para>
             </entry>
            </row>
           <row>
             <entry>sslCertificateEncodingAlgorithm</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><emphasis>The default JSSE key manager algorithm</emphasis></entry>
             <entry>
               <para>The algorithm of the key manager factory</para>
@@ -358,6 +393,7 @@
            </row>
           <row>
             <entry>sslKeyStore</entry>
+            <entry>certificate-key-file</entry>
             <entry><code>System.getProperty("user.home") + "/.keystore"</code></entry>
             <entry>
               <para>The location of the key store containing client certificates</para>
@@ -365,13 +401,15 @@
            </row>
           <row>
             <entry>sslKeyStorePassword</entry>
+            <entry>password</entry>
             <entry>changeit</entry>
             <entry>
-              <para>The password granting access to the key store</para>
+              <para>The password granting access to the key store (and trust store in AS7)</para>
             </entry>
            </row>
           <row>
             <entry>sslKeyStoreType</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>JKS</entry>
             <entry>
               <para>The type of key store</para>
@@ -379,6 +417,7 @@
            </row>
           <row>
             <entry>sslKeyStoreProvider</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><emphasis>The default JSSE security provider</emphasis></entry>
             <entry>
               <para>The key store provider</para>
@@ -386,6 +425,7 @@
            </row>
           <row>
             <entry>sslTrustAlgorithm</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><emphasis>The default JSSE trust manager algorithm</emphasis></entry>
             <entry>
               <para>The algorithm of the trust manager factory</para>
@@ -393,6 +433,7 @@
            </row>
           <row>
             <entry>sslKeyAlias</entry>
+            <entry>key-alias</entry>
             <entry>&nbsp;</entry>
             <entry>
               <para>The alias of the key holding the client certificates in the key store</para>
@@ -400,6 +441,7 @@
            </row>
           <row>
             <entry>sslCrlFile</entry>
+            <entry>ca-revocation-url</entry>
             <entry>&nbsp;</entry>
             <entry>
               <para>Certificate revocation list</para>
@@ -407,6 +449,7 @@
            </row>
           <row>
             <entry>sslTrustMaxCertLength</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry>5</entry>
             <entry>
               <para>The maximum length of a certificate held in the trust store</para>
@@ -414,6 +457,7 @@
            </row>
           <row>
             <entry>sslTrustStore</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><code>System.getProperty("javax.net.ssl.trustStorePassword")</code></entry>
             <entry>
               <para>The location of the file containing the trust store</para>
@@ -421,6 +465,7 @@
            </row>
           <row>
             <entry>sslTrustStorePassword</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><code>System.getProperty("javax.net.ssl.trustStore")</code></entry>
             <entry>
               <para>The password granting access to the trust store.</para>
@@ -428,6 +473,7 @@
            </row>
           <row>
             <entry>sslTrustStoreType</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><code>System.getProperty("javax.net.ssl.trustStoreType")</code></entry>
             <entry>
               <para>The trust store type</para>
@@ -435,6 +481,7 @@
            </row>
           <row>
             <entry>sslTrustStoreProvider</entry>
+            <entry><emphasis>None</emphasis></entry>
             <entry><code>System.getProperty("javax.net.ssl.trustStoreProvider")</code></entry>
             <entry>
               <para>The trust store provider</para>
