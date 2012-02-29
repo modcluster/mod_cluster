@@ -155,10 +155,10 @@ public class TestAliases extends TestCase {
         // Stop the connector that has received the request...
         node = client.getnode();
         if ("node4".equals(node)) {
-            service2.removeContext("/");
+            service2.removeContext("");
             node = "node3";
         } else {
-            service.removeContext("/");
+            service.removeContext("");
             node = "node4";
         }
 
