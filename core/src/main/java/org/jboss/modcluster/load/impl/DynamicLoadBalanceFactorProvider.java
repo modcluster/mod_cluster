@@ -102,7 +102,8 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
         int load = (int) Math.round(100 * totalWeightedLoad / totalWeight);
 
         // apply ceiling & floor and invert to express as "load factor"
-        return 100 - Math.max(0, Math.min(load, 100));
+        // result should be a value between 1-100
+        return 100 - Math.max(0, Math.min(load, 99));
     }
 
     private void recordLoad(List<Double> queue, double load) {
