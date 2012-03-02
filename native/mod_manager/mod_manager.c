@@ -450,12 +450,12 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
     }
 
     if (mconf->basefilename) {
-        node = apr_pstrcat(ptemp, mconf->basefilename, ".node", NULL);
-        context = apr_pstrcat(ptemp, mconf->basefilename, ".context", NULL);
-        host = apr_pstrcat(ptemp, mconf->basefilename, ".host", NULL);
-        balancer = apr_pstrcat(ptemp, mconf->basefilename, ".balancer", NULL);
-        sessionid = apr_pstrcat(ptemp, mconf->basefilename, ".sessionid", NULL);
-        domain = apr_pstrcat(ptemp, mconf->basefilename, ".domain", NULL);
+        node = apr_pstrcat(ptemp, mconf->basefilename, "/manager.node", NULL);
+        context = apr_pstrcat(ptemp, mconf->basefilename, "/manager.context", NULL);
+        host = apr_pstrcat(ptemp, mconf->basefilename, "/manager.host", NULL);
+        balancer = apr_pstrcat(ptemp, mconf->basefilename, "/manager.balancer", NULL);
+        sessionid = apr_pstrcat(ptemp, mconf->basefilename, "/manager.sessionid", NULL);
+        domain = apr_pstrcat(ptemp, mconf->basefilename, "/manager.domain", NULL);
     } else {
         node = ap_server_root_relative(ptemp, "logs/manager.node");
         context = ap_server_root_relative(ptemp, "logs/manager.context");
