@@ -345,7 +345,7 @@ static apr_status_t ma_group_join(const char *addr, apr_port_t port,
     apr_status_t rv;
 
     if ((rv = apr_sockaddr_info_get(&ma_mgroup_sa, addr,
-                                    APR_INET, port,
+                                    APR_UNSPEC, port,
                                     APR_UNSPEC, pool)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, s,
                      "mod_advertise: ma_group_join apr_sockaddr_info_get(%s:%d) failed",
@@ -698,7 +698,7 @@ static void  child_init_hook(apr_pool_t *p, server_rec *s)
 /*
  * Provide information for "status" logic
  */
-static const void advertise_info(request_rec *r)
+static void advertise_info(request_rec *r)
 {
     server_rec *s = main_server;
     /* Find the VirtualHost (Server) that does the Advertise */
