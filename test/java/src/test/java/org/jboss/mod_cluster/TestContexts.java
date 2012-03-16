@@ -59,8 +59,8 @@ public class TestContexts extends TestCase {
         try {
             service = new JBossWeb("node3",  "localhost", false, "ROOT");
             connector = service.addConnector(8013);
-            service.AddContext("/test", "/test");
-            service.AddContext("/testtest", "/testtest");
+            service.AddContext("/test", "/test", "MyTest", false);
+            service.AddContext("/testtest", "/testtest", "MyTest", false);
             server.addService(service);
 
             cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");

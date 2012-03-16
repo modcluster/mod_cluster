@@ -58,7 +58,7 @@ public class TestAddDel extends TestCase {
                 String name = "node" + i;
                 nodenames[i] = name;
                 service[i] = new JBossWeb(name,  "localhost");
-                service[i].addConnector(8010 + i);
+                service[i].addConnector(8020 + i);
                 server.addService(service[i]);
  
             } catch(Exception ex) {
@@ -156,7 +156,7 @@ public class TestAddDel extends TestCase {
 
 
         for (int i=0; i<numbnodes; i++) {
-            Maintest.testPort(8010+i);
+            Maintest.testPort(8020+i);
         }
 
         if (clienterror)
