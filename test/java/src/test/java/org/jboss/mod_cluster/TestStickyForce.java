@@ -45,6 +45,9 @@ public class TestStickyForce extends TestCase {
     /* Test failover */
     public void testStickyForce() {
 
+        Maintest.testPort(8010);
+        Maintest.testPort(8011);
+
         boolean clienterror = false;
         server = Maintest.getServer();
         JBossWeb service = null;
@@ -56,7 +59,7 @@ public class TestStickyForce extends TestCase {
         try {
 
             service = new JBossWeb("sticky3",  "localhost");
-            connector = service.addConnector(8012);
+            connector = service.addConnector(8010);
             connector.setProperty("connectionTimeout", "3000");
             server.addService(service);
 
@@ -106,7 +109,7 @@ public class TestStickyForce extends TestCase {
             port = 8011;
         } else {
             node = "sticky4";
-            port = 8012;
+            port = 8010;
         }
         if (connector != null) {
             try {
@@ -156,7 +159,7 @@ public class TestStickyForce extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        Maintest.testPort(8012);
+        Maintest.testPort(8010);
         Maintest.testPort(8011);
         if (!Maintest.TestForNodes(cluster, null))
             fail("Can't stop nodes");
