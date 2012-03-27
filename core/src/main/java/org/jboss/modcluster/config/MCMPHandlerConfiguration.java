@@ -21,7 +21,13 @@
  */
 package org.jboss.modcluster.config;
 
+import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * Configuration object for an {@link MCMPHandler}.
@@ -33,7 +39,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     /**
      * Proxy list, format "address:port,address:port".
      */
-    String getProxyList();
+    Collection<InetSocketAddress> getProxies();
 
     /**
      * URL prefix.
@@ -55,7 +61,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
      * 
      * @return a comma delimited list of contexts of the form "[host:]context"
      */
-    String getExcludedContexts();
+    Map<String, Set<String>> getExcludedContextsPerHost();
 
     /**
      * Receive advertisements from httpd proxies (default is to use advertisements if the proxyList is not set).
@@ -85,8 +91,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     TimeUnit getStopContextTimeoutUnit();
 
     /**
-     * 
-     * @return
+     * Factory for generating jvm route
      */
     JvmRouteFactory getJvmRouteFactory();
 

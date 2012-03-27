@@ -23,6 +23,7 @@ package org.jboss.modcluster.ha;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -205,7 +206,7 @@ public class ClusteredMCMPHandlerImpl implements ClusteredMCMPHandler {
      * 
      * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
      */
-    public void init(List<InetSocketAddress> initialProxies, MCMPConnectionListener listener) {
+    public void init(Collection<InetSocketAddress> initialProxies, MCMPConnectionListener listener) {
         if (this.singleton.isMasterNode()) {
             this.localHandler.init(initialProxies, listener);
         } else {

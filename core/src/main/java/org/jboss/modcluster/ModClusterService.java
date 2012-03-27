@@ -27,7 +27,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,7 +70,7 @@ import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 
 public class ModClusterService implements ModClusterServiceMBean, ContainerEventHandler, LoadBalanceFactorProvider,
         MCMPConnectionListener, ContextFilter {
-    private static final int DEFAULT_PORT = 8000;
+    public static final int DEFAULT_PORT = 8000;
 
     protected final Logger log = Logger.getLogger(this.getClass());
 
@@ -141,14 +140,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         this.server = server;
 
-        List<InetSocketAddress> initialProxies = Utils.parseSocketAddresses(this.mcmpConfig.getProxyList(), DEFAULT_PORT);
-
-        this.mcmpHandler.init(initialProxies, this);
+        this.mcmpHandler.init(this.mcmpConfig.getProxies(), this);
 
         this.autoEnableContexts = this.mcmpConfig.isAutoEnableContexts();
         this.excludedContexts.clear();
 
-        Map<String, Set<String>> excludedContextPaths = Utils.parseContexts(this.mcmpConfig.getExcludedContexts());
+        Map<String, Set<String>> excludedContextPaths = this.mcmpConfig.getExcludedContextsPerHost();
 
         if (!excludedContextPaths.isEmpty()) {
             for (Engine engine : server.getEngines()) {
@@ -168,7 +165,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         Boolean advertise = this.mcmpConfig.getAdvertise();
 
-        if (Boolean.TRUE.equals(advertise) || (advertise == null && initialProxies.isEmpty())) {
+        if (Boolean.TRUE.equals(advertise) || (advertise == null && this.mcmpConfig.getProxies().isEmpty())) {
             try {
                 this.advertiseListener = this.listenerFactory.createListener(this.mcmpHandler, this.mcmpConfig);
 

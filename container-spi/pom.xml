@@ -4,11 +4,10 @@
     <parent>
         <artifactId>mod_cluster-parent</artifactId>
         <groupId>org.jboss.mod_cluster</groupId>
-        <version>  1.2.1.Beta2-SNAPSHOT</version>
+        <version>1.2.1.Beta2-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-spi</artifactId>
-  <version>1.2.1.Beta2-SNAPSHOT</version>
     <dependencies>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>

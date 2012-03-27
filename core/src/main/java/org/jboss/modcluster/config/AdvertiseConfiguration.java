@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster.config;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -28,17 +30,11 @@ import java.util.concurrent.ThreadFactory;
  * 
  */
 public interface AdvertiseConfiguration {
-    /**
-     * Advertise group.
-     */
-    String getAdvertiseGroupAddress();
+    static final InetSocketAddress DEFAULT_SOCKET_ADDRESS = InetSocketAddress.createUnresolved("224.0.1.105", 23364);
 
-    /**
-     * Advertise port.
-     */
-    int getAdvertisePort();
+    InetSocketAddress getAdvertiseSocketAddress();
 
-    String getAdvertiseInterface();
+    InetAddress getAdvertiseInterface();
 
     /**
      * Advertise security key.

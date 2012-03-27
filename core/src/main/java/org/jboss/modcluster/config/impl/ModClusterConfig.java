@@ -21,6 +21,16 @@
  */
 package org.jboss.modcluster.config.impl;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
@@ -28,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.jboss.modcluster.ModClusterService;
+import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
@@ -54,37 +66,50 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertise = advertise;
     }
 
-    private String advertiseGroupAddress = null;
+    private InetSocketAddress advertiseSocketAddress = DEFAULT_SOCKET_ADDRESS;
 
     @Override
-    public String getAdvertiseGroupAddress() {
-        return this.advertiseGroupAddress;
+    public InetSocketAddress getAdvertiseSocketAddress() {
+        return this.advertiseSocketAddress;
     }
 
-    public void setAdvertiseGroupAddress(String advertiseGroupAddress) {
-        this.advertiseGroupAddress = advertiseGroupAddress;
+    public void setAdvertiseSocketAddress(InetSocketAddress address) {
+        this.advertiseSocketAddress = address;
     }
 
-    private int advertisePort = -1;
+    @Deprecated
+    public void setAdvertiseGroupAddress(InetAddress advertiseGroupAddress) {
+        this.advertiseSocketAddress = new InetSocketAddress(advertiseGroupAddress, this.advertiseSocketAddress.getPort());
+    }
 
-    @Override
+    @Deprecated
+    public void setAdvertiseGroupAddress(String advertiseGroupAddress) throws UnknownHostException {
+        this.setAdvertiseGroupAddress(InetAddress.getByName(advertiseGroupAddress));
+    }
+
+    @Deprecated
     public int getAdvertisePort() {
-        return this.advertisePort;
+        return this.advertiseSocketAddress.getPort();
     }
 
+    @Deprecated
     public void setAdvertisePort(int advertisePort) {
-        this.advertisePort = advertisePort;
+        this.advertiseSocketAddress = new InetSocketAddress(this.advertiseSocketAddress.getAddress(), advertisePort);
     }
 
-    private String advertiseInterface = null;
+    private InetAddress advertiseInterface = null;
 
     @Override
-    public String getAdvertiseInterface() {
+    public InetAddress getAdvertiseInterface() {
         return this.advertiseInterface;
     }
 
-    public void setAdvertiseInterface(String advertiseInterface) {
+    public void setAdvertiseInterface(InetAddress advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
+    }
+
+    public void setAdvertiseInterface(String advertiseInterface) throws UnknownHostException {
+        this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
     }
 
     private String advertiseSecurityKey = null;
@@ -109,15 +134,29 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseThreadFactory = advertiseThreadFactory;
     }
 
-    private String proxyList = null;
+    private Collection<InetSocketAddress> proxies = Collections.emptySet();
 
     @Override
-    public String getProxyList() {
-        return this.proxyList;
+    public Collection<InetSocketAddress> getProxies() {
+        return this.proxies;
     }
 
-    public void setProxyList(String proxyList) {
-        this.proxyList = proxyList;
+    public void setProxies(Collection<InetSocketAddress> proxies) {
+        this.proxies = proxies;
+    }
+
+    @Deprecated
+    public void setProxyList(String addresses) throws UnknownHostException {
+        if ((addresses == null) || (addresses.length() == 0)) {
+            this.proxies = Collections.emptySet();
+        } else {
+            String[] tokens = addresses.split(",");
+            this.proxies = new ArrayList<InetSocketAddress>(tokens.length);
+
+            for (String token: tokens) {
+                this.proxies.add(Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT));
+            }
+        }
     }
 
     private String proxyURL = null;
@@ -153,15 +192,62 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.ssl = ssl;
     }
 
-    private String excludedContexts = null;
+    private Map<String, Set<String>> excludedContextsPerHost = Collections.emptyMap();
 
     @Override
-    public String getExcludedContexts() {
-        return this.excludedContexts;
+    public Map<String, Set<String>> getExcludedContextsPerHost() {
+        return this.excludedContextsPerHost;
     }
 
-    public void setExcludedContexts(String excludedContexts) {
-        this.excludedContexts = excludedContexts;
+    public void setExcludedContextsPerHost(Map<String, Set<String>> excludedContexts) {
+        this.excludedContextsPerHost = excludedContexts;
+    }
+
+    private static final String ROOT_CONTEXT = "ROOT";
+    private static final String CONTEXT_DELIMITER = ",";
+    private static final String HOST_CONTEXT_DELIMITER = ":";
+    private static final String DEFAULT_HOST = "localhost";
+
+    @Deprecated
+    public void setExcludedContexts(String contexts) {
+        if (contexts == null) {
+            this.excludedContextsPerHost = Collections.emptyMap();
+        } else {
+            String trimmedContexts = contexts.trim();
+    
+            if (trimmedContexts.isEmpty()) {
+                this.setExcludedContextsPerHost(Collections.<String, Set<String>>emptyMap());
+            } else {
+                this.excludedContextsPerHost = new HashMap<String, Set<String>>();
+
+                for (String context : trimmedContexts.split(CONTEXT_DELIMITER)) {
+                    String[] parts = context.trim().split(HOST_CONTEXT_DELIMITER);
+
+                    if (parts.length > 2) {
+                        throw new IllegalArgumentException(trimmedContexts + " is not a valid value for excludedContexts");
+                    }
+
+                    String host = DEFAULT_HOST;
+                    String trimmedContext = parts[0].trim();
+
+                    if (parts.length == 2) {
+                        host = trimmedContext;
+                        trimmedContext = parts[1].trim();
+                    }
+
+                    String path = trimmedContext.equals(ROOT_CONTEXT) ? "" : "/" + trimmedContext;
+
+                    Set<String> paths = this.excludedContextsPerHost.get(host);
+
+                    if (paths == null) {
+                        paths = new HashSet<String>();
+                        this.excludedContextsPerHost.put(host, paths);
+                    }
+
+                    paths.add(path);
+                }
+            }
+        }
     }
 
     private boolean autoEnableContexts = true;

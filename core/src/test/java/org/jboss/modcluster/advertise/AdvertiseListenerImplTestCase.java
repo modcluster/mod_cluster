@@ -75,8 +75,7 @@ public class AdvertiseListenerImplTestCase {
     @Before
     public void setup() throws Exception {
         when(this.config.getAdvertiseThreadFactory()).thenReturn(Executors.defaultThreadFactory());
-        when(this.config.getAdvertiseGroupAddress()).thenReturn(ADVERTISE_GROUP);
-        when(this.config.getAdvertisePort()).thenReturn(ADVERTISE_PORT);
+        when(this.config.getAdvertiseSocketAddress()).thenReturn(new InetSocketAddress(ADVERTISE_GROUP, ADVERTISE_PORT));
         when(this.config.getAdvertiseSecurityKey()).thenReturn(null);
         when(this.config.getAdvertiseInterface()).thenReturn(null);
 

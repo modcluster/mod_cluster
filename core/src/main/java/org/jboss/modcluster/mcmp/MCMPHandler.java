@@ -23,6 +23,7 @@ package org.jboss.modcluster.mcmp;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ import java.util.Set;
  * @version $Revision$
  */
 public interface MCMPHandler {
-    void init(List<InetSocketAddress> initialProxies, MCMPConnectionListener connectionListener);
+    void init(Collection<InetSocketAddress> initialProxies, MCMPConnectionListener connectionListener);
 
     /** Perform any shut down work. */
     void shutdown();

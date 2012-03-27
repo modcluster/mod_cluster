@@ -36,6 +36,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,8 +65,8 @@ import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.MCMPResponseParser;
 import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
-import org.jboss.modcluster.mcmp.ResetRequestSource;
 import org.jboss.modcluster.mcmp.MCMPServerState.State;
+import org.jboss.modcluster.mcmp.ResetRequestSource;
 
 /**
  * Default implementation of {@link MCMPHandler}.
@@ -127,16 +128,16 @@ public class DefaultMCMPHandler implements MCMPHandler {
      * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
      */
     @Override
-    public void init(List<InetSocketAddress> initialProxies, MCMPConnectionListener connectionListener) {
+    public void init(Collection<InetSocketAddress> proxies, MCMPConnectionListener connectionListener) {
         this.connectionListener = connectionListener;
 
-        if (initialProxies != null) {
+        if (proxies != null) {
             Lock lock = this.proxiesLock.writeLock();
             lock.lock();
 
             try {
-                for (InetSocketAddress initialProxy : initialProxies) {
-                    this.add(initialProxy);
+                for (InetSocketAddress proxy : proxies) {
+                    this.add(proxy);
                 }
 
                 this.status(false);

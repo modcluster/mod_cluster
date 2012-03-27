@@ -24,6 +24,7 @@ package org.jboss.modcluster.advertise.impl;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -33,10 +34,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.jcip.annotations.GuardedBy;
 
@@ -54,10 +54,6 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
  * @author Mladen Turk
  */
 public class AdvertiseListenerImpl implements AdvertiseListener {
-    /** Default port for listening Advertise messages. */
-    public static final int DEFAULT_PORT = 23364;
-    /** Default Multicast group address for listening Advertise messages. */
-    public static final String DEFAULT_GROUP = "224.0.1.105";
     public static final String DEFAULT_ENCODING = "8859_1";
     public static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
 
@@ -65,17 +61,12 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
     volatile boolean listening = false;
 
-    final int advertisePort;
-    final InetAddress groupAddress;
-    private final InetAddress socketInterface;
-
-    private final ThreadFactory threadFactory;
+    private final AdvertiseConfiguration config;
     private final MulticastSocketFactory socketFactory;
 
-    private final String securityKey;
-    MessageDigest md = null;
+    final MessageDigest md;
 
-    final Map<String, AdvertisedServer> servers = new HashMap<String, AdvertisedServer>();
+    final Map<String, AdvertisedServer> servers = new ConcurrentHashMap<String, AdvertisedServer>();
     final MCMPHandler handler;
 
     @GuardedBy("this")
@@ -106,29 +97,19 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
      * @param config our configuration
      * @param socketFactory a multicast socket factory
      */
-    public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, MulticastSocketFactory socketFactory)
-            throws IOException {
+    public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, MulticastSocketFactory socketFactory) throws IOException {
         this.handler = commHandler;
         this.socketFactory = socketFactory;
-        this.threadFactory = config.getAdvertiseThreadFactory();
+        this.config = config;
+        this.md = (config.getAdvertiseSecurityKey() != null) ? this.getMessageDigest() : null;
+    }
 
-        String groupAddress = config.getAdvertiseGroupAddress();
-        this.groupAddress = InetAddress.getByName((groupAddress != null) ? groupAddress : DEFAULT_GROUP);
-
-        int port = config.getAdvertisePort();
-        this.advertisePort = (port > 0) ? port : DEFAULT_PORT;
-
-        this.securityKey = config.getAdvertiseSecurityKey();
-        if (this.securityKey != null && this.md == null) {
-            try {
-                this.md = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException ex) {
-                throw new IOException("can't create MD: NoSuchAlgorithmException");
-            }
+    private MessageDigest getMessageDigest() throws IOException {
+        try {
+            return MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IOException("can't create MD: NoSuchAlgorithmException");
         }
-
-        String advertiseInterface = config.getAdvertiseInterface();
-        this.socketInterface = (advertiseInterface != null) ? InetAddress.getByName(advertiseInterface) : null;
     }
 
     /**
@@ -159,14 +140,16 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
     private synchronized void init() throws IOException {
         if (this.socket == null) {
-            MulticastSocket socket = this.socketFactory.createMulticastSocket(this.groupAddress, this.advertisePort);
+            InetSocketAddress socketAddress = this.config.getAdvertiseSocketAddress();
+            MulticastSocket socket = this.socketFactory.createMulticastSocket(socketAddress.getAddress(), socketAddress.getPort());
 
             // Limit socket send to localhost
             socket.setTimeToLive(0);
-            if (this.socketInterface != null) {
-                socket.setInterface(this.socketInterface);
+            InetAddress socketInterface = this.config.getAdvertiseInterface();
+            if (socketInterface != null) {
+                socket.setInterface(socketInterface);
             }
-            socket.joinGroup(this.groupAddress);
+            socket.joinGroup(socketAddress.getAddress());
 
             this.socket = socket;
         }
@@ -182,12 +165,12 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
         if (this.worker == null) {
             this.worker = new AdvertiseListenerWorker(this.socket);
-            this.thread = this.threadFactory.newThread(this.worker);
+            this.thread = this.config.getAdvertiseThreadFactory().newThread(this.worker);
             this.thread.start();
 
             this.listening = true;
 
-            log.info(Strings.ADVERTISE_START.getString(this.groupAddress.getHostAddress(), String.valueOf(this.advertisePort)));
+            log.info(Strings.ADVERTISE_START.getString(this.config.getAdvertiseSocketAddress().getAddress().getHostAddress(), this.config.getAdvertiseSocketAddress().getPort()));
         }
     }
 
@@ -218,7 +201,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         if (this.socket == null)
             return;
 
-        DatagramPacket packet = this.worker.createInterruptPacket(this.groupAddress, this.advertisePort);
+        InetSocketAddress socketAddress = this.config.getAdvertiseSocketAddress();
+        DatagramPacket packet = this.worker.createInterruptPacket(socketAddress.getAddress(), socketAddress.getPort());
 
         try {
             this.socket.send(packet);
@@ -260,7 +244,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
         if (this.socket != null) {
             try {
-                this.socket.leaveGroup(this.groupAddress);
+                this.socket.leaveGroup(this.config.getAdvertiseSocketAddress().getAddress());
             } catch (IOException e) {
                 log.warn(e.getMessage(), e);
             }
@@ -275,11 +259,11 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     boolean verifyDigest(String digest, String server, String date, String sequence) {
         if (this.md == null)
             return true;
-        if (this.securityKey == null)
-            return true; // Not set: No used
+        String securityKey = this.config.getAdvertiseSecurityKey();
+        if (securityKey == null) return true; // Not set: No used
 
         this.md.reset();
-        digestString(this.md, this.securityKey);
+        digestString(this.md, securityKey);
         byte[] ssalt = this.md.digest();
         this.md.update(ssalt);
         digestString(this.md, date);
