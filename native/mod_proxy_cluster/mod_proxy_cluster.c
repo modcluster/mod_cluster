@@ -509,10 +509,13 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
 static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_pool_t *pool, server_rec *server)
 {
     int i;
+    char *pptr = (char *) node;
+    pptr = pptr + node->offset;
+
     proxy_cluster_helper *helper;
     proxy_worker *worker = (proxy_worker *)conf->workers->elts;
     for (i = 0; i < conf->workers->nelts; i++) {
-        if (worker->id == node->mess.id)
+        if (worker->id == node->mess.id && worker->s == (proxy_worker_stat *) pptr)
             break;
         worker++;
     }
@@ -635,14 +638,14 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
 static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker,
                                                char *url, proxy_server_conf *conf,
                                                apr_interval_time_t ping, apr_interval_time_t workertimeout);
-static proxy_worker *get_worker_from_id(proxy_server_conf *conf, int id)
+static proxy_worker *get_worker_from_id(proxy_server_conf *conf, int id, proxy_worker_stat *stat)
 {
     int i;
     proxy_worker *worker;
 
     worker = (proxy_worker *)conf->workers->elts;
     for (i = 0; i < conf->workers->nelts; i++) {
-        if (worker->id == id) {
+        if (worker->id == id && worker->s == stat) {
             return worker;
         }
         worker++;
@@ -689,7 +692,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 apr_status_t rv;
                 apr_pool_t *rrp;
                 request_rec *rnew;
-                proxy_worker *worker = get_worker_from_id(conf, id[i]);
+                proxy_worker *worker = get_worker_from_id(conf, id[i], stat);
                 if (worker == NULL)
                     continue; /* skip it */
                 apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
@@ -1456,9 +1459,16 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     server_rec *s = main_server;
     proxy_server_conf *conf = NULL;
     nodeinfo_t *node;
+    proxy_worker_stat *stat;
+    char *ptr;
 
     if (node_storage->read_node(id, &node) != APR_SUCCESS)
         return 500;
+
+    /* Calculate the address of our shared memory that corresponds to the stat info of the worker */
+    ptr = (char *) node;
+    ptr = ptr + node->offset;
+    stat = (proxy_worker_stat *) ptr;
 
     /* create the balancers and workers (that could be the first time) */
     apr_thread_mutex_lock(lock);
@@ -1472,7 +1482,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
 
         worker = (proxy_worker *)conf->workers->elts;
         for (i = 0; i < conf->workers->nelts; i++) {
-            if (worker->id == id) {
+            if (worker->id == id && worker->s == stat) {
                 foundid = id;
                 break;
             }
