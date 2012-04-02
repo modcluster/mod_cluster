@@ -2390,11 +2390,11 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
     mconf->last_updated = 0;
 
     if (mconf->basefilename) {
-        node = apr_pstrcat(p, mconf->basefilename, ".node", NULL);
-        context = apr_pstrcat(p, mconf->basefilename, ".context", NULL);
-        host = apr_pstrcat(p, mconf->basefilename, ".host", NULL);
-        balancer = apr_pstrcat(p, mconf->basefilename, ".balancer", NULL);
-        sessionid = apr_pstrcat(p, mconf->basefilename, ".sessionid", NULL);
+        node = apr_pstrcat(p, mconf->basefilename, "/manager.node", NULL);
+        context = apr_pstrcat(p, mconf->basefilename, "/manager.context", NULL);
+        host = apr_pstrcat(p, mconf->basefilename, "/manager.host", NULL);
+        balancer = apr_pstrcat(p, mconf->basefilename, "/manager.balancer", NULL);
+        sessionid = apr_pstrcat(p, mconf->basefilename, "/manager.sessionid", NULL);
     } else {
         node = ap_server_root_relative(p, "logs/manager.node");
         context = ap_server_root_relative(p, "logs/manager.context");
@@ -2406,6 +2406,12 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
     nodestatsmem = get_mem_node(node, &mconf->maxnode, p, storage);
     if (nodestatsmem == NULL) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "get_mem_node %s failed", node);
+        return;
+    }
+    if (get_last_mem_error(nodestatsmem) != APR_SUCCESS) {
+        char buf[120];
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "get_mem_node %s failed: %s",
+                     node, apr_strerror(get_last_mem_error(nodestatsmem), buf, sizeof(buf)));
         return;
     }
 
