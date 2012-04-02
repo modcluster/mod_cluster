@@ -559,6 +559,8 @@ static int ap_slotmem_get_used(ap_slotmem_t *score, int *ids)
 }
 static int ap_slotmem_get_max_size(ap_slotmem_t *score)
 {
+    if (score == NULL)
+        return 0;
     return score->num;
 }
 static const slotmem_storage_method storage = {
