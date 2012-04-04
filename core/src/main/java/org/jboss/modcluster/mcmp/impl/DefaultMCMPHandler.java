@@ -31,6 +31,7 @@ import java.io.ObjectOutput;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.Writer;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -810,7 +811,15 @@ public class DefaultMCMPHandler implements MCMPHandler {
         private synchronized Socket getConnection() throws IOException {
             if ((this.socket == null) || this.socket.isClosed()) {
                 this.socket = this.socketFactory.createSocket();
-                this.socket.connect(this.socketAddress, this.socketTimeout);
+                InetAddress address = this.socketAddress.getAddress();
+                if ( address instanceof Inet6Address && ((Inet6Address)address).isLinkLocalAddress()) {
+                    /* We need to work-around a java6 bug */
+                    InetSocketAddress addr = new InetSocketAddress(address, 0);
+                    this.socket.bind(addr);
+                    this.socket.connect(this.socketAddress, this.socketTimeout);
+                } else {
+                    this.socket.connect(this.socketAddress, this.socketTimeout);
+                }
                 this.socket.setSoTimeout(this.socketTimeout);
                 this.localAddress = this.socket.getLocalAddress();
             }
