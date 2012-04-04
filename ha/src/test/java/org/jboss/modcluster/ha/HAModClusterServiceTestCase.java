@@ -126,7 +126,7 @@ public class HAModClusterServiceTestCase {
 
         this.service.init(server);
 
-        verify(this.clusteredMCMPHandler).init(eq(Collections.singletonList(socketAddress)), isA(HAModClusterService.ClusteredModClusterService.class));
+        verify(this.clusteredMCMPHandler).init(eq(Collections.singleton(socketAddress)), isA(HAModClusterService.ClusteredModClusterService.class));
         verify(this.resetRequestSource).init(same(server), Matchers.<ContextFilter>any());
     }
 
