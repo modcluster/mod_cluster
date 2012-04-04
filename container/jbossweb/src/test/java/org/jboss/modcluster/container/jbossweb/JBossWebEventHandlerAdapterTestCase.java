@@ -39,6 +39,7 @@ import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandler;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
+import org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase;
 import org.jboss.modcluster.container.catalina.ServerProvider;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -50,14 +51,14 @@ import org.mockito.Mockito;
  * @author Paul Ferraro
  *
  */
-public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase {
+public class JBossWebEventHandlerAdapterTestCase extends ContainerEventHandlerAdapterTestCase {
     private final MBeanServer mbeanServer = mock(MBeanServer.class);
 
     @Override
     protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
-        return new JBossWebEventHandlerAdapter(eventHandler, provider, factory);
+        return new JBossWebEventHandlerAdapter(eventHandler, this.mbeanServer, provider, factory);
     }
-    
+
     @Override
     public void initServer() throws Exception {
         JBossWebEventHandlerAdapter handler = new JBossWebEventHandlerAdapter(this.eventHandler, this.mbeanServer, this.provider, this.factory);
@@ -208,55 +209,9 @@ public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.c
     protected LifecycleEvent createAfterInitEvent(Lifecycle lifecycle) {
         return new LifecycleEvent(lifecycle, Lifecycle.INIT_EVENT, null);
     }
+
     @Override
     protected LifecycleEvent createBeforeDestroyInitEvent(Lifecycle lifecycle) {
         return new LifecycleEvent(lifecycle, Lifecycle.DESTROY_EVENT, null);
     }
-
-    /* From catalina ContainerEventHandlerAdapterTestCase.java */
-    @Test
-    public void start() {
-        super.start();
-    }
-    @Test
-    public void stop() throws Exception {
-        super.stop();
-    }
-    @Test
-    public void deployWebApp() throws Exception {
-        super.deployWebApp();
-    }
-    @Test
-    public void deployHost() {
-        super.deployHost();
-    }
-    @Test
-    public void undeployWebApp() throws Exception {
-        super.undeployWebApp();
-    }
-    @Test
-    public void undeployHost() {
-        super.undeployHost();
-    }
-    @Test
-    public void startWebApp() throws Exception {
-        super.startWebApp();
-    }
-    @Test
-    public void startServer() throws Exception {
-        super.startServer();
-    }
-    @Test
-    public void stopWebApp() throws Exception {
-        super.stopWebApp();
-    }
-    @Test
-    public void stopServer() throws Exception {
-        super.stopServer();
-    }
-    @Test
-    public void periodicEvent() throws Exception {
-        super.periodicEvent();
-    }
-    
 }

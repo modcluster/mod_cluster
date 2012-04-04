@@ -13,7 +13,8 @@ public class ServiceLoaderCatalinaFactory implements CatalinaFactory, CatalinaFa
     private final HostFactory hostFactory;
     private final ContextFactory contextFactory;
     private final ConnectorFactory connectorFactory;
-    
+    private final ProxyConnectorProvider provider;
+
     private static <T> T load(Class<T> targetClass, Class<? extends T> defaultClass) {
         for (T value : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {
             return value;
@@ -24,21 +25,23 @@ public class ServiceLoaderCatalinaFactory implements CatalinaFactory, CatalinaFa
             throw new IllegalStateException(e);
         }
     }
-    
-    public ServiceLoaderCatalinaFactory() {
+
+    public ServiceLoaderCatalinaFactory(ProxyConnectorProvider provider) {
         this.serverFactory = load(ServerFactory.class, CatalinaServerFactory.class);
         this.engineFactory = load(EngineFactory.class, CatalinaEngineFactory.class);
         this.hostFactory = load(HostFactory.class, CatalinaHostFactory.class);
         this.contextFactory = load(ContextFactory.class, CatalinaContextFactory.class);
         this.connectorFactory = load(ConnectorFactory.class, CatalinaConnectorFactory.class);
+        this.provider = provider;
     }
-    
-    public ServiceLoaderCatalinaFactory(ServerFactory serverFactory, EngineFactory engineFactory, HostFactory hostFactory, ContextFactory contextFactory, ConnectorFactory connectorFactory) {
+
+    public ServiceLoaderCatalinaFactory(ServerFactory serverFactory, EngineFactory engineFactory, HostFactory hostFactory, ContextFactory contextFactory, ConnectorFactory connectorFactory, ProxyConnectorProvider provider) {
         this.serverFactory = serverFactory;
         this.engineFactory = engineFactory;
         this.hostFactory = hostFactory;
         this.contextFactory = contextFactory;
         this.connectorFactory = connectorFactory;
+        this.provider = provider;
     }
     
     @Override
@@ -59,6 +62,11 @@ public class ServiceLoaderCatalinaFactory implements CatalinaFactory, CatalinaFa
     @Override
     public Context createContext(org.apache.catalina.Context context) {
         return this.contextFactory.createContext(context, this.createHost((org.apache.catalina.Host) context.getParent()));
+    }
+
+    @Override
+    public ProxyConnectorProvider getProxyConnectorProvider() {
+        return this.provider;
     }
 
     @Override

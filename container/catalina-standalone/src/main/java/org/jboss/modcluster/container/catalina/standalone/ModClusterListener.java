@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +44,6 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
-import org.jboss.modcluster.container.catalina.CatalinaLifecycleListenerFactory;
 import org.jboss.modcluster.container.catalina.LifecycleListenerFactory;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
@@ -94,10 +94,10 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     }
 
     private LifecycleListenerFactory loadFactory() {
-        for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class)) {
+        for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class, LifecycleListenerFactory.class.getClassLoader())) {
             return factory;
         }
-        return new CatalinaLifecycleListenerFactory();
+        throw new ServiceConfigurationError(String.format("No %s service provider found.", LifecycleListenerFactory.class.getName()));
     }
 
     protected ModClusterListener(ModClusterServiceMBean mbean, LifecycleListener listener) {

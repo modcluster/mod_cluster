@@ -16,21 +16,23 @@ public class ServiceLoaderCatalinaFactoryTestCase {
     private final HostFactory hostFactory = mock(HostFactory.class);
     private final ContextFactory contextFactory = mock(ContextFactory.class);
     private final ConnectorFactory connectorFactory = mock(ConnectorFactory.class);
+    private final ProxyConnectorProvider provider = mock(ProxyConnectorProvider.class);
     
     @Test
     public void testCatalinaFactoryRegistry() {
-        CatalinaFactoryRegistry registry = new ServiceLoaderCatalinaFactory(this.serverFactory, this.engineFactory, this.hostFactory, this.contextFactory, this.connectorFactory);
+        CatalinaFactoryRegistry registry = new ServiceLoaderCatalinaFactory(this.serverFactory, this.engineFactory, this.hostFactory, this.contextFactory, this.connectorFactory, this.provider);
         
         assertSame(this.serverFactory, registry.getServerFactory());
         assertSame(this.engineFactory, registry.getEngineFactory());
         assertSame(this.hostFactory, registry.getHostFactory());
         assertSame(this.contextFactory, registry.getContextFactory());
         assertSame(this.connectorFactory, registry.getConnectorFactory());
+        assertSame(this.provider, registry.getProxyConnectorProvider());
     }
     
     @Test
     public void testCatalinaFactories() throws Exception {
-        ServiceLoaderCatalinaFactory factory = new ServiceLoaderCatalinaFactory(this.serverFactory, this.engineFactory, this.hostFactory, this.contextFactory, this.connectorFactory);
+        ServiceLoaderCatalinaFactory factory = new ServiceLoaderCatalinaFactory(this.serverFactory, this.engineFactory, this.hostFactory, this.contextFactory, this.connectorFactory, this.provider);
         
         org.apache.catalina.Server catalinaServer = mock(org.apache.catalina.Server.class);
         Server server = mock(Server.class);
@@ -68,14 +70,15 @@ public class ServiceLoaderCatalinaFactoryTestCase {
     
     @Test
     public void testServiceLoader() {
-        this.verifyCatalinaFactoryTypes(new ServiceLoaderCatalinaFactory());
+        this.verifyCatalinaFactoryTypes(new ServiceLoaderCatalinaFactory(this.provider));
     }
     
     protected void verifyCatalinaFactoryTypes(CatalinaFactoryRegistry registry) {
-        assertSame(registry.getServerFactory().getClass(), CatalinaServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), CatalinaEngineFactory.class);
-        assertSame(registry.getHostFactory().getClass(), CatalinaHostFactory.class);
-        assertSame(registry.getContextFactory().getClass(), CatalinaContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), CatalinaConnectorFactory.class);
+        assertSame(CatalinaServerFactory.class, registry.getServerFactory().getClass());
+        assertSame(CatalinaEngineFactory.class, registry.getEngineFactory().getClass());
+        assertSame(CatalinaHostFactory.class, registry.getHostFactory().getClass());
+        assertSame(CatalinaContextFactory.class, registry.getContextFactory().getClass());
+        assertSame(CatalinaConnectorFactory.class, registry.getConnectorFactory().getClass());
+        assertSame(this.provider, registry.getProxyConnectorProvider());
     }
 }

@@ -26,15 +26,14 @@ import org.apache.catalina.LifecycleEvent;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandler;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
+import org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase;
 import org.jboss.modcluster.container.catalina.ServerProvider;
-
-import org.junit.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase {
+public class TomcatEventHandlerAdapterTestCase extends ContainerEventHandlerAdapterTestCase {
     
     @Override
     protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
@@ -45,63 +44,9 @@ public class ContainerEventHandlerAdapterTestCase extends org.jboss.modcluster.c
     protected LifecycleEvent createAfterInitEvent(Lifecycle lifecycle) {
         return new LifecycleEvent(lifecycle, Lifecycle.AFTER_INIT_EVENT, null);
     }
+
     @Override
     protected LifecycleEvent createBeforeDestroyInitEvent(Lifecycle lifecycle) {
         return new LifecycleEvent(lifecycle, Lifecycle.BEFORE_DESTROY_EVENT, null);
     }
-
-    /* From catalina ContainerEventHandlerAdapterTestCase.java */
-    @Test
-    public void start() {
-        super.start();
-    }
-    @Test
-    public void stop() throws Exception {
-        super.stop();
-    }
-    @Test
-    public void deployWebApp() throws Exception {
-        super.deployWebApp();
-    }
-    @Test
-    public void deployHost() {
-        super.deployHost();
-    }
-    @Test
-    public void undeployWebApp() throws Exception {
-        super.undeployWebApp();
-    }
-    @Test
-    public void undeployHost() {
-        super.undeployHost();
-    }
-    @Test
-    public void startWebApp() throws Exception {
-        super.startWebApp();
-    }
-    @Test
-    public void initServer() throws Exception {
-        super.initServer();
-    }
-    @Test
-    public void startServer() throws Exception {
-        super.startServer();
-    }
-    @Test
-    public void stopWebApp() throws Exception {
-        super.stopWebApp();
-    }
-    @Test
-    public void stopServer() throws Exception {
-        super.stopServer();
-    }
-    @Test
-    public void destroyServer() throws Exception {
-        super.destroyServer();
-    }
-    @Test
-    public void periodicEvent() throws Exception {
-        super.periodicEvent();
-    }
-    
 }

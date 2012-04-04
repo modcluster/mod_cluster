@@ -19,33 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.modcluster.container.catalina;
 
-package org.jboss.modcluster.container.tomcat;
+import org.apache.catalina.Engine;
+import org.jboss.modcluster.container.Connector;
 
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleEvent;
-import org.jboss.modcluster.container.ContainerEventHandler;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
-import org.jboss.modcluster.container.catalina.CatalinaFactory;
-import org.jboss.modcluster.container.catalina.ServerProvider;
+/**
+ * Proxy connector provider that uses a specific connector.
+ * @author Paul Ferraro
+ */
+public class SimpleProxyConnectorProvider implements ProxyConnectorProvider {
+    private final org.apache.catalina.connector.Connector connector;
 
-public class TomcatEventHandlerAdapter extends CatalinaEventHandlerAdapter {
-
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler) {
-        super(eventHandler);
-    }
-
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, CatalinaFactory factory) {
-        super(eventHandler, serverProvider, factory);
+    public SimpleProxyConnectorProvider(org.apache.catalina.connector.Connector connector) {
+        this.connector = connector;
     }
 
     @Override
-    protected boolean isAfterInit(LifecycleEvent event) {
-        return event.getType().equals(Lifecycle.INIT_EVENT);
-    }
-
-    @Override
-    protected boolean isBeforeDestroy(LifecycleEvent event) {
-        return event.getType().equals(Lifecycle.DESTROY_EVENT);
+    public Connector createProxyConnector(ConnectorFactory factory, Engine engine) {
+        return factory.createConnector(this.connector);
     }
 }

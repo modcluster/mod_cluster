@@ -131,29 +131,7 @@ public class CatalinaEngine implements Engine {
 
     @Override
     public Connector getProxyConnector() {
-        int highestMaxThreads = 0;
-        Connector bestConnector = null;
-
-        for (org.apache.catalina.connector.Connector connector : this.engine.getService().findConnectors()) {
-            Connector catalinaConnector = CatalinaEngine.this.registry.getConnectorFactory().createConnector(connector);
-
-            if (CatalinaConnector.isAJP(connector) || catalinaConnector.isReverse()) {
-                return catalinaConnector;
-            }
-
-            int maxThreads = catalinaConnector.getMaxThreads();
-
-            if (maxThreads > highestMaxThreads) {
-                highestMaxThreads = maxThreads;
-                bestConnector = catalinaConnector;
-            }
-        }
-
-        if (bestConnector == null) {
-            throw new IllegalStateException();
-        }
-
-        return bestConnector;
+        return this.registry.getProxyConnectorProvider().createProxyConnector(this.registry.getConnectorFactory(), this.engine);
     }
 
     @Override

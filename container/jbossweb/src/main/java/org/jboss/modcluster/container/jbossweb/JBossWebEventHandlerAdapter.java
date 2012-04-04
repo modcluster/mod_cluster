@@ -15,6 +15,7 @@ import org.apache.catalina.Service;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.jboss.modcluster.container.ContainerEventHandler;
+import org.jboss.modcluster.container.catalina.AutoProxyConnectorProvider;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
 import org.jboss.modcluster.container.catalina.JMXServerProvider;
@@ -25,37 +26,20 @@ public class JBossWebEventHandlerAdapter extends CatalinaEventHandlerAdapter imp
     private volatile ObjectName serviceObjectName = toObjectName("jboss.web:service=WebServer");
     private volatile String connectorsStartedNotificationType = "jboss.tomcat.connectors.started";
     private volatile String connectorsStoppedNotificationType = "jboss.tomcat.connectors.stopped";
-    private final MBeanServer mbeanServer;
+    private final MBeanServer server;
 
     public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler) {
         this(eventHandler, ManagementFactory.getPlatformMBeanServer());
     }
     
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer) {
-        this(eventHandler, mbeanServer, new JMXServerProvider(mbeanServer, toObjectName("jboss.web:type=Server")));
+    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer server) {
+        super(eventHandler, new JMXServerProvider(server, toObjectName("jboss.web:type=Server")), new AutoProxyConnectorProvider());
+        this.server = server;
     }
 
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, Server server) {
-        super(eventHandler, server);
-        this.mbeanServer = ManagementFactory.getPlatformMBeanServer();
-    }
-
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider) {
-        this(eventHandler, ManagementFactory.getPlatformMBeanServer(), provider);
-    }
-
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer, ServerProvider provider) {
-        super(eventHandler, provider);
-        this.mbeanServer = mbeanServer;
-    }
-
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
-        this(eventHandler, ManagementFactory.getPlatformMBeanServer(), provider, factory);
-    }
-
-    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer, ServerProvider provider, CatalinaFactory factory) {
-        super(eventHandler, provider, factory);
-        this.mbeanServer = mbeanServer;
+    public JBossWebEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer server, ServerProvider serverProvider, CatalinaFactory factory) {
+        super(eventHandler, serverProvider, factory);
+        this.server = server;
     }
 
     @Override
@@ -63,9 +47,9 @@ public class JBossWebEventHandlerAdapter extends CatalinaEventHandlerAdapter imp
         super.init(server);
         
         // Register for mbean notifications if JBoss Web server mbean exists
-        if (this.mbeanServer.isRegistered(this.serviceObjectName)) {
+        if (this.server.isRegistered(this.serviceObjectName)) {
             try {
-                this.mbeanServer.addNotificationListener(this.serviceObjectName, this, null, server);
+                this.server.addNotificationListener(this.serviceObjectName, this, null, server);
             } catch (InstanceNotFoundException e) {
                 throw new IllegalStateException(e);
             }
@@ -75,9 +59,9 @@ public class JBossWebEventHandlerAdapter extends CatalinaEventHandlerAdapter imp
     @Override
     protected void destroy(Server server) {
         // Unregister for mbean notifications if JBoss Web server mbean exists
-        if (this.mbeanServer.isRegistered(this.serviceObjectName)) {
+        if (this.server.isRegistered(this.serviceObjectName)) {
             try {
-                this.mbeanServer.removeNotificationListener(this.serviceObjectName, this);
+                this.server.removeNotificationListener(this.serviceObjectName, this);
             } catch (InstanceNotFoundException e) {
                 throw new IllegalStateException(e);
             } catch (ListenerNotFoundException e) {
@@ -146,9 +130,12 @@ public class JBossWebEventHandlerAdapter extends CatalinaEventHandlerAdapter imp
         // to trigger *after* any listener with 0 hashCode.
         return 1;
     }
-     protected boolean isAfterInit(LifecycleEvent event) {
-         return event.getType().equals(Lifecycle.INIT_EVENT);
-     }
+
+    @Override
+    protected boolean isAfterInit(LifecycleEvent event) {
+        return event.getType().equals(Lifecycle.INIT_EVENT);
+    }
+
     @Override
     protected boolean isBeforeDestroy(LifecycleEvent event) {
         return event.getType().equals(Lifecycle.DESTROY_EVENT);

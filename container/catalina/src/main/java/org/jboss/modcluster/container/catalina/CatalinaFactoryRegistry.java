@@ -11,4 +11,6 @@ public interface CatalinaFactoryRegistry {
     ContextFactory getContextFactory();
 
     ConnectorFactory getConnectorFactory();
+
+    ProxyConnectorProvider getProxyConnectorProvider();
 }

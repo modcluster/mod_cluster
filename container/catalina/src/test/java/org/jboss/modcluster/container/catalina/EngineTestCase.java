@@ -24,7 +24,6 @@ package org.jboss.modcluster.container.catalina;
 import java.util.Iterator;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -106,15 +105,13 @@ public class EngineTestCase {
 
     @Test
     public void getProxyConnector() throws Exception {
-        org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
-        Service service = mock(Service.class);
+        ProxyConnectorProvider provider = mock(ProxyConnectorProvider.class);
         Connector expected = mock(Connector.class);
         ConnectorFactory factory = mock(ConnectorFactory.class);
         
-        when(this.engine.getService()).thenReturn(service);
-        when(service.findConnectors()).thenReturn(new org.apache.catalina.connector.Connector[] { connector });
+        when(this.registry.getProxyConnectorProvider()).thenReturn(provider);
         when(this.registry.getConnectorFactory()).thenReturn(factory);
-        when(factory.createConnector(same(connector))).thenReturn(expected);
+        when(provider.createProxyConnector(factory,  this.engine)).thenReturn(expected);
         
         Connector result = this.catalinaEngine.getProxyConnector();
 

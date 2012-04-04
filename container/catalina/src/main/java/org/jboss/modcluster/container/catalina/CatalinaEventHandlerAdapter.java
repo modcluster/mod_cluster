@@ -39,6 +39,7 @@ import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
+import org.apache.catalina.connector.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
 
 /**
@@ -47,7 +48,7 @@ import org.jboss.modcluster.container.ContainerEventHandler;
 public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
 
     protected final ContainerEventHandler eventHandler;
-    protected final ServerProvider provider;
+    protected final ServerProvider serverProvider;
     protected final CatalinaFactory factory;
 
     // Flags used to ignore redundant or invalid events
@@ -66,26 +67,30 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
     }
 
     public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer) {
-        this(eventHandler, new JMXServerProvider(mbeanServer, toObjectName("Catalina:type=Server")));
+        this(eventHandler, new JMXServerProvider(mbeanServer, toObjectName("Catalina:type=Server")), new AutoProxyConnectorProvider());
     }
 
     public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, Server server) {
-        this(eventHandler, new SimpleServerProvider(server), new ServiceLoaderCatalinaFactory());
+        this(eventHandler, new SimpleServerProvider(server), new AutoProxyConnectorProvider());
     }
 
-    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider) {
-        this(eventHandler, provider, new ServiceLoaderCatalinaFactory());
+    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, Server server, Connector connector) {
+        this(eventHandler, new SimpleServerProvider(server), new SimpleProxyConnectorProvider(connector));
     }
 
-    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
+    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, ProxyConnectorProvider connectorProvider) {
+        this(eventHandler, serverProvider, new ServiceLoaderCatalinaFactory(connectorProvider));
+    }
+
+    public CatalinaEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, CatalinaFactory factory) {
         this.eventHandler = eventHandler;
-        this.provider = provider;
+        this.serverProvider = serverProvider;
         this.factory = factory;
     }
 
     @Override
     public void start() {
-        Server server = this.provider.getServer();
+        Server server = this.serverProvider.getServer();
 
         if (!(server instanceof Lifecycle)) throw new IllegalStateException();
 
@@ -106,7 +111,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
 
     @Override
     public void stop() {
-        Server server = this.provider.getServer();
+        Server server = this.serverProvider.getServer();
 
         if (!(server instanceof Lifecycle)) throw new IllegalStateException();
 
@@ -242,10 +247,10 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         }
     }
 
-    /* to be overrided in the "real" class. */
     protected boolean isAfterInit(LifecycleEvent event) {
         return false;
     }
+
     protected boolean isBeforeDestroy(LifecycleEvent event) {
         return false;
     }
