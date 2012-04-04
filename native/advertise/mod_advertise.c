@@ -284,6 +284,7 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
 {
     char buf[MA_BSIZE];
     char dat[APR_RFC822_DATE_LEN];
+    char add[40];
     unsigned char msig[APR_MD5_DIGESTSIZE];
     unsigned char ssig[APR_MD5_DIGESTSIZE * 2 + 1];
     const char *asl;
@@ -319,13 +320,18 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
     n = apr_snprintf(p, l, MA_ADVERTISE_SERVER_FMT,
                      asl, dat, ma_sequence, ssig, magd->srvid + 1);
     if (type == MA_ADVERTISE_SERVER) {
+        char *ma_advertise_srvs = mconf->ma_advertise_srvs;
+        if (strchr(ma_advertise_srvs, ':') != NULL) {
+            apr_snprintf(add, 40, "[%s]", mconf->ma_advertise_srvs);
+            ma_advertise_srvs = add;
+        }
         l -= n;
         n += apr_snprintf(p + n, l,
                           "X-Manager-Address: %s:%u" CRLF
                           "X-Manager-Url: %s" CRLF
                           "X-Manager-Protocol: %s" CRLF
                           "X-Manager-Host: %s" CRLF,
-                          mconf->ma_advertise_srvs,
+                          ma_advertise_srvs,
                           mconf->ma_advertise_srvp,
                           mconf->ma_advertise_srvh,
                           mconf->ma_advertise_srvm,
