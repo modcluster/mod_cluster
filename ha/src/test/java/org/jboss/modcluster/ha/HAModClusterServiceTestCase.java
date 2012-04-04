@@ -108,14 +108,13 @@ public class HAModClusterServiceTestCase {
 
     private void init(Server server, Engine engine, Host host) {
         InetAddress localAddress = this.getLocalAddress();
-        String localHostName = localAddress.getHostAddress();
         InetSocketAddress socketAddress = new InetSocketAddress(localAddress, 8000);
 
         // Test advertise = false
-        when(this.mcmpConfig.getProxyList()).thenReturn(localHostName);
+        when(this.mcmpConfig.getProxies()).thenReturn(Collections.singleton(socketAddress));
 
         when(this.mcmpConfig.isAutoEnableContexts()).thenReturn(true);
-        when(this.mcmpConfig.getExcludedContexts()).thenReturn("ignored");
+        when(this.mcmpConfig.getExcludedContextsPerHost()).thenReturn(Collections.singletonMap("localhost", Collections.singleton("ignored")));
 
         when(server.getEngines()).thenReturn(Collections.singleton(engine));
         when(engine.getHosts()).thenReturn(Collections.singleton(host));
