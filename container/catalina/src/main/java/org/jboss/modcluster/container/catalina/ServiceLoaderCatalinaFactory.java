@@ -1,5 +1,7 @@
 package org.jboss.modcluster.container.catalina;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ServiceLoader;
 
 import org.jboss.modcluster.container.Context;
@@ -15,15 +17,21 @@ public class ServiceLoaderCatalinaFactory implements CatalinaFactory, CatalinaFa
     private final ConnectorFactory connectorFactory;
     private final ProxyConnectorProvider provider;
 
-    private static <T> T load(Class<T> targetClass, Class<? extends T> defaultClass) {
-        for (T value : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {
-            return value;
-        }
-        try {
-            return defaultClass.newInstance();
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+    private static <T> T load(final Class<T> targetClass, final Class<? extends T> defaultClass) {
+        PrivilegedAction<T> action = new PrivilegedAction<T>() {
+            @Override
+            public T run() {
+                for (T value : ServiceLoader.load(targetClass, targetClass.getClassLoader())) {
+                    return value;
+                }
+                try {
+                    return defaultClass.newInstance();
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }
+        };
+        return AccessController.doPrivileged(action);
     }
 
     public ServiceLoaderCatalinaFactory(ProxyConnectorProvider provider) {

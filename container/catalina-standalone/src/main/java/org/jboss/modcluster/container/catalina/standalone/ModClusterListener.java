@@ -23,6 +23,8 @@ package org.jboss.modcluster.container.catalina.standalone;
 
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
 import java.util.ServiceConfigurationError;
@@ -78,7 +80,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     private final ModClusterServiceMBean service;
     private final LifecycleListener listener;
 
-    private Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
+    Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
     private int decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
@@ -94,10 +96,16 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     }
 
     private LifecycleListenerFactory loadFactory() {
-        for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class, LifecycleListenerFactory.class.getClassLoader())) {
-            return factory;
-        }
-        throw new ServiceConfigurationError(String.format("No %s service provider found.", LifecycleListenerFactory.class.getName()));
+        PrivilegedAction<LifecycleListenerFactory> action = new PrivilegedAction<LifecycleListenerFactory>() {
+            @Override
+            public LifecycleListenerFactory run() {
+                for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class, LifecycleListenerFactory.class.getClassLoader())) {
+                    return factory;
+                }
+                throw new ServiceConfigurationError(String.format("No %s service provider found.", LifecycleListenerFactory.class.getName()));
+            }
+        };
+        return AccessController.doPrivileged(action);
     }
 
     protected ModClusterListener(ModClusterServiceMBean mbean, LifecycleListener listener) {
@@ -111,22 +119,28 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
      */
     @Override
     public LoadBalanceFactorProvider createLoadBalanceFactorProvider() {
-        try {
-            LoadMetric metric = this.loadMetricClass.newInstance();
+        PrivilegedAction<LoadMetric> action = new PrivilegedAction<LoadMetric>() {
+            @Override
+            public LoadMetric run() {
+                try {
+                    return ModClusterListener.this.loadMetricClass.newInstance();
+                } catch (IllegalAccessException e) {
+                    throw new IllegalArgumentException(e);
+                } catch (InstantiationException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        LoadMetric metric = AccessController.doPrivileged(action);
 
-            metric.setCapacity(this.capacity);
+        metric.setCapacity(this.capacity);
 
-            DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric));
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric));
 
-            provider.setDecayFactor(this.decayFactor);
-            provider.setHistory(this.history);
+        provider.setDecayFactor(this.decayFactor);
+        provider.setHistory(this.history);
 
-            return provider;
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(e);
-        } catch (InstantiationException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return provider;
     }
 
     /**
@@ -174,9 +188,20 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         return this.getJvmRouteFactory().getClass();
     }
 
-    public void setJvmRouteFactoryClass(Class<? extends JvmRouteFactory> factoryClass) throws InstantiationException,
-            IllegalAccessException {
-        this.setJvmRouteFactory(factoryClass.newInstance());
+    public void setJvmRouteFactoryClass(final Class<? extends JvmRouteFactory> factoryClass) {
+        PrivilegedAction<JvmRouteFactory> action = new PrivilegedAction<JvmRouteFactory>() {
+            @Override
+            public JvmRouteFactory run() {
+                try {
+                    return factoryClass.newInstance();
+                } catch (IllegalAccessException e) {
+                    throw new IllegalArgumentException(e);
+                } catch (InstantiationException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        this.setJvmRouteFactory(AccessController.doPrivileged(action));
     }
 
     /**
@@ -194,8 +219,18 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
      * @param loadMetricClass a class implementing {@link LoadMetric}
      * @throws ClassNotFoundException
      */
-    public void setLoadMetricClass(String loadMetricClass) throws ClassNotFoundException {
-        this.loadMetricClass = Class.forName(loadMetricClass).asSubclass(LoadMetric.class);
+    public void setLoadMetricClass(final String loadMetricClass) {
+        PrivilegedAction<Class<? extends LoadMetric>> action = new PrivilegedAction<Class<? extends LoadMetric>>() {
+            @Override
+            public Class<? extends LoadMetric> run() {
+                try {
+                    return ModClusterListener.class.getClassLoader().loadClass(loadMetricClass).asSubclass(LoadMetric.class);
+                } catch (ClassNotFoundException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        };
+        this.loadMetricClass = AccessController.doPrivileged(action);
     }
 
     /**
