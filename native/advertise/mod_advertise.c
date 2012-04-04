@@ -401,6 +401,7 @@ static apr_status_t ma_group_join(const char *addr, apr_port_t port,
                              MA_ADVERTISE_HOPS)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, s,
                      "mod_advertise: ma_group_join apr_mcast_hops failed");
+        /* Due a bug in apr (fixed by r1309332) apr_mcast_hops may fail */
         apr_mcast_leave(ma_mgroup_socket, ma_mgroup_sa,
                         NULL, NULL);
         apr_socket_close(ma_mgroup_socket);
