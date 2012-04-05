@@ -83,8 +83,12 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     }
 
     @Deprecated
-    public void setAdvertiseGroupAddress(String advertiseGroupAddress) throws UnknownHostException {
-        this.setAdvertiseGroupAddress(InetAddress.getByName(advertiseGroupAddress));
+    public void setAdvertiseGroupAddress(String advertiseGroupAddress) {
+        try {
+            this.setAdvertiseGroupAddress(InetAddress.getByName(advertiseGroupAddress));
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Deprecated
@@ -108,8 +112,12 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseInterface = advertiseInterface;
     }
 
-    public void setAdvertiseInterface(String advertiseInterface) throws UnknownHostException {
-        this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
+    public void setAdvertiseInterface(String advertiseInterface) {
+        try {
+            this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private String advertiseSecurityKey = null;
@@ -146,7 +154,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     }
 
     @Deprecated
-    public void setProxyList(String addresses) throws UnknownHostException {
+    public void setProxyList(String addresses) {
         if ((addresses == null) || (addresses.length() == 0)) {
             this.proxies = Collections.emptySet();
         } else {
@@ -154,7 +162,11 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
             this.proxies = new ArrayList<InetSocketAddress>(tokens.length);
 
             for (String token: tokens) {
-                this.proxies.add(Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT));
+                try {
+                    this.proxies.add(Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT));
+                } catch (UnknownHostException e) {
+                    throw new IllegalArgumentException(e);
+                }
             }
         }
     }
