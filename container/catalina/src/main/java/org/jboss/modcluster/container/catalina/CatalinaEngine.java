@@ -86,6 +86,11 @@ public class CatalinaEngine implements Engine {
     }
 
     @Override
+    public String getDefaultHost() {
+        return this.engine.getDefaultHost();
+    }
+
+    @Override
     public String getJvmRoute() {
         return this.engine.getJvmRoute();
     }

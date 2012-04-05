@@ -98,4 +98,10 @@ public interface Engine {
      * @return a parameter name
      */
     String getSessionParameterName();
+
+    /**
+     * Returns the default host of this engine.
+     * @return the default host
+     */
+    String getDefaultHost();
 }

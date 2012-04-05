@@ -49,6 +49,16 @@ public class EngineTestCase {
     }
 
     @Test
+    public void getDefaultHost() {
+        String expected = "localhost";
+        when(this.engine.getDefaultHost()).thenReturn(expected);
+        
+        String result = this.catalinaEngine.getDefaultHost();
+        
+        assertSame(expected, result);
+    }
+
+    @Test
     public void findHost() {
         org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
         HostFactory hostFactory = mock(HostFactory.class);

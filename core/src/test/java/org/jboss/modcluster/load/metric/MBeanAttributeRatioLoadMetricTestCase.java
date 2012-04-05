@@ -35,7 +35,6 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.modcluster.container.Engine;
-import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.load.metric.impl.MBeanAttributeRatioLoadMetric;
 import org.junit.Test;
 

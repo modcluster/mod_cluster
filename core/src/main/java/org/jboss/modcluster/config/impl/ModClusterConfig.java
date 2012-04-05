@@ -112,6 +112,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseInterface = advertiseInterface;
     }
 
+    @Deprecated
     public void setAdvertiseInterface(String advertiseInterface) {
         try {
             this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
@@ -243,7 +244,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     private static final String ROOT_CONTEXT = "ROOT";
     private static final String CONTEXT_DELIMITER = ",";
     private static final String HOST_CONTEXT_DELIMITER = ":";
-    private static final String DEFAULT_HOST = "localhost";
 
     @Deprecated
     public void setExcludedContexts(String contexts) {
@@ -264,7 +264,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
                         throw new IllegalArgumentException(trimmedContexts + " is not a valid value for excludedContexts");
                     }
 
-                    String host = DEFAULT_HOST;
+                    String host = null;
                     String trimmedContext = parts[0].trim();
 
                     if (parts.length == 2) {
@@ -298,7 +298,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
                 if (builder.length() > 0) {
                     builder.append(CONTEXT_DELIMITER);
                 }
-                if (!host.equals(DEFAULT_HOST)) {
+                if (host != null) {
                     builder.append(host).append(HOST_CONTEXT_DELIMITER);
                 }
                 builder.append(path.isEmpty() ? ROOT_CONTEXT : path.substring(1));

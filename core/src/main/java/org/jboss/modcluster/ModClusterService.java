@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -149,11 +150,21 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         if (!excludedContextPaths.isEmpty()) {
             for (Engine engine : server.getEngines()) {
+                String defaultHost = engine.getDefaultHost();
                 for (Host host : engine.getHosts()) {
+                    Set<String> excluded = new HashSet<String>();
                     Set<String> paths = excludedContextPaths.get(host.getName());
-
                     if (paths != null) {
-                        this.excludedContexts.put(host, Collections.unmodifiableSet(paths));
+                        excluded.addAll(paths);
+                    }
+                    if (host.getName().equals(defaultHost)) {
+                        paths = excludedContextPaths.get(null);
+                        if (paths != null) {
+                            excluded.addAll(paths);
+                        }
+                    }
+                    if (!excluded.isEmpty()) {
+                        this.excludedContexts.put(host, Collections.unmodifiableSet(excluded));
                     }
                 }
             }
