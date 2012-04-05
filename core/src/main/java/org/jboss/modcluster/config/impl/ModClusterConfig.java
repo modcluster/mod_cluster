@@ -159,6 +159,31 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         }
     }
 
+    @Deprecated
+    public String getProxyList() {
+        if (this.proxies == null) return null;
+
+        StringBuilder builder = new StringBuilder();
+        for (InetSocketAddress socketAddress: this.proxies) {
+            if (builder.length() > 0) {
+                builder.append(",");
+            }
+            InetAddress address = socketAddress.getAddress();
+            String host = address.toString();
+            int index = host.indexOf("/");
+            // Prefer host name, but perform reverse DNS lookup to find it
+            host = (index > 0) ? host.substring(0, index) : host.substring(1);
+            if (host.contains(":")) {
+                // Escape IPv6
+                builder.append('[').append(host).append(']');
+            } else {
+                builder.append(host);
+            }
+            builder.append(':').append(socketAddress.getPort());
+        }
+        return builder.toString();
+    }
+
     private String proxyURL = null;
 
     @Override
@@ -248,6 +273,26 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
                 }
             }
         }
+    }
+
+    @Deprecated
+    public String getExcludedContexts() {
+        if (this.excludedContextsPerHost == null) return null;
+
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Set<String>> entry: this.excludedContextsPerHost.entrySet()) {
+            String host = entry.getKey();
+            for (String path: entry.getValue()) {
+                if (builder.length() > 0) {
+                    builder.append(CONTEXT_DELIMITER);
+                }
+                if (!host.equals(DEFAULT_HOST)) {
+                    builder.append(host).append(HOST_CONTEXT_DELIMITER);
+                }
+                builder.append(path.isEmpty() ? ROOT_CONTEXT : path.substring(1));
+            }
+        }
+        return builder.toString();
     }
 
     private boolean autoEnableContexts = true;
