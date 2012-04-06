@@ -38,6 +38,10 @@ import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 
+import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+
 public class TestBaseJgroups extends TestCase {
 
     /* Test that the sessions are really sticky */
@@ -62,7 +66,7 @@ public class TestBaseJgroups extends TestCase {
         // start the server thread.
         ServerThread wait = new ServerThread(3000, server);
         wait.start();
-         
+
         // Wait until httpd we know about httpd.
         String [] nodes = new String[1];
         nodes[0] = "node1";
@@ -75,6 +79,58 @@ public class TestBaseJgroups extends TestCase {
             }
             countinfo++;
         }
+
+        // Create 2 JGroups ID and query the result and remove them.
+        String proxy = Maintest.getProxyAddress(cluster);
+        String URL = "http://" + proxy + "/";
+        HttpClient httpClient = new HttpClient();
+        PostMethod pm = null;
+        pm = (PostMethod) new AddIdMethod(URL);
+        pm.addParameter("JGroupUuid", "ID1");
+        pm.addParameter("JGroupData", "DATA1");
+        String response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("ADDID(1) failed");
+
+        pm = (PostMethod) new AddIdMethod(URL);
+        pm.addParameter("JGroupUuid", "ID2");
+        pm.addParameter("JGroupData", "DATA2");
+        response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("ADDID(2) failed");
+
+        pm = (PostMethod) new QueryMethod(URL);
+        pm.addParameter("JGroupUuid", "*");
+        response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("QUERY failed");
+        System.out.println("Response:\n" + response);
+        String [] records = response.split("\n");
+        if (records.length != 2)
+            fail("QUERY return " + records.length + " JGroupUuid instead 2");
+
+        pm = (PostMethod) new RemoveIdMethod(URL);
+        pm.addParameter("JGroupUuid", "ID2");
+        response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("REMOVE(ID2) failed");
+
+        pm = (PostMethod) new RemoveIdMethod(URL);
+        pm.addParameter("JGroupUuid", "ID1");
+        response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("REMOVE(ID1) failed");
+
+        pm = (PostMethod) new QueryMethod(URL);
+        pm.addParameter("JGroupUuid", "*");
+        response = processrequest(pm, httpClient);
+        if (response == null)
+            fail("QUERY failed");
+        System.out.println("Response:\n" + response);
+        if (response.length() == 0)
+            System.out.println("AddId + Remove OK");
+        else
+            fail("QUERY returns " + response + " instead nothing");
 
         // Stop the jboss and remove the services.
         try {
@@ -102,5 +158,59 @@ public class TestBaseJgroups extends TestCase {
         
         System.gc();
         System.out.println("TestBaseJgroups Done");
+    }
+
+    public static String processrequest(PostMethod pm, HttpClient httpClient)
+    {
+        Integer connectionTimeout = 40000;
+        pm.getParams().setParameter("http.socket.timeout", connectionTimeout);
+        pm.getParams().setParameter("http.connection.timeout", connectionTimeout);
+        httpClient.getParams().setParameter("http.socket.timeout", connectionTimeout);
+        httpClient.getParams().setParameter("http.connection.timeout", connectionTimeout);
+
+        int httpResponseCode = 0;
+        try {
+            httpResponseCode = httpClient.executeMethod(pm);
+            System.out.println("response: " + httpResponseCode);
+            System.out.println("response: " + pm.getStatusLine());
+            if (httpResponseCode == 500) {
+                System.out.println(pm.getResponseHeader("Version"));
+                System.out.println(pm.getResponseHeader("Type"));
+                System.out.println(pm.getResponseHeader("Mess"));
+                return null;
+            }
+            if (httpResponseCode == 200) {
+                int len = (int) pm.getResponseContentLength();
+                return pm.getResponseBodyAsString(len);
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public class AddIdMethod extends PostMethod {
+        public String getName() {
+            return "ADDID";
+        }
+        public AddIdMethod(String uri) {
+            super(uri);
+        }
+    }
+    public class RemoveIdMethod extends PostMethod {
+        public String getName() {
+            return "REMOVEID";
+        }
+        public RemoveIdMethod(String uri) {
+            super(uri);
+        }
+    }
+    public class QueryMethod extends PostMethod {
+        public String getName() {
+            return "QUERY";
+        }
+        public QueryMethod(String uri) {
+            super(uri);
+        }
     }
 }
