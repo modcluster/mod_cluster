@@ -24,6 +24,12 @@ package org.jboss.modcluster;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
+import java.lang.management.ManagementFactory;
+
+import javax.management.MalformedObjectNameException;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
@@ -43,6 +49,8 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
 {
    /** Initialization flag. */
    private volatile boolean init = false;
+
+   private Boolean isTomcat = null;
 
    private ContainerEventHandler<Server, Engine, Context> eventHandler;
 
@@ -135,7 +143,23 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          else if (source instanceof Context)
          {
             // Start a web-app via the /manager (tomcat) application.
-            this.eventHandler.startContext((Context) source);
+            // In fact we need to make sure it is coming for /manager (tomcat) otherwise it causes MODCLUSTER-299
+            if (isTomcat == null) {
+                MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+                try {
+                    ObjectName name = ObjectName.getInstance("Catalina:type=Server");
+                    if (server.isRegistered(name)) {
+                        isTomcat = new Boolean(true);
+                    } else  {
+                        isTomcat = new Boolean(false);
+                    }
+                } catch(MalformedObjectNameException ex) {
+                        isTomcat = new Boolean(false);
+                }
+            }
+            if (isTomcat) {
+                this.eventHandler.startContext((Context) source);
+            }
          }
       }
       else if (type.equals(Lifecycle.BEFORE_STOP_EVENT))
