@@ -695,8 +695,6 @@ public class CatalinaEventHandlerTestCase
       EasyMock.expect(engine.getService()).andReturn(service);
       EasyMock.expect(service.findConnectors()).andReturn(new Connector[] { connector });
       EasyMock.expect(engine.getJvmRoute()).andReturn(null);
-      EasyMock.expect(this.mcmpHandler.getProxyStates()).andReturn(Collections.singleton(EasyMock.createMock(MCMPServerState.class)));
-      EasyMock.expect(engine.getJvmRoute()).andReturn(null);
       EasyMock.expect(this.mcmpHandler.getLocalAddress()).andReturn(InetAddress.getByName("localhost"));
       EasyMock.expect(engine.getName()).andReturn("engine");
       

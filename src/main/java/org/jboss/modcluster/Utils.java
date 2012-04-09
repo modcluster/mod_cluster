@@ -207,23 +207,20 @@ public class Utils
    {
       Connector connector = findProxyConnector(engine.getService().findConnectors());
       InetAddress localAddress = (InetAddress) IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-      if ((engine.getJvmRoute() == null || localAddress == null) && !mcmpHandler.getProxyStates().isEmpty())
+      // Automagical JVM route (address + port + engineName)          
+      if (localAddress == null)
       {
-         // Automagical JVM route (address + port + engineName)          
-         if (localAddress == null)
-         {
-            localAddress = mcmpHandler.getLocalAddress();
-            String hostAddress = (localAddress != null) ? localAddress.getHostAddress() : "127.0.0.1";
-            IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", hostAddress);
-            log.info(sm.getString("modcluster.util.address", hostAddress));
-         }
-         if (engine.getJvmRoute() == null)
-         {
-            String hostName = (localAddress != null) ? localAddress.getHostName() : "127.0.0.1";
-            String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
-            engine.setJvmRoute(jvmRoute);
-            log.info(sm.getString("modcluster.util.jvmRoute", engine.getName(), jvmRoute));
-         }
+         localAddress = mcmpHandler.getLocalAddress();
+         String hostAddress = (localAddress != null) ? localAddress.getHostAddress() : "127.0.0.1";
+         IntrospectionUtils.setProperty(connector.getProtocolHandler(), "address", hostAddress);
+         log.info(sm.getString("modcluster.util.address", hostAddress));
+      }
+      if (engine.getJvmRoute() == null)
+      {
+         String hostName = (localAddress != null) ? localAddress.getHostName() : "127.0.0.1";
+         String jvmRoute = hostName + ":" + connector.getPort() + ":" + engine.getName();
+         engine.setJvmRoute(jvmRoute);
+         log.info(sm.getString("modcluster.util.jvmRoute", engine.getName(), jvmRoute));
       }
    }
 
