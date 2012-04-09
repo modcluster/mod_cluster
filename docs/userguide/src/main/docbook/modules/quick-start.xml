@@ -230,15 +230,20 @@
     <sect3>
       <title>Integrate mod_cluster with JBoss AS's embedded JBossWeb</title>
 
-      <listitem>
-        <para>Edit the $JBOSS_HOME/server/all/deploy/jbossweb.sar/server.xml
+      <para>Edit the $JBOSS_HOME/server/all/deploy/jbossweb.sar/server.xml
         file, adding the following next to the other Listener elements:</para>
-      </listitem>
 
       <programlisting>
       &lt;Listener
       className="org.jboss.web.tomcat.service.deployers.MicrocontainerIntegrationLifecycleListener"
                  delegateBeanName="ModClusterService"/&gt; </programlisting>
+
+      <para>Edit the $JBOSS_HOME/server/all/deploy/jbossweb.sar/META-INF/jboss-beans.xml
+        file, adding the following next to the other depends elements:</para>
+
+      <programlisting>
+      &lt;depends&gt;ModClusterService&lt;/depends&gt; </programlisting>
+      
     </sect3>
 
     <sect3>
