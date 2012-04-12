@@ -118,7 +118,7 @@
     <delete file="apache.bat"/>
     <copy file="apachectl.bat" tofile="apache.bat" />
     <replace file="apache.bat" token="@BASELOC@" value="${base.apache}"/>
-    <exec executable="${base.apache}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX,Mac OS X">
+    <exec executable="${base.apache}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX,Mac OS X" failonerror="true">
       <arg value="start"/>
     </exec>
     <exec executable="apache.bat" os="Windows 2003">
@@ -128,15 +128,15 @@
     <waitfor maxwait="30" maxwaitunit="second">
        <available file="${base.apache}/opt/jboss/httpd/sbin/apachectl"/>
     </waitfor>
-    <exec executable="apache.bat" os="Windows 2003">
+    <exec executable="apache.bat" os="Windows 2003" failonerror="true">
       <arg value="start"/>
     </exec>
   </target>
   <target name="stophttpd">
-    <exec executable="${base.apache}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX,Mac OS X">
+    <exec executable="${base.apache}/opt/jboss/httpd/sbin/apachectl" os="Linux,SunOS,HP-UX,Mac OS X" failonerror="true">
       <arg value="stop"/>
     </exec>
-    <exec executable="apache.bat" os="Windows 2003">
+    <exec executable="apache.bat" os="Windows 2003" failonerror="true">
       <arg value="stop"/>
     </exec>
   </target>
