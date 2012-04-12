@@ -93,6 +93,7 @@
 #define MHOSTUI "MEM: Can't update or insert host alias"
 #define MCONTUI "MEM: Can't update or insert context"
 #define MJBIDRD "MEM: Can't read JGroupId"
+#define MJBIDUI "MEM: Can't update or insert JGroupId"
 
 /* Protocol version supported */
 #define VERSION_PROTOCOL "0.2.1"
@@ -1423,7 +1424,7 @@ static char * process_addid(request_rec *r, char **ptr, int *errtype)
     }
     if (insert_update_jgroupsid(jgroupsidstatsmem, &jgroupsid) != APR_SUCCESS) {
         *errtype = TYPEMEM;
-        return MBALAUI;
+        return MJBIDUI;
     }
 
     return NULL;
