@@ -105,6 +105,11 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     calculation logic.</para>
     </section>
 
+    <section><title>WaitForRemove</title>
+    <para>WaitForRemove: Time in seconds before a removed node is forgotten by httpd</para>
+    <para>Default: 10 seconds</para>
+    </section>
+
     <section><title>ProxyPassMatch/ProxyPass</title>
     <para>ProxyPassMatch/ProxyPass: ProxyPassMatch and ProxyPass are mod_proxy
     directives that when using ! (instead the back-end url) prevent to
