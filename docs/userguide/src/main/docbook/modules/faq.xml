@@ -225,6 +225,17 @@ GET /
       <programlisting><![CDATA[    <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http" max-connections="513" />]]></programlisting>
     </para>
   </section>
+  <section>
+    <title>Chrome can't diplay /mod_cluster_manager page</title>
+    <para>
+      When using chrome with mod_cluster_manager the page is not displayed and the following error is displayed:
+      <programlisting><![CDATA[ Error 312 (net::ERR_UNSAFE_PORT): Unknown error. ]]></programlisting>
+      you can change the port of the VirtualHost to 7777 or any value chrome accepts or
+      add:
+      <programlisting><![CDATA[ --explicitly-allowed-ports=6666 ]]></programlisting> to the start parameters of chrome.
+    </para>
+
+  </section>
 
   <section>
     <title>Using mod_cluster and SELinux.</title>
