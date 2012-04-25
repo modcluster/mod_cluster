@@ -114,6 +114,12 @@ cd CERTS/Server</programlisting></para>
             a cacert.pem file which content have to be added to the
             conf/server-ca.crt described above.</para>
           </listitem>
+          <listitem>
+            <para>Export the CA certificate to a .p12 file:<programlisting>openssl pkcs12 -export -nokeys -in ../../CA/cacert.pem -out ca.p12</programlisting></para>
+
+             <para>That reads the file cacert.pem that was created in the previous step and convert it into a pkcs12 file the JVM is able to read.</para>
+             <para>That is the ca.p12 file used in the <emphasis>sslTrustStore</emphasis> parameter above.</para>
+          </listitem>
         </orderedlist>
       </sect3>
 
