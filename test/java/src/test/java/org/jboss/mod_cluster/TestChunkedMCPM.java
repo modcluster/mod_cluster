@@ -87,7 +87,19 @@ public class TestChunkedMCPM extends TestCase {
         }
 
         // Read the result via INFO.
-        String result = Maintest.getProxyInfo(lifecycle);
+        String result = null;
+        int count = 0;
+        while (count < 20) {
+            result = Maintest.getProxyInfo(lifecycle);
+            if (result != null)
+                break;
+            count++;
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
 
         ArrayList nodes = new ArrayList();
         if (result != null) {
