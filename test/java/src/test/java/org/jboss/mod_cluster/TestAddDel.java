@@ -87,54 +87,63 @@ public class TestAddDel extends TestCase {
         }
 
         // Read the result via INFO.
-        String result = Maintest.getProxyInfo(lifecycle);
-
-        ArrayList nodes = new ArrayList();
-        if (result != null) {
-            System.out.println(result);
-            String [] records = result.split("\n");
-            int l = 0;
-            for (int i=0; i<records.length; i++) {
-                // System.out.println("records[" + i + "]: " + records[i]);
-                NodeInfo nodeinfo = null;
-                String [] results = records[i].split(",");
-                for (int j=0; j<results.length; j++, l++) {
-                    // System.out.println("results[" + j + "]: " + results[j]);
-                    String [] data = results[j].split(": ");
-                    // System.out.println("data[" + 0 + "]: " + data[0] + "*");
-                    if ("Node".equals(data[0]) && nodeinfo == null) {
-                        nodeinfo = new NodeInfo();
-                        continue;
+        int count = 0;
+        String result = null;
+        while (count < 20) {        
+            result = Maintest.getProxyInfo(lifecycle);
+            if (result != null) {
+                /* analyse the result */
+                ArrayList nodes = new ArrayList();
+                System.out.println(result);
+                String [] records = result.split("\n");
+                int l = 0;
+                for (int i=0; i<records.length; i++) {
+                    // System.out.println("records[" + i + "]: " + records[i]);
+                    NodeInfo nodeinfo = null;
+                    String [] results = records[i].split(",");
+                    for (int j=0; j<results.length; j++, l++) {
+                        // System.out.println("results[" + j + "]: " + results[j]);
+                        String [] data = results[j].split(": ");
+                        // System.out.println("data[" + 0 + "]: " + data[0] + "*");
+                        if ("Node".equals(data[0]) && nodeinfo == null) {
+                            nodeinfo = new NodeInfo();
+                            continue;
+                        }
+                        if ("Name".equals(data[0])) {
+                            nodeinfo.JVMRoute = data[1];
+                        }
+                        else if ("Load".equals(data[0])) {
+                            nodeinfo.lbfactor = Integer.valueOf(data[1]).intValue();
+                        }
+                        else if ("Elected".equals(data[0])) {
+                            nodeinfo.elected = Integer.valueOf(data[1]).intValue();
+                        }
                     }
-                    if ("Name".equals(data[0])) {
-                        nodeinfo.JVMRoute = data[1];
-                    }
-                    else if ("Load".equals(data[0])) {
-                        nodeinfo.lbfactor = Integer.valueOf(data[1]).intValue();
-                    }
-                    else if ("Elected".equals(data[0])) {
-                        nodeinfo.elected = Integer.valueOf(data[1]).intValue();
+                    if (nodeinfo != null) {
+                        // System.out.println("Adding: " + nodeinfo);
+                        nodes.add(nodeinfo);
                     }
                 }
-                if (nodeinfo != null) {
-                    // System.out.println("Adding: " + nodeinfo);
-                    nodes.add(nodeinfo);
+                if (!NodeInfo.check(nodes, nodenames)) {
+                    System.out.println("getProxyInfo nodes incorrect");
+                    NodeInfo.print(nodes, nodenames);
+                } else {
+                    clienterror = false;
+                    break; /* Done OK */
                 }
             }
-        } else {
+            count++;
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+        if (result == null) {
             System.out.println("getProxyInfo failed");
             clienterror = true;
         }
 
-        // Check the nodes.
-        if (!clienterror) {
-            if (!NodeInfo.check(nodes, nodenames)) {
-                System.out.println("getProxyInfo nodes incorrect");
-                NodeInfo.print(nodes, nodenames);
-                clienterror = true;
-            }
-        }
-         
         // Stop the jboss and remove the services.
         try {
             wait.stopit();
