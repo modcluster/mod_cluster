@@ -90,7 +90,7 @@ public class TestBaseJgroups extends TestCase {
         pm.addParameter("JGroupData", "DATA1");
         String response = processrequest(pm, httpClient);
         if (response == null)
-            fail("ADDID(1) failed");
+            fail("ADDID(1) failed on: " + URL);
 
         pm = (PostMethod) new AddIdMethod(URL);
         pm.addParameter("JGroupUuid", "ID2");
