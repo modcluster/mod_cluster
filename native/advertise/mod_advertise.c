@@ -30,6 +30,11 @@
 #include "mod_core.h"
 #include "util_script.h"
 
+#if APR_HAVE_UNISTD_H
+/* for getpid() */
+#include <unistd.h>
+#endif
+
 /*
  * Declare ourselves so the configuration routines can find and know us.
  * We'll fill it in at the end of the module.
