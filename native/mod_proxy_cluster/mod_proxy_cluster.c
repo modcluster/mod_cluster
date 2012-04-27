@@ -111,6 +111,15 @@ struct proxy_vhost_table
 };
 typedef struct proxy_vhost_table proxy_vhost_table;
 
+/* Balancer table copy for local use */
+struct proxy_balancer_table
+{
+	int sizebalancer;
+	int* balancers;
+	balancerinfo_t* balancer_info;
+};
+typedef struct proxy_balancer_table proxy_balancer_table;
+
 /* reslist constructor */
 /* XXX: Should use the proxy_util one. */
 static apr_status_t connection_constructor(void **resource, void *params,
@@ -1191,6 +1200,7 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
 }
 
 
+/* Read the virtual host table from shared memory */
 static void read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
 {
     int i;
@@ -1234,6 +1244,29 @@ static void read_context_table(request_rec *r, proxy_context_table *context_tabl
         int context_index = context_table->contexts[i];
         context_storage->read_context(context_index, &h);
         context_table->context_info[i] = *h;
+    }
+}
+
+/* Read the balancer table from shared memory */
+static void read_balancer_table(request_rec *r, proxy_balancer_table *balancer_table)
+{
+    int i;
+    int size;
+    size = balancer_storage->get_max_size_balancer();
+    if (size == 0) { 
+        balancer_table->sizebalancer = 0;
+        balancer_table->balancers = NULL;
+        balancer_table->balancer_info = NULL;
+        return;
+    }
+    balancer_table->balancers =  apr_palloc(r->pool, sizeof(int) * size);
+    balancer_table->sizebalancer = balancer_storage->get_ids_used_balancer(balancer_table->balancers);
+    balancer_table->balancer_info = apr_palloc(r->pool, sizeof(balancerinfo_t) * balancer_table->sizebalancer);
+    for (i = 0; i < balancer_table->sizebalancer; i++) {
+        balancerinfo_t* h;
+        int balancer_index = balancer_table->balancers[i];
+        balancer_storage->read_balancer(balancer_index, &h);
+        balancer_table->balancer_info[i] = *h;
     }
 }
 
@@ -1419,6 +1452,21 @@ static int iscontext_host_ok(request_rec *r, proxy_balancer *balancer, int node,
     if (*best == -1)
         return 0; /* not found */
     return 1;
+}
+
+/*
+ * Check that the balancer is in our balancer table
+ */
+static int isbalancer_ours(proxy_balancer *balancer, proxy_balancer_table *balancer_table)
+{
+    int i;
+    for (i = 0; i < balancer_table->sizebalancer; i++) {
+        if (strcmp(balancer_table->balancer_info[i].balancer, &balancer->name[11]))
+            continue;
+        else
+            return 1; /* found */
+    }
+    return 0;
 }
 
 /*
@@ -1939,7 +1987,8 @@ static apr_status_t find_nodedomain(request_rec *r, char **domain, char *route, 
  */
 static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                                       proxy_vhost_table *vhost_table,
-                                      proxy_context_table *context_table)
+                                      proxy_context_table *context_table,
+                                      proxy_balancer_table *balancer_table)
 {
     proxy_balancer *balancer;
     char *route = NULL;
@@ -1954,12 +2003,14 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
             continue;
         if (strlen(balancer->name)<=11)
             continue;
+        if (!isbalancer_ours(balancer, balancer_table))
+            continue;
 
         sessionid = cluster_get_sessionid(r, balancer->sticky, r->uri, &sticky_used);
         if (sessionid) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "cluster: Found value %s for "
-                         "stickysession %s", sessionid, balancer->sticky);
+                         "cluster: %s Found value %s for "
+                         "stickysession %s", balancer->name, sessionid, balancer->sticky);
             if ((route = strchr(sessionid, '.')) != NULL )
                 route++;
             if (route && *route) {
@@ -2107,8 +2158,10 @@ static int proxy_cluster_trans(request_rec *r)
 
     proxy_vhost_table vhost_table;
     proxy_context_table context_table;
+    proxy_balancer_table balancer_table;
     read_vhost_table(r, &vhost_table);
     read_context_table(r, &context_table);
+    read_balancer_table(r, &balancer_table);
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
@@ -2116,11 +2169,11 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
-    balancer = get_route_balancer(r, conf, &vhost_table, &context_table);
+    balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table);
     if (!balancer) {
         /* May be the balancer has not been created (XXX: use shared memory to find the balancer ...) */
         update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf, &vhost_table, &context_table);
+        balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table);
     }
     if (!balancer)
         balancer = get_context_host_balancer(r, &vhost_table, &context_table);
