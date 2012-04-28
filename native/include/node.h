@@ -87,6 +87,13 @@ struct nodeinfo {
 };
 typedef struct nodeinfo nodeinfo_t; 
 
+/**
+ * return the last stored in the mem structure
+ * @param pointer to the shared table
+ * @return APR_SUCCESS if all went well
+ *
+ */
+apr_status_t get_last_mem_error(mem_t *mem);
 
 /**
  * Insert(alloc) and update a node record in the shared table
