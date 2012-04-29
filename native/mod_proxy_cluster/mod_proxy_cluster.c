@@ -249,6 +249,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     proxy_worker *runtime;
     int i, def, fnv;
+    proxy_worker_shared *shared;
 #endif
 
     /* build the name (scheme and port) when needed */
@@ -342,8 +343,10 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     ptr = (char *) node;
     ptr = ptr + node->offset;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+    shared = worker->s;
     worker->s = (proxy_worker_shared *) ptr;
     worker->s->index = node->mess.id;
+    strcpy(worker->s->name, shared->name);
     strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZE-1);
     worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZE-1] = '\0';
     worker->s->redirect[0] = '\0';
