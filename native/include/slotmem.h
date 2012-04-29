@@ -25,8 +25,8 @@
  * @version $Revision$
  */
 
-#ifndef SLOTMEM_H
-#define SLOTMEM_H
+#ifndef MC_SLOTMEM_H
+#define MC_SLOTMEM_H
 
 /* Memory handler for a shared memory divided in slot.
  */
@@ -60,7 +60,7 @@ typedef struct ap_slotmem ap_slotmem_t;
  * @param pool is pool used to create scoreboard
  * @return APR_SUCCESS if all went well
  */
-typedef apr_status_t ap_slotmem_callback_fn_t(void* mem, void **data, int ident, apr_pool_t *pool);
+typedef apr_status_t mc_slotmem_callback_fn_t(void* mem, void **data, int ident, apr_pool_t *pool);
 
 struct slotmem_storage_method {
 /**
@@ -71,7 +71,7 @@ struct slotmem_storage_method {
  * @param pool is pool used to create scoreboard
  * @return APR_SUCCESS if all went well
  */
-apr_status_t (* ap_slotmem_do)(ap_slotmem_t *s, ap_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool);
+apr_status_t (* ap_slotmem_do)(ap_slotmem_t *s, mc_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool);
 
 /**
  * create a new slotmem with each item size is item_size.
@@ -148,4 +148,4 @@ const slotmem_storage_method *mem_getstorage(apr_pool_t *p, char *type);
 
 void sharedmem_initialize_cleanup(apr_pool_t *p);
 
-#endif /*SLOTMEM_H*/
+#endif /*MC_SLOTMEM_H*/

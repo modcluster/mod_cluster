@@ -198,7 +198,7 @@ apr_status_t cleanup_slotmem(void *param)
     return APR_SUCCESS;
 }
 
-static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, ap_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool)
+static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, mc_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool)
 {
     int i, j, isfree, *ident;
     char *ptr;
