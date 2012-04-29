@@ -1777,31 +1777,11 @@ static int decodeenc(char *x)
     x[j] = '\0';
     return j;
 }
-/*
- * This routine is called before mod_proxy translate name.
- * This allows us to make decisions before mod_proxy
- * to be able to fill tables even with ProxyPass / balancer...
- */
-static int manager_trans(request_rec *r)
+
+/* Check that the method is one of ours */
+static int check_method(request_rec *r)
 {
     int ours = 0;
-    core_dir_config *conf =
-        (core_dir_config *)ap_get_module_config(r->per_dir_config,
-                                                &core_module);
-    mod_manager_config *mconf = ap_get_module_config(r->server->module_config,
-                                                     &manager_module);
- 
-    if (conf && conf->handler && r->method_number == M_GET &&
-        strcmp(conf->handler, "mod_cluster-manager") == 0) {
-        r->handler = "mod_cluster-manager";
-        r->filename = apr_pstrdup(r->pool, r->uri);
-        return OK;
-    }
-    if (r->method_number != M_INVALID)
-        return DECLINED;
-    if (!mconf->enable_mcpm_receive)
-        return DECLINED; /* Not allowed to receive MCMP */
-
     if (strcasecmp(r->method, "CONFIG") == 0)
         ours = 1;
     else if (strcasecmp(r->method, "ENABLE-APP") == 0)
@@ -1828,12 +1808,40 @@ static int manager_trans(request_rec *r)
         ours = 1;
     else if (strcasecmp(r->method, "QUERY") == 0)
         ours = 1;
+    return ours;
+}
+/*
+ * This routine is called before mod_proxy translate name.
+ * This allows us to make decisions before mod_proxy
+ * to be able to fill tables even with ProxyPass / balancer...
+ */
+static int manager_trans(request_rec *r)
+{
+    int ours = 0;
+    core_dir_config *conf =
+        (core_dir_config *)ap_get_module_config(r->per_dir_config,
+                                                &core_module);
+    mod_manager_config *mconf = ap_get_module_config(r->server->module_config,
+                                                     &manager_module);
+ 
+    if (conf && conf->handler && r->method_number == M_GET &&
+        strcmp(conf->handler, "mod_cluster-manager") == 0) {
+        r->handler = "mod_cluster-manager";
+        r->filename = apr_pstrdup(r->pool, r->uri);
+        return OK;
+    }
+    if (r->method_number != M_INVALID)
+        return DECLINED;
+    if (!mconf->enable_mcpm_receive)
+        return DECLINED; /* Not allowed to receive MCMP */
+
+    ours = check_method(r); 
     if (ours) {
         int i;
         /* The method one of ours */
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                     "manager_trans %s (%s)", r->method, r->uri);
-        r->handler = "mod-cluster";
+        r->handler = "mod-cluster"; /* that hack doesn't work on httpd-2.4.x */
         i = strlen(r->uri);
         if (strcmp(r->uri, "*") == 0 || (i>=2 && r->uri[i-1] == '*' && r->uri[i-2] == '/')) {
             r->filename = apr_pstrdup(r->pool, NODE_COMMAND);
@@ -2458,6 +2466,7 @@ static int manager_handler(request_rec *r)
     apr_size_t bufsiz;
     apr_status_t status;
     int global = 0;
+    int ours = 0;
     char **ptr;
     void *sconf = r->server->module_config;
     mod_manager_config *mconf;
@@ -2469,11 +2478,15 @@ static int manager_handler(request_rec *r)
         return(manager_info(r));
     }
 
-    if (strcmp(r->handler, "mod-cluster"))
+    mconf = ap_get_module_config(sconf, &manager_module);
+    if (!mconf->enable_mcpm_receive)
+        return DECLINED; /* Not allowed to receive MCMP */
+
+    ours = check_method(r);
+    if (!ours)
         return DECLINED;
 
     /* Use a buffer to read the message */
-    mconf = ap_get_module_config(sconf, &manager_module);
     if (mconf->maxmesssize)
        bufsiz = mconf->maxmesssize;
     else {
