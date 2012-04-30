@@ -46,6 +46,8 @@ typedef struct mem mem_t;
 
 #include "mod_clustersize.h"
 
+#include "ap_mmn.h"
+
 /* configuration of the node received from jboss cluster. */
 struct nodemess {
     char balancer[BALANCERSZ];        /* name of the balancer */
@@ -74,7 +76,11 @@ struct nodemess {
 };
 typedef struct nodemess nodemess_t; 
 
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+#define SIZEOFSCORE 800 /* size of the proxy_worker_stat structure */
+#else
 #define SIZEOFSCORE 200 /* size of the proxy_worker_stat structure */
+#endif
 
 /* status of the node as read/store in httpd. */
 struct nodeinfo {
