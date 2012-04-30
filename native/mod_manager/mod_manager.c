@@ -2566,6 +2566,7 @@ static int manager_handler(request_rec *r)
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                 "manager_handler %s  OK", r->method);
 
+    ap_rflush(r);
     return (OK);
 }
 
