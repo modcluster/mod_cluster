@@ -2923,7 +2923,7 @@ static void manager_hooks(apr_pool_t *p)
                               APR_HOOK_FIRST);
 
     /* Process the request from the ModClusterService */
-    ap_hook_handler(manager_handler, NULL, NULL, APR_HOOK_FIRST);
+    ap_hook_handler(manager_handler, NULL, NULL, APR_HOOK_REALLY_FIRST);
 
     /* Register nodes/hosts/contexts table provider */
     ap_register_provider(p, "manager" , "shared", "0", &node_storage);
