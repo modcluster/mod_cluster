@@ -198,7 +198,7 @@ apr_status_t remove_node(mem_t *s, nodeinfo_t *node)
     apr_status_t rv;
     nodeinfo_t *ou = node;
     if (node->mess.id)
-        s->storage->ap_slotmem_free(s->slotmem, node->mess.id, node);
+        rv = s->storage->ap_slotmem_free(s->slotmem, node->mess.id, node);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, &ou, s->p);
