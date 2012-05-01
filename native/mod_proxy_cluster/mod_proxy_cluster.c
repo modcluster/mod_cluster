@@ -883,7 +883,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
         /* mark the worker removed in the apr_array of the balancer */
         balancer = (proxy_balancer *)conf->balancers->elts;
         for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
-            if (strcmp(balancer->s->name, name) == 0) {
+            if (strcmp(balancer->name, name) == 0) {
                 int j;
                 proxy_worker *searched = (proxy_worker *)balancer->workers->elts;
                 for (j = 0; j < balancer->workers->nelts; j++, searched++) {
@@ -1253,9 +1253,11 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 /* we need only those ones */
                 rnew->server = server;
                 rnew->connection = apr_pcalloc(rrp, sizeof(conn_rec));
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 rnew->connection->log_id = "-";
                 rnew->log_id = "-";
                 rnew->useragent_addr = apr_pcalloc(rrp, sizeof(apr_sockaddr_t));
+#endif
                 rnew->per_dir_config = server->lookup_defaults;
                 rnew->notes = apr_table_make(rnew->pool, 1);
                 rnew->method = "PING";
@@ -1862,6 +1864,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 #else
         worker = (proxy_worker *)balancer->workers->elts;
         for (i = 0; i < balancer->workers->nelts; i++, worker++) {
+            nodeinfo_t *node;
             if (worker->id == 0)
                 continue; /* marked removed */
 #endif
