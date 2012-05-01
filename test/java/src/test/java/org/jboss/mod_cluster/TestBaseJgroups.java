@@ -183,7 +183,10 @@ public class TestBaseJgroups extends TestCase {
             }
             if (httpResponseCode == 200) {
                 int len = (int) pm.getResponseContentLength();
-                return pm.getResponseBodyAsString(len);
+                if (len != -1)
+                    return pm.getResponseBodyAsString(len);
+                else
+                    return pm.getResponseBodyAsString();
             }
         } catch(Exception e) {
             e.printStackTrace();
