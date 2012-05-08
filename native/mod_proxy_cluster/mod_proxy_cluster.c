@@ -3471,7 +3471,7 @@ static void proxy_cluster_hooks(apr_pool_t *p)
     ap_hook_post_config(proxy_cluster_post_config, NULL, NULL, APR_HOOK_MIDDLE);
 
     /* create the "maintenance" thread */
-    ap_hook_child_init(proxy_cluster_child_init, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_child_init(proxy_cluster_child_init, NULL, NULL, APR_HOOK_LAST);
 
     /* check the url and give the mapping to mod_proxy */
     ap_hook_translate_name(proxy_cluster_trans, aszPre, aszSucc, APR_HOOK_FIRST);

@@ -94,7 +94,7 @@ static void ap_sharedmem_register_hook(apr_pool_t *p)
     ap_hook_post_config(initialize_cleanup, NULL, NULL, APR_HOOK_LAST);
     ap_hook_pre_config(pre_config, NULL, NULL, APR_HOOK_MIDDLE);
 
-    ap_hook_child_init(child_init, NULL, NULL, APR_HOOK_MIDDLE);
+    ap_hook_child_init(child_init, NULL, NULL, APR_HOOK_FIRST);
 }
 
 module AP_MODULE_DECLARE_DATA slotmem_module = {
