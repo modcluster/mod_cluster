@@ -444,6 +444,25 @@ struct cluster_host {
 };
 
 /*
+ * cleanup logic
+ */
+static cleanup_manager(void *param)
+{
+    /* shared memory */
+    contextstatsmem = NULL;
+    nodestatsmem = NULL;
+    hoststatsmem = NULL;
+    balancerstatsmem = NULL;
+    sessionidstatsmem = NULL;
+    domainstatsmem = NULL;
+    jgroupsidstatsmem = NULL;
+}
+static void mc_initialize_cleanup(apr_pool_t *p)
+{
+    apr_pool_cleanup_register(p, NULL, cleanup_manager, apr_pool_cleanup_null);
+}
+
+/*
  * call after parser the configuration.
  * create the shared memory.
  */
@@ -560,6 +579,11 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
      */
     apr_uuid_get(&uuid);
     apr_uuid_format(balancer_nonce, &uuid);
+
+    /*
+     * clean up to prevent backgroup thread (proxy_cluster_watchdog_func) to crash
+     */
+    mc_initialize_cleanup(p);
 
     return OK;
 }
