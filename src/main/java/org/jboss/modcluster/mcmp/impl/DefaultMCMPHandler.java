@@ -858,7 +858,8 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
          builder.append('*');
       }
       
-      builder.append(" HTTP/1.0");
+      builder.append(" HTTP/1.1\r\n");
+      builder.append("Host: ");
 
       String head = builder.toString();
       int length = encoder.getLength();
@@ -870,9 +871,12 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
          try
          {
             String line = null;
+            StringBuilder proxyheadBuilder = new StringBuilder(head);
+            proxyheadBuilder.append(proxy.getAddress().getHostName() + ":" + proxy.getPort());
+            String proxyhead = proxyheadBuilder.toString();
             try
             {
-               line = sendRequest(proxy, head, body, length);
+               line = sendRequest(proxy, proxyhead, body, length);
             }
             catch (IOException e)
             {
