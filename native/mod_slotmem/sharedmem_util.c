@@ -571,7 +571,9 @@ static const slotmem_storage_method storage = {
     &ap_slotmem_alloc,
     &ap_slotmem_free,
     &ap_slotmem_get_used,
-    &ap_slotmem_get_max_size
+    &ap_slotmem_get_max_size,
+    &ap_slotmem_lock,
+    &ap_slotmem_unlock
 };
 
 /* make the storage usuable from outside

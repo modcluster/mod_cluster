@@ -134,6 +134,16 @@ int (*ap_slotmem_get_used)(ap_slotmem_t *s, int *ids);
  * @return number of slotmem that cant be stored in the slotmem table.
  */
 int (*ap_slotmem_get_max_size)(ap_slotmem_t *s);
+/**
+ * Lock the slotmem
+ * @return APR_SUCCESS if all went well
+ */
+apr_status_t (* ap_slotmem_lock)(ap_slotmem_t *s);
+/**
+ * Unlock the slotmem
+ * @return APR_SUCCESS if all went well
+ */
+apr_status_t (* ap_slotmem_unlock)(ap_slotmem_t *s);
 };
 
 typedef struct slotmem_storage_method slotmem_storage_method;

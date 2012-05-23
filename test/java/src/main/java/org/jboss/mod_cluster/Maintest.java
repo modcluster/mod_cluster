@@ -83,6 +83,7 @@ public class Maintest {
     	return createClusterListener(groupa, groupp, ssl, domain, stickySession, stickySessionRemove, stickySessionForce, null);
     }
     /* Create the listener
+     * server: the server to use.
      * groupa: multi address to receive from httpd.
      * groupp: port to receive from httpd.
      * ssl: use ssl.
@@ -92,7 +93,8 @@ public class Maintest {
      * stickySessionForce: return an error if we have to failover to another node.
      * advertiseSecurityKey: Key for the digest logic.
      */ 
-    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+    static ModClusterService createClusterListener(StandardServer server,
+                                                   String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey) {
         ModClusterConfig config = new ModClusterConfig();
@@ -113,6 +115,13 @@ public class Maintest {
         adapter.start();
         
         return service;
+    }
+    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
+                                                   boolean stickySession, boolean stickySessionRemove,
+                                                   boolean stickySessionForce, String advertiseSecurityKey) {
+         return createClusterListener(getServer(), groupa, groupp, ssl, domain,
+                                                   stickySession, stickySessionRemove,
+                                                   stickySessionForce, advertiseSecurityKey);
     }
     
     /*
