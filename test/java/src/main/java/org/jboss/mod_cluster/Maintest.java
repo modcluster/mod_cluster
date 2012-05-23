@@ -92,11 +92,14 @@ public class Maintest {
      * stickySessionRemove: remove the sessionid if we are sticky and need to failover.
      * stickySessionForce: return an error if we have to failover to another node.
      * advertiseSecurityKey: Key for the digest logic.
+     * balancer: balancer name.
+     * loadBalancingGroup: mod_cluster domain name.
      */ 
     static ModClusterService createClusterListener(StandardServer server,
                                                    String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
-                                                   boolean stickySessionForce, String advertiseSecurityKey) {
+                                                   boolean stickySessionForce, String advertiseSecurityKey,
+                                                   String balancer, String loadBalancingGroup) {
         ModClusterConfig config = new ModClusterConfig();
         config.setAdvertiseGroupAddress(groupa);
         config.setAdvertisePort(groupp);
@@ -106,6 +109,10 @@ public class Maintest {
         config.setStickySessionRemove(stickySessionRemove);
         config.setStickySessionForce(stickySessionForce);
         config.setNodeTimeout(20000);
+        if (balancer != null)
+        	config.setBalancer(balancer);
+        if (loadBalancingGroup != null)
+        	config.setLoadBalancingGroup(loadBalancingGroup);
         if (advertiseSecurityKey != null)
         	config.setAdvertiseSecurityKey(advertiseSecurityKey);
         SimpleLoadBalanceFactorProvider load = new SimpleLoadBalanceFactorProvider();
@@ -116,6 +123,16 @@ public class Maintest {
         
         return service;
     }
+    static ModClusterService createClusterListener(StandardServer server,
+            String groupa, int groupp, boolean ssl, String domain,
+            boolean stickySession, boolean stickySessionRemove,
+            boolean stickySessionForce, String advertiseSecurityKey)
+    {
+    	return createClusterListener(server, groupa, groupp, ssl, domain,
+                stickySession, stickySessionRemove,
+                stickySessionForce, advertiseSecurityKey, null, null);
+    }
+
     static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey) {

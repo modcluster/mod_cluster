@@ -41,8 +41,22 @@ import org.apache.catalina.core.StandardServer;
 public class TestBalancers extends TestCase {
 
     /* Test that the sessions are really sticky */
+/*
     public void testBalancers() {
+        myBalancers(null, null, null, null);
+    }
+    public void testBalancers2() {
+        myBalancers("balancer", "dom1", "balancer", "dom1");
+    }
+    public void testBalancers3() {
+        myBalancers("balancer", "dom1", "balancer", "dom2");
+    }
+ */
+    public void testBalancers4() {
+        myBalancers("balancer1", "dom1", "balancer2", "dom2");
+    }
 
+    public void myBalancers(String balancer, String loadBalancingGroup, String balancer2, String loadBalancingGroup2) {
         boolean clienterror = false;
         System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         StandardServer server =  new StandardServer();
@@ -63,8 +77,8 @@ public class TestBalancers extends TestCase {
             service2.addConnector(8012);
             server2.addService(service2);
 
-            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
-            cluster2 = Maintest.createClusterListener(server2, "224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret", balancer, loadBalancingGroup);
+            cluster2 = Maintest.createClusterListener(server2, "224.0.1.105", 23364, false, null, true, false, true, "secret", balancer2, loadBalancingGroup2);
 
         } catch(Exception ex) {
             ex.printStackTrace();
