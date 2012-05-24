@@ -903,6 +903,13 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                try
                {
                   int spaceIndex = line.indexOf(' ');
+                  /* Ignore everything until we have a HTTP headers */
+                  while (spaceIndex == -1) {
+                      line = reader.readLine();
+                      if (line == null)
+                          return null; // Connection closed...
+                      spaceIndex = line.indexOf(' ');
+                  }
                   String responseStatus = line.substring(spaceIndex + 1, line.indexOf(' ', spaceIndex + 1));
                   status = Integer.parseInt(responseStatus);
                   line = reader.readLine();
