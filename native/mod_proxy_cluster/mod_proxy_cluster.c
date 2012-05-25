@@ -205,6 +205,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
 #if APR_HAS_THREADS
     int mpm_threads;
 #endif
+    int sizew = conf->workers->elt_size;
 
     /* build the name (scheme and port) when needed */
     url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
@@ -368,17 +369,19 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
          */
         proxy_worker *runtime;
         runtime = apr_array_push(balancer->workers);
-        memcpy(runtime, (*worker), sizeof(proxy_worker));
+        memcpy(runtime, (*worker), sizew);
     } else {
         /* Update the corresponding balancer worker information */
         proxy_worker *runtime;
         int i;
+        int sizew = balancer->workers->elt_size;
+        char *ptr = balancer->workers->elts;
 
-        runtime = (proxy_worker *)balancer->workers->elts;
-        for (i = 0; i < balancer->workers->nelts; i++, runtime++) {
+        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
+            runtime = (proxy_worker *)ptr;
             if (runtime->name) {
                 if (strcmp(url, runtime->name) == 0) {
-                    memcpy(runtime, (*worker), sizeof(proxy_worker));
+                    memcpy(runtime, (*worker), sizew);
                 }
             }
         }
@@ -407,13 +410,15 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
 
     balancer = ap_proxy_get_balancer(pool, conf, name);
     if (!balancer) {
+        int sizeb = conf->balancers->elt_size;
+        int sizew = conf->workers->elt_size;
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
                       "add_balancer_node: Create balancer %s", name);
         balancer = apr_array_push(conf->balancers);
-        memset(balancer, 0, sizeof(proxy_balancer));
+        memset(balancer, 0, sizeb);
         balancer->name = apr_pstrdup(conf->pool, name);
         balancer->lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
-        balancer->workers = apr_array_make(conf->pool, 5, sizeof(proxy_worker));
+        balancer->workers = apr_array_make(conf->pool, 5, sizew);
         /* XXX Is this a right place to create mutex */
 #if APR_HAS_THREADS
         if (apr_thread_mutex_create(&(balancer->mutex),
@@ -511,13 +516,15 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     int i;
     char *pptr = (char *) node;
     pptr = pptr + node->offset;
+    int sizew = conf->workers->elt_size;
+    char *ptr = conf->workers->elts;
 
     proxy_cluster_helper *helper;
-    proxy_worker *worker = (proxy_worker *)conf->workers->elts;
-    for (i = 0; i < conf->workers->nelts; i++) {
+    proxy_worker *worker;
+    for (i = 0; i < conf->workers->nelts; i++, ptr=ptr+sizew) {
+        worker = (proxy_worker *)ptr;
         if (worker->id == node->mess.id && worker->s == (proxy_worker_stat *) pptr)
             break;
-        worker++;
     }
     if (i == conf->workers->nelts) {
         /* XXX: Another process may use it, can't do: node_storage->remove_node(node); */
@@ -546,16 +553,21 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 
     if (i == 0) {
         /* No connection in use: clean the worker */
-        proxy_balancer *balancer;
+        proxy_balancer *balancer = NULL;
+        char *ptr = conf->balancers->elts;
+        int sizeb = conf->balancers->elt_size;
+        int sizew = conf->workers->elt_size;
         char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL); 
 
         /* mark the worker removed in the apr_array of the balancer */
         balancer = (proxy_balancer *)conf->balancers->elts;
-        for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
+        for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
+            balancer = (proxy_balancer *) ptr;
             if (strcmp(balancer->name, name) == 0) {
                 int j;
-                proxy_worker *searched = (proxy_worker *)balancer->workers->elts;
-                for (j = 0; j < balancer->workers->nelts; j++, searched++) {
+                char *ptrw = balancer->workers->elts;
+                for (j = 0; j < balancer->workers->nelts; j++, ptrw=ptrw+sizew) {
+                    proxy_worker *searched = (proxy_worker *) ptrw;
                     if (searched->id == worker->id) {
                         searched->id = 0; /* mark it removed */
                     }
@@ -641,14 +653,14 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
 static proxy_worker *get_worker_from_id(proxy_server_conf *conf, int id, proxy_worker_stat *stat)
 {
     int i;
-    proxy_worker *worker;
+    char *ptr = conf->workers->elts;
+    int sizew = conf->workers->elt_size;
 
-    worker = (proxy_worker *)conf->workers->elts;
-    for (i = 0; i < conf->workers->nelts; i++) {
+    for (i = 0; i < conf->workers->nelts; i++, ptr=ptr+sizew) {
+        proxy_worker *worker = (proxy_worker *) ptr;
         if (worker->id == id && worker->s == stat) {
             return worker;
         }
-        worker++;
     }
     return NULL;
 }
@@ -903,6 +915,8 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
     int i;
     proxy_server_conf *conf;
     nodeinfo_t *node;
+    int sizeb;
+    char *ptr;
 
     /* well we already have it */
     if (route != NULL && (*route != '\0'))
@@ -912,8 +926,10 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
         return 0; /* failed */
 
     conf = (proxy_server_conf *) ap_get_module_config(r->server->module_config, &proxy_module);
-    balancer = (proxy_balancer *)conf->balancers->elts;
-    for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
+    sizeb = conf->balancers->elt_size;
+    ptr = conf->balancers->elts;
+    for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
+        balancer = (proxy_balancer *) ptr;
         if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) == 0)
             break;
     }
@@ -1185,9 +1201,12 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     if (domain && strlen(domain)>0)
         checked_domain = 0;
     while (!checked_standby) {
+        char *ptr = balancer->workers->elts;
+        int sizew = conf->workers->elt_size;
         worker = (proxy_worker *)balancer->workers->elts;
-        for (i = 0; i < balancer->workers->nelts; i++, worker++) {
+        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
             nodeinfo_t *node;
+            worker = (proxy_worker *) ptr;
             if (worker->id == 0)
                 continue; /* marked removed */
 
@@ -1478,15 +1497,18 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     /* search for the worker in the VirtualHosts */ 
     while (s) {
         void *sconf = s->module_config;
+        int sizew;
+        char *ptr;
         conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
+        sizew = conf->workers->elt_size;
 
-        worker = (proxy_worker *)conf->workers->elts;
-        for (i = 0; i < conf->workers->nelts; i++) {
+        ptr = conf->workers->elts;
+        for (i = 0; i < conf->workers->nelts; i++, ptr=ptr+sizew) {
+            worker = (proxy_worker *)ptr;
             if (worker->id == id && worker->s == stat) {
                 foundid = id;
                 break;
             }
-            worker++;
         }
         if (foundid == id)
             break;
@@ -1784,10 +1806,12 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf)
     char *sessionid = NULL;
     char *sticky_used;
     int i;
+    char *ptr;
+    int sizeb = conf->balancers->elt_size;
 
-    balancer = (proxy_balancer *)conf->balancers->elts;
-    for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
-        
+    ptr = conf->balancers->elts;
+    for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
+        balancer = (proxy_balancer *) ptr;
         if (balancer->sticky == NULL)
             continue;
         if (strlen(balancer->name)<=11)
@@ -1966,9 +1990,11 @@ static int proxy_cluster_trans(request_rec *r)
 
     if (balancer) {
         int i;
-        struct proxy_alias *ent = (struct proxy_alias *) conf->aliases->elts;
+        int sizea = conf->aliases->elt_size;
+        char *ptr = conf->aliases->elts;
         /* Check that we don't have a ProxyPassMatch ^(/.*\.gif)$ ! or something similar */
-        for (i = 0; i < conf->aliases->nelts; i++) {
+        for (i = 0; i < conf->aliases->nelts; i++, ptr=ptr+sizea) {
+            struct proxy_alias *ent = (struct proxy_alias *) ptr;
             if (ent[i].real[0] == '!' && ent[i].real[1] == '\0') {
                 ap_regmatch_t regm[AP_MAX_REG_MATCH];
                 if (ent[i].regex) {
@@ -2081,13 +2107,16 @@ static proxy_worker *find_route_worker(request_rec *r,
     int i;
     int checking_standby;
     int checked_standby;
+    int sizew = balancer->workers->elt_size;
     
     proxy_worker *worker;
 
     checking_standby = checked_standby = 0;
     while (!checked_standby) {
+        char *ptr = balancer->workers->elts;
         worker = (proxy_worker *)balancer->workers->elts;
-        for (i = 0; i < balancer->workers->nelts; i++, worker++) {
+        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
+            worker = (proxy_worker *)ptr;
             if (worker->id == 0)
                 continue; /* marked removed */
 
@@ -2396,8 +2425,10 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                          "proxy_cluster_pre_request: worker %s", worker_name);
 #endif
             int i;
-            runtime = (proxy_worker *)(*balancer)->workers->elts;
-            for (i = 0; i < (*balancer)->workers->nelts; i++, runtime++) {
+            int sizew = (*balancer)->workers->elt_size;
+            char *ptr = (*balancer)->workers->elts;
+            for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
+                runtime = (proxy_worker *)ptr;
                 if (runtime->name && strcmp(worker_name, runtime->name) == 0) {
                     proxy_cluster_helper *helper;
                     helper = (proxy_cluster_helper *) (runtime)->opaque;
