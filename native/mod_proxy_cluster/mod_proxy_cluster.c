@@ -568,9 +568,17 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         for (i = 0; i < balancer->workers->nelts; i++, runtime++) {
             if (runtime->name) {
                 if (strcmp(url, runtime->name) == 0) {
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
+                                 "Created: reuse worker %s of %s", runtime->name, balancer->name);
                     memcpy(runtime, worker, sizeof(proxy_worker));
                 }
             }
+        }
+        if (i ==  balancer->workers->nelts) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
+                         "Created: reuse worker %s not yet in balancer %s", url, balancer->name);
+            runtime = apr_array_push(balancer->workers);
+            memcpy(runtime, worker, sizeof(proxy_worker));
         }
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
@@ -1734,8 +1742,9 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
 /**
  * Search the balancer that corresponds to the pair context/host
  * @param r the request_rec.
- * @balancer proxy_ ARF....
- * @return the balancer or NULL if not found.
+ * @vhost_table table of host virtual hosts.
+ * @context_table table of contexts.
+ * @return the balancer name or NULL if not found.
  */ 
 static char *get_context_host_balancer(request_rec *r,
 		proxy_vhost_table *vhost_table, proxy_context_table *context_table)
@@ -2453,7 +2462,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                 /* Nice we have a route, but make sure we have to serve it */
                 int *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table);
                 if (nodes == NULL)
-                    return NULL; /* we can't serve context/host for the request */
+                    continue; /* we can't serve context/host for the request with this balancer*/
             }
             if (route && *route) {
                 char *domain = NULL;

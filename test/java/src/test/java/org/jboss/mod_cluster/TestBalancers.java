@@ -41,7 +41,6 @@ import org.apache.catalina.core.StandardServer;
 public class TestBalancers extends TestCase {
 
     /* Test that the sessions are really sticky */
-/*
     public void testBalancers() {
         myBalancers(null, null, null, null);
     }
@@ -51,10 +50,12 @@ public class TestBalancers extends TestCase {
     public void testBalancers3() {
         myBalancers("balancer", "dom1", "balancer", "dom2");
     }
- */
+    
+    /* Can't work
     public void testBalancers4() {
         myBalancers("balancer1", "dom1", "balancer2", "dom2");
     }
+    */
 
     public void myBalancers(String balancer, String loadBalancingGroup, String balancer2, String loadBalancingGroup2) {
         boolean clienterror = false;
@@ -120,10 +121,33 @@ public class TestBalancers extends TestCase {
 
         // Start the client and wait for it.
         Client client = new Client();
-
-        // Wait for it.
+        String node = null;
         try {
-            client.runit("/MyCount", 20, true);
+			client.runit("/MyCount", 20, true);
+			node = client.getnode();
+		} catch (Exception e) {
+			e.printStackTrace();
+			clienterror = true;
+		}
+        countinfo = 0;
+        while (client.getnode().equals(node) && !clienterror && countinfo < 20) {
+        	Client client2 = new Client();
+        	try {
+        		client2.runit("/MyCount", 20, true);
+        		client.start();
+        		client.join();
+        	} catch (Exception e) {
+    			e.printStackTrace();
+    			clienterror = true;       		
+        	}
+        	client = client2;
+        	countinfo++;
+        }
+        if (countinfo == 20)
+        	fail("Can't connect to " + node);
+      
+         // Wait for it.
+        try {
             client.start();
             client.join();
         } catch (Exception ex) {
