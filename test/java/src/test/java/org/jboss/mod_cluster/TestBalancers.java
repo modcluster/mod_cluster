@@ -27,15 +27,9 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
-import org.apache.catalina.Engine;
-import org.apache.catalina.Service;
 import org.jboss.modcluster.ModClusterService;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 
 public class TestBalancers extends TestCase {
@@ -51,13 +45,15 @@ public class TestBalancers extends TestCase {
         myBalancers("balancer", "dom1", "balancer", "dom2");
     }
     
-    /* Can't work
+    /* We need 2 different applications if we have 2 balancers */
     public void testBalancers4() {
-        myBalancers("balancer1", "dom1", "balancer2", "dom2");
+        myBalancers("balancer1", "dom1", "/app1", "balancer2", "dom2", "/app2");
     }
-    */
 
-    public void myBalancers(String balancer, String loadBalancingGroup, String balancer2, String loadBalancingGroup2) {
+    private void myBalancers(String balancer, String loadBalancingGroup, String balancer2, String loadBalancingGroup2) {
+    	myBalancers(balancer, loadBalancingGroup, null, balancer2, loadBalancingGroup2, null);
+	}
+	private void myBalancers(String balancer, String loadBalancingGroup, String app, String balancer2, String loadBalancingGroup2, String app2) {
         boolean clienterror = false;
         System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         StandardServer server =  new StandardServer();
@@ -72,10 +68,14 @@ public class TestBalancers extends TestCase {
 
             service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
+            if (app != null)
+            	service.AddContext(app, app, "MyCount", false);
             server.addService(service);
  
             service2 = new JBossWeb("node2",  "localhost");
             service2.addConnector(8012);
+            if (app2 != null)
+            	service2.AddContext(app2, app2, "MyCount", false);
             server2.addService(service2);
 
             cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret", balancer, loadBalancingGroup);
@@ -123,7 +123,10 @@ public class TestBalancers extends TestCase {
         Client client = new Client();
         String node = null;
         try {
-			client.runit("/MyCount", 20, true);
+        	if (app == null)
+        		client.runit("/MyCount", 20, true);
+        	else
+        		client.runit(app + "/MyCount", 20, true);
 			node = client.getnode();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -132,8 +135,15 @@ public class TestBalancers extends TestCase {
         countinfo = 0;
         while (client.getnode().equals(node) && !clienterror && countinfo < 20) {
         	Client client2 = new Client();
+        	String url = "/MyCount";
+        	// We try to test that the other node on the other balancer is working too.
+        	if (app2 != null && client.getnode().equals("node1"))
+        		url = app2 + "/MyCount";
+        	if (app != null && client.getnode().equals("node2"))
+        		url = app + "/MyCount";
+        			
         	try {
-        		client2.runit("/MyCount", 20, true);
+        		client2.runit(url, 20, true);
         		client.start();
         		client.join();
         	} catch (Exception e) {
