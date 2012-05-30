@@ -989,6 +989,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
         /* If the node is removed (or kill and restarted) and recreated unchanged that is ok: network problems */
         if (! is_same_node(node, &nodeinfo)) {
             /* Here we can't update it because the old one is still in */
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "process_config: node %s already exist", node->mess.JVMRoute);
             strcpy(node->mess.JVMRoute, "REMOVED");
             node->mess.remove = 1;
             insert_update_node(nodestatsmem, node, &id);
@@ -1360,6 +1362,30 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         if (host == NULL) {
             *errtype = TYPEMEM;
             return MHOSTRD; 
+        }
+    }
+
+    if (status == ENABLED) {
+        /* There is no load balancing between balancers */
+        int size = loc_get_max_size_context();
+        int *id = apr_palloc(r->pool, sizeof(int) * size);
+        size = get_ids_used_context(contextstatsmem, id);
+        for (i=0; i<size; i++) {
+            contextinfo_t *ou;
+            if (get_context(contextstatsmem, &ou, id[i]) != APR_SUCCESS)
+                continue;
+            if (strcmp(ou->context, vhost->context) ==0) {
+                /* There is the same context somewhere else */
+                nodeinfo_t *hisnode;
+                if (get_node(nodestatsmem, &hisnode, ou->node) != APR_SUCCESS)
+                    continue;
+                if (strcmp(hisnode->mess.balancer, node->mess.balancer)) {
+                    /* the same context would be on 2 different balancer */
+                    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, r->server,
+                                 "ENABLE: context %s is in balancer %s and %s", vhost->context,
+                                  node->mess.balancer, hisnode->mess.balancer);
+                }
+            }
         }
     }
 
