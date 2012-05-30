@@ -1995,10 +1995,10 @@ static int proxy_cluster_trans(request_rec *r)
         /* Check that we don't have a ProxyPassMatch ^(/.*\.gif)$ ! or something similar */
         for (i = 0; i < conf->aliases->nelts; i++, ptr=ptr+sizea) {
             struct proxy_alias *ent = (struct proxy_alias *) ptr;
-            if (ent[i].real[0] == '!' && ent[i].real[1] == '\0') {
+            if (ent->real[0] == '!' && ent->real[1] == '\0') {
                 ap_regmatch_t regm[AP_MAX_REG_MATCH];
-                if (ent[i].regex) {
-                    if (!ap_regexec(ent[i].regex, r->uri, AP_MAX_REG_MATCH, regm, 0)) {
+                if (ent->regex) {
+                    if (!ap_regexec(ent->regex, r->uri, AP_MAX_REG_MATCH, regm, 0)) {
                         return DECLINED;
                     }
                 }
@@ -2007,11 +2007,11 @@ static int proxy_cluster_trans(request_rec *r)
                     proxy_dir_conf *dconf = ap_get_module_config(r->per_dir_config,
                                                                  &proxy_module);
                     if ((dconf->interpolate_env == 1)
-                        && (ent[i].flags & PROXYPASS_INTERPOLATE)) {
-                        fake = proxy_interpolate(r, ent[i].fake);
+                        && (ent->flags & PROXYPASS_INTERPOLATE)) {
+                        fake = proxy_interpolate(r, ent->fake);
                     }
                     else {
-                        fake = ent[i].fake;
+                        fake = ent->fake;
                     }
                     if (alias_match(r->uri, fake)) {
                         return DECLINED;
