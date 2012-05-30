@@ -33,7 +33,6 @@ import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.core.StandardServer;
 
 public class TestBalancers extends TestCase {
-
     /* Test that the sessions are really sticky */
     public void testBalancers() {
         myBalancers(null, null, null, null);
@@ -47,13 +46,18 @@ public class TestBalancers extends TestCase {
     
     /* We need 2 different applications if we have 2 balancers */
     public void testBalancers4() {
-        myBalancers("balancer1", "dom1", "/app1", "balancer2", "dom2", "/app2");
+        myBalancers("balancer1", "dom1", "/app1", "balancer2", "dom2", "/app2", false);
+    }
+    
+    /* Use Aliases and 2 balancers */
+    public void testBalancers5() {
+        myBalancers("balancer", "dom1", null, "balancer", null, "dom2", true);
     }
 
     private void myBalancers(String balancer, String loadBalancingGroup, String balancer2, String loadBalancingGroup2) {
-    	myBalancers(balancer, loadBalancingGroup, null, balancer2, loadBalancingGroup2, null);
+    	myBalancers(balancer, loadBalancingGroup, null, balancer2, loadBalancingGroup2, null, false);
 	}
-	private void myBalancers(String balancer, String loadBalancingGroup, String app, String balancer2, String loadBalancingGroup2, String app2) {
+	private void myBalancers(String balancer, String loadBalancingGroup, String app, String balancer2, String loadBalancingGroup2, String app2, boolean testAlias) {
         boolean clienterror = false;
         System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         StandardServer server =  new StandardServer();
@@ -66,13 +70,23 @@ public class TestBalancers extends TestCase {
         System.out.println("TestBalancers Started");
         try {
 
-            service = new JBossWeb("node1",  "localhost");
+        	if (testAlias) {
+        		String [] Aliases = new String[1];
+        		Aliases[0] = "alias1";
+        		service = new JBossWeb("node1",  "localhost", false, "ROOT", Aliases);
+        	} else
+        		service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
             if (app != null)
             	service.AddContext(app, app, "MyCount", false);
             server.addService(service);
  
-            service2 = new JBossWeb("node2",  "localhost");
+           	if (testAlias) {
+        		String [] Aliases = new String[1];
+        		Aliases[0] = "alias2";
+        		service2 = new JBossWeb("node2",  "localhost", false, "ROOT", Aliases);
+        	} else          
+        		service2 = new JBossWeb("node2",  "localhost");
             service2.addConnector(8012);
             if (app2 != null)
             	service2.AddContext(app2, app2, "MyCount", false);
@@ -137,11 +151,19 @@ public class TestBalancers extends TestCase {
         	Client client2 = new Client();
         	String url = "/MyCount";
         	// We try to test that the other node on the other balancer is working too.
-        	if (app2 != null && client.getnode().equals("node1"))
-        		url = app2 + "/MyCount";
-        	if (app != null && client.getnode().equals("node2"))
-        		url = app + "/MyCount";
-        			
+        	if (client.getnode().equals("node1")) {
+                if (app2 != null)   		
+                	url = app2 + "/MyCount";
+                if (testAlias)
+                	client.setVirtualHost("node2");
+        	}
+        	if (client.getnode().equals("node2")) {
+        		if (app != null)
+        			url = app + "/MyCount";
+        		if (testAlias)
+                	client.setVirtualHost("node1");
+        	}
+
         	try {
         		client2.runit(url, 20, true);
         		client.start();
