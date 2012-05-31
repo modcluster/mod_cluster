@@ -27,59 +27,68 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
-import org.apache.catalina.Engine;
-import org.apache.catalina.Service;
 import org.jboss.modcluster.ModClusterService;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 
 public class TestAliases extends TestCase {
-
-    StandardServer server = null;
-
-    /* Test failAppover */
+    
     public void testAliases() {
+        String [] Aliases = new String[10];
+        /* HOSTALIASZ is 100 that should be enough */
+        Aliases[0] = "alias0";
+        Aliases[1] = "alias1";
+        Aliases[2] = "alias2";
+        Aliases[3] = "alias3";
+        Aliases[4] = "alias5";
+        Aliases[5] = "alias5";
+        Aliases[6] = "alias6";
+        Aliases[7] = "alias7";
+        Aliases[8] = "alias8";
+        Aliases[9] = "alias9";
+        
+        String [] Aliases2 = new String[1];
+        Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
 
+        myAliases(Aliases, Aliases2);
+
+    }
+    
+    public void testAliases2() {
+        String [] Aliases = new String[2];
+        Aliases[0] = "alias0";
+        Aliases[1] = "alias1";
+        
+        String [] Aliases2 = new String[2];
+        Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        Aliases2[1] = "alias1123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        myAliases(Aliases, Aliases2);
+
+    }
+    
+    /* Test failAppover */
+    private void myAliases(String [] Aliases,String [] Aliases2 ) {
+    	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server =  new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
-        Connector connector = null;
-        Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestAliases Started");
         try {
-            String [] Aliases = new String[10];
-            /* HOSTALIASZ is 100 that should be enough */
-            Aliases[0] = "alias0";
-            Aliases[1] = "alias1";
-            Aliases[2] = "alias2";
-            Aliases[3] = "alias3";
-            Aliases[4] = "alias5";
-            Aliases[5] = "alias5";
-            Aliases[6] = "alias6";
-            Aliases[7] = "alias7";
-            Aliases[8] = "alias8";
-            Aliases[9] = "alias9";
-
+ 
             service = new JBossWeb("node3",  "localhost", false, "ROOT", Aliases);
-            connector = service.addConnector(8013);
+            service.addConnector(8013);
             service.AddContext("/test", "/test");
             server.addService(service);
 
-            Aliases = new String[1];
-            Aliases[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
-            service2 = new JBossWeb("node4",  "localhost", false, "ROOT", Aliases);
-            connector2 = service2.addConnector(8014);
+            service2 = new JBossWeb("node4",  "localhost", false, "ROOT", Aliases2);
+            service2.addConnector(8014);
             service2.AddContext("/test", "/test");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();
@@ -119,7 +128,7 @@ public class TestAliases extends TestCase {
 
         // Test long Hostname.
         client = new Client();
-        client.setVirtualHost("alias0123456789012345678901234567890123456789012345678901234567890123456789012345out");
+        client.setVirtualHost(Aliases2[0]);
         clienterror = false;
 
         // Wait for it.
@@ -135,6 +144,21 @@ public class TestAliases extends TestCase {
         String node = client.getnode();
         if (!"node4".equals(node)) {
             fail("Fail (long host) wrong node");
+        }
+        
+        if (Aliases2.length>1) {
+        	// Check that the last alias is also working.
+            client = new Client();
+            client.setVirtualHost(Aliases2[Aliases2.length-1]);
+            try {
+                if (client.runit("/MyCount", 10, false, true) != 0)
+                    clienterror = true;
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                clienterror = true;
+            }
+            if (clienterror)
+                fail("Client fail (long host: " +Aliases2[Aliases2.length-1] + ")");
         }
 
         // Start the client and wait for it.
