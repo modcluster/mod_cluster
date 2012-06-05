@@ -27,16 +27,16 @@
 
 package org.jboss.mod_cluster;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.core.StandardServer;
 
 public class TestAliases extends TestCase {
-    
     public void testAliases() {
         String [] Aliases = new String[10];
-        /* HOSTALIASZ is 100 that should be enough */
         Aliases[0] = "alias0";
         Aliases[1] = "alias1";
         Aliases[2] = "alias2";
@@ -51,7 +51,7 @@ public class TestAliases extends TestCase {
         String [] Aliases2 = new String[1];
         Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
 
-        myAliases(Aliases, Aliases2);
+        myAliases(Aliases, Aliases2, null);
 
     }
     
@@ -63,12 +63,60 @@ public class TestAliases extends TestCase {
         String [] Aliases2 = new String[2];
         Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
         Aliases2[1] = "alias1123456789012345678901234567890123456789012345678901234567890123456789012345out";
-        myAliases(Aliases, Aliases2);
+        myAliases(Aliases, Aliases2, null);
 
     }
+    public void testAliases3() {
+        String [] Aliases = new String[2];
+        Aliases[0] = "alias0";
+        Aliases[1] = "alias1";
+        
+        String [] Aliases2 = new String[2];
+        Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        Aliases2[1] = "alias1123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        
+        VirtualHost [] virtualhosts = new VirtualHost[3];
+        virtualhosts[0] = new VirtualHost();
+        virtualhosts[0].addtofirst = true;
+        virtualhosts[0].host = "v0";
+        virtualhosts[0].aliases = new String[2];
+        virtualhosts[0].aliases[0] = "alias0v0";
+        virtualhosts[0].aliases[1] = "alias1v0";
+        virtualhosts[1] = new VirtualHost();
+        virtualhosts[1].addtofirst = false;
+        virtualhosts[1].host = "v1";
+        virtualhosts[1].aliases = new String[2];
+        virtualhosts[1].aliases[0] = "alias0v1";
+        virtualhosts[1].aliases[1] = "alias1v1";
+        virtualhosts[2] = new VirtualHost();
+        virtualhosts[2].addtofirst = true;
+        virtualhosts[2].host = "v2";
+        virtualhosts[2].aliases = new String[2];
+        virtualhosts[2].aliases[0] = "alias0v2";
+        virtualhosts[2].aliases[1] = "alias1v2";
+        /* Doesn't work with more 404 from jbossweb :-(
+        virtualhosts[3] = new VirtualHost();
+        virtualhosts[3].addtofirst = false;
+        virtualhosts[3].host = "v3";
+        virtualhosts[3].aliases = new String[2];
+        virtualhosts[3].aliases[0] = "alias0v3";
+        virtualhosts[3].aliases[1] = "alias1v3";
+
+        virtualhosts[4] = new VirtualHost();
+        virtualhosts[4].addtofirst = false;
+        virtualhosts[4].host = "v4";
+        virtualhosts[4].aliases = new String[2];
+        virtualhosts[4].aliases[0] = "alias0v4";
+        virtualhosts[4].aliases[1] = "alias1v4";
+        */
+       		
+        myAliases(Aliases, Aliases2, virtualhosts);
+    }
     
-    /* Test failAppover */
-    private void myAliases(String [] Aliases,String [] Aliases2 ) {
+    /**
+     *  Common Test for Aliases
+     */
+    private void myAliases(String [] Aliases,String [] Aliases2, VirtualHost [] virtualhosts ) {
     	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         boolean clienterror = false;
         StandardServer server =  new StandardServer();
@@ -87,6 +135,9 @@ public class TestAliases extends TestCase {
             service2.addConnector(8014);
             service2.AddContext("/test", "/test");
             server.addService(service2);
+            
+            if (virtualhosts != null)
+            	addVirtualHosts(service, service2, virtualhosts);
 
             cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
@@ -96,7 +147,7 @@ public class TestAliases extends TestCase {
         }
 
         // start the server thread.
-        ServerThread wait = new ServerThread(3000, server);
+        ServerThread wait = new ServerThread(6000, server);
         wait.start();
 
         // Wait until we are able to connect to httpd.
@@ -175,6 +226,10 @@ public class TestAliases extends TestCase {
         }
         if (clienterror)
             fail("Client error");
+        
+        // Test the other nodes
+        if (virtualhosts != null)
+            	testVirtualHosts(virtualhosts);
 
         // Stop the connector that has received the request...
         node = client.getnode();
@@ -201,6 +256,10 @@ public class TestAliases extends TestCase {
             System.out.println("Test FAILED");
             clienterror = true;
         }
+        
+        // Test the other nodes
+        if (virtualhosts != null)
+            testVirtualHosts(virtualhosts);
 
         // Stop the server or services.
         try {
@@ -224,4 +283,45 @@ public class TestAliases extends TestCase {
         Maintest.testPort(8014);
         System.out.println("TestAliases Done");
     }
+
+	private void testVirtualHosts(VirtualHost[] virtualhosts) {
+		for (int i=0; i< virtualhosts.length; i++) {
+			Client client = new Client();
+			client.setVirtualHost(virtualhosts[i].host);
+			// Wait for it.
+			boolean clienterror = false;
+			try {
+				if (client.runit("/" + virtualhosts[i].host + "/MyCount", 10, false, true) != 0)
+					clienterror = true;
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				clienterror = true;
+			}
+			if (clienterror)
+				fail("Client failed (" + virtualhosts[i].host + ")");
+			System.out.println("Tested " +  virtualhosts[i].host + " OK");
+		}
+		
+	}
+
+	private void addVirtualHosts(JBossWeb service, JBossWeb service2, VirtualHost[] virtualhosts) throws IOException {
+		for (int i=0; i< virtualhosts.length; i++) {
+			if (virtualhosts[i].addtofirst) {
+				service.AddHost( virtualhosts[i].host,  virtualhosts[i].aliases);
+				String path = "/"+virtualhosts[i].host;
+				service.AddContext(path, path);
+			} else {
+				service2.AddHost( virtualhosts[i].host,  virtualhosts[i].aliases);
+				String path = "/"+virtualhosts[i].host;
+				service2.AddContext(path, path);				
+			}
+		}
+		
+	}
+	public class VirtualHost {
+		String host;
+		String [] aliases;
+		boolean addtofirst;
+	}
+
 }

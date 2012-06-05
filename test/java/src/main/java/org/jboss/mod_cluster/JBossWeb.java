@@ -102,6 +102,17 @@ public class JBossWeb extends StandardService {
         copyFiles(in, ou);
     }
 
+    /**
+     * Returns a JBossWeb service to use in our embedded tests.
+     *
+     * @param route  the JVMRoute of the corresponding node. 
+     * @param host   the name of the virtualhost
+     * @param nat    indicated to use native or not.
+     * @param webapp name of webapp (ROOT maps as / and bla as /bla).
+     * @param Aliasias an array of String containing the Aliases names. 
+     * @return      the created jbossweb service.
+     */
+    
     public JBossWeb(String route, String host, boolean nat, String webapp, String[] Aliases) throws IOException {
         // Copy native tree...
         if (nat) {
@@ -201,11 +212,82 @@ public class JBossWeb extends StandardService {
         this.setName(host + "Engine" + route);
         // setRedirectStreams(false);
     }
-    void AddContext(String path, String docBase, String servletname, boolean wait) {
-        File fd = new File ( route + "/webapps/" + docBase);
-        fd.mkdirs();
-        docBase = fd.getAbsolutePath();
 
+
+    public JBossWeb(String route, String host) throws IOException {
+        this(route, host, false);
+    }
+    public JBossWeb(String route, String host, boolean nat) throws IOException {
+        this(route, host, nat, "ROOT");
+    }
+    public JBossWeb(String route, String host, String webapp) throws IOException {
+        this(route, host, false, webapp);
+    }
+    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
+        this(route, host, nat, webapp, null);
+    }
+    
+    /** Add a  host
+     * @param host name of the host
+     * @param Aliasias an array of String containing the Aliases names.
+     */
+    void AddHost(String host, String[] Aliases) {
+    	
+        File fd = new File ( host + "/webapps/");
+        fd.mkdirs();
+        String appBase = fd.getPath();
+
+    	//Create Host
+        StandardHost baseHost = new StandardHost();
+        baseHost.setAppBase(appBase);
+        baseHost.setName(host);
+
+        baseHost.setBackgroundProcessorDelay(1);
+        baseHost.setConfigClass("org.apache.catalina.startup.ContextConfig");
+
+        if (Aliases != null && Aliases.length>0) {
+            for (int j = 0; j < Aliases.length; j++) {
+            	baseHost.addAlias(Aliases[j]);    
+            }
+        }
+        HostConfig hostConfig = new HostConfig();
+        baseHost.addLifecycleListener(hostConfig);
+        Engine engine = (Engine) getContainer();
+        engine.addChild(baseHost);
+    }
+
+    /**
+     * Add a context to the StandardService (to all the virtual host defined in the Engine).
+     * @param path          for bla is will deploy as /bla.
+     * @param docBase       path to use
+     * @param servletname   name of the server.
+     * @param wait          tell if the wait is 10000 in the parameters of the servlet.
+     * @param host          name of the virtual host where to add the context (null : every virtual hosts).
+     * @throws IOException 
+     */
+    void AddContext(String path, String base, String servletname, boolean wait, String hostname) throws IOException {
+        File fd = new File ( route + "/webapps/" + base);
+        fd.mkdirs();
+        String docBase = fd.getAbsolutePath();
+        fd = new File (route + "/webapps/" + base + "/WEB-INF/classes");
+        fd.mkdirs();
+        
+        // Session logic tests...
+        fd = new File (route + "/webapps/" + base + "/WEB-INF/classes" , "MyCount.class");
+        File fdin = new File ("MyCount.class");
+        if (!fdin.exists())
+            fdin = new File ("target/classes/MyCount.class");
+        copyFile(fdin, fd);
+        // Simple tests...
+        fd = new File (route + "/webapps/" + base + "/WEB-INF/classes" , "MyTest.class");
+        fdin = new File ("MyTest.class");
+        if (!fdin.exists())
+            fdin = new File ("target/classes/MyTest.class");
+        copyFile(fdin, fd);
+        
+        
+        System.out.println("AddContext: " + path + "/" + servletname + " on " + docBase);
+        
         Context context = new StandardContext();
         context.setDocBase(docBase);
         context.setPath(path);
@@ -222,6 +304,8 @@ public class JBossWeb extends StandardService {
             if (wait) {
                 wrapper.addInitParameter("wait", "10000");
                 wrapper.setLoadOnStartup(1);
+            } else {
+            	wrapper.setLoadOnStartup(0);
             }
             context.addChild(wrapper);
             context.addServletMapping("/" + servletname, servletname);
@@ -232,28 +316,20 @@ public class JBossWeb extends StandardService {
         Container[] containers = engine.findChildren();
         for (int j = 0; j < containers.length; j++) {
             if (containers[j] instanceof Host) {
-                Host host = (Host) containers[j];
+            	Host host = (Host) containers[j];
+            	if (hostname != null && !host.getName().equals(hostname))
+            		continue;
+            	System.out.println("AddContext: " + path + " added on " + host);
                 host.addChild(context);
             }
         }
     }
-    void AddContext(String path, String docBase) {
-        AddContext(path, docBase, "MyCount", false);
+    void AddContext(String path, String docBase, String servletname, boolean wait) throws IOException {
+    	AddContext(path, docBase, servletname, wait, null);
     }
-
-    public JBossWeb(String route, String host) throws IOException {
-        this(route, host, false);
+    void AddContext(String path, String docBase) throws IOException {
+        AddContext(path, docBase, "MyCount", false, null);
     }
-    public JBossWeb(String route, String host, boolean nat) throws IOException {
-        this(route, host, nat, "ROOT");
-    }
-    public JBossWeb(String route, String host, String webapp) throws IOException {
-        this(route, host, false, webapp);
-    }
-    public JBossWeb(String route, String host, boolean nat, String webapp) throws IOException {
-        this(route, host, nat, webapp, null);
-    }
-
 
     public void addWAR(String file, String route) throws IOException {
         File fd = new File ( route + "/" +  route + "/webapps");
@@ -304,7 +380,8 @@ public class JBossWeb extends StandardService {
             if (containers[j] instanceof StandardHost) {
                 StandardHost host = (StandardHost) containers[j];
                 Context context = (Context) host.findChild(path);
-                containers[j].removeChild(context);
+                if (context != null)
+                	containers[j].removeChild(context);
             }
         }
     }
