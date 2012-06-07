@@ -1343,25 +1343,41 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
     hostinfo.id = 0;
     host = read_host(hoststatsmem, &hostinfo);
     if (host == NULL) {
-        int vid = 1; /* XXX: That is not really the right value, but that works most time */
         /* If REMOVE ignores it */
         if (status == REMOVE)
             return NULL;
-        /* If the Host doesn't exist yet create it */
-        if (insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid) != APR_SUCCESS) {
-            *errtype = TYPEMEM;
-            return MHOSTUI; 
-        }
-        hostinfo.id = 0;
-        hostinfo.node = node->mess.id;
-        if (vhost->host != NULL)
-            strcpy(hostinfo.host, vhost->host);
-        else
-            hostinfo.host[0] = '\0';
-        host = read_host(hoststatsmem, &hostinfo);
-        if (host == NULL) {
-            *errtype = TYPEMEM;
-            return MHOSTRD; 
+        else {
+            int vid, size, *id;
+            /* Find the first available vhost id */
+            vid = 1;
+            size = loc_get_max_size_host();
+            id = apr_palloc(r->pool, sizeof(int) * size);
+            size = get_ids_used_host(hoststatsmem, id);
+            for (i=0; i<size; i++) {
+                hostinfo_t *ou;
+                if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
+                    continue;
+
+	        if(ou->vhost == vid && ou->node == node->mess.id)
+	            vid++;
+            }
+
+            /* If the Host doesn't exist yet create it */
+            if (insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid) != APR_SUCCESS) {
+                *errtype = TYPEMEM;
+                return MHOSTUI; 
+            }
+            hostinfo.id = 0;
+            hostinfo.node = node->mess.id;
+            if (vhost->host != NULL)
+                strcpy(hostinfo.host, vhost->host);
+            else
+                hostinfo.host[0] = '\0';
+            host = read_host(hoststatsmem, &hostinfo);
+            if (host == NULL) {
+                *errtype = TYPEMEM;
+                return MHOSTRD; 
+            }
         }
     }
 
@@ -1409,8 +1425,17 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
                 break;
         }
         if (i==size) {
-            hostinfo.id = host->id;
-            remove_host(hoststatsmem, &hostinfo);
+            int size = loc_get_max_size_host();
+            int *id = apr_palloc(r->pool, sizeof(int) * size);
+            size = get_ids_used_host(hoststatsmem, id);
+            for (i=0; i<size; i++) {
+                 hostinfo_t *ou;
+
+                 if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
+                     continue;
+                 if(ou->vhost == host->vhost && ou->node == node->mess.id)
+                     remove_host(hoststatsmem, ou);
+            }
         }
     } else if (status == STOPPED) {
         /* insert_update_contexts in fact makes that vhost->context corresponds only to the first context... */
