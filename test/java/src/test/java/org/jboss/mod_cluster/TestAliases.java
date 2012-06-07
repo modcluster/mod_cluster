@@ -35,6 +35,7 @@ import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.core.StandardServer;
 
 public class TestAliases extends TestCase {
+	/*
     public void testAliases() {
         String [] Aliases = new String[10];
         Aliases[0] = "alias0";
@@ -66,6 +67,7 @@ public class TestAliases extends TestCase {
         myAliases(Aliases, Aliases2, null);
 
     }
+    */
     public void testAliases3() {
         String [] Aliases = new String[2];
         Aliases[0] = "alias0";
@@ -109,14 +111,19 @@ public class TestAliases extends TestCase {
         virtualhosts[4].aliases[0] = "alias0v4";
         virtualhosts[4].aliases[1] = "alias1v4";
         */
-       		
-        myAliases(Aliases, Aliases2, virtualhosts);
+        
+        /* Add /myapp1 /myapp2 applications instead ROOT */
+       	String [] webapps = new String[2];
+       	webapps[0] = "myapp1";
+       	webapps[1] = "myapp2";
+        
+        myAliases(Aliases, Aliases2, virtualhosts, webapps);
     }
     
     /**
      *  Common Test for Aliases
      */
-    private void myAliases(String [] Aliases,String [] Aliases2, VirtualHost [] virtualhosts ) {
+    private void myAliases(String [] Aliases,String [] Aliases2, VirtualHost [] virtualhosts, String [] webapps ) {
     	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         boolean clienterror = false;
         StandardServer server =  new StandardServer();
@@ -126,12 +133,18 @@ public class TestAliases extends TestCase {
         System.out.println("TestAliases Started");
         try {
  
-            service = new JBossWeb("node3",  "localhost", false, "ROOT", Aliases);
+        	if (webapps != null)
+        		service = new JBossWeb("node3",  "localhost", false, webapps[0], Aliases);
+        	else
+        		service = new JBossWeb("node3",  "localhost", false, "ROOT", Aliases);
             service.addConnector(8013);
             service.AddContext("/test", "/test");
             server.addService(service);
 
-            service2 = new JBossWeb("node4",  "localhost", false, "ROOT", Aliases2);
+            if (webapps != null)
+        		service2 = new JBossWeb("node4",  "localhost", false, webapps[1], Aliases2);
+        	else
+        		service2 = new JBossWeb("node4",  "localhost", false, "ROOT", Aliases2);
             service2.addConnector(8014);
             service2.AddContext("/test", "/test");
             server.addService(service2);
@@ -167,8 +180,11 @@ public class TestAliases extends TestCase {
         client.setVirtualHost("mycluster.domain.com");
 
         // Wait for it.
+        String url = "/MyCount";
+        if (webapps != null)
+        	url = "/test/MyCount";
         try {
-            if (client.runit("/MyCount", 10, false, true) != 0)
+            if (client.runit(url, 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -184,7 +200,7 @@ public class TestAliases extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/MyCount", 10, false, true) != 0)
+            if (client.runit(url, 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -202,7 +218,7 @@ public class TestAliases extends TestCase {
             client = new Client();
             client.setVirtualHost(Aliases2[Aliases2.length-1]);
             try {
-                if (client.runit("/MyCount", 10, false, true) != 0)
+                if (client.runit(url, 10, false, true) != 0)
                     clienterror = true;
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -218,7 +234,7 @@ public class TestAliases extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/MyCount", 10, false, true) != 0)
+            if (client.runit(url, 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -232,12 +248,15 @@ public class TestAliases extends TestCase {
             	testVirtualHosts(virtualhosts);
 
         // Stop the connector that has received the request...
+        url = "";
+        if (webapps != null)
+        	url = "/test";
         node = client.getnode();
         if ("node4".equals(node)) {
-            service2.removeContext("");
+            service2.removeContext(url);
             node = "node3";
         } else {
-            service.removeContext("");
+            service.removeContext(url);
             node = "node4";
         }
 
@@ -282,6 +301,9 @@ public class TestAliases extends TestCase {
         Maintest.testPort(8013);
         Maintest.testPort(8014);
         System.out.println("TestAliases Done");
+    }
+    private void myAliases(String [] Aliases,String [] Aliases2, VirtualHost [] virtualhosts) {
+    	myAliases(Aliases, Aliases2, virtualhosts, null);
     }
 
 	private void testVirtualHosts(VirtualHost[] virtualhosts) {
