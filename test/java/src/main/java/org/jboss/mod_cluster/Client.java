@@ -311,6 +311,7 @@ public class  Client extends Thread {
                     } else {
                         System.out.println("response: " + httpResponseCode);
                         System.out.println("response: " + bm.getStatusLine());
+                        response = bm.getResponseBodyAsString();
                         success = false;
                         httpClient = null;
                     }

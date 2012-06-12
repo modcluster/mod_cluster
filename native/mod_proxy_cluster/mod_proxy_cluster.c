@@ -1651,10 +1651,15 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
         /* read the hosts */
         int sizevhost;
         int *contextsok = apr_pcalloc(r->pool, sizeof(int)*sizecontext);
+        const char *hostname = ap_get_server_name(r);
+#if HAVE_CLUSTER_EX_DEBUG
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "find_node_context_host: Host: %s", hostname);
+#endif
         sizevhost = vhost_table->sizevhost;
         for (i=0; i<sizevhost; i++) {
             hostinfo_t *vhost = vhost_table->vhost_info + i;
-            if (strcmp(ap_get_server_name(r), vhost->host) == 0) {
+            if (strcmp(hostname, vhost->host) == 0) {
                 /* add the contexts that match */
                 for (j=0; j<sizecontext; j++) {
                     contextinfo_t *context = &context_table->context_info[j];
@@ -1668,6 +1673,16 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
                 contexts[j] = -1;
         }
     }
+#if HAVE_CLUSTER_EX_DEBUG
+    for (j=0; j<sizecontext; j++) {
+        contextinfo_t *context;
+        if (contexts[j] == -1) continue;
+        context = &context_table->context_info[j]; 
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "find_node_context_host: node: %d vhost: %d context: %s",
+                          context->node, context->vhost, context->context);
+    }
+#endif
 
     /* Check the contexts */
     max = 0;

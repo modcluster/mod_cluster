@@ -373,17 +373,26 @@ public class JBossWeb extends StandardService {
 
         return connector;
     }
-    public void removeContext(String path) {
+    
+    /*
+     * remove the context from the virtualhost.
+     */
+    public void removeContext(String path, String hostname) {
         Engine engine = (Engine) getContainer();
         Container[] containers = engine.findChildren();
         for (int j = 0; j < containers.length; j++) {
             if (containers[j] instanceof StandardHost) {
                 StandardHost host = (StandardHost) containers[j];
+               	if (hostname != null && !host.getName().equals(hostname))
+            		continue;
                 Context context = (Context) host.findChild(path);
                 if (context != null)
                 	containers[j].removeChild(context);
             }
         }
+    }
+    public void removeContext(String path) {
+    	removeContext(path, null);
     }
     private static class LocalInstanceManager implements InstanceManager {
         @Override

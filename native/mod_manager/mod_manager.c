@@ -1349,7 +1349,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         else {
             int vid, size, *id;
             /* Find the first available vhost id */
-            vid = 1;
+            vid = 0;
             size = loc_get_max_size_host();
             id = apr_palloc(r->pool, sizeof(int) * size);
             size = get_ids_used_host(hoststatsmem, id);
@@ -1358,9 +1358,12 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
                 if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
                     continue;
 
-	        if(ou->vhost == vid && ou->node == node->mess.id)
-	            vid++;
+	        if(ou->node == node->mess.id && ou->vhost > vid)
+	            vid = ou->vhost;
             }
+            vid++; // Use next one.
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: adding vhost: %d node: %d",
+                         vid, node->mess.id);
 
             /* If the Host doesn't exist yet create it */
             if (insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid) != APR_SUCCESS) {

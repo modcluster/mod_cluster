@@ -35,7 +35,7 @@ import org.jboss.modcluster.ModClusterService;
 import org.apache.catalina.core.StandardServer;
 
 public class TestAliases extends TestCase {
-	/*
+
     public void testAliases() {
         String [] Aliases = new String[10];
         Aliases[0] = "alias0";
@@ -67,7 +67,7 @@ public class TestAliases extends TestCase {
         myAliases(Aliases, Aliases2, null);
 
     }
-    */
+    
     public void testAliases3() {
         String [] Aliases = new String[2];
         Aliases[0] = "alias0";
@@ -84,41 +84,84 @@ public class TestAliases extends TestCase {
         virtualhosts[0].aliases = new String[2];
         virtualhosts[0].aliases[0] = "alias0v0";
         virtualhosts[0].aliases[1] = "alias1v0";
+        virtualhosts[0].servletname = "MyCount";
+        
         virtualhosts[1] = new VirtualHost();
         virtualhosts[1].addtofirst = false;
         virtualhosts[1].host = "v1";
         virtualhosts[1].aliases = new String[2];
         virtualhosts[1].aliases[0] = "alias0v1";
         virtualhosts[1].aliases[1] = "alias1v1";
+        virtualhosts[1].servletname = "MyCount";
+        
         virtualhosts[2] = new VirtualHost();
         virtualhosts[2].addtofirst = true;
         virtualhosts[2].host = "v2";
         virtualhosts[2].aliases = new String[2];
         virtualhosts[2].aliases[0] = "alias0v2";
         virtualhosts[2].aliases[1] = "alias1v2";
-        /* Doesn't work with more 404 from jbossweb :-(
-        virtualhosts[3] = new VirtualHost();
-        virtualhosts[3].addtofirst = false;
-        virtualhosts[3].host = "v3";
-        virtualhosts[3].aliases = new String[2];
-        virtualhosts[3].aliases[0] = "alias0v3";
-        virtualhosts[3].aliases[1] = "alias1v3";
-
-        virtualhosts[4] = new VirtualHost();
-        virtualhosts[4].addtofirst = false;
-        virtualhosts[4].host = "v4";
-        virtualhosts[4].aliases = new String[2];
-        virtualhosts[4].aliases[0] = "alias0v4";
-        virtualhosts[4].aliases[1] = "alias1v4";
-        */
+        virtualhosts[2].servletname = "MyCount";
+//        Doesn't work with more 404 from jbossweb :-(
+//        virtualhosts[3] = new VirtualHost();
+//        virtualhosts[3].addtofirst = false;
+//        virtualhosts[3].host = "v3";
+//        virtualhosts[3].aliases = new String[2];
+//        virtualhosts[3].aliases[0] = "alias0v3";
+//        virtualhosts[3].aliases[1] = "alias1v3";
+//
+//        virtualhosts[4] = new VirtualHost();
+//        virtualhosts[4].addtofirst = false;
+//        virtualhosts[4].host = "v4";
+//        virtualhosts[4].aliases = new String[2];
+//        virtualhosts[4].aliases[0] = "alias0v4";
+//        virtualhosts[4].aliases[1] = "alias1v4";
         
-        /* Add /myapp1 /myapp2 applications instead ROOT */
+        // Add /myapp1 /myapp2 applications instead ROOT
        	String [] webapps = new String[2];
        	webapps[0] = "myapp1";
        	webapps[1] = "myapp2";
         
         myAliases(Aliases, Aliases2, virtualhosts, webapps);
     }
+
+    public void testAliases4() {
+        String [] Aliases = new String[2];
+        Aliases[0] = "alias0";
+        Aliases[1] = "alias1";
+        
+        String [] Aliases2 = new String[2];
+        Aliases2[0] = "alias0123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        Aliases2[1] = "alias1123456789012345678901234567890123456789012345678901234567890123456789012345out";
+        
+        VirtualHost [] virtualhosts = new VirtualHost[2];
+        virtualhosts[0] = new VirtualHost();
+        virtualhosts[0].addtofirst = true;
+        virtualhosts[0].host = "v0";
+        virtualhosts[0].aliases = new String[2];
+        virtualhosts[0].aliases[0] = "alias0v0";
+        virtualhosts[0].aliases[1] = "alias1v0";
+        virtualhosts[0].servletname = "MyCount";
+        virtualhosts[0].context = "test4";
+        
+        virtualhosts[1] = new VirtualHost();
+        virtualhosts[1].addtofirst = true;
+        virtualhosts[1].host = "v1";
+        virtualhosts[1].aliases = new String[2];
+        virtualhosts[1].aliases[0] = "alias0v1";
+        virtualhosts[1].aliases[1] = "alias1v1";
+        virtualhosts[1].servletname = "MyTest";
+        virtualhosts[1].context = "test4";
+        
+        
+        // Add /myapp1 /myapp2 applications instead ROOT
+       	String [] webapps = new String[2];
+       	webapps[0] = "myapp1";
+       	webapps[1] = "myapp2";
+
+        
+        myAliases(Aliases, Aliases2, virtualhosts, webapps);
+    }
+	
     
     /**
      *  Common Test for Aliases
@@ -277,8 +320,12 @@ public class TestAliases extends TestCase {
         }
         
         // Test the other nodes
-        if (virtualhosts != null)
-            testVirtualHosts(virtualhosts);
+        if (virtualhosts != null) {
+        	if (virtualhosts.length == 2)
+        		test2VirtualHosts(virtualhosts, service, service2);
+        	else
+        		testVirtualHosts(virtualhosts);
+        }
 
         // Stop the server or services.
         try {
@@ -313,7 +360,7 @@ public class TestAliases extends TestCase {
 			// Wait for it.
 			boolean clienterror = false;
 			try {
-				if (client.runit("/" + virtualhosts[i].host + "/MyCount", 10, false, true) != 0)
+				if (client.runit("/" + virtualhosts[i].context + "/" + virtualhosts[i].servletname, 10, false, true) != 0)
 					clienterror = true;
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -325,25 +372,110 @@ public class TestAliases extends TestCase {
 		}
 		
 	}
+	
+	/*
+	 * Tests:
+	 * v1 v1 app1 VirtualHost[0]
+	 * v2 v1 app2 VirtualHost[1]
+	 */
+	private void test2VirtualHosts(VirtualHost[] virtualhosts, JBossWeb service, JBossWeb service2 ) {
+		Client client = new Client();
+		client.setVirtualHost(virtualhosts[0].host);
+		// Wait for it.
+		boolean clienterror = false;
+		try {
+			if (client.runit("/" + virtualhosts[0].context + "/" + virtualhosts[0].servletname, 10, false, true) != 0)
+				clienterror = true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			clienterror = true;
+		}
+		if (clienterror)
+			fail("Client failed (" + virtualhosts[0].host + ")");
+			
+		// Now try the app2 on VirtualHost[0]
+		client = new Client();
+		client.setVirtualHost(virtualhosts[0].host);
+		// Wait for it.
+		clienterror = false;
+		try {
+			if (client.runit("/" + virtualhosts[0].context + "/" + virtualhosts[1].servletname, 10, false, true) != 0) {
+				// Make sure the answer comes from JBossWeb
+				if (client.getResponse().indexOf("JBoss Web") ==-1)
+					fail("Got 404 from httpd");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			clienterror = true;
+		}
+		if (clienterror)
+			fail("Client failed (" + virtualhosts[0].host + ")");
+		
+		// Now stop the context on one virtuahost
+		if (virtualhosts[1].addtofirst)
+			service.removeContext("/" + virtualhosts[1].context, virtualhosts[1].host);
+		else
+			service2.removeContext("/" + virtualhosts[1].context, virtualhosts[1].host);
+		
+		// Now try the app2 on VirtualHost[1]
+		client = new Client();
+		client.setVirtualHost(virtualhosts[1].host);
+		// Wait for it.
+		clienterror = false;
+		try {
+			if (client.runit("/" + virtualhosts[1].context + "/" + virtualhosts[1].servletname, 10, false, true) != 0) {
+				// Make sure the answer comes from httpd
+				if (client.getResponse().indexOf("JBoss Web") ==-1)
+					clienterror = true;
+				else
+					fail("Got 404 from JBoss Web");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			clienterror = true;
+		}
+		if (!clienterror)
+			fail("Client should have failed (" + virtualhosts[1].host + ")");
+		
+	
+		client = new Client();
+		client.setVirtualHost(virtualhosts[0].host);
+		// Wait for it.
+		clienterror = false;
+		try {
+			if (client.runit("/" + virtualhosts[0].context + "/" + virtualhosts[0].servletname, 10, false, true) != 0)
+				clienterror = true;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			clienterror = true;
+		}
+		if (clienterror)
+			fail("Client failed (" + virtualhosts[0].host + ")");
+			
+		
+	}
+	
 
 	private void addVirtualHosts(JBossWeb service, JBossWeb service2, VirtualHost[] virtualhosts) throws IOException {
 		for (int i=0; i< virtualhosts.length; i++) {
 			if (virtualhosts[i].addtofirst) {
 				service.AddHost( virtualhosts[i].host,  virtualhosts[i].aliases);
-				String path = "/"+virtualhosts[i].host;
-				service.AddContext(path, path);
+				String path = "/"+virtualhosts[i].context;
+				service.AddContext(path, path, virtualhosts[i].servletname, false, virtualhosts[i].host);
 			} else {
 				service2.AddHost( virtualhosts[i].host,  virtualhosts[i].aliases);
-				String path = "/"+virtualhosts[i].host;
-				service2.AddContext(path, path);				
+				String path = "/"+virtualhosts[i].context;
+				service2.AddContext(path, path, virtualhosts[i].servletname, false, virtualhosts[i].host);				
 			}
 		}
 		
 	}
 	public class VirtualHost {
-		String host;
-		String [] aliases;
-		boolean addtofirst;
+		String host;        // Name of the Host = 1 first Alias.
+		String [] aliases;  // Alias for the Host.
+		boolean addtofirst; // node (well service) to add the virtualhost and context.
+		String servletname; // Servlet to map. (MyCount or MyTest)
+		String context;     // context where the Servlet is deployed.
 	}
 
 }
