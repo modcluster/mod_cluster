@@ -48,7 +48,7 @@ public class TestBaseJgroups extends TestCase {
     public void testBase() {
 
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         ModClusterService cluster = null;
         JBossWeb service = null;
 
@@ -57,7 +57,7 @@ public class TestBaseJgroups extends TestCase {
             service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
             server.addService(service);
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
         } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");

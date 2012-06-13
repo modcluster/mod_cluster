@@ -40,8 +40,6 @@ import org.apache.catalina.core.StandardServer;
 
 public class Test_273 extends TestCase {
 
-    StandardServer server = null;
-
     /* Test failAppover */
     public void test_273() {
         System.out.println("Test_273 Started");
@@ -52,7 +50,7 @@ public class Test_273 extends TestCase {
 
     private void test_273(boolean stickySessionForce) {
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
@@ -71,7 +69,7 @@ public class Test_273 extends TestCase {
             service2.AddContext("/", "/ROOT");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, stickySessionForce, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, stickySessionForce, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

@@ -52,7 +52,7 @@ public class TestChunkedMCPM extends TestCase {
         ModClusterService lifecycle = null;
 
         System.out.println("TestChunkedMCPM Started");
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         for (int i=0; i<numbnodes; i++) {
             try {
                 String name = "node" + i;
@@ -67,7 +67,7 @@ public class TestChunkedMCPM extends TestCase {
             }
         }
 
-        lifecycle = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+        lifecycle = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
 
         // start the server thread.
         ServerThread wait = new ServerThread(3000, server);

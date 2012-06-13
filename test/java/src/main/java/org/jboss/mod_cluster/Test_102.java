@@ -43,7 +43,7 @@ public class  Test_102 extends TestCase {
 
     public void test_102() {
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         ModClusterService cluster = null;
 
@@ -52,7 +52,7 @@ public class  Test_102 extends TestCase {
             service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
             server.addService(service);
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
         } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");

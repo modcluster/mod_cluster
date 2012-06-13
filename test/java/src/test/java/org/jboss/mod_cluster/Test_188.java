@@ -40,13 +40,11 @@ import org.apache.catalina.core.StandardServer;
 
 public class Test_188 extends TestCase {
 
-    StandardServer server = null;
-
     /* Test failAppover */
     public void test_188() {
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
@@ -66,7 +64,7 @@ public class Test_188 extends TestCase {
             service2.AddContext("/", "/ROOT");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

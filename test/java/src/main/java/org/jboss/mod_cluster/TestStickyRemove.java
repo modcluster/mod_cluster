@@ -40,13 +40,11 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestStickyRemove extends TestCase {
 
-    StandardServer server = null;
-
     /* Test failover */
     public void testStickyRemove() {
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
@@ -64,7 +62,7 @@ public class TestStickyRemove extends TestCase {
             connector2 = service2.addConnector(8889);
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, true, false, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, true, false, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

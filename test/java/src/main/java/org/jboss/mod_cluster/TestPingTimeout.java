@@ -51,7 +51,7 @@ public class TestPingTimeout extends TestCase {
     public void testPingTimeout() {
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         Connector connector = null;
         ModClusterService cluster = null;
@@ -62,7 +62,7 @@ public class TestPingTimeout extends TestCase {
             service.AddContext("/test", "/test");
             server.addService(service);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

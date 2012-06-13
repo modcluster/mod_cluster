@@ -49,13 +49,7 @@ import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 
 public class Maintest {
 
-	static StandardServer server = null;
 	static CatalinaEventHandlerAdapter adapter = null;
-    static StandardServer getServer() {
-    	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
-    	server = new StandardServer();
-        return server;
-    }
     
     /* Print the service and connectors the server knows */
     static void listServices(StandardServer server) {
@@ -71,17 +65,7 @@ public class Maintest {
                 }
             }
     }
-    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl) {
-    	return createClusterListener(groupa, groupp, ssl, null);
-    }
-    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain) {
-    	return createClusterListener(groupa, groupp, ssl, domain, true, false, true, null);
-    }
-    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
-                                                   boolean stickySession, boolean stickySessionRemove,
-                                                   boolean stickySessionForce) {
-    	return createClusterListener(groupa, groupp, ssl, domain, stickySession, stickySessionRemove, stickySessionForce, null);
-    }
+ 
     /* Create the listener
      * server: the server to use.
      * groupa: multi address to receive from httpd.
@@ -100,6 +84,7 @@ public class Maintest {
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey,
                                                    String balancer, String loadBalancingGroup) {
+    	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         ModClusterConfig config = new ModClusterConfig();
         config.setAdvertiseGroupAddress(groupa);
         config.setAdvertisePort(groupp);
@@ -131,14 +116,6 @@ public class Maintest {
     	return createClusterListener(server, groupa, groupp, ssl, domain,
                 stickySession, stickySessionRemove,
                 stickySessionForce, advertiseSecurityKey, null, null);
-    }
-
-    static ModClusterService createClusterListener(String groupa, int groupp, boolean ssl, String domain,
-                                                   boolean stickySession, boolean stickySessionRemove,
-                                                   boolean stickySessionForce, String advertiseSecurityKey) {
-         return createClusterListener(getServer(), groupa, groupp, ssl, domain,
-                                                   stickySession, stickySessionRemove,
-                                                   stickySessionForce, advertiseSecurityKey);
     }
     
     /*

@@ -41,7 +41,7 @@ public class  Test_ReWrite extends TestCase {
 
     public void test_ReWrite() {
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         ModClusterService cluster = null;
 
@@ -55,7 +55,7 @@ public class  Test_ReWrite extends TestCase {
             service.addConnector(8011);
             service.addConnector(8080, "http");
             server.addService(service);
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
         } catch(Exception ex) {
             ex.printStackTrace();
             fail("can't start service");

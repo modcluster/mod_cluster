@@ -40,8 +40,6 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestStickyForce extends TestCase {
 
-    StandardServer server = null;
-
     /* Test failover */
     public void testStickyForce() {
 
@@ -49,7 +47,7 @@ public class TestStickyForce extends TestCase {
         Maintest.testPort(8011);
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
@@ -68,7 +66,7 @@ public class TestStickyForce extends TestCase {
             connector2.setProperty("connectionTimeout", "3000");
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

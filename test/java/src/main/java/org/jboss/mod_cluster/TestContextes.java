@@ -42,13 +42,11 @@ import org.jboss.modcluster.ModClusterService;
 
 public class TestContextes extends TestCase {
 
-    StandardServer server = null;
-
     /* Test that 150 contexts are created and working... */
     public void testContextes() {
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
@@ -63,7 +61,7 @@ public class TestContextes extends TestCase {
             service.AddContext("/test" + i , "/test" + i, "MyCount", false);
             server.addService(service);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true);
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, null);
 
         } catch(Exception ex) {
             ex.printStackTrace();

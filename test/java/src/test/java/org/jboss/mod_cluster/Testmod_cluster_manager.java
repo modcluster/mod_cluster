@@ -44,7 +44,7 @@ public class Testmod_cluster_manager extends TestCase {
     public void testmod_cluster_manager() {
 
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         ModClusterService cluster = null;
@@ -60,7 +60,7 @@ public class Testmod_cluster_manager extends TestCase {
             service2.addConnector(8010);
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

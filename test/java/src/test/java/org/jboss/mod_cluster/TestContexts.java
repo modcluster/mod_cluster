@@ -40,8 +40,6 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestContexts extends TestCase {
 
-    StandardServer server = null;
-
     /* Test Context handling:
      * / 
      * /test
@@ -51,7 +49,7 @@ public class TestContexts extends TestCase {
     public void testContexts() {
 
         boolean clienterror = false;
-        server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         Connector connector = null;
         ModClusterService cluster = null;
@@ -63,7 +61,7 @@ public class TestContexts extends TestCase {
             service.AddContext("/testtest", "/testtest", "MyTest", false);
             server.addService(service);
 
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();

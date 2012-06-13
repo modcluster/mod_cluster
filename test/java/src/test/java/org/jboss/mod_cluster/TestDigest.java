@@ -47,7 +47,7 @@ public class TestDigest extends TestCase {
     public void testDigest() {
 
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         ModClusterService cluster = null;
 
@@ -58,7 +58,7 @@ public class TestDigest extends TestCase {
             service.addConnector(8011);
             server.addService(service);
  
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();
@@ -100,7 +100,7 @@ public class TestDigest extends TestCase {
             service.addConnector(8011);
             server.addService(service);
  
-            cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "public");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "public");
 
         } catch(Exception ex) {
             ex.printStackTrace();

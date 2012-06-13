@@ -69,7 +69,7 @@ public class StartJBossWeb {
             service.addConnector(port);
             server.addService(service);
  
-            ModClusterService cluster = Maintest.createClusterListener("224.0.1.105", 23364, false, domain, true, false, true, "secret");
+            ModClusterService cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, domain, true, false, true, "secret");
 
             server.start();
 

@@ -60,7 +60,7 @@ public class ClientBasicAuthen {
     public static String test(boolean nat, InputStream fd) {
 
         boolean clienterror = false;
-        StandardServer server = Maintest.getServer();
+        StandardServer server = new StandardServer();
         JBossWeb service = null;
         ModClusterService cluster = null;
         try {
@@ -75,7 +75,7 @@ public class ClientBasicAuthen {
             service.addWAR("JBWEB-117.war", "node1");
             server.addService(service);
  
-            cluster =  Maintest.createClusterListener("224.0.1.105", 23364, false, null, true, false, true, "secret");
+            cluster =  Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
 
             // Add AprLifecycleListener.
             if (nat) {
