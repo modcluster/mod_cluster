@@ -2254,6 +2254,7 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
     apr_pool_t *pool;
+    apr_sleep(apr_time_make(1, 0)); /* wait before starting */
     for (;;) {
         server_rec *s = main_server;
         void *sconf = s->module_config;
