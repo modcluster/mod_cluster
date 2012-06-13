@@ -1,0 +1,11 @@
+policy_module(mod_cluster, 1.0)
+
+gen_tunable(httpd_mod_cluster, true)
+
+require {
+        type httpd_t;
+}
+
+tunable_policy(`httpd_mod_cluster', `
+corenet_udp_bind_http_port(httpd_t)
+	')

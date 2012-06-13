@@ -1,0 +1,25 @@
+to compile:
+make -f /usr/share/selinux/devel/Makefile
+to install:
+semodule -i mod_cluster.pp
+to remove:
+semodule  -r mod_cluster
+
+for the listen and the advertise:
+to add:
+  semanage port -a -t http_port_t -p udp 23364
+  semanage port -a -t http_port_t -p tcp 6666
+to remove
+  semanage port -d -t http_port_t -p udp 23364
+  semanage port -d -t http_port_t -p tcp 6666
+
+for the shared memory tables:
+MemManagerFile /var/cache/mod_cluster
+mkdir /var/cache/mod_cluster
+chcon -v --type=httpd_cache_t /var/cache/mod_cluster
+chcon -v --user=system_u /var/cache/mod_cluster
+
+Note that the permissions should follow the notice you find in error_log:
++++
+[Wed Jun 13 09:35:59 2012] [notice] SELinux policy enabled; httpd running as context unconfined_u:system_r:httpd_t:s0
++++
