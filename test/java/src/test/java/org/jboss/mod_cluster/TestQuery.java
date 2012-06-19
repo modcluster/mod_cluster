@@ -54,6 +54,7 @@ public class TestQuery extends TestCase {
         Connector connector = null;
         ModClusterService cluster = null;
         System.out.println("TestQuery Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
             String [] Aliases = new String[1];
             Aliases[0] = "cluster.domain.info";

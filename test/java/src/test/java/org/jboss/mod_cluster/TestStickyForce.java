@@ -54,6 +54,7 @@ public class TestStickyForce extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestStickyForce Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
 
             service = new JBossWeb("sticky3",  "localhost");

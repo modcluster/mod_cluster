@@ -46,6 +46,7 @@ public class  Test_ReWrite extends TestCase {
         ModClusterService cluster = null;
 
         System.out.println("Test_ReWrite Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
             String [] Aliases = new String[3];
             Aliases[0] = "cluster.domain.com";

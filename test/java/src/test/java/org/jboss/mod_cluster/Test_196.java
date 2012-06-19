@@ -51,6 +51,7 @@ public class Test_196 extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("Test_196 Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
             // server = (StandardServer) ServerFactory.getServer();
 

@@ -51,6 +51,7 @@ public class TestPing extends TestCase {
         ModClusterService cluster = null;
 
         System.out.println("Testping Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
 
             service = new JBossWeb("node1",  "localhost");

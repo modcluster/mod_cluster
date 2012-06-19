@@ -52,6 +52,7 @@ public class TestChunkedMCPM extends TestCase {
         ModClusterService lifecycle = null;
 
         System.out.println("TestChunkedMCPM Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         StandardServer server = new StandardServer();
         for (int i=0; i<numbnodes; i++) {
             try {

@@ -49,8 +49,8 @@ import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 
 public class Maintest {
 
-	static CatalinaEventHandlerAdapter adapter = null;
-    
+    static CatalinaEventHandlerAdapter adapter = null;
+
     /* Print the service and connectors the server knows */
     static void listServices(StandardServer server) {
             Service[] services = server.findServices();
@@ -84,7 +84,6 @@ public class Maintest {
                                                    boolean stickySession, boolean stickySessionRemove,
                                                    boolean stickySessionForce, String advertiseSecurityKey,
                                                    String balancer, String loadBalancingGroup) {
-    	System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         ModClusterConfig config = new ModClusterConfig();
         config.setAdvertiseGroupAddress(groupa);
         config.setAdvertisePort(groupp);

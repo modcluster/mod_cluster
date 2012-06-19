@@ -52,6 +52,7 @@ public class TestDigest extends TestCase {
         ModClusterService cluster = null;
 
         System.out.println("TestDigest Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
 
             service = new JBossWeb("node1",  "localhost");
