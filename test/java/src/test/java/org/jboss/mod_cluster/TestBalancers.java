@@ -68,6 +68,9 @@ public class TestBalancers extends TestCase {
         ModClusterService cluster2 = null;
 
         System.out.println("TestBalancers Started");
+
+        Maintest.waitForFreePorts(8011, 2);
+
         try {
 
         	if (testAlias) {

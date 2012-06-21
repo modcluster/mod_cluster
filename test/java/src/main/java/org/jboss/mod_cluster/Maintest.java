@@ -33,6 +33,7 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 
 import java.lang.Exception;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -349,5 +350,30 @@ public class Maintest {
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
+    }
+    static void waitForFreePorts(int start, int numbnodes) {
+    	
+    	for (;;) {
+    		int i;
+    		for (i=0; i<numbnodes; i++) {
+    			try {
+    				ServerSocket s = new ServerSocket(start+i);
+    				s.close();
+    			}  catch (Exception e) {
+    				System.out.println("port: " + (start + i) + " " + e.getMessage());
+    				break;
+    			}
+    		}
+    		if (i == numbnodes)
+    			break;
+    		else {
+    			// wait one minute and try again.
+    			try {
+    				Thread.sleep(60000);
+    			} catch (Exception e) {
+    			}
+    		}
+
+    	}
     }
 }
