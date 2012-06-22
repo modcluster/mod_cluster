@@ -174,6 +174,9 @@ public class TestAliases extends TestCase {
         JBossWeb service2 = null;
         ModClusterService cluster = null;
         System.out.println("TestAliases Started");
+
+        Maintest.waitForFreePorts(8013, 2);
+
         try {
  
         	if (webapps != null)

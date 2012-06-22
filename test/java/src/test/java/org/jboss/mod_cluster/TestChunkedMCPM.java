@@ -172,5 +172,7 @@ public class TestChunkedMCPM extends TestCase {
             fail("Client error");
         System.out.println("TestChunkedMCPM Done");
 
+        Maintest.waitForFreePorts(8010, numbnodes);
+
     }
 }

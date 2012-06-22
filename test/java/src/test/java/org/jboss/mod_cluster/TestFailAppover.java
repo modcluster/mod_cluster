@@ -51,6 +51,9 @@ public class TestFailAppover extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestFailAppover Started");
+
+        Maintest.waitForFreePorts(8013, 2);
+
         System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
 

@@ -45,7 +45,9 @@ import org.apache.commons.httpclient.HttpException;
 public class TestBaseJgroups extends TestCase {
 
     /* Test that the sessions are really sticky */
-    // public void testBase() {
+    public void testBase() {
+        System.out.println("TestBaseJgroups doing nothing for the moment...");
+    }
     public void NotestBase() {
 
         boolean clienterror = false;
