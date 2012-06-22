@@ -353,6 +353,7 @@ public class Maintest {
     }
     static void waitForFreePorts(int start, int numbnodes) {
     	
+    	int count = 0;
     	for (;;) {
     		int i;
     		for (i=0; i<numbnodes; i++) {
@@ -369,9 +370,13 @@ public class Maintest {
     		else {
     			// wait one minute and try again.
     			try {
+    				System.gc();
     				Thread.sleep(60000);
     			} catch (Exception e) {
     			}
+    			count++;
+    			if (count == 10)
+    				break; // Give up after 10 minutes....
     		}
 
     	}
