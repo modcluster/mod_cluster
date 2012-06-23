@@ -15,27 +15,27 @@
 
    <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-catalina</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-catalina-standalone</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.jboss.mod_cluster</groupId>
             <artifactId>mod_cluster-container-jbossweb</artifactId>
             <version>${project.version}</version>
         </dependency>
