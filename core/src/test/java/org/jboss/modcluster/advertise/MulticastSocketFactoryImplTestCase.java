@@ -52,23 +52,6 @@ public class MulticastSocketFactoryImplTestCase {
         this.testMulticastSocket(false);
     }
 
-    @Test
-    public void testMulticastSocketAllowCrossTalk() throws IOException {
-        String os = System.getProperty("os.name");
-
-        // Validate cross-talking behavior on linux only
-        if ((os != null)
-                && os.trim().toLowerCase().startsWith("hp")) {
-            System.setProperty("os.name", "OtherOS");
-
-            try {
-                this.testMulticastSocket(true);
-            } finally {
-                System.setProperty("os.name", os);
-            }
-        }
-    }
-
     public void testMulticastSocket(boolean allowCrossTalking) throws IOException {
         InetAddress address = InetAddress.getByName(GROUP1);
 
