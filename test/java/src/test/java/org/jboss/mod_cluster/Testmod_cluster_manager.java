@@ -50,6 +50,9 @@ public class Testmod_cluster_manager extends TestCase {
         ModClusterService cluster = null;
 
         System.out.println("Testmod_cluster_manager Started");
+
+        Maintest.waitForFreePorts(8010, 2);
+
         System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
 
