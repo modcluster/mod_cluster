@@ -58,7 +58,7 @@ public class MulticastSocketFactoryImplTestCase {
 
         // Validate cross-talking behavior on linux only
         if ((os != null)
-                && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("hp"))) {
+                && os.trim().toLowerCase().startsWith("hp")) {
             System.setProperty("os.name", "OtherOS");
 
             try {
@@ -91,11 +91,9 @@ public class MulticastSocketFactoryImplTestCase {
 
     public void testMulticastSocket(MulticastSocket receiveSocket, InetAddress sendAddress, boolean expectSuccessfulRead)
             throws IOException {
-        MulticastSocket sendSocket = new MulticastSocketFactoryImpl().createMulticastSocket(sendAddress, PORT);
+        MulticastSocket sendSocket =  new MulticastSocket();
 
         try {
-            sendSocket.joinGroup(sendAddress);
-
             String data = "1234567890";
 
             byte[] buffer = data.getBytes();
@@ -122,7 +120,6 @@ public class MulticastSocketFactoryImplTestCase {
                 Assert.assertFalse(expectSuccessfulRead);
             }
 
-            sendSocket.leaveGroup(sendAddress);
         } finally {
             sendSocket.close();
         }
