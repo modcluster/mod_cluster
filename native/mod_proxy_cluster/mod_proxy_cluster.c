@@ -2135,6 +2135,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     }
     else if (load == -1) {
         worker->s->status |= PROXY_WORKER_IN_ERROR;
+        worker->s->lbfactor = -1;
     }
     else if (load == 0) {
         /*
