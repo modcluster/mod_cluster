@@ -49,6 +49,7 @@ public class TestAliasesSize extends TestCase {
         Connector connector = null;
         ModClusterService cluster = null;
         System.out.println("TestAliasesSize Started");
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
             String [] Aliases = new String[19];
             /* HOSTALIASZ is 100 that should be enough */
