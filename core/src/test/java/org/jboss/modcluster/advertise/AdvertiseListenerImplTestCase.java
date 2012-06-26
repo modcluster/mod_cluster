@@ -66,7 +66,7 @@ public class AdvertiseListenerImplTestCase {
 
     private MCMPHandler mcmpHandler = mock(MCMPHandler.class);
     private AdvertiseConfiguration config = mock(AdvertiseConfiguration.class);
-    private MulticastSocketFactory socketFactory = new MulticastSocketFactoryImpl();
+    private MulticastSocketFactory socketFactory = mock(MulticastSocketFactory.class);
 
     private MulticastSocket socket;
     private InetAddress groupAddress;
@@ -82,7 +82,7 @@ public class AdvertiseListenerImplTestCase {
         this.listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.socketFactory);
 
         this.groupAddress = InetAddress.getByName(ADVERTISE_GROUP);
-        this.socket = new MulticastSocket();
+        this.socket = new MulticastSocketFactoryImpl().createMulticastSocket(this.groupAddress, ADVERTISE_PORT);
     }
 
     @After
@@ -94,9 +94,13 @@ public class AdvertiseListenerImplTestCase {
 
     @Test
     public void testBasicOperation() throws IOException {
+        ArgumentCaptor<InetAddress> capturedAddress = ArgumentCaptor.forClass(InetAddress.class);
+
+        when(this.socketFactory.createMulticastSocket(capturedAddress.capture(), eq(ADVERTISE_PORT))).thenReturn(this.socket);
 
         this.listener.start();
 
+        assertEquals(ADVERTISE_GROUP, capturedAddress.getValue().getHostAddress());
         assertFalse(this.socket.isClosed());
 
         ArgumentCaptor<InetSocketAddress> capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
@@ -200,5 +204,6 @@ public class AdvertiseListenerImplTestCase {
 
         this.listener.destroy();
 
+        assertTrue(this.socket.isClosed());
     }
 }

@@ -52,6 +52,23 @@ public class MulticastSocketFactoryImplTestCase {
         this.testMulticastSocket(false);
     }
 
+    @Test
+    public void testMulticastSocketAllowCrossTalk() throws IOException {
+        String os = System.getProperty("os.name");
+
+        // Validate cross-talking behavior on linux only
+        if ((os != null)
+                && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("hp"))) {
+            System.setProperty("os.name", "OtherOS");
+
+            try {
+                this.testMulticastSocket(true);
+            } finally {
+                System.setProperty("os.name", os);
+            }
+        }
+    }
+
     public void testMulticastSocket(boolean allowCrossTalking) throws IOException {
         InetAddress address = InetAddress.getByName(GROUP1);
 
@@ -74,9 +91,11 @@ public class MulticastSocketFactoryImplTestCase {
 
     public void testMulticastSocket(MulticastSocket receiveSocket, InetAddress sendAddress, boolean expectSuccessfulRead)
             throws IOException {
-        MulticastSocket sendSocket =  new MulticastSocket();
+        MulticastSocket sendSocket = new MulticastSocketFactoryImpl().createMulticastSocket(sendAddress, PORT);
 
         try {
+            sendSocket.joinGroup(sendAddress);
+
             String data = "1234567890";
 
             byte[] buffer = data.getBytes();
@@ -103,6 +122,7 @@ public class MulticastSocketFactoryImplTestCase {
                 Assert.assertFalse(expectSuccessfulRead);
             }
 
+            sendSocket.leaveGroup(sendAddress);
         } finally {
             sendSocket.close();
         }
