@@ -56,10 +56,13 @@ public class TestPingTimeout extends TestCase {
         Connector connector = null;
         ModClusterService cluster = null;
         System.out.println("TestPingTimeout Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         try {
             service = new JBossWeb("node3",  "localhost", false, "ROOT");
             connector = service.addConnector(8013);
-            service.AddContext("/test", "/test");
+            service.AddContext("/test", "/test", "MyTest", false);
             server.addService(service);
 
             cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
