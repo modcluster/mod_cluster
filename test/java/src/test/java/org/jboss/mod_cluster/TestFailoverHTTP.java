@@ -51,6 +51,9 @@ public class TestFailoverHTTP extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestFailoverHTTP Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         try {
             // server = (StandardServer) ServerFactory.getServer();
 
@@ -85,7 +88,7 @@ public class TestFailoverHTTP extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -108,14 +111,13 @@ public class TestFailoverHTTP extends TestCase {
         } else {
             node = "node4";
         }
-        if (servicestop != null) {
-            try {
-                 server.removeService(servicestop);
-                // connector.stop();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                fail("can't stop service");
-            }
+
+        try {
+             server.removeService(servicestop);
+            // connector.stop();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("can't stop service");
         }
 
         // Run a test on it. (it waits until httpd as received the nodes information).
@@ -145,7 +147,6 @@ public class TestFailoverHTTP extends TestCase {
             wait.stopit();
             wait.join();
             servicestop =null;
-            System.gc();
             server.removeService(servicekeep);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -154,9 +155,9 @@ public class TestFailoverHTTP extends TestCase {
         // Wait until httpd as received the stop messages.
         Maintest.testPort(8011);
         Maintest.testPort(8010);
-        if (!Maintest.TestForNodes(cluster, null))
-            fail("Can't stop nodes");
-         Maintest.StopClusterListener();
+
+        Maintest.StopClusterListener();
+        System.gc();
 
         // Test client result.
         if (clienterror)
