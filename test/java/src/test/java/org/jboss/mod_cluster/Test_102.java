@@ -39,7 +39,7 @@ public class  Test_102 extends TestCase {
 
     /* Test that newly created httpd process work ok without sessions */
 
-    String url = "http://localhost:8000/ROOT/MyTest";
+    String url = "http://localhost:8000/MyTest";
 
     public void test_102() {
         boolean clienterror = false;
@@ -48,6 +48,9 @@ public class  Test_102 extends TestCase {
         ModClusterService cluster = null;
 
         System.out.println("Test_102 Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         try {
             service = new JBossWeb("node1",  "localhost");
             service.addConnector(8011);
