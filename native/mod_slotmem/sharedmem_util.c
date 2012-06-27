@@ -506,7 +506,6 @@ static apr_status_t ap_slotmem_alloc(ap_slotmem_t *score, int *item_id, void**me
     int ff;
     int *ident;
     apr_status_t rv;
-    ap_slotmem_lock(score);
     ident = score->ident;
     ff = ident[0];
     if (ff > score->num) {
@@ -519,7 +518,6 @@ static apr_status_t ap_slotmem_alloc(ap_slotmem_t *score, int *item_id, void**me
         rv = APR_SUCCESS;
     }
     
-    ap_slotmem_unlock(score);
     return rv;
 }
 static apr_status_t ap_slotmem_free(ap_slotmem_t *score, int item_id, void*mem)

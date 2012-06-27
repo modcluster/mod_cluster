@@ -95,18 +95,22 @@ apr_status_t insert_update_host(mem_t *s, hostinfo_t *host)
     int ident;
 
     host->id = 0;
+    s->storage->ap_slotmem_lock(s->slotmem);
     rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &host, s->p);
     if (host->id != 0 && rv == APR_SUCCESS) {
+        s->storage->ap_slotmem_unlock(s->slotmem);
         return APR_SUCCESS; /* updated */
     }
 
     /* we have to insert it */
     rv = s->storage->ap_slotmem_alloc(s->slotmem, &ident, (void **) &ou);
     if (rv != APR_SUCCESS) {
+        s->storage->ap_slotmem_unlock(s->slotmem);
         return rv;
     }
     memcpy(ou, host, sizeof(hostinfo_t));
     ou->id = ident;
+    s->storage->ap_slotmem_unlock(s->slotmem);
     ou->updatetime = apr_time_sec(apr_time_now());
 
     return APR_SUCCESS;

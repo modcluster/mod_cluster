@@ -120,8 +120,10 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
     apr_size_t vsize = sizeof(void *);
 
     node->mess.id = 0;
+    s->storage->ap_slotmem_lock(s->slotmem);
     rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &node, s->p);
     if (node->mess.id != 0 && rv == APR_SUCCESS) {
+        s->storage->ap_slotmem_unlock(s->slotmem);
         *id = node->mess.id;
         return APR_SUCCESS; /* updated */
     }
@@ -129,11 +131,13 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
     /* we have to insert it */
     rv = s->storage->ap_slotmem_alloc(s->slotmem, &ident, (void **) &ou);
     if (rv != APR_SUCCESS) {
+        s->storage->ap_slotmem_unlock(s->slotmem);
         return rv;
     }
     memcpy(ou, node, sizeof(nodeinfo_t));
     ou->mess.id = ident;
     *id = ident;
+    s->storage->ap_slotmem_unlock(s->slotmem);
     ou->updatetime = apr_time_now();
 
     /* set of offset to the proxy_worker_stat */
@@ -244,7 +248,10 @@ int get_ids_used_node(mem_t *s, int *ids)
  */
 int get_max_size_node(mem_t *s)
 {
-    return (s->storage->ap_slotmem_get_max_size(s->slotmem));
+    if (s->storage == NULL)
+        return 0;
+    else
+        return (s->storage->ap_slotmem_get_max_size(s->slotmem));
 }
 
 /**
