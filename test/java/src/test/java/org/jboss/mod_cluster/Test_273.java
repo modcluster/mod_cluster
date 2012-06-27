@@ -51,11 +51,16 @@ public class Test_273 extends TestCase {
     private void test_273(boolean stickySessionForce) {
         boolean clienterror = false;
         StandardServer server = new StandardServer();
+        StandardServer server2 = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
         Connector connector = null;
         Connector connector2 = null;
         ModClusterService cluster = null;
+        ModClusterService cluster2 = null;
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         try {
             // server = (StandardServer) ServerFactory.getServer();
 
@@ -67,9 +72,10 @@ public class Test_273 extends TestCase {
             service2 = new JBossWeb("node4",  "localhost", false, "test");
             connector2 = service2.addConnector(8014);
             service2.AddContext("/", "/ROOT");
-            server.addService(service2);
+            server2.addService(service2);
 
-            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, stickySessionForce, "secret");
+            cluster  = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, stickySessionForce, "secret");
+            cluster2 = Maintest.createClusterListener(server2, "224.0.1.105", 23364, false, "dom2", true, false, stickySessionForce, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();
@@ -77,8 +83,10 @@ public class Test_273 extends TestCase {
         }
 
         // start the server thread.
-        ServerThread wait = new ServerThread(3000, server);
+        ServerThread wait  = new ServerThread(3000, server);
         wait.start();
+        ServerThread wait2 = new ServerThread(3000, server2);
+        wait2.start();
 
         // Wait until httpd answers to ping and the 2 nodes are up.
         String [] nodes = new String[2];
@@ -142,7 +150,13 @@ public class Test_273 extends TestCase {
             wait.stopit();
             wait.join();
             server.removeService(service);
-            server.removeService(service2);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+        try {
+            wait2.stopit();
+            wait2.join();
+            server2.removeService(service2);
         } catch (InterruptedException ex) {
             ex.printStackTrace();
         }
@@ -157,6 +171,7 @@ public class Test_273 extends TestCase {
 
         Maintest.testPort(8013);
         Maintest.testPort(8014);
+        System.gc();
 
     }
 }

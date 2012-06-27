@@ -1896,13 +1896,13 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                 "proxy: Entering byrequests for CLUSTER (%s)",
+                 "proxy: Entering byrequests for CLUSTER (%s) failoverdomain:%d",
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-                 balancer->s->name
+                 balancer->s->name,
 #else
-                 balancer->name
+                 balancer->name,
 #endif
-                 );
+                 failoverdomain);
 #endif
 
     /* create workers for new nodes */
@@ -2003,9 +2003,9 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
         }
         if (mycandidate)
             break;
+        if (failoverdomain)
+             break; /* We only failover in the domain */
         if (checked_domain) {
-            if (failoverdomain)
-                break; /* We only failover in the domain */
             checked_standby = checking_standby++;
         }
         checked_domain++;
@@ -3318,6 +3318,10 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             return HTTP_SERVICE_UNAVAILABLE;
         } else {
             /* We try to to failover using another node in the domain */
+#if HAVE_CLUSTER_EX_DEBUG
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "mod_proxy_cluster: failover in domain");
+#endif
             failoverdomain = 1;
         }
     }
