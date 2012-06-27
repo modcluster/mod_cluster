@@ -51,6 +51,8 @@ public class TestStickyRemove extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestStickyRemove Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
         try {
             // server = (StandardServer) ServerFactory.getServer();
 
@@ -85,7 +87,7 @@ public class TestStickyRemove extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("/ROOT/MyCount", 10, false, true) != 0)
+            if (client.runit("/MyCount", 10, false, true) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
