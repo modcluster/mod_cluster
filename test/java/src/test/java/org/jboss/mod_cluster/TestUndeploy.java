@@ -51,6 +51,9 @@ public class TestUndeploy extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestUndeploy Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+        
         try {
 
             service = new JBossWeb("node3",  "localhost", false, "ROOT");
@@ -94,7 +97,7 @@ public class TestUndeploy extends TestCase {
 
         // Wait for it.
         try {
-            if (client.runit("http://" + proxy + "/ROOT/MyCount", 100, false, false) != 0)
+            if (client.runit("http://localhost:8000/MyCount", 100, false, false) != 0)
                 clienterror = true;
         } catch (Exception ex) {
             ex.printStackTrace();
