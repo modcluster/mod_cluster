@@ -115,17 +115,43 @@ public class ControlJBossWeb {
     public String getProxyInfo() throws IOException {
         out.println("getProxyInfo");
         out.flush();
+        return(readProxyCommandResponse(true));
+    }
+    public String getProxyAddress() throws IOException {
+        out.println("getProxyAddress");
+        out.flush();
+        return(readProxyCommandResponse(false));
+    }
+    public String readProxyCommandResponse(boolean concat) throws IOException {
         String line = bufferedreader.readLine();
-        int l;
-        if (line.startsWith("FAILED")) {
-            l = 1024; /* Enough ? */
-        } else {
-            l = Integer.parseInt(line);
+
+        /* throw again trace and other */
+        int l = -1;
+       
+        while (l == -1) { 
+            if (line.startsWith("FAILED")) {
+                l = 1024; /* Enough ? */
+                break;
+            } else {
+                try {
+                    l = Integer.parseInt(line);
+                } catch(Exception e) {
+                    l = -1;
+                    System.out.println(line);
+                }
+            }
+            if (l >= 0)
+                break;
+            line = bufferedreader.readLine();
         }
         String result = "";
-        while ((line = bufferedreader.readLine()) != null && result.length() < (l-2)) {
-           result = result.concat(line);
-           result = result.concat("\n");
+        int len = l;
+        if (!concat)
+            len = l-2;
+        while (result.length() < len && (line = bufferedreader.readLine()) != null) {
+            result = result.concat(line);
+            if (concat)
+                result = result.concat("\n");
         }
         if (l == 0)
             return null;

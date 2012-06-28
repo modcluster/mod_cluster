@@ -48,6 +48,7 @@ public class TestHang extends TestCase {
         ControlJBossWeb control = null;
 
         System.out.println("Hang Started");
+
         try {
             control = new ControlJBossWeb();
             control.newJBossWeb("node1",  "localhost");
@@ -87,6 +88,15 @@ public class TestHang extends TestCase {
             fail("can't find node1 running");
         }
 
+        String proxy = null;
+        try {
+            proxy = control.getProxyAddress();
+        }  catch (Exception ex) {
+            ex.printStackTrace();
+            fail("can't read proxy");
+        }
+
+        System.out.println("Checking proxy: " + proxy);
         try {
             // exit the jboss the node is crashed
             control.exit();
@@ -97,25 +107,17 @@ public class TestHang extends TestCase {
         }
 
         // Read the proxy from the result of getProxyInfo()
-        String [] records = result.split("\n");
-        String [] results = records[0].split(": \\[.*\\/");
-        String proxy = null;
-        if (results.length >=2 ) {
-            records = results[1].split("\\]");
-            proxy = records[0];
-        } else
-            fail("can't read proxy from " + result);
-
-        ManagerClient managerclient = null;
         try {
-            managerclient = new ManagerClient(proxy);
+            ManagerClient managerclient = new ManagerClient(proxy);
             int countinfo = 0;
             result = managerclient.getProxyInfo();
+            System.out.println("managerclient.getProxyInfo() " + result);
             String [] nodes = new String[1];
             nodes[0] = "node1";
             if (!Maintest.checkProxyInfo(result, nodes))
                 fail("can't find node");
             while (!Maintest.checkProxyInfo(result, null) && countinfo < 60) {
+                System.out.println("managerclient.getProxyInfo() " + result);
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
@@ -124,7 +126,7 @@ public class TestHang extends TestCase {
                 countinfo++;
                 result = managerclient.getProxyInfo();
             }
-            if (countinfo == 60)
+            if (countinfo == 80)
                 fail("node doesn't dispair");
 
         } catch(Exception ex) {

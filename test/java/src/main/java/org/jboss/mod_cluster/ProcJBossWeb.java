@@ -65,6 +65,8 @@ public class ProcJBossWeb {
 
         server = new StandardServer();
 
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         ServerThread wait = null;
         try {
             String line;
@@ -101,6 +103,22 @@ public class ProcJBossWeb {
                         System.out.println(result.length());
                         System.out.println(result);
                     }
+                    System.out.flush();
+                    continue;
+                } else if (cmd[0].compareToIgnoreCase("getProxyAddress") == 0) {
+                    String result = Maintest.getProxyAddress(cluster);
+                    if (result == null) {
+                        System.out.println("0");
+                        System.out.println();
+                    } else {
+                        System.out.println(result.length());
+                        System.out.println(result);
+                    }
+                    System.out.flush();
+                    continue;
+                } else {
+                    System.out.println("FAILED: wrong command");
+                    System.out.flush();
                     continue;
                 }
                 /* Done */
