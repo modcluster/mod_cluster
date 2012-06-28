@@ -53,6 +53,9 @@ public class TestContextes extends TestCase {
         Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestContextes Started");
+
+        System.setProperty("org.apache.catalina.core.StandardService.DELAY_CONNECTOR_STARTUP", "false");
+
         try {
 
             service = new JBossWeb("node3",  "localhost", false, "bad_one");
