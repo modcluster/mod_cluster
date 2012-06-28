@@ -2348,6 +2348,29 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
 {
     const char *userdata_key = "mod_cluster_init";
     void *data;
+    void *sconf = s->module_config;
+    proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
+    int sizew = conf->workers->elt_size;
+    int sizeb = conf->balancers->elt_size;
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+    if (sizew != sizeof(proxy_worker *) || sizeb != sizeof(proxy_balancer)) {
+#else
+    if (sizew != sizeof(proxy_worker) || sizeb != sizeof(proxy_balancer)) {
+#endif
+        ap_version_t version;
+        ap_get_server_revision(&version);
+
+        ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                     "httpd version %d.%d.%d mismatch detected", version.major, version.minor, version.patch);
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+#else
+        if (version.patch < 8) {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                         "httpd version %d.%d.%d too old", version.major, version.minor, version.patch);
+            return HTTP_INTERNAL_SERVER_ERROR;
+        }
+#endif
+    }
 
     apr_pool_userdata_get(&data, userdata_key, s->process->pool);
     if (data && sessionid_storage) {
