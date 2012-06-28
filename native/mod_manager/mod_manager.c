@@ -1450,6 +1450,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         in.node = node->mess.id;
         ou = read_context(contextstatsmem, &in);
         if (ou != NULL) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: STOP-APP nbrequests %d", ou->nbrequests);
             ap_set_content_type(r, "text/plain");
             ap_rprintf(r, "Type=STOP-APP-RSP&JvmRoute=%.*s&Alias=%.*s&Context=%.*s&Requests=%d",
                        (int) sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute,
@@ -1457,6 +1458,8 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
                        (int) sizeof(vhost->context), vhost->context,
                        ou->nbrequests);
             ap_rprintf(r, "\n");
+        } else {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: STOP-APP can't read_context");
         }
     }
     return NULL;
