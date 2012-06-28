@@ -763,8 +763,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         if (listener == null) {
             // Just send a STOP (for example with TC6 we don't have a listener)
-            this.stop(request);
-            return false;
+            int requests = this.stop(request);
+            return (requests == 0);
         }
 
         synchronized (listener) {
