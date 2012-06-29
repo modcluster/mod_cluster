@@ -665,7 +665,8 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
             ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
                           "add_balancer_node: Can't create lock for balancer");
         }
-        balancer->workers = apr_array_make(conf->pool, 5, sizew);
+        balancer->workers = apr_array_make(conf->pool, 5, sizeof(proxy_worker *));
+        strncpy(balancer->s->name, name, PROXY_BALANCER_MAX_NAME_SIZE);
 #else
         balancer->name = apr_pstrdup(conf->pool, name);
         /* XXX Is this a right place to create mutex */
@@ -825,13 +826,13 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
     int i;
     char *ptr = conf->balancers->elts;
     int sizeb = conf->balancers->elt_size;
-    int sizew = conf->workers->elt_size;
+    int sizew = sizeof(proxy_worker *);
 
     for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
         int j;
         char *ptrw;
         proxy_balancer *balancer = (proxy_balancer *) ptr;
-        char *ptrw = balancer->workers->elts;
+        ptrw = balancer->workers->elts;
         for (j = 0; j < balancer->workers->nelts; j++,  ptrw=ptrw+sizew) {
             proxy_worker **worker = (proxy_worker **) ptrw;
             proxy_cluster_helper *helper = (proxy_cluster_helper *) (*worker)->context;
@@ -3239,7 +3240,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             int def = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_DEFAULT);
             int fnv = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_FNV);
             for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
-                proxy_worker **run = (proxy_worker **) = ptr;
+                proxy_worker **run = (proxy_worker **) ptr;
                 if ((*run)->hash.def == def && (*run)->hash.fnv == fnv) {
                     helper = (proxy_cluster_helper *) (*run)->context;
 #else
