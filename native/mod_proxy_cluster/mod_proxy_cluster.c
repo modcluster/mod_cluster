@@ -276,6 +276,9 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             /* We are going to reuse a removed one */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                          "Created: reusing removed worker for %s", url);
+            if (worker->cp->pool == NULL) {
+                init_conn_pool(conf->pool, worker);
+            }
         } else {
             /* Check if the shared memory goes to the right place */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
