@@ -126,8 +126,26 @@ public class Utils
       Object address = IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
       
       if (address == null) return "127.0.0.1";
-      
-      return (address instanceof InetAddress) ? ((InetAddress) address).getHostAddress() : (String) address;
+
+      if (address instanceof InetAddress) {
+         if (((InetAddress) address).isAnyLocalAddress()) {
+            /* We can't use that so try to guess something better.. */ 
+            InetAddress local = null;
+            try {
+               local = InetAddress.getLocalHost();
+            } catch (Exception e) {
+            }
+            if (local != null) {
+               // MODCLUSTER-139 should be Inetdress.getLocalHost().getHostName()
+               return local.getHostAddress();
+            } else {
+               return "127.0.0.1"; // Probably wrong :-(
+            }
+         } else
+            return ((InetAddress) address).getHostAddress();
+      } else {
+         return (String) address;
+      }
    }
 
    /**
