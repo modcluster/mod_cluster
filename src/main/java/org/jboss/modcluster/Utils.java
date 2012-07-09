@@ -43,6 +43,8 @@ public class Utils
 
    private static final StringManager sm = StringManager.getManager(Constants.Package);
 
+   private static boolean USE_HOST_NAME = Boolean.valueOf(System.getProperty("org.jboss.modcluster.USE_HOST_NAME", "false")).booleanValue();
+
    private enum ServerType
    {
       JBOSSWEB, TOMCAT6
@@ -124,8 +126,13 @@ public class Utils
    public static String getAddress(Connector connector)
    {
       Object address = IntrospectionUtils.getProperty(connector.getProtocolHandler(), "address");
-      
-      if (address == null) return "127.0.0.1";
+     
+      if (address == null) {
+         if (USE_HOST_NAME)
+            return "localhost";
+         else
+            return "127.0.0.1";
+      }
 
       if (address instanceof InetAddress) {
          if (((InetAddress) address).isAnyLocalAddress()) {
@@ -136,13 +143,21 @@ public class Utils
             } catch (Exception e) {
             }
             if (local != null) {
-               // MODCLUSTER-139 should be Inetdress.getLocalHost().getHostName()
-               return local.getHostAddress();
+               if (USE_HOST_NAME)
+                  return local.getHostName();
+               else
+                  return local.getHostAddress();
             } else {
-               return "127.0.0.1"; // Probably wrong :-(
+               if (USE_HOST_NAME)
+                  return "localhost"; // Probably wrong :-(
+               else
+                  return "127.0.0.1"; // Probably wrong :-(
             }
          } else
-            return ((InetAddress) address).getHostAddress();
+            if (USE_HOST_NAME)
+               return ((InetAddress) address).getHostName();
+            else
+               return ((InetAddress) address).getHostAddress();
       } else {
          return (String) address;
       }
