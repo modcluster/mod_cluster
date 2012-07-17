@@ -40,7 +40,7 @@ public class AverageSystemLoadMetric extends SourcedLoadMetric<MBeanLoadContext>
    public static final String SYSTEM_LOAD_AVERAGE = "SystemLoadAverage";
    public static final String AVAILABLE_PROCESSORS = "AvailableProcessors";
    
-   private Logger logger = Logger.getLogger(this.getClass());
+   private final Logger logger = Logger.getLogger(this.getClass());
    
    public AverageSystemLoadMetric() throws MalformedObjectNameException
    {
@@ -60,15 +60,21 @@ public class AverageSystemLoadMetric extends SourcedLoadMetric<MBeanLoadContext>
    {
       try
       {
-         return context.getAttribute(SYSTEM_LOAD_AVERAGE, Double.class).doubleValue() / context.getAttribute(AVAILABLE_PROCESSORS, Integer.class).intValue();
+         double load = context.getAttribute(SYSTEM_LOAD_AVERAGE, Double.class).doubleValue();
+         if (load < 0)
+         {
+            this.logger.warn(this.getClass().getSimpleName() + " is unsupported and will be disabled.");
+            // Disable this metric
+            this.setWeight(0);
+            return 0;
+         }
+         return load / context.getAttribute(AVAILABLE_PROCESSORS, Integer.class).intValue();
       }
       catch (AttributeNotFoundException e)
       {
          this.logger.warn(this.getClass().getSimpleName() + " requires Java 1.6 or later.");
-
          // Disable this metric
          this.setWeight(0);
-         
          return 0;
       }
    }
