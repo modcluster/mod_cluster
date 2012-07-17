@@ -45,6 +45,6 @@ public class AverageSystemLoadMetric extends AbstractLoadMetric {
     
     @Override
     public double getLoad(Engine engine) throws Exception {
-        return this.bean.getSystemLoadAverage();
+        return this.bean.getSystemLoadAverage() / this.bean.getAvailableProcessors();
     }
 }

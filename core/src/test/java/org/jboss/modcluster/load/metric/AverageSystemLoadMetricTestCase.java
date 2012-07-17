@@ -42,7 +42,8 @@ public class AverageSystemLoadMetricTestCase {
         LoadMetric metric = new AverageSystemLoadMetric(bean);
         Engine engine = mock(Engine.class);
 
-        when(bean.getSystemLoadAverage()).thenReturn(0.25);
+        when(bean.getSystemLoadAverage()).thenReturn(0.50);
+        when(bean.getAvailableProcessors()).thenReturn(2);
 
         double load = metric.getLoad(engine);
 
