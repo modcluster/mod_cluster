@@ -24,27 +24,35 @@ package org.jboss.modcluster.load.metric.impl;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
+import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Engine;
 
 /**
- * Uses {@link OperatingSystemMXBean#getSystemLoadAverage} to calculate average system load. Only supported on Java 1.6 or
- * later.
+ * Uses {@link OperatingSystemMXBean#getSystemLoadAverage} to calculate average system load.
  * 
  * @author Paul Ferraro
  */
 public class AverageSystemLoadMetric extends AbstractLoadMetric {
+    private static final Logger logger = Logger.getLogger(AverageSystemLoadMetric.class);
+
     private final OperatingSystemMXBean bean;
-    
+
     public AverageSystemLoadMetric() {
         this(ManagementFactory.getOperatingSystemMXBean());
     }
-    
+
     public AverageSystemLoadMetric(OperatingSystemMXBean bean) {
         this.bean = bean;
     }
-    
+
     @Override
     public double getLoad(Engine engine) throws Exception {
-        return this.bean.getSystemLoadAverage() / this.bean.getAvailableProcessors();
+        double load = this.bean.getSystemLoadAverage();
+        if (load < 0) {
+            logger.warnf("%s is not supported on this system and will be disabled.", this.getClass().getSimpleName());
+            this.setWeight(0);
+            return 0;
+        }
+        return load / this.bean.getAvailableProcessors();
     }
 }
