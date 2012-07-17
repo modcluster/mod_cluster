@@ -61,21 +61,18 @@ public class AverageSystemLoadMetric extends SourcedLoadMetric<MBeanLoadContext>
       try
       {
          double load = context.getAttribute(SYSTEM_LOAD_AVERAGE, Double.class).doubleValue();
-         if (load < 0)
+         if (load >= 0)
          {
-            this.logger.warn(this.getClass().getSimpleName() + " is unsupported and will be disabled.");
-            // Disable this metric
-            this.setWeight(0);
-            return 0;
+            return load / context.getAttribute(AVAILABLE_PROCESSORS, Integer.class).intValue();
          }
-         return load / context.getAttribute(AVAILABLE_PROCESSORS, Integer.class).intValue();
+         this.logger.warn(this.getClass().getSimpleName() + " is unsupported and will be disabled.");
       }
       catch (AttributeNotFoundException e)
       {
          this.logger.warn(this.getClass().getSimpleName() + " requires Java 1.6 or later.");
-         // Disable this metric
-         this.setWeight(0);
-         return 0;
       }
+      // Disable this metric
+      this.setWeight(0);
+      return 0;
    }
 }
