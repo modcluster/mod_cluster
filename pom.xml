@@ -8,16 +8,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.native</groupId>
   <artifactId>mod-cluster</artifactId>
-  <version>MOD_CLUSTER_1_0_10_GA_CP03</version>
+  <version>1.0.11-SNAPSHOT</version>
   
   <name>mod_cluster</name>
   <description />
   <url>http://jboss.org/mod_cluster</url>
   
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/tags/MOD_CLUSTER_1_0_10_GA_CP03</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/tags/MOD_CLUSTER_1_0_10_GA_CP03</developerConnection>
-    <url>http://fisheye.jboss.org/browse/mod_cluster/tags/MOD_CLUSTER_1_0_10_GA_CP03</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/branches/1.0.x</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/branches/1.0.x</developerConnection>
+    <url>http://fisheye.jboss.org/browse/mod_cluster/branches/1.0.x</url>
   </scm>
 
   <repositories>
