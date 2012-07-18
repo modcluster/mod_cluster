@@ -1149,7 +1149,9 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
       {
          if ((this.socket == null) || this.socket.isClosed())
          {
-            this.socket = this.socketFactory.createSocket(this.address, this.port);
+            this.socket = this.socketFactory.createSocket();
+            InetSocketAddress address = new InetSocketAddress(this.address, this.port);
+            this.socket.connect(address, this.socketTimeout);
             this.socket.setSoTimeout(this.socketTimeout);
          }
          return this.socket;
