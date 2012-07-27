@@ -334,7 +334,9 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       {
          this.recordRequestFailure();
          
-         throw e;
+         log.warn(e.getMessage(), e);
+         
+         return null;
       }
    }
 
@@ -353,7 +355,9 @@ public class ClusteredMCMPHandlerImpl extends AbstractMCMPHandler implements Clu
       {
          this.recordRequestFailure();
          
-         throw e;
+         log.warn(e.getMessage(), e);
+         
+         return null;
       }
    }
    
