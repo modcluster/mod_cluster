@@ -31,6 +31,7 @@
        <title>mod-cluster-config Attributes</title> 
        <para>The attributs correspond to the <link linkend="java.properties">properties</link>
        </para>
+       <para>Proxy Discovery Configuration</para>
      <informaltable frame="all">
      <tgroup cols="3">
         <thead>
@@ -84,6 +85,81 @@
         </tbody>
       </tgroup>
     </informaltable>
+    <para>Proxy Configuration</para>
+    <informaltable frame="all">
+     <tgroup cols="3">
+        <thead>
+          <row>
+            <entry>Attribute</entry>
+            <entry>Property</entry>
+            <entry>Default</entry>
+           </row>
+        </thead>
+        <tbody>
+          <row>
+            <entry>sticky-session</entry>
+            <entry>stickySession</entry>
+            <entry><emphasis>true</emphasis></entry>
+          </row>
+          <row>
+            <entry>sticky-session-remove</entry>
+            <entry>stickySessionRemove</entry>
+            <entry><emphasis>false</emphasis></entry>
+          </row>
+          <row>
+            <entry>sticky-session-force</entry>
+            <entry>stickySessionForce</entry>
+            <entry><emphasis>true</emphasis></entry>
+          </row>
+          <row>
+            <entry>node-timeout</entry>
+            <entry>workerTimeout</entry>
+            <entry><emphasis>-1</emphasis></entry>
+          </row>
+          <row>
+            <entry>max-attempts</entry>
+            <entry>maxAttempts</entry>
+            <entry><emphasis>1</emphasis></entry>
+          </row>
+          <row>
+            <entry>flush-packets</entry>
+            <entry>flushPackets</entry>
+            <entry><emphasis>false</emphasis></entry>
+          </row>
+          <row>
+            <entry>flush-wait</entry>
+            <entry>flushWait</entry>
+            <entry><emphasis>-1</emphasis></entry>
+          </row>
+          <row>
+            <entry>ping</entry>
+            <entry>ping</entry>
+            <entry><emphasis>10</emphasis></entry>
+          </row>
+          <row>
+            <entry>smax</entry>
+            <entry>smax</entry>
+            <entry><emphasis>-1</emphasis> it uses default value</entry>
+          </row>
+          <row>
+            <entry>ttl</entry>
+            <entry>ttl</entry>
+            <entry><emphasis>-1</emphasis> it uses default value</entry>
+          </row>
+          <row>
+            <entry>domain</entry>
+            <entry>loadBalancingGroup</entry>
+            <entry><emphasis>None</emphasis></entry>
+          </row>
+          <row>
+            <entry>load-balancing-group</entry>
+            <entry>loadBalancingGroup</entry>
+            <entry><emphasis>None</emphasis></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+    <para>SSL Configuration</para>
     <para>SSL configuration part needs to be added here too</para>
 
     </section>

@@ -315,7 +315,7 @@
            </row>
           <row id="lbGroup">
             <entry>loadBalancingGroup</entry>
-            <entry>domain</entry>
+            <entry>domain load-balancing-group</entry>
             <entry><emphasis>None</emphasis></entry>
             <entry>Node</entry>
             <entry>
