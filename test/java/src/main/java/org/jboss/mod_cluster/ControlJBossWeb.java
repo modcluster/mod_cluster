@@ -66,6 +66,7 @@ public class ControlJBossWeb {
                 System.out.println(line);
             }
         } catch (IOException ex) {
+            System.out.println("isResponseOK: " + ex);
             return false;
         }
         return false;
