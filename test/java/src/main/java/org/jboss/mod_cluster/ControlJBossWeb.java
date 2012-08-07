@@ -40,15 +40,29 @@ import java.io.PrintStream;
 public class ControlJBossWeb {
 
     private BufferedReader bufferedreader;
+    private BufferedReader errorreader;
     private PrintStream out;
 
     public ControlJBossWeb() throws Exception {
         Runtime runtime = Runtime.getRuntime();
         String classpath = System.getProperty("java.class.path");
-        Process proc = runtime.exec("java -cp " + classpath + " org.jboss.mod_cluster.ProcJBossWeb");
+        Process proc = null;
+        if ( System.getProperty("os.name").startsWith("Windows")) {
+           proc = runtime.exec("java -cp " + "\"" + classpath + "\"" + " org.jboss.mod_cluster.ProcJBossWeb");
+        } else {
+           proc = runtime.exec("java -cp " + classpath + " org.jboss.mod_cluster.ProcJBossWeb");
+        }
         InputStreamReader input = new InputStreamReader(proc.getInputStream());
         bufferedreader = new BufferedReader(input);
         out = new PrintStream(proc.getOutputStream());
+        InputStreamReader err = new InputStreamReader(proc.getErrorStream());
+        errorreader = new BufferedReader(err);
+        if (errorreader.ready()) {
+           String line;
+           while ((line = errorreader.readLine()) != null) {
+              System.out.println(line);
+           }
+        }
     }
     private boolean isResponseOK() {
         try {
@@ -69,6 +83,8 @@ public class ControlJBossWeb {
             System.out.println("isResponseOK: " + ex);
             return false;
         }
+
+        System.out.println("isResponseOK: false");
         return false;
     }
     public void stop() throws IOException {
