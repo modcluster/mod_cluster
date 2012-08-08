@@ -46,6 +46,10 @@ public class TestHang extends TestCase {
 
         boolean clienterror = false;
         ControlJBossWeb control = null;
+        if ( System.getProperty("os.name").startsWith("Windows")) {
+           System.out.println("Please fix: MODCLUSTER-323");
+           return;
+        }
 
         System.out.println("Hang Started");
 
