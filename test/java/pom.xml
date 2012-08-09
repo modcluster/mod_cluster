@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
-        <artifactId>mod_cluster-parent</artifactId>
+        <artifactId>mod_cluster-test</artifactId>
         <version>1.2.2.Beta1-SNAPSHOT</version>
-        <relativePath>../..</relativePath>
+        <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-tests</artifactId>
 
@@ -66,40 +66,4 @@
             <artifactId>junit</artifactId>
         </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-
-<!--
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <includes>
-                        <include>**/*Test*.java</include>
-                    </includes>
-                    <enableAssertions>false</enableAssertions>
-                </configuration>
-            </plugin>
-  -->
-
-            <plugin>
-              <artifactId>maven-antrun-plugin</artifactId>
-              <version>1.7</version>
-              <executions>
-                <execution>
-                  <phase>compile</phase>
-                  <configuration>
-                    <target>
-                      <echo>"base-apache: ${user.home}/java/${os.name}-${os.version}-${os.arch}"</echo>
-                    </target>
-                  </configuration>
-                  <goals>
-                    <goal>run</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>
