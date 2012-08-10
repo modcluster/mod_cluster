@@ -166,7 +166,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <para>Maxhost: That is the number max host (Aliases) supported by
     mod_cluster. That is also the max number of balancers.
     (Context: server config)</para>
-    <para>Default: 10</para>
+    <para>Default: 20</para>
     </section>
 
     <section><title>Maxsessionid</title>
