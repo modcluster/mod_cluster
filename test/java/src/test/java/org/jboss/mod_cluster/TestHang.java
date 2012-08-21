@@ -69,13 +69,17 @@ public class TestHang extends TestCase {
         String result = null;
         try {
             // read the INFO message
-            while ((result = control.getProxyInfo()) == null) {
+        	int count = 0;
+            while (((result = control.getProxyInfo()) == null) && count <= 10) {
                 try {
                     Thread me = Thread.currentThread();
-                    me.sleep(5000);
+                    me.sleep(6000);
                 } catch (Exception ex) {
                 }
+                count++;
             }
+            if (count==10)
+            	fail("can't getProxyInfo");
 
             String [] nodes = new String[1];
             nodes[0] = "node1";
