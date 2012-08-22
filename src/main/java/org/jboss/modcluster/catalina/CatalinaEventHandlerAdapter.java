@@ -387,7 +387,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
          {
             host.addContainerListener(this);
             
-            for (java.awt.Container context: host.findChildren())
+            for (Container context: host.findChildren())
             {
                ((Lifecycle) context).addLifecycleListener(this);
                context.addPropertyChangeListener(this);
