@@ -66,7 +66,6 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
     */
    public void containerEvent(ContainerEvent event)
    {
-       System.out.println(String.format("containerEvent(source = %s, container = %s, type = %s)", event.getSource(), event.getContainer(), event.getType()));
       Container container = event.getContainer();
       Object child = event.getData();
       String type = event.getType();
