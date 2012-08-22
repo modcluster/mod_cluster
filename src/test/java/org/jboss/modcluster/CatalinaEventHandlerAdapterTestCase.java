@@ -165,6 +165,7 @@ public class CatalinaEventHandlerAdapterTestCase
       EasyMock.expect(container.findChildren()).andReturn(new Container[] { childContainer });
       
       childContainer.addLifecycleListener(this.adapter);
+      childContainer.addPropertyChangeListener(this.adapter);
       
       this.eventHandler.startServer(server);
       
@@ -217,6 +218,7 @@ public class CatalinaEventHandlerAdapterTestCase
       EasyMock.expect(container.findChildren()).andReturn(new Container[] { childContainer });
       
       childContainer.removeLifecycleListener(this.adapter);
+      childContainer.removePropertyChangeListener(this.adapter);
       
       this.eventHandler.stopServer(server);
       this.eventHandler.shutdown();
