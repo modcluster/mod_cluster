@@ -87,6 +87,7 @@ public abstract class ContainerEventHandlerAdapterTestCase {
         verify(engine).addLifecycleListener(handler);
         verify(container).addContainerListener(handler);
         verify(childContainer).addLifecycleListener(handler);
+        verify(childContainer).addPropertyChangeListener(handler);
         verify(this.eventHandler).start(same(server));
     }
 
@@ -118,6 +119,7 @@ public abstract class ContainerEventHandlerAdapterTestCase {
         verify(engine).removeLifecycleListener(handler);
         verify(container).removeContainerListener(handler);
         verify(childContainer).removeLifecycleListener(handler);
+        verify(childContainer).removePropertyChangeListener(handler);
         verify(this.eventHandler).shutdown();
     }
 
