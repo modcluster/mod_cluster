@@ -66,6 +66,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
     */
    public void containerEvent(ContainerEvent event)
    {
+       System.out.println(String.format("containerEvent(source = %s, container = %s, type = %s)", event.getSource(), event.getContainer(), event.getType()));
       Container container = event.getContainer();
       Object child = event.getData();
       String type = event.getType();
@@ -132,11 +133,6 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
 
             this.init = true;
          }
-         else if (source instanceof Context)
-         {
-            // Start a web-app via the /manager (tomcat) application.
-            this.eventHandler.startContext((Context) source);
-         }
       }
       else if (type.equals(Lifecycle.BEFORE_STOP_EVENT))
       {
@@ -183,6 +179,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             for (Container context: host.findChildren())
             {
                ((Lifecycle) context).addLifecycleListener(this);
+               context.addPropertyChangeListener(this);
             }
          }
       }
@@ -204,6 +201,7 @@ public class CatalinaEventHandlerAdapter implements LifecycleListener, Container
             for (Container context: host.findChildren())
             {
                ((Lifecycle) context).removeLifecycleListener(this);
+               context.removePropertyChangeListener(this);
             }
          }
       }
