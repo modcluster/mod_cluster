@@ -30,7 +30,7 @@ import java.util.concurrent.ThreadFactory;
  * 
  */
 public interface AdvertiseConfiguration {
-    static final InetSocketAddress DEFAULT_SOCKET_ADDRESS = InetSocketAddress.createUnresolved("224.0.1.105", 23364);
+    static final InetSocketAddress DEFAULT_SOCKET_ADDRESS = new InetSocketAddress("224.0.1.105", 23364);
 
     InetSocketAddress getAdvertiseSocketAddress();
 
