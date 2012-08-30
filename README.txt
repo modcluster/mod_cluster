@@ -30,15 +30,20 @@ JBoss AS
 
 JBoss Web / Tomcat
 
-1. Copy the jar file contained in the mod_cluster.sar directory into the lib
-   directory of your JBoss Web installation.
-   ./target/JBossWeb-Tomcat/lib/mod_cluster.jar
-2. Copy the following dependency jars into the same lib directory:
-  ./target/JBossWeb-Tomcat/lib/jboss-logging-jdk.jar
-  ./target/JBossWeb-Tomcat/lib/jboss-logging-spi.jar
+The tar.gz from the assembly contains the JBossWeb-Tomcat.
+   mvn -P dist package create the tar.gz (after mvn install).
+1. Extract the JBossWeb-Tomcat directory.
+
+2. Copy the jar files from JBossWeb-Tomcat/lib to the tomcat lib.
+   remove the mod_cluster-container-tomcat(n).jar that does correspond to
+   the Tomcat you are using.
+   
+3. Copy the following dependency jars into the same lib directory:
+  JBossWeb-Tomcat/lib/jboss-logging-jdk.jar
+  JBossWeb-Tomcat/lib/jboss-logging-spi.jar
  
 
-3. Modify the server.xml within the conf directory and add a non-cluster mode
+4. Modify the server.xml within the conf directory and add a non-cluster mode
    engine listener as documented here:
    http://www.jboss.org/mod_cluster/java/config.html
 
