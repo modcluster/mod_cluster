@@ -3232,16 +3232,18 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         /* Adjust the helper->count corresponding to the previous try */
         const char *worker_name =  apr_table_get(r->subprocess_env, "BALANCER_WORKER_NAME");
         if (worker_name && *worker_name) {
-#if HAVE_CLUSTER_EX_DEBUG
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "proxy_cluster_pre_request: worker %s", worker_name);
-#endif
             int i;
             int sizew = (*balancer)->workers->elt_size;
             char *ptr = (*balancer)->workers->elts;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             int def = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_DEFAULT);
             int fnv = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_FNV);
+#endif
+#if HAVE_CLUSTER_EX_DEBUG
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_cluster_pre_request: worker %s", worker_name);
+#endif
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
                 proxy_worker **run = (proxy_worker **) ptr;
                 if ((*run)->hash.def == def && (*run)->hash.fnv == fnv) {
@@ -3545,11 +3547,11 @@ static int proxy_cluster_post_request(proxy_worker *worker,
         if (cookie) {
             if (sessionid && strcmp(cookie, sessionid)) {
                 /* The cookie has changed, remove the old one and store the next one */
+                sessionidinfo_t ou;
 #if HAVE_CLUSTER_EX_DEBUG
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "proxy_cluster_post_request sessionid changed (%s to %s)", sessionid, cookie);
 #endif
-                sessionidinfo_t ou;
                 strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
                 ou.id = 0;
                 sessionid_storage->remove_sessionid(&ou);
