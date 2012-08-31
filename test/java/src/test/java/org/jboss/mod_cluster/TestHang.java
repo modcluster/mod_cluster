@@ -69,7 +69,7 @@ public class TestHang extends TestCase {
         String result = null;
         try {
             // read the INFO message
-        	int count = 0;
+            int count = 0;
             while (((result = control.getProxyInfo()) == null) && count <= 10) {
                 try {
                     Thread me = Thread.currentThread();
@@ -83,14 +83,19 @@ public class TestHang extends TestCase {
 
             String [] nodes = new String[1];
             nodes[0] = "node1";
-            while (!Maintest.checkProxyInfo(result, nodes)) {
+            count = 0;
+            while (!Maintest.checkProxyInfo(result, nodes) && count <= 10) {
                 try {
                     Thread me = Thread.currentThread();
                     me.sleep(5000);
                 } catch (Exception ex) {
                 }
                 result = control.getProxyInfo();
+                count++;
             }
+            if (count==10)
+            	fail("can't checkProxyInfo");
+           
         } catch (Exception ex) {
             ex.printStackTrace();
             fail("can't find node1 running");
