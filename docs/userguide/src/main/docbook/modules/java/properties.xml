@@ -225,11 +225,11 @@
            </row>
           <row>
             <entry>workerTimeout</entry>
-            <entry>node-timeout</entry>
+            <entry>worker-timeout</entry>
             <entry>-1</entry>
             <entry>Balancer</entry>
             <entry>
-              <para>Number of seconds to wait for a worker to become available to handle a request. When all the workers of a balancer are usable, mod_cluster will retry after a while (workerTimeout/100) to find an usable worker. That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
+              <para>Number of seconds to wait for a worker to become available to handle a request. When no workers of a balancer are usuable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
             </entry>
            </row>
           <row>
