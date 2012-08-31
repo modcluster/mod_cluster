@@ -3586,7 +3586,7 @@ static const proxy_balancer_method byrequests =
  */
 static void proxy_cluster_hooks(apr_pool_t *p)
 {
-    static const char * const aszPre[]={ "mod_manager.c", NULL };
+    static const char * const aszPre[]={ "mod_manager.c", "mod_rewrite.c", NULL };
     static const char * const aszSucc[]={ "mod_proxy.c", NULL };
 
     ap_hook_post_config(proxy_cluster_post_config, NULL, NULL, APR_HOOK_MIDDLE);
