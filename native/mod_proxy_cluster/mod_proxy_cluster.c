@@ -1101,8 +1101,19 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
 #else
     const char *scheme = worker->scheme;
 #endif
+    int is_ssl = 0;
 
-     /* create space for state information */
+    if (strcasecmp(scheme, "HTTPS") == 0) {
+
+         if (!ap_proxy_ssl_enable(NULL)) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_cluster_try_pingpong: cping_cpong failed (mod_ssl not configured?)");
+            return APR_EGENERAL;
+        }
+        is_ssl = 1;
+    }
+
+    /* create space for state information */
     status = ap_proxy_acquire_connection(scheme, &backend, worker, r->server);
     if (status != OK) {
         if (backend) {
@@ -1116,16 +1127,17 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         return status;
     }
 
+    backend->is_ssl = is_ssl;
+    if (is_ssl) {
+        ap_proxy_ssl_connection_cleanup(backend, r);
+    }
+
     /* Step One: Determine Who To Connect To */
     uri = apr_palloc(r->pool, sizeof(*uri)); /* We don't use it anyway */
     server_portstr[0] = '\0';
     status = ap_proxy_determine_connection(r->pool, r, conf, worker, backend,
                                            uri, &locurl,
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-                                           worker->s->hostname, worker->s->port,
-#else
-                                           worker->hostname, worker->port,
-#endif
+                                           NULL, 0,
                                            server_portstr,
                                            sizeof(server_portstr));
     if (status != OK) {
