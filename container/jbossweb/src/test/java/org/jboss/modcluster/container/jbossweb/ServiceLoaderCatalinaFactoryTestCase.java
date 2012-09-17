@@ -2,7 +2,6 @@ package org.jboss.modcluster.container.jbossweb;
 
 import static org.junit.Assert.assertSame;
 
-import org.jboss.modcluster.container.catalina.CatalinaEngineFactory;
 import org.jboss.modcluster.container.catalina.CatalinaFactoryRegistry;
 import org.jboss.modcluster.container.catalina.CatalinaHostFactory;
 import org.jboss.modcluster.container.catalina.CatalinaServerFactory;
