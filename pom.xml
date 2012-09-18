@@ -15,9 +15,9 @@
   <url>http://jboss.org/mod_cluster</url>
   
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/branches/1.0.x</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/branches/1.0.x</developerConnection>
-    <url>http://fisheye.jboss.org/browse/mod_cluster/branches/1.0.x</url>
+    <connection>scm:git:https://github.com/modcluster/mod_cluster.git</connection>
+    <developerConnection>scm:git:https://github.com/modcluster/mod_cluster.git</developerConnection>
+    <url>https://github.com/modcluster/mod_cluster</url>
   </scm>
 
   <repositories>
