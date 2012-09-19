@@ -38,11 +38,13 @@ public class TomcatEngine extends CatalinaEngine {
         super(registry, engine, server);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String getSessionCookieName() {
         return ApplicationSessionCookieConfig.getSessionCookieName(null);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public String getSessionParameterName() {
         return ApplicationSessionCookieConfig.getSessionUriParamName(null);
