@@ -116,13 +116,9 @@ public class RequestDriver {
     private static class Client extends Thread {
         private final URL request_url, destroy_url;
 
-        private int successful_reads = 0, failed_reads = 0;
-
         private final long sessionLife;
 
         private final long sleepTime;
-
-        private long start = 0, stop = 0;
 
         private boolean successful = true;
 
@@ -152,13 +148,11 @@ public class RequestDriver {
 
         public void run() {
             try {
-                start = System.currentTimeMillis();
                 loop();
             } catch (Exception e) {
                 error("failure", e);
                 successful = false;
             } finally {
-                stop = System.currentTimeMillis();
                 try {
                     // Make an attempt to terminate any ongoing session
                     // Only bother if our destroy
@@ -172,18 +166,6 @@ public class RequestDriver {
                     handleSessionTermination();
                 }
             }
-        }
-
-        public int getFailedReads() {
-            return failed_reads;
-        }
-
-        public int getSuccessfulReads() {
-            return successful_reads;
-        }
-
-        public long getTime() {
-            return stop - start;
         }
 
         public boolean isSuccessful() {
@@ -218,10 +200,8 @@ public class RequestDriver {
 
                     rc = executeRequest(request_url);
                     if (rc == 200) {
-                        successful_reads++;
                         elapsed = System.currentTimeMillis() - sessionStart;
                     } else {
-                        failed_reads++;
                         failed = true;
                         break;
                     }
@@ -281,11 +261,6 @@ public class RequestDriver {
             } finally {
                 if (conn != null)
                     conn.disconnect();
-            }
-        }
-
-        private void invalidateSession() {
-            if (!request_url.equals(destroy_url)) {
             }
         }
 

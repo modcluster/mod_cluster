@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>5</version>
+        <version>9</version>
     </parent>
   
     <modelVersion>4.0.0</modelVersion>
@@ -31,20 +31,19 @@
     </repositories>
 
     <properties>
-        <version.jboss-logging>3.0.1.GA</version.jboss-logging>
-        <version.tomcat6>6.0.33</version.tomcat6>
-        <version.tomcat7>7.0.8</version.tomcat7>
-        <version.jbossweb>2.1.11.GA</version.jbossweb>
-        <version.jbossweb7>7.0.7.Final</version.jbossweb7>
-        <version.commons-codec>1.3</version.commons-codec>
+        <version.jboss-logging>3.1.2.GA</version.jboss-logging>
+        <version.tomcat6>6.0.35</version.tomcat6>
+        <version.tomcat7>7.0.30</version.tomcat7>
+        <version.jbossweb>2.1.12.GA</version.jbossweb>
+        <version.jbossweb7>7.0.17.Final</version.jbossweb7>
         <version.commons-http-client>3.1</version.commons-http-client>
-        <version.jfreechart>1.0.12</version.jfreechart>
+        <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
-        <version.junit>4.9</version.junit>
-        <version.mockito>1.8.5</version.mockito>
-        <version.javax.servlet-3.0>1.0.0.Final</version.javax.servlet-3.0>
+        <version.junit>4.10</version.junit>
+        <version.mockito>1.9.0</version.mockito>
+        <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
         <version.jboss-ha-server-api>2.0.0.Final</version.jboss-ha-server-api>
-        <version.jboss-kernel>2.0.6.GA</version.jboss-kernel>
+        <version.jboss-kernel>2.0.10.GA</version.jboss-kernel>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -115,11 +114,6 @@
             </dependency>
 
             <dependency>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-                <version>${version.commons-codec}</version>
-            </dependency>
-            <dependency>
                 <groupId>commons-httpclient</groupId>
                 <artifactId>commons-httpclient</artifactId>
                 <version>${version.commons-http-client}</version>
@@ -179,6 +173,11 @@
                 <configuration>
                     <tagBase>https://svn.jboss.org/repos/mod_cluster/tags</tagBase>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>1.3.1</version>
             </plugin>
         </plugins>
     </build>
