@@ -25,6 +25,9 @@ package org.jboss.modcluster.container.jbossweb;
 import org.apache.catalina.connector.Connector;
 import org.jboss.modcluster.container.catalina.CatalinaConnector;
 
+/**
+ * @author Paul Ferraro
+ */
 public class JBossWebConnector extends CatalinaConnector {
 
     public JBossWebConnector(Connector connector) {

@@ -30,6 +30,9 @@ import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
 import org.jboss.modcluster.container.catalina.ServerProvider;
 
+/**
+ * @author Paul Ferraro
+ */
 public class TomcatEventHandlerAdapter extends CatalinaEventHandlerAdapter {
 
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler) {
