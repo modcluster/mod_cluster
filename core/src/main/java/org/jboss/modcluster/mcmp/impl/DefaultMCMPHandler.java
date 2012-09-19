@@ -57,12 +57,13 @@ import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Strings;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
+import org.jboss.modcluster.mcmp.MCMPRequestType;
 import org.jboss.modcluster.mcmp.MCMPResponseParser;
 import org.jboss.modcluster.mcmp.MCMPServer;
 import org.jboss.modcluster.mcmp.MCMPServerState;
@@ -80,7 +81,7 @@ import org.jboss.modcluster.mcmp.ResetRequestSource;
 public class DefaultMCMPHandler implements MCMPHandler {
     private static final String NEW_LINE = "\r\n";
 
-    protected static final Logger log = Logger.getLogger(DefaultMCMPHandler.class);
+    static final Logger log = Logger.getLogger(DefaultMCMPHandler.class);
 
     // -------------------------------------------------------------- Constants
 
@@ -508,11 +509,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
         if (proxy.getState() != Proxy.State.OK)
             return null;
 
-        if (log.isTraceEnabled()) {
-            log.trace(Strings.REQUEST_SEND.getString(request, proxy));
-        }
+        log.tracef("Sending to %s: %s", proxy, request);
 
-        String command = request.getRequestType().getCommand();
+        MCMPRequestType requestType = request.getRequestType();
         boolean wildcard = request.isWildcard();
         String jvmRoute = request.getJvmRoute();
         Map<String, String> parameters = request.getParameters();
@@ -541,7 +540,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
         // Generate and write request
         StringBuilder headBuilder = new StringBuilder();
 
-        headBuilder.append(command).append(" ");
+        headBuilder.append(requestType).append(" ");
 
         String proxyURL = this.config.getProxyURL();
 
@@ -620,13 +619,13 @@ public class DefaultMCMPHandler implements MCMPHandler {
                             } else if ("connection".equalsIgnoreCase(headerName)) {
                                 close = "close".equalsIgnoreCase(headerValue);
                             } else if ("Transfer-Encoding".equalsIgnoreCase(headerName)) {
-                            	if ("chunked".equalsIgnoreCase(headerValue))
-                            		chuncked = true;
+                                if ("chunked".equalsIgnoreCase(headerValue))
+                                    chuncked = true;
                             }
                             line = reader.readLine();
                         }
                     } catch (Exception e) {
-                        log.info(Strings.ERROR_HEADER_PARSE.getString(command), e);
+                        ModClusterLogger.LOGGER.parseHeaderFailed(e, requestType, proxy.getSocketAddress());
                     }
                 }
 
@@ -643,10 +642,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
                     if ("SYNTAX".equals(errorType)) {
                         // Syntax error means the protocol is incorrect, which cannot be automatically fixed
                         proxy.setState(Proxy.State.DOWN);
-                        log.error(Strings.ERROR_REQUEST_SYNTAX.getString(command, proxy, errorType, message));
+                        ModClusterLogger.LOGGER.unrecoverableErrorResponse(errorType, requestType, proxy.getSocketAddress(), message);
                     } else {
                         proxy.setState(Proxy.State.ERROR);
-                        log.error(Strings.ERROR_REQUEST_SEND_OTHER.getString(command, proxy, errorType, message));
+                        ModClusterLogger.LOGGER.recoverableErrorResponse(errorType, requestType, proxy.getSocketAddress(), message);
                     }
                 }
 
@@ -661,36 +660,36 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 char[] buffer = new char[512];
 
                 if (chuncked) {
-                	boolean skipcrlf = false;
-                	for (;;) {
-                 		if (skipcrlf)
-                			reader.readLine(); // Skip CRLF
-                 		else
-                 			skipcrlf = true;
-                		line = reader.readLine();
-                		contentLength = Integer.parseInt(line, 16);
-                		if (contentLength == 0) {
+                    boolean skipcrlf = false;
+                    for (;;) {
+                         if (skipcrlf)
+                            reader.readLine(); // Skip CRLF
+                         else
+                             skipcrlf = true;
+                        line = reader.readLine();
+                        contentLength = Integer.parseInt(line, 16);
+                        if (contentLength == 0) {
                                         reader.readLine(); // Skip last CRLF.
-                			break;
+                            break;
                                 }
-                		while (contentLength > 0) {
-                			int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
-                			if (bytes <= 0)
-                				break;
-                			result.append(buffer, 0, bytes);
-                			contentLength -= bytes;
-                		}
-                	}
+                        while (contentLength > 0) {
+                            int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+                            if (bytes <= 0)
+                                break;
+                            result.append(buffer, 0, bytes);
+                            contentLength -= bytes;
+                        }
+                    }
                 } else {
-                	while (contentLength > 0) {
-                		int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+                    while (contentLength > 0) {
+                        int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
 
-                		if (bytes <= 0)
-                			break;
+                        if (bytes <= 0)
+                            break;
 
-                		result.append(buffer, 0, bytes);
-                		contentLength -= bytes;
-                	}
+                        result.append(buffer, 0, bytes);
+                        contentLength -= bytes;
+                    }
                 }
 
                 if (proxy.getState() == State.OK) {
@@ -704,7 +703,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
                 // Log it only if we haven't done so already. Don't spam the log
                 if (proxy.isIoExceptionLogged() == false) {
-                    log.info(Strings.ERROR_REQUEST_SEND_IO.getString(command, proxy), e);
+                    ModClusterLogger.LOGGER.sendFailed(e, requestType, proxy.getSocketAddress());
                     proxy.setIoExceptionLogged(true);
                 }
 
@@ -794,10 +793,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         // -------------------------------------------------------------- Private
 
         void setState(State state) {
-            if (state == null) {
-                throw new IllegalArgumentException(Strings.ERROR_ARGUMENT_NULL.getString("state"));
-            }
-
             this.state = state;
         }
 

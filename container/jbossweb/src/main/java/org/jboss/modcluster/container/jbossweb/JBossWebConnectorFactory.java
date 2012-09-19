@@ -25,6 +25,9 @@ package org.jboss.modcluster.container.jbossweb;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.catalina.ConnectorFactory;
 
+/**
+ * @author Paul Ferraro
+ */
 public class JBossWebConnectorFactory implements ConnectorFactory {
     @Override
     public Connector createConnector(org.apache.catalina.connector.Connector connector) {

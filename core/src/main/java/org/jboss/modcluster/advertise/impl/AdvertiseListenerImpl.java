@@ -41,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import net.jcip.annotations.GuardedBy;
 
 import org.jboss.logging.Logger;
-import org.jboss.modcluster.Strings;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.MulticastSocketFactory;
@@ -107,8 +107,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     private MessageDigest getMessageDigest() throws IOException {
         try {
             return MessageDigest.getInstance("MD5");
-        } catch (NoSuchAlgorithmException ex) {
-            throw new IOException("can't create MD: NoSuchAlgorithmException");
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 
@@ -170,7 +170,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
             this.listening = true;
 
-            log.info(Strings.ADVERTISE_START.getString(this.config.getAdvertiseSocketAddress().getAddress().getHostAddress(), this.config.getAdvertiseSocketAddress().getPort()));
+            ModClusterLogger.LOGGER.startAdvertise(this.config.getAdvertiseSocketAddress());
         }
     }
 
@@ -207,7 +207,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         try {
             this.socket.send(packet);
         } catch (IOException e) {
-            log.warn("Failed to interrupt socket reception", e);
+            ModClusterLogger.LOGGER.socketInterruptFailed(e);
         }
     }
 
@@ -246,7 +246,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
             try {
                 this.socket.leaveGroup(this.config.getAdvertiseSocketAddress().getAddress());
             } catch (IOException e) {
-                log.warn(e.getMessage(), e);
+                log.warn(e.getLocalizedMessage(), e);
             }
 
             this.socket.close();

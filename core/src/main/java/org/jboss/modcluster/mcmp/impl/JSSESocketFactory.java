@@ -32,7 +32,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.cert.CRL;
-import java.security.cert.CRLException;
 import java.security.cert.CertPathParameters;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreParameters;
@@ -61,6 +60,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.ModClusterMessages;
 import org.jboss.modcluster.config.SSLConfiguration;
 
 /*
@@ -264,7 +264,7 @@ public class JSSESocketFactory extends SocketFactory {
                 try {
                     istream.close();
                 } catch (IOException e) {
-                    log.warn(e.getMessage(), e);
+                    log.warn(e.getLocalizedMessage(), e);
                 }
             }
         }
@@ -333,10 +333,9 @@ public class JSSESocketFactory extends SocketFactory {
      * @throws GeneralSecurityException
      * @throws IOException
      */
-    protected CertPathParameters getParameters(String algorithm, String crlf, KeyStore trustStore)
-            throws GeneralSecurityException, IOException {
+    protected CertPathParameters getParameters(String algorithm, String crlf, KeyStore trustStore) throws GeneralSecurityException, IOException {
         if (!"PKIX".equalsIgnoreCase(algorithm)) {
-            throw new CRLException("CRLs not supported for type: " + algorithm);
+            throw ModClusterMessages.MESSAGES.crlNotSupported(algorithm);
         }
 
         PKIXBuilderParameters params = new PKIXBuilderParameters(trustStore, new X509CertSelector());
@@ -369,7 +368,7 @@ public class JSSESocketFactory extends SocketFactory {
             try {
                 is.close();
             } catch (Exception e) {
-                log.warn(e.getMessage(), e);
+                log.warn(e.getLocalizedMessage(), e);
             }
         }
     }

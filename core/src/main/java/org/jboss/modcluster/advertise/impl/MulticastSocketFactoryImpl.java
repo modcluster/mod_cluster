@@ -30,6 +30,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.advertise.MulticastSocketFactory;
 
 /**
@@ -55,7 +56,7 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
                 try {
                     return System.getProperty(key);
                 } catch (SecurityException e) {
-                    MulticastSocketFactoryImpl.this.log.warn(e.getMessage(), e);
+                    MulticastSocketFactoryImpl.this.log.warn(e.getLocalizedMessage(), e);
 
                     return null;
                 }
@@ -73,22 +74,14 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
         if ((address == null) || !this.linuxlike) return new MulticastSocket(port);
 
         if (!address.isMulticastAddress()) {
-            this.log.warn(address + " is not a multicast address, will be ignored");
+            ModClusterLogger.LOGGER.createMulticastSocketWithUnicastAddress(address);
             return new MulticastSocket(port);
         }
 
         try {
             return new MulticastSocket(new InetSocketAddress(address, port));
         } catch (IOException e) {
-            StringBuilder builder = new StringBuilder();
-            builder.append("could not bind to ").append(address.getHostAddress()).append(" (");
-            builder.append((address instanceof Inet4Address) ? "IPv4" : "IPv6").append(" address)");
-            builder.append("; make sure your mcast_addr is of the same type as the IP stack (IPv4 or IPv6).");
-            builder.append("\nWill ignore mcast_addr, but this may lead to cross talking ");
-            builder.append("(see http://www.jboss.org/community/docs/DOC-9469 for details). ");
-
-            this.log.warn(builder.toString(), e);
-
+            ModClusterLogger.LOGGER.potentialCrossTalking(e, address, (address instanceof Inet4Address) ? "IPv4" : "IPv6");
             return new MulticastSocket(port);
         }
     }

@@ -23,19 +23,8 @@
     </constructor>
   </bean>
   
-  <!-- The core mod_cluster service, implemented as an HA singleton -->
-  <bean name="HAModClusterService" class="org.jboss.modcluster.ha.HAModClusterService" mode="On Demand">
-    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ha.HAModClusterServiceMBean.class)</annotation>
-    <constructor>
-      <parameter class="org.jboss.modcluster.config.ha.impl.HAModClusterConfig"><inject bean="ModClusterConfig"/></parameter>
-      <parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
-      <parameter class="org.jboss.ha.framework.interfaces.HAPartition"><inject bean="HAPartition"/></parameter>
-      <parameter class="org.jboss.ha.framework.interfaces.HASingletonElectionPolicy"><bean class="org.jboss.ha.singleton.HASingletonElectionPolicySimple"/></parameter>
-    </constructor>
-  </bean>
-  
   <!-- Configure this node's communication with the load balancer -->
-  <bean name="ModClusterConfig" class="org.jboss.modcluster.config.ha.impl.HAModClusterConfig" mode="On Demand">
+  <bean name="ModClusterConfig" class="org.jboss.modcluster.config.impl.ModClusterConfig" mode="On Demand">
     
     <!-- Comma separated list of address:port listing the httpd servers
          where mod_cluster is running. -->
