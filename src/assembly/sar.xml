@@ -12,7 +12,6 @@
         <include>org.jboss.mod_cluster:mod_cluster-core</include>
         <include>org.jboss.mod_cluster:mod_cluster-container-catalina</include>
         <include>org.jboss.mod_cluster:mod_cluster-container-jbossweb</include>
-        <include>org.jboss.mod_cluster:mod_cluster-ha</include>
       </includes>
       <binaries>
         <outputDirectory></outputDirectory>
