@@ -24,6 +24,7 @@ package org.jboss.modcluster.container.tomcat;
 
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
+import org.apache.catalina.Server;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.container.catalina.CatalinaFactory;
@@ -46,6 +47,10 @@ public class TomcatEventHandlerAdapter extends CatalinaEventHandlerAdapter {
 
     @Override
     protected boolean isBeforeDestroy(LifecycleEvent event) {
+        /* Tomcat 6 is not send a before_destroy nor after_destroy for server so we use after_stop instead */
+        Lifecycle source = event.getLifecycle();
+        if ((source instanceof Server) && event.getType().equals(Lifecycle.AFTER_STOP_EVENT))
+            return true;
         return event.getType().equals(Lifecycle.DESTROY_EVENT);
     }
 }
