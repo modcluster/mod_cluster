@@ -21,6 +21,7 @@
  */
 package org.jboss.modcluster.load.metric.impl;
 
+import org.jboss.modcluster.ModClusterMessages;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
@@ -40,7 +41,7 @@ public abstract class AbstractLoadMetric implements LoadMetric {
     @Override
     public void setWeight(int weight) {
         if (weight < 0) {
-            throw new IllegalArgumentException("Capacity must be greater than or equal to zero.");
+            throw ModClusterMessages.MESSAGES.invalidWeight();
         }
         this.weight = weight;
     }
@@ -53,7 +54,7 @@ public abstract class AbstractLoadMetric implements LoadMetric {
     @Override
     public void setCapacity(double capacity) {
         if (capacity <= 0) {
-            throw new IllegalArgumentException("Capacity must be greater than zero.");
+            throw ModClusterMessages.MESSAGES.invalidCapacity();
         }
         this.capacity = capacity;
     }

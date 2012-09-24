@@ -43,7 +43,6 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.ModClusterServiceMBean;
-import org.jboss.modcluster.Strings;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.container.catalina.LifecycleListenerFactory;
@@ -59,22 +58,6 @@ import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
  * @author Paul Ferraro
  */
 public class ModClusterListener extends ModClusterConfig implements LifecycleListener, LoadBalanceFactorProviderFactory, ModClusterServiceMBean {
-/*
-    static {
-        Logger logger = Logger.getLogger(ModClusterListener.class);
-        // We expect to run in a JBoss Web/Tomcat environment where
-        // server logging is done via java.util.logging. So, try to
-        // initialize JBoss Logging to use the JDK logging plugin.
-        // But only if it isn't already initialized to something else!
-        if (logger.getLoggerPlugin().getClass().equals(NullLoggerPlugin.class)) {
-            Logger.setPluginClassName("org.jboss.logging.jdk.JDK14LoggerPlugin");
-
-            logger = Logger.getLogger(ModClusterListener.class);
-        }
-
-        log = logger;
-    }
-*/
     private static final Logger log = Logger.getLogger(ModClusterListener.class);
 
     private final ModClusterServiceMBean service;
@@ -102,7 +85,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
                 for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class, LifecycleListenerFactory.class.getClassLoader())) {
                     return factory;
                 }
-                throw new ServiceConfigurationError(String.format("No %s service provider found.", LifecycleListenerFactory.class.getName()));
+                throw new ServiceConfigurationError(LifecycleListenerFactory.class.getName());
             }
         };
         return AccessController.doPrivileged(action);
@@ -165,7 +148,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
 
                     Registry.getRegistry(null, null).registerComponent(this, name, null);
                 } catch (Exception e) {
-                    log.error(Strings.ERROR_JMX_REGISTER.getString(), e);
+                    log.error(e.getLocalizedMessage(), e);
                 }
             } else if (Lifecycle.STOP_EVENT.equals(type)) {
                 try {
@@ -173,7 +156,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
 
                     Registry.getRegistry(null, null).unregisterComponent(name);
                 } catch (Exception e) {
-                    log.error(Strings.ERROR_JMX_UNREGISTER.getString(), e);
+                    log.error(e.getLocalizedMessage(), e);
                 }
             }
         }

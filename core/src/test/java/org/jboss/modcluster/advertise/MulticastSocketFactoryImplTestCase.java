@@ -55,10 +55,9 @@ public class MulticastSocketFactoryImplTestCase {
     @Test
     public void testMulticastSocketAllowCrossTalk() throws IOException {
         String os = System.getProperty("os.name");
-
+        System.out.println("os.name = " + os);
         // Validate cross-talking behavior on linux only
-        if ((os != null)
-                && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("hp"))) {
+        if ((os != null) && (os.trim().toLowerCase().startsWith("linux") || os.trim().toLowerCase().startsWith("hp"))) {
             System.setProperty("os.name", "OtherOS");
 
             try {
