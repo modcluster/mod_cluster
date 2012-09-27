@@ -515,10 +515,10 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 {
     int i;
     char *pptr = (char *) node;
-    pptr = pptr + node->offset;
     int sizew = conf->workers->elt_size;
     char *ptr = conf->workers->elts;
 
+    pptr = pptr + node->offset;
     proxy_cluster_helper *helper;
     proxy_worker *worker;
     for (i = 0; i < conf->workers->nelts; i++, ptr=ptr+sizew) {
