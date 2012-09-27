@@ -518,9 +518,9 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     int sizew = conf->workers->elt_size;
     char *ptr = conf->workers->elts;
 
-    pptr = pptr + node->offset;
     proxy_cluster_helper *helper;
     proxy_worker *worker;
+    pptr = pptr + node->offset;
     for (i = 0; i < conf->workers->nelts; i++, ptr=ptr+sizew) {
         worker = (proxy_worker *)ptr;
         if (worker->id == node->mess.id && worker->s == (proxy_worker_stat *) pptr)
@@ -981,7 +981,7 @@ static int *find_node_context_host(request_rec *r, proxy_balancer *balancer, con
     /* use r->uri (trans) or r->filename (after canon or rewrite) */
     if (r->filename) {
         const char *scheme = strstr(r->filename, "://");
-        if (scheme)
+        if (scheme && *scheme)
             uri = ap_strchr_c(scheme + 3, '/');
     }
     if (!uri)
@@ -2300,7 +2300,7 @@ static int rewrite_url(request_rec *r, proxy_worker *worker,
     const char *scheme = strstr(*url, "://");
     const char *path = NULL;
 
-    if (scheme)
+    if (scheme && *scheme)
         path = ap_strchr_c(scheme + 3, '/');
 
     /* we break the URL into host, port, uri */
