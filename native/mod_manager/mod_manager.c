@@ -1361,7 +1361,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
 	        if(ou->node == node->mess.id && ou->vhost > vid)
 	            vid = ou->vhost;
             }
-            vid++; // Use next one.
+            vid++; /* Use next one. */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: adding vhost: %d node: %d",
                          vid, node->mess.id);
 
