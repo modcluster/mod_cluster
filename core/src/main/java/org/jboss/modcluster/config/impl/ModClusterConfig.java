@@ -361,6 +361,14 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     public void setSessionDrainingStrategy(SessionDrainingStrategy sessionDrainingStrategy) {
         this.sessionDrainingStrategy = sessionDrainingStrategy;
     }
+    public void setSessionDrainingStrategy(String sessionDrainingStrategy) {
+        if (sessionDrainingStrategy.equalsIgnoreCase("NEVER"))
+           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.NEVER;
+        else if (sessionDrainingStrategy.equalsIgnoreCase("ALWAYS"))
+           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.ALWAYS;
+        else
+           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.DEFAULT;
+    }
 
     // ----------------------------------------------------- SSLConfiguration
 
