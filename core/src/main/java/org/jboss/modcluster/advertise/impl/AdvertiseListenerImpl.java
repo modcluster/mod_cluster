@@ -22,6 +22,7 @@
 package org.jboss.modcluster.advertise.impl;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -435,11 +436,17 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                     AdvertiseListenerImpl.this.listening = true;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                } catch(InterruptedIOException e) {
+                	Thread.currentThread().interrupt();
                 } catch (IOException e) {
                     AdvertiseListenerImpl.this.listening = false;
+                    if (this.socket == null || this.socket.isClosed())
+                    	Thread.currentThread().interrupt();
+                    else {
 
-                    // Do not blow the CPU in case of communication error
-                    Thread.yield();
+                    	// Do not blow the CPU in case of communication error
+                    	Thread.yield();
+                    }
                 }
             }
         }
