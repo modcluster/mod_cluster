@@ -17,9 +17,9 @@
     <url>http://jboss.org/mod_cluster</url>
   
     <scm>
-        <connection>scm:svn:http://anonsvn.jboss.org/repos/mod_cluster/trunk</connection>
-        <developerConnection>scm:svn:https://svn.jboss.org/repos/mod_cluster/trunk</developerConnection>
-        <url>http://fisheye.jboss.org/browse/mod_cluster/trunk</url>
+        <connection>scm:git:https://github.com/modcluster/mod_cluster.git</connection>
+        <developerConnection>scm:git:https://github.com/modcluster/mod_cluster.git</developerConnection>
+        <url>https://github.com/modcluster/mod_cluster</url>
     </scm>
 
     <repositories>
