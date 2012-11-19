@@ -92,6 +92,8 @@ static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the l
 
 static apr_time_t wait_for_remove =  apr_time_from_sec(10); /* wait until that before removing a removed node */
 
+static int enable_options = 0; /* Use OPTIONS * for CPING/CPONG */
+
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
 
@@ -1088,6 +1090,101 @@ cleanup:
                          "ajp_cping_cpong: Done");
     return status;
 }
+
+static
+apr_status_t ap_proxygetline(apr_bucket_brigade *bb, char *s, int n, request_rec *r,
+                             int fold, int *writen)
+{
+    char *tmp_s = s;
+    apr_status_t rv;
+    apr_size_t len;
+
+    rv = ap_rgetline(&tmp_s, n, &len, r, fold, bb);
+    apr_brigade_cleanup(bb);
+
+    if (rv == APR_SUCCESS) {
+        *writen = (int) len;
+    } else if (rv == APR_ENOSPC) {
+        *writen = n;
+    } else {
+        *writen = -1;
+    }
+
+    return rv;
+}
+/*
+ * Do a ping/pong to the node
+ */
+static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
+                                           request_rec *r,
+                                           apr_interval_time_t timeout)
+{
+    char *srequest;
+    char buffer[HUGE_STRING_LEN];
+    int len;
+    int l, ok;
+    apr_status_t status, rv;
+    apr_interval_time_t org; 
+    apr_bucket_brigade *header_brigade, *tmp_bb;
+    apr_bucket *e;
+    request_rec *rp;
+
+    srequest = apr_pstrcat(r->pool, "OPTIONS * HTTP/1.0\r\nUser-Agent: ",
+                           ap_get_server_banner(),
+                           " (internal mod_cluster connection)\r\n\r\n", NULL);
+    header_brigade = apr_brigade_create(r->pool, p_conn->connection->bucket_alloc);
+    e = apr_bucket_pool_create(srequest, strlen(srequest), r->pool, p_conn->connection->bucket_alloc);
+    APR_BRIGADE_INSERT_TAIL(header_brigade, e);
+    e = apr_bucket_flush_create(p_conn->connection->bucket_alloc);
+    APR_BRIGADE_INSERT_TAIL(header_brigade, e);
+
+    status = ap_pass_brigade(p_conn->connection->output_filters, header_brigade);
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
+                      "http_cping_cpong(): send failed");
+        return status;
+    }
+    apr_brigade_cleanup(header_brigade);
+
+    status = apr_socket_timeout_get(p_conn->sock, &org);
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
+                      "http_cping_cpong(): apr_socket_timeout_get failed");
+        return status;
+    }
+    status = apr_socket_timeout_set(p_conn->sock, timeout);
+
+    /* we need to read the answer */
+    status = APR_EGENERAL;
+    rp = ap_proxy_make_fake_req(p_conn->connection, r);
+    rp->proxyreq = PROXYREQ_RESPONSE;
+    tmp_bb = apr_brigade_create(r->pool, p_conn->connection->bucket_alloc);
+    while (1) {
+        apr_status_t rc;
+        rc = ap_proxygetline(tmp_bb, buffer, sizeof(buffer), rp, 0, &len);
+        if (len <= 0)
+           break;
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "http_cping_cpong: received %s", buffer);
+        status = APR_SUCCESS;
+    }
+    if (status != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
+               "http_cping_cpong: ap_getline failed");
+    }
+    rv = apr_socket_timeout_set(p_conn->sock, org);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+               "http_cping_cpong: apr_socket_timeout_set failed");
+        return rv;
+    }
+
+    p_conn->close++;
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "http_cping_cpong: Done");
+    return status;
+}
+
 static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *worker,
                                                char *url, proxy_server_conf *conf,
                                                apr_interval_time_t ping, apr_interval_time_t workertimeout)
@@ -1111,9 +1208,15 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
 #endif
     int is_ssl = 0;
 
+    if ((strcasecmp(scheme, "HTTPS") == 0 ||
+        strcasecmp(scheme, "HTTP") == 0) &&
+        !enable_options) {
+        /* we cant' do CPING/CPONG so we just return OK */
+        return APR_SUCCESS;
+    }
     if (strcasecmp(scheme, "HTTPS") == 0) {
 
-         if (!ap_proxy_ssl_enable(NULL)) {
+        if (!ap_proxy_ssl_enable(NULL)) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy_cluster_try_pingpong: cping_cpong failed (mod_ssl not configured?)");
             return APR_EGENERAL;
@@ -1226,7 +1329,6 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
                      "proxy_cluster_try_pingpong: connected to backend");
     }
 
-    /* XXX: For the moment we support only AJP */
     if (strcasecmp(scheme, "AJP") == 0) {
         status = ajp_handle_cping_cpong(backend->sock, r, timeout);
         if (status != APR_SUCCESS) {
@@ -1235,6 +1337,27 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
             backend->close++;
         }
         
+    } else {
+        if (!backend->connection) {
+            if ((status = ap_proxy_connection_create(scheme, backend,
+                                                     (conn_rec *) NULL, r->server)) == OK) {
+                if (is_ssl) {
+                    apr_table_set(backend->connection->notes, "proxy-request-hostname",
+                                  uri->hostname);
+                }
+            } else {
+                ap_proxy_release_connection(scheme, backend, r->server);
+                return status;
+            }
+        }
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "proxy_cluster_try_pingpong: %d" , backend->connection);
+        status = http_handle_cping_cpong(backend, r, timeout);
+        if (status != APR_SUCCESS) {
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "proxy_cluster_try_pingpong: cping_cpong failed");
+            backend->close++;
+        }
     }
     ap_proxy_release_connection(scheme, backend, r->server);
     return status;
@@ -3714,6 +3837,12 @@ static const char*cmd_proxy_cluster_wait_for_remove(cmd_parms *cmd, void *dummy,
     return NULL;
 }
 
+static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy)
+{
+    enable_options = -1;
+    return NULL;
+}
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -3743,6 +3872,13 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "WaitBeforeRemove - Time in seconds before a node removed is forgotten by httpd: (Default: 10 seconds)"
+    ),
+    AP_INIT_NO_ARGS(
+        "EnableOptions",
+         cmd_proxy_cluster_enable_options,
+         NULL,
+         OR_ALL,
+         "EnableOptions - Use OPTIONS with http/https for CPING/CPONG."
     ),
     {NULL}
 };
