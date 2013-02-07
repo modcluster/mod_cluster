@@ -2760,6 +2760,11 @@ static int proxy_cluster_trans(request_rec *r)
                 ap_regmatch_t regm[AP_MAX_REG_MATCH];
                 if (ent->regex) {
                     if (!ap_regexec(ent->regex, r->uri, AP_MAX_REG_MATCH, regm, 0)) {
+#if HAVE_CLUSTER_EX_DEBUG
+                        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                                    "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s (match: regexp)",
+                                     balancer, r->filename, r->unparsed_uri);
+#endif
                         return DECLINED;
                     }
                 }
@@ -2775,6 +2780,11 @@ static int proxy_cluster_trans(request_rec *r)
                         fake = ent->fake;
                     }
                     if (alias_match(r->uri, fake)) {
+#if HAVE_CLUSTER_EX_DEBUG
+                        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                                    "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s (match: %s)",
+                                     balancer, r->filename, r->unparsed_uri, fake);
+#endif
                         return DECLINED;
                     }
                 }
@@ -3635,7 +3645,7 @@ static void proxy_cluster_hooks(apr_pool_t *p)
     /* check the url and give the mapping to mod_proxy */
     ap_hook_translate_name(proxy_cluster_trans, aszPre, aszSucc, APR_HOOK_FIRST);
 
-    proxy_hook_canon_handler(proxy_cluster_canon, NULL, NULL, APR_HOOK_FIRST);
+    proxy_hook_canon_handler(proxy_cluster_canon, NULL, aszSucc, APR_HOOK_FIRST);
  
     proxy_hook_pre_request(proxy_cluster_pre_request, NULL, NULL, APR_HOOK_FIRST);
     proxy_hook_post_request(proxy_cluster_post_request, NULL, NULL, APR_HOOK_FIRST);
