@@ -1673,14 +1673,20 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
     node_context *best;
     int nbest;
     const char *uri = NULL;
+    const char *luri = NULL;
 
     /* use r->uri (trans) or r->filename (after canon or rewrite) */
     if (r->filename) {
         const char *scheme = strstr(r->filename, "://");
         if (scheme)
-            uri = ap_strchr_c(scheme + 3, '/');
+            luri = ap_strchr_c(scheme + 3, '/');
     }
-    if (!uri)
+    if (!luri)
+       luri = r->uri;
+    uri = ap_strchr_c(luri, '?');
+    if (uri)
+       uri = apr_pstrndup(r->pool, luri, uri - luri);
+    else
        uri = r->uri;
 
     /* read the contexts */
@@ -1724,8 +1730,8 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
         if (contexts[j] == -1) continue;
         context = &context_table->context_info[j]; 
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                         "find_node_context_host: node: %d vhost: %d context: %s",
-                          context->node, context->vhost, context->context);
+                         "find_node_context_host: %s node: %d vhost: %d context: %s",
+                          uri, context->node, context->vhost, context->context);
     }
 #endif
 
