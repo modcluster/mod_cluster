@@ -3645,7 +3645,7 @@ static void proxy_cluster_hooks(apr_pool_t *p)
     /* check the url and give the mapping to mod_proxy */
     ap_hook_translate_name(proxy_cluster_trans, aszPre, aszSucc, APR_HOOK_FIRST);
 
-    proxy_hook_canon_handler(proxy_cluster_canon, NULL, aszSucc, APR_HOOK_FIRST);
+    proxy_hook_canon_handler(proxy_cluster_canon, NULL, NULL, APR_HOOK_FIRST);
  
     proxy_hook_pre_request(proxy_cluster_pre_request, NULL, NULL, APR_HOOK_FIRST);
     proxy_hook_post_request(proxy_cluster_post_request, NULL, NULL, APR_HOOK_FIRST);
