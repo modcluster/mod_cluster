@@ -22,15 +22,17 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
@@ -65,29 +67,32 @@ public class SendTrafficLoadServlet extends LoadServlet {
         int duration = Integer.parseInt(this.getParameter(request, DURATION, DEFAULT_DURATION));
 
         String size = this.getParameter(request, SIZE, "100");
-        String url = this.createLocalURL(request, Collections.singletonMap(SIZE, size));
+        URI uri = this.createLocalURI(request, Collections.singletonMap(SIZE, size));
 
-        HttpClient client = new HttpClient();
-        HttpMethod method = new PostMethod(url);
-
-        for (int i = 0; i < duration; ++i) {
-            this.log("Sending send traffic load request to: " + url);
-
-            long start = System.currentTimeMillis();
-
-            client.executeMethod(method);
-
-            long ms = 1000 - (System.currentTimeMillis() - start);
-
-            if (ms > 0) {
-                try {
-                    Thread.sleep(ms);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+        HttpClient client = new DefaultHttpClient();
+        try {
+            
+            for (int i = 0; i < duration; ++i) {
+                this.log("Sending send traffic load request to: " + uri);
+                
+                long start = System.currentTimeMillis();
+                
+                HttpClientUtils.closeQuietly(client.execute(new HttpPost(uri)));
+                
+                long ms = 1000 - (System.currentTimeMillis() - start);
+                
+                if (ms > 0) {
+                    try {
+                        Thread.sleep(ms);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
+        } finally {
+            HttpClientUtils.closeQuietly(client);
         }
-
+        
         this.writeLocalName(request, response);
     }
 }

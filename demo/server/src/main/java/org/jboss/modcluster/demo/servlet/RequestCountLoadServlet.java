@@ -22,14 +22,16 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
@@ -49,13 +51,17 @@ public class RequestCountLoadServlet extends LoadServlet {
         int count = Integer.parseInt(this.getParameter(request, COUNT, "50"));
 
         if (count > 1) {
-            String url = this.createLocalURL(request, Collections.singletonMap(COUNT, String.valueOf(count - 1)));
+            URI uri = this.createLocalURI(request, Collections.singletonMap(COUNT, String.valueOf(count - 1)));
 
-            this.log("Sending request count request to: " + url);
+            this.log("Sending request count request to: " + uri);
 
-            HttpClient client = new HttpClient();
-            HttpMethod method = new GetMethod(url);
-            client.executeMethod(method);
+            HttpClient client = new DefaultHttpClient();
+            
+            try {
+                HttpClientUtils.closeQuietly(client.execute(new HttpGet(uri)));
+            } finally {
+                HttpClientUtils.closeQuietly(client);
+            }
         }
 
         this.writeLocalName(request, response);
