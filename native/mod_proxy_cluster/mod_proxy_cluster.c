@@ -2403,7 +2403,7 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
         ap_get_server_revision(&version);
 
         ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                     "httpd version %d.%d.%d mismatch detected", version.major, version.minor, version.patch);
+                     "httpd version %d.%d.%d doesn't match version used by mod_proxy_cluster.c", version.major, version.minor, version.patch);
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 #else
         if (version.patch < 8) {
