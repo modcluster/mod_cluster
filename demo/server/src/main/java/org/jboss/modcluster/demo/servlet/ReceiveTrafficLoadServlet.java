@@ -22,14 +22,17 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
-import org.apache.commons.httpclient.methods.PutMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
@@ -51,31 +54,36 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
 
         int size = Integer.parseInt(this.getParameter(request, SIZE, "100")) * 1024;
 
-        HttpClient client = new HttpClient();
-        RequestEntity entity = new ByteArrayRequestEntity(new byte[size]);
+        HttpClient client = new DefaultHttpClient();
+        try {
+            HttpEntity entity = new ByteArrayEntity(new byte[size]);
+    
+            URI uri = this.createLocalURI(request, null);
+    
+            for (int i = 0; i < duration; ++i) {
+                long start = System.currentTimeMillis();
+    
+                this.log("Sending " + (size / 1024) + "KB packet to: " + uri);
+    
+                HttpPut put = new HttpPut(uri);
+                put.setEntity(entity);
+                
+                HttpClientUtils.closeQuietly(client.execute(put));
 
-        String url = this.createLocalURL(request, null);
-
-        for (int i = 0; i < duration; ++i) {
-            long start = System.currentTimeMillis();
-
-            this.log("Sending " + (size / 1024) + "KB packet to: " + url);
-
-            PutMethod method = new PutMethod(url);
-            method.setRequestEntity(entity);
-            client.executeMethod(method);
-
-            long ms = 1000 - (System.currentTimeMillis() - start);
-
-            if (ms > 0) {
-                try {
-                    Thread.sleep(ms);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
+                long ms = 1000 - (System.currentTimeMillis() - start);
+    
+                if (ms > 0) {
+                    try {
+                        Thread.sleep(ms);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
                 }
             }
+        } finally {
+            HttpClientUtils.closeQuietly(client);
         }
-
+        
         this.writeLocalName(request, response);
     }
 }

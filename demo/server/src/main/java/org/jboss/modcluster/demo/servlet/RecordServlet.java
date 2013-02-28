@@ -60,6 +60,12 @@ public class RecordServlet extends LoadServlet {
             }
         }
 
+        if (!request.getAttributeNames().hasMoreElements()) {
+            System.out.println("No request attributes");
+        }
+        for (String attribute: java.util.Collections.list(request.getAttributeNames())) {
+            System.out.println(attribute + " = " + request.getAttribute(attribute));
+        }
         response.setHeader("X-ClusterNode", this.getJvmRoute());
 
         this.writeLocalName(request, response);

@@ -22,15 +22,19 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpParams;
 
 /**
  * @author Paul Ferraro
@@ -56,12 +60,12 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
 
             long end = System.currentTimeMillis() + duration;
 
-            String url = this.createLocalURL(request, Collections.singletonMap(END, String.valueOf(end)));
-            Runnable task = new ExecuteMethodTask(url);
+            URI uri = this.createLocalURI(request, Collections.singletonMap(END, String.valueOf(end)));
+            Runnable task = new ExecuteMethodTask(uri);
 
             int count = Integer.parseInt(this.getParameter(request, COUNT, "50"));
 
-            this.log("Sending " + count + " concurrent requests to: " + url);
+            this.log("Sending " + count + " concurrent requests to: " + uri);
 
             Thread[] threads = new Thread[count];
 
@@ -86,39 +90,46 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
             long end = Long.parseLong(parameter);
 
             if (end > System.currentTimeMillis()) {
-                String url = this.createLocalURL(request, Collections.singletonMap(END, String.valueOf(end)));
-                response.setStatus(307);
-                response.setHeader("location", response.encodeRedirectURL(url));
+                URI uri = this.createLocalURI(request, Collections.singletonMap(END, String.valueOf(end)));
+                response.setStatus(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+                response.setHeader("location", response.encodeRedirectURL(uri.toString()));
             }
         }
     }
 
     private class ExecuteMethodTask implements Runnable {
-        private final String url;
+        private final URI uri;
 
-        ExecuteMethodTask(String url) {
-            this.url = url;
+        ExecuteMethodTask(URI uri) {
+            this.uri = uri;
         }
 
         @Override
         public void run() {
-            HttpClient client = new HttpClient();
-            String url = this.url;
+            URI uri = this.uri;
 
+            HttpClient client = new DefaultHttpClient();
             try {
-                while (url != null) {
-                    HttpMethod method = new HeadMethod(url);
+                while (uri != null) {
+                    HttpHead head = new HttpHead(uri);
+                    HttpParams params = head.getParams();
                     // Disable auto redirect following, to allow circular redirect
-                    method.setFollowRedirects(false);
+                    params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+                    head.setParams(params);
 
-                    int code = client.executeMethod(method);
-
-                    url = (code == 307) ? method.getResponseHeader("location").getValue() : null;
+                    HttpResponse response = client.execute(head);
+                    try {
+                        int code = response.getStatusLine().getStatusCode();
+                        
+                        uri = (code == HttpServletResponse.SC_TEMPORARY_REDIRECT) ? URI.create(response.getFirstHeader("location").getValue()) : null;
+                    } finally {
+                        HttpClientUtils.closeQuietly(response);
+                    }
                 }
-            } catch (HttpException e) {
-                BusyConnectorsLoadServlet.this.log(e.getLocalizedMessage(), e);
             } catch (IOException e) {
                 BusyConnectorsLoadServlet.this.log(e.getLocalizedMessage(), e);
+            } finally {
+                HttpClientUtils.closeQuietly(client);
             }
         }
     }
