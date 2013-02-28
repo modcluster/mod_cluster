@@ -22,14 +22,16 @@
 package org.jboss.modcluster.demo.servlet;
 
 import java.io.IOException;
+import java.net.URI;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.methods.HeadMethod;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
@@ -46,8 +48,7 @@ public class ActiveSessionsLoadServlet extends LoadServlet {
     @Override
     protected void doHead(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(true);
-        this.log("Handling session load request from: " + request.getRequestURL().toString() + ", using session id: "
-                + session.getId());
+        this.log("Handling session load request from: " + request.getRequestURL().toString() + ", using session id: " + session.getId());
     }
 
     /**
@@ -59,16 +60,19 @@ public class ActiveSessionsLoadServlet extends LoadServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int count = Integer.parseInt(this.getParameter(request, COUNT, "20"));
 
-        String url = this.createLocalURL(request, null);
+        URI uri = this.createLocalURI(request, null);
 
-        this.log("Sending " + count + " requests to: " + url);
+        this.log("Sending " + count + " requests to: " + uri);
 
-        for (int i = 0; i < count; ++i) {
-            HttpClient client = new HttpClient();
-            HttpMethod method = new HeadMethod(url);
-            client.executeMethod(method);
+        HttpClient client = new DefaultHttpClient();
+        try {
+            for (int i = 0; i < count; ++i) {
+                HttpClientUtils.closeQuietly(client.execute(new HttpHead(uri)));
+            }
+        } finally {
+            HttpClientUtils.closeQuietly(client);
         }
-
+        
         this.writeLocalName(request, response);
     }
 }
