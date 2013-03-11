@@ -26,7 +26,6 @@
       <listitem>
         <para>
           A <code>ContainerEventHandler</code> in which to handle events from the web container.
-          There are two available implementations, the choice of which dictates the mode in which mod_cluster will operate: <link linkend="HAModClusterService">clustered</link> or <link linkend="ModClusterService">non-clustered</link>.
         </para>
       </listitem>
       <listitem>
@@ -39,8 +38,7 @@
 <programlisting><![CDATA[<bean name="ModClusterListener" class="org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter"> 
   <constructor> 
     <parameter class="org.jboss.modcluster.container.ContainerEventHandler"> 
-      <inject bean="ModClusterService"/><!-- Non-clustered mode --> 
-      <!--inject bean="HAModClusterService"/--><!-- Clustered mode --> 
+      <inject bean="ModClusterService"/>
     </parameter> 
     <parameter class="javax.management.MBeanServer"> 
       <inject bean="JMXKernel" property="mbeanServer"/> 
@@ -89,7 +87,7 @@
       </para>
       <para>e.g.</para>
 <programlisting><![CDATA[
-<bean name="ModClusterConfig" class="org.jboss.modcluster.config.ha.HAModClusterConfig" mode="On Demand">
+<bean name="ModClusterConfig" class="org.jboss.modcluster.config.ModClusterConfig" mode="On Demand">
   <!-- Specify configuration properties here -->
 </bean>]]></programlisting>
     </section>
