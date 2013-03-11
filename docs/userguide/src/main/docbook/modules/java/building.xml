@@ -25,7 +25,7 @@
       <listitem>
         <para>Download the mod_cluster sources</para>
         <para>
-          <programlisting>svn co http://anonsvn.jboss.org/repos/mod_cluster/trunk/ mod_cluster</programlisting>
+          <programlisting>git clone git@github.com:modcluster/mod_cluster.git</programlisting>
         </para>
       </listitem>
       <listitem>
