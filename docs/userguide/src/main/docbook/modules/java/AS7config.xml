@@ -9,9 +9,7 @@
   
   <section id="ModClusterSubSystem">
     <title>ModCluster Subsystem in JBoss AS7</title>
-    <para>The mod_cluster integration is done via the modcluster subsystem. In AS7 only 1.1.x is supported.
-          Addition HA is not supported in AS version 7.0.x but in it will be in version 7.1.x and after.
-    </para>
+    <para>The mod_cluster integration is done via the modcluster subsystem. In AS7 only 1.1.x and later is supported.</para>
   </section>
   <section id="ModClusterSubSystemMiniConfiguration">
     <title>ModCluster Subsystem minimal configuration</title>
