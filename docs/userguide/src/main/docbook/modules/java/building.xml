@@ -25,7 +25,7 @@
       <listitem>
         <para>Download the mod_cluster sources</para>
         <para>
-          <programlisting>git clone git@github.com:modcluster/mod_cluster.git</programlisting>
+          <programlisting>git clone git://github.com/modcluster/mod_cluster.git</programlisting>
         </para>
       </listitem>
       <listitem>
