@@ -131,8 +131,8 @@
       <listitem><para>httpd binaries for common platforms</para></listitem>
       <listitem><para>JBoss AS/JBossWeb/Tomcat binary distribution</para></listitem>
     </itemizedlist>
-    <para>Alternatively, you can build from source using the subversion repository:</para>
-    <para><ulink url="http://anonsvn.jboss.org/repos/mod_cluster/tags/">http://anonsvn.jboss.org/repos/mod_cluster/tags/<emphasis>release</emphasis>/</ulink></para>
+    <para>Alternatively, you can build from source using the Git repository:</para>
+    <para><ulink url="https://github.com/modcluster/mod_cluster/tags">https://github.com/modcluster/mod_cluster/tags<emphasis>release</emphasis>/</ulink></para>
     <itemizedlist>
       <listitem><para>Building <link linkend="native.building">httpd modules</link> </para></listitem>
       <listitem><para>Building <link linkend="java.building">server-side components</link> </para></listitem>

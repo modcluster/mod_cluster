@@ -85,7 +85,7 @@ X-Manager-Host: 10.33.144.3</programlisting>
         <listitem>
           <para>
             Check that Advertise message are received on the cluster node.
-            A <ulink url="http://anonsvn.jboss.org/repos/mod_cluster/trunk/test/java/Advertize.java">small Java</ulink> utility could be used to check Advertise.
+            A <ulink url="https://github.com/modcluster/mod_cluster/blob/master/test/java/Advertize.java">small Java</ulink> utility could be used to check Advertise.
             It is in the mod_cluster repository and can be compiled using javac.
             A compiled version can be found under in /opt/jboss/httpd/tools in the bundles.
             Run it using java Advertise multicastaddress port.
