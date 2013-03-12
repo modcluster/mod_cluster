@@ -18,7 +18,7 @@
     long waiting time when the node IP can't be resolved that should not
     happen so you can skip the patch part if you don't want to rebuild httpd).
     <ulink
-    url="http://anonsvn.jboss.org/repos/mod_cluster/trunk/native/mod_proxy_cluster/mod_proxy_ajp.patch">mod_proxy_ajp.patch</ulink></para>
+    url="https://github.com/modcluster/mod_cluster/blob/master/native/mod_proxy_cluster/mod_proxy_ajp.patch">mod_proxy_ajp.patch</ulink></para>
 
     <para><programlisting>(cd modules/proxy
   patch -p0 &lt; $location/mod_proxy_ajp.patch
@@ -47,7 +47,7 @@
 
     <para>Download the mod_cluster sources:</para>
 
-    <para><programlisting>svn co http://anonsvn.jboss.org/repos/mod_cluster/trunk/ mod_cluster</programlisting></para>
+    <para><programlisting>git clone git://github.com/modcluster/mod_cluster.git</programlisting></para>
 
     <para>Build the mod_cluster modules components, for each subdirectory
     advertise, mod_manager, mod_proxy_cluster and mod_slotmem do something

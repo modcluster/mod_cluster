@@ -193,7 +193,7 @@
     <section>
       <title>mod_cluster-jboss-beans.xml</title>
       <para>
-        The JBoss microcontainer configuration for mod_cluster 1.1.x is *not* compatible with the configuration for 1.2.x.
+        The JBoss microcontainer configuration for mod_cluster 1.1.x is <emphasis>not</emphasis> compatible with the configuration for 1.2.x.
         you need to change the ModClusterListener mbean class to:
         "org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter".
       </para>
@@ -270,7 +270,7 @@
     <section>
       <title>mod_cluster-jboss-beans.xml</title>
       <para>
-        The JBoss microcontainer configuration for mod_cluster 1.0.x is *not* compatible with the configuration for 1.1.x.
+        The JBoss microcontainer configuration for mod_cluster 1.0.x is <emphasis>not</emphasis> compatible with the configuration for 1.1.x.
         If you had customized your mod_cluster 1.0.x configuration, please start with the default configuration contained in the 1.1.x mod_cluster.sar and reapply any changes.
       </para>
       <section>
