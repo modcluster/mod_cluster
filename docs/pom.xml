@@ -10,7 +10,7 @@
   <artifactId>org.jboss.mod_cluster-docs</artifactId>
   <packaging>pom</packaging>
   
-  <name>mod_cluster Documentation</name>
+  <name>mod_cluster: Documentation</name>
   <url>http://jboss.org/mod_cluster_docs</url>
 
   <modules>

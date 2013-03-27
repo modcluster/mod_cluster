@@ -230,6 +230,7 @@
                 <module>container</module>
                 <module>demo</module>
                 <module>sar</module>
+                <module>docs</module>
             </modules>
             <build>
                 <plugins>
