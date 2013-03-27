@@ -32,6 +32,7 @@
 
     <properties>
         <version.jboss-logging>3.1.2.GA</version.jboss-logging>
+        <version.jboss-logging-processor>1.1.0.Beta1</version.jboss-logging-processor>
         <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.jbossweb>2.1.12.GA</version.jbossweb>
@@ -42,8 +43,6 @@
         <version.junit>4.10</version.junit>
         <version.mockito>1.9.0</version.mockito>
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
-        <version.jboss-ha-server-api>2.0.0.Final</version.jboss-ha-server-api>
-        <version.jboss-kernel>2.0.10.GA</version.jboss-kernel>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -58,15 +57,9 @@
                 <version>${version.jboss-logging}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.microcontainer</groupId>
-                <artifactId>jboss-kernel</artifactId>
-                <version>${version.jboss-kernel}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.cluster</groupId>
-                <artifactId>jboss-ha-server-api</artifactId>
-                <version>${version.jboss-ha-server-api}</version>
+                <groupId>org.jboss.logging</groupId>
+                <artifactId>jboss-logging-processor</artifactId>
+                <version>${version.jboss-logging-processor}</version>
             </dependency>
 
             <dependency>
@@ -189,7 +182,6 @@
                 <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
-                <module>ha</module>
                 <module>demo</module>
             </modules>
         </profile>
@@ -236,7 +228,6 @@
                 <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
-                <module>ha</module>
                 <module>demo</module>
                 <module>sar</module>
             </modules>

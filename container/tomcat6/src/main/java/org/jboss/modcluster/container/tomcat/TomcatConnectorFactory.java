@@ -25,6 +25,9 @@ package org.jboss.modcluster.container.tomcat;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.catalina.ConnectorFactory;
 
+/**
+ * @author Paul Ferraro
+ */
 public class TomcatConnectorFactory implements ConnectorFactory {
     @Override
     public Connector createConnector(org.apache.catalina.connector.Connector connector) {
