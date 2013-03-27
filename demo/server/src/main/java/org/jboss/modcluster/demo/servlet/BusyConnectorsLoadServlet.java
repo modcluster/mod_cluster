@@ -116,9 +116,9 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
                     url = (code == 307) ? method.getResponseHeader("location").getValue() : null;
                 }
             } catch (HttpException e) {
-                BusyConnectorsLoadServlet.this.log(e.getMessage(), e);
+                BusyConnectorsLoadServlet.this.log(e.getLocalizedMessage(), e);
             } catch (IOException e) {
-                BusyConnectorsLoadServlet.this.log(e.getMessage(), e);
+                BusyConnectorsLoadServlet.this.log(e.getLocalizedMessage(), e);
             }
         }
     }

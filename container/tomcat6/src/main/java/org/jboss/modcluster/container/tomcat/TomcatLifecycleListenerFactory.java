@@ -26,6 +26,9 @@ import org.apache.catalina.LifecycleListener;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.catalina.LifecycleListenerFactory;
 
+/**
+ * @author Paul Ferraro
+ */
 public class TomcatLifecycleListenerFactory implements LifecycleListenerFactory {
 
     @Override

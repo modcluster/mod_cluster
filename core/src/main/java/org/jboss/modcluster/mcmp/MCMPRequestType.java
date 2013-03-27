@@ -28,8 +28,15 @@ package org.jboss.modcluster.mcmp;
  * @version $Revision$
  */
 public enum MCMPRequestType {
-    CONFIG("CONFIG", true), ENABLE_APP("ENABLE-APP", false), DISABLE_APP("DISABLE-APP", false), STOP_APP("STOP-APP", false), REMOVE_APP(
-            "REMOVE-APP", false), STATUS("STATUS", false), INFO("INFO", false), DUMP("DUMP", false), PING("PING", false);
+    CONFIG("CONFIG", true),
+    ENABLE_APP("ENABLE-APP", false),
+    DISABLE_APP("DISABLE-APP", false),
+    STOP_APP("STOP-APP", false),
+    REMOVE_APP("REMOVE-APP", false),
+    STATUS("STATUS", false),
+    INFO("INFO", false),
+    DUMP("DUMP", false),
+    PING("PING", false);
 
     private final String command;
     private final boolean establishesServer;
@@ -37,10 +44,6 @@ public enum MCMPRequestType {
     private MCMPRequestType(String command, boolean establishesServer) {
         this.command = command;
         this.establishesServer = establishesServer;
-    }
-
-    public String getCommand() {
-        return this.command;
     }
 
     public boolean getEstablishesServer() {
