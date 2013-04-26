@@ -84,7 +84,7 @@
                 <varlistentry>
                   <term>DEFAULT</term>
                   <listitem>
-                    <para>Drain sessions before web application undeploy only if the web application is non-disributable.</para>
+                    <para>Drain sessions before web application undeploy only if the web application is non-distributable.</para>
                   </listitem>
                 </varlistentry>
                 <varlistentry>
@@ -172,9 +172,9 @@
             <entry>new SystemPropertyJvmRouteFactory(new UUIDJvmRouteFactory(), "jboss.mod_cluster.jvmRoute")</entry>
             <entry>Configuration</entry>
             <entry>
-             Defines the strategy for determing the jvm route of a node, if none was specified in server.xml.
+             Defines the strategy for determining the jvm route of a node, if none was specified in server.xml.
              The default factory first consults the <code>jboss.mod_cluster.jvmRoute</code> system property.
-             If this system property is undefined, the jvm route is assiged a UUID.
+             If this system property is undefined, the jvm route is assigned a UUID.
             </entry>
           </row>
         </tbody>
@@ -229,7 +229,7 @@
             <entry>-1</entry>
             <entry>Balancer</entry>
             <entry>
-              <para>Number of seconds to wait for a worker to become available to handle a request. When no workers of a balancer are usuable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
+              <para>Number of seconds to wait for a worker to become available to handle a request. When no workers of a balancer are usable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the balancer mod_proxy documentation. A value of -1 indicates that the httpd will not wait for a worker to be available and will return an error if none is available.</para>
             </entry>
            </row>
           <row>
@@ -257,7 +257,7 @@
             <entry>Node</entry>
             <entry>
               <para>
-                Time to wait before flushing packets in millseconds.
+                Time to wait before flushing packets in milliseconds.
                 A value of -1 means wait forever.
               </para>
             </entry>
@@ -372,7 +372,7 @@
             <entry>cipher-suite</entry>
             <entry><emphasis>The default JSSE cipher suites</emphasis></entry>
             <entry>
-              <para>Overrides the cipher suites used to init an SSL socket ignoring any unsupported ciphers</para>
+              <para>Overrides the cipher suites used to initialize an SSL socket ignoring any unsupported ciphers</para>
             </entry>
            </row>
           <row>
