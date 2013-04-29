@@ -811,7 +811,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
                     balancer->sticky_force = sticky_force;
                     changed = -1;
                 }
-                if (strcmp(sticky, balancer->sticky) != 0) {
+                if (balancer->sticky == NULL || strcmp(sticky, balancer->sticky) != 0) {
                     balancer->sticky = sticky;
                     changed = -1;
                 }
