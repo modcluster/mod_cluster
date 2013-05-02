@@ -127,6 +127,70 @@
   </section>
 
   <section>
+    <title>1.2.1.Final (03 May 2012)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-304 Port to httpd 2.4</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-305 ProxyPass can break StickySession</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-297 Warnings when compiling mod_cluster</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-192 Add SSL stuff in the FAQ</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-298 mod_cluster doesn't work with IPv6.</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-289 MemManagerFile creates directory but put files in ..</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-290 mod_cluster's mod_advertise can not start on IPv6-only box</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-279 mod_cluster returns 503s after STATUS</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-281 Make stickySessionForce default to false in native part from 1.2.0 release</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.2.0.Final (06 February 2012)</title>
     <informaltable frame="all">
       <tgroup cols="2">
