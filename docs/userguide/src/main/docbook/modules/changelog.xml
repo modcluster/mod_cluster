@@ -7,6 +7,40 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.2.4.Final (24 April 2013)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-315 Convert project to use i18n logging and exceptions</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-328 mod_cluster doesn't recognize ? as a proper context delimiter causing 503s on requests with query strings </para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-9493 mod_cluster returns "Bad Gateway" HTTP ErrorCode 502 with https</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-326 rename NMAKEmakefile to NMAKEmakefile.example</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.2.0.Final (06 February 2012)</title>
     <informaltable frame="all">
       <tgroup cols="2">
