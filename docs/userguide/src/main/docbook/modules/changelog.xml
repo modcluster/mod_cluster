@@ -69,6 +69,64 @@
   </section>
 
   <section>
+    <title>1.2.2.Final (06 September 2012)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-9493 mod_cluster returns "Bad Gateway" HTTP ErrorCode 502 with https</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-9791 mod_rewrite + mod_cluster: one kind of "proxying" RewriteRules don't work on Windows</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-224 when using tomcat manager webapp to stop/start an application the start is ignored by mod_cluster</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-322 Using AverageSystemLoadMetric can improperly cause a Load Factor of 0</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-312 port JBPAPP-8956 to 1.2.x</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-311 mod_manager doesn't handle multiple virtualhosts per node</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-309 mod_proxy_cluster not checking all available balancers (but only the first one) for an available route</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-8957 Segmentation Faut when you run two or more JBoss Server Cluster behind *ONE* Apache Server on RHEL 6</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.2.0.Final (06 February 2012)</title>
     <informaltable frame="all">
       <tgroup cols="2">
