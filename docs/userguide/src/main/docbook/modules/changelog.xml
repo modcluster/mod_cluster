@@ -41,6 +41,34 @@
   </section>
 
   <section>
+    <title>1.2.3.Final (18 October 2012)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-9788 Tomcat with mod_cluster refuses to shut down</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-10168 Option sessionDrainingStrategy in mod_cluster listener in tomcat causes an exception</para>
+            </entry>
+          </row>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>JBPAPP-10147 The shutdown port of tomcat is released before performing actual shut down</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.2.0.Final (06 February 2012)</title>
     <informaltable frame="all">
       <tgroup cols="2">
