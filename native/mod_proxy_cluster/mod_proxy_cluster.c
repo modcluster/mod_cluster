@@ -1687,7 +1687,7 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
     if (uri)
        uri = apr_pstrndup(r->pool, luri, uri - luri);
     else
-       uri = r->uri;
+       uri = luri;
 
     /* read the contexts */
     if (sizecontext == 0)
