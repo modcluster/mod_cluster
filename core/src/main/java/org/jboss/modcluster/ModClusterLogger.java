@@ -99,11 +99,11 @@ public interface ModClusterLogger {
     void drainRequests(int requests, Host host, Context context);
 
     @LogMessage(level = INFO)
-    @Message(id = 21, value = "All pending requests drained from %s:%s in %f.1 seconds")
+    @Message(id = 21, value = "All pending requests drained from %s:%s in %f seconds")
     void requestsDrained(Host host, Context context, float seconds);
 
     @LogMessage(level = WARN)
-    @Message(id = 22, value = "Failed to drain %d remaining pending requests from %s:%s within %f.1 seconds")
+    @Message(id = 22, value = "Failed to drain %d remaining pending requests from %s:%s within %f seconds")
     void requestDrainTimeout(int requests, Host host, Context context, float seconds);
 
     @LogMessage(level = DEBUG)
@@ -111,11 +111,11 @@ public interface ModClusterLogger {
     void drainSessions(int sessions, Host host, Context context);
 
     @LogMessage(level = INFO)
-    @Message(id = 24, value = "All active sessions drained from %s:%s in %f.1 seconds")
+    @Message(id = 24, value = "All active sessions drained from %s:%s in %f seconds")
     void sessionsDrained(Host host, Context context, float seconds);
 
     @LogMessage(level = WARN)
-    @Message(id = 25, value = "Failed to drain %d remaining active sessions from %s:%s within %f.1 seconds")
+    @Message(id = 25, value = "Failed to drain %d remaining active sessions from %s:%s within %f seconds")
     void sessionDrainTimeout(int sessions, Host host, Context context, float seconds);
 
     @LogMessage(level = WARN)
