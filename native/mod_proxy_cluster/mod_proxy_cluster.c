@@ -1161,7 +1161,6 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     char *srequest;
     char buffer[HUGE_STRING_LEN];
     int len;
-    int l, ok;
     apr_status_t status, rv;
     apr_interval_time_t org; 
     apr_bucket_brigade *header_brigade, *tmp_bb;
@@ -2303,7 +2302,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     }
     if (worker == NULL) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "proxy_cluster_isup: Can't find worker for %d", id);
+                     "proxy_cluster_isup: Can't find worker for %d. Check balancer names.", id);
         return 500;
     }
 
