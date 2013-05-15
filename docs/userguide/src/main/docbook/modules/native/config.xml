@@ -297,9 +297,10 @@ Allow from 127.0.0.1
     </section>
 
     <section><title>AdvertiseSecurityKey</title>
-    <para>AdvertiseSecurityKey value: key string to identify the mod_cluster
-    in JBossWEB.</para>
-    <para>Default: No default value. Information not sent.</para>
+    <para>AdvertiseSecurityKey value: key string used to verify advertisements checksums.
+    If configured on either side the verification is required. Both sides must use the 
+    same security key.</para>
+    <para>Default: No default value.</para>
     </section>
 
     <section><title>AdvertiseManagerUrl</title>
