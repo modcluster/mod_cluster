@@ -899,6 +899,20 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
                 *errtype = TYPESYNTAX;
                 return SHOSBIG;
             }
+
+            /* Removes %zone from an address */
+            char *p_read = ptr[i+1], *p_write = ptr[i+1];
+            int flag = 0;
+            while (*p_read) {
+                *p_write = *p_read++;
+                if ((*p_write == '%' || flag) && *p_write != ']') {
+                    flag = 1;
+                } else {
+                    p_write++;
+                }
+            }
+            *p_write = '\0';
+
             strcpy(nodeinfo.mess.Host, ptr[i+1]);
         }
         if (strcasecmp(ptr[i], "Port") == 0) {
