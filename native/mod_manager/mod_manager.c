@@ -446,7 +446,7 @@ struct cluster_host {
 /*
  * cleanup logic
  */
-static cleanup_manager(void *param)
+static apr_status_t cleanup_manager(void *param)
 {
     /* shared memory */
     contextstatsmem = NULL;
@@ -456,6 +456,7 @@ static cleanup_manager(void *param)
     sessionidstatsmem = NULL;
     domainstatsmem = NULL;
     jgroupsidstatsmem = NULL;
+    return APR_SUCCESS;
 }
 static void mc_initialize_cleanup(apr_pool_t *p)
 {
@@ -714,44 +715,6 @@ static int  is_same_node(nodeinfo_t *nodeinfo, nodeinfo_t *node) {
 
     /* All other fields can be modified without causing problems */
     return -1;
-}
-/*
- * Remove host and context belonging to the node
- */
-static void remove_host_context(request_rec *r, int node)
-{
-    /* for read the hosts */
-    int i;
-    int size = loc_get_max_size_host();
-    int *id;
-    int sizecontext = loc_get_max_size_context();
-    int *idcontext;
-
-
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                "remove_host_context processing node: %d", node);
-    if (size == 0)
-        return;
-    id = apr_palloc(r->pool, sizeof(int) * size);
-    idcontext = apr_palloc(r->pool, sizeof(int) * sizecontext);
-    size = get_ids_used_host(hoststatsmem, id);
-    for (i=0; i<size; i++) {
-        hostinfo_t *ou;
-
-        if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
-            continue;
-        if (ou->node == node)
-            remove_host(hoststatsmem, ou);
-    }
-
-    sizecontext = get_ids_used_context(contextstatsmem, idcontext);
-    for (i=0; i<sizecontext; i++) {
-        contextinfo_t *context;
-        if (get_context(contextstatsmem, &context, idcontext[i]) != APR_SUCCESS)
-            continue;
-        if (context->node == node)
-            remove_context(contextstatsmem, context);
-    }
 }
 
 /*
