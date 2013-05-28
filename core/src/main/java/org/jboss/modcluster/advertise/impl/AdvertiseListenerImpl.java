@@ -257,10 +257,12 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     // Check the digest, using our key and server + date.
     // digest is a hex string for httpd.
     boolean verifyDigest(String digest, String server, String date, String sequence) {
-        if (this.md == null)
-            return true;
+        // Neither side is configured to use digest -- pass verification
+        if (this.md == null && digest == null) return true;
+
+        // If either the digest is missing or security key is not set -- fail verification
         String securityKey = this.config.getAdvertiseSecurityKey();
-        if (securityKey == null) return true; // Not set: No used
+        if (securityKey == null || digest == null) return false;
 
         this.md.reset();
         digestString(this.md, securityKey);

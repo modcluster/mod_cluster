@@ -7,3 +7,16 @@ target
 .idea
 *.ipr
 *.iml
+
+# Native built files
+native/*/*.log
+native/*/*.slo
+native/*/*.so
+native/*/*.lo
+native/*/*.o
+native/*/.libs/
+native/*/Makefile
+native/*/autom4te.cache/
+native/*/config.status
+native/*/configure
+
