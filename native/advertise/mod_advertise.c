@@ -283,6 +283,12 @@ static const char *cmd_advertise_h(cmd_parms *cmd, void *dummy,
         "Digest: %s" CRLF \
         "Server: %s" CRLF
 
+#define MA_ADVERTISE_SERVER_FMT_NO_DIGEST \
+        "HTTP/1.0 %s" CRLF \
+        "Date: %s" CRLF \
+        "Sequence: %" APR_INT64_T_FMT CRLF \
+        "Server: %s" CRLF
+
 static const char *hex = "0123456789abcdef";
 
 apr_status_t ma_advertise_server(server_rec *server, int type)
@@ -307,23 +313,28 @@ apr_status_t ma_advertise_server(server_rec *server, int type)
     ap_recent_rfc822_date(dat, apr_time_now());
     asl = ap_get_status_line(ma_advertise_stat);
 
-    /* Create MD5 digest
-     * salt + date + sequence + srvid
-     */
-    apr_md5_init(&md);
-    apr_md5_update(&md, magd->ssalt, APR_MD5_DIGESTSIZE);
-    apr_md5_update(&md, dat, strlen(dat));
-    apr_md5_update(&md, buf, strlen(buf));
-    apr_md5_update(&md, magd->srvid + 1, strlen(magd->srvid) - 1);
-    apr_md5_final(msig, &md);
-    /* Convert MD5 digest to hex string */
-    for (i = 0; i < APR_MD5_DIGESTSIZE; i++) {
-        ssig[c++] = hex[msig[i] >> 4];
-        ssig[c++] = hex[msig[i] & 0x0F];
+    if (mconf->ma_advertise_skey) {
+        /* Create MD5 digest: salt + date + sequence + srvid */
+        apr_md5_init(&md);
+        apr_md5_update(&md, magd->ssalt, APR_MD5_DIGESTSIZE);
+        apr_md5_update(&md, dat, strlen(dat));
+        apr_md5_update(&md, buf, strlen(buf));
+        apr_md5_update(&md, magd->srvid + 1, strlen(magd->srvid) - 1);
+        apr_md5_final(msig, &md);
+        /* Convert MD5 digest to hex string */
+        for (i = 0; i < APR_MD5_DIGESTSIZE; i++) {
+            ssig[c++] = hex[msig[i] >> 4];
+            ssig[c++] = hex[msig[i] & 0x0F];
+        }
+        ssig[c] = '\0';
+
+        n = apr_snprintf(p, l, MA_ADVERTISE_SERVER_FMT,
+                         asl, dat, ma_sequence, ssig, magd->srvid + 1);
+    } else {
+        n = apr_snprintf(p, l, MA_ADVERTISE_SERVER_FMT_NO_DIGEST,
+                         asl, dat, ma_sequence, magd->srvid + 1);
     }
-    ssig[c] = '\0';
-    n = apr_snprintf(p, l, MA_ADVERTISE_SERVER_FMT,
-                     asl, dat, ma_sequence, ssig, magd->srvid + 1);
+
     if (type == MA_ADVERTISE_SERVER) {
         char *ma_advertise_srvs = mconf->ma_advertise_srvs;
         if (strchr(ma_advertise_srvs, ':') != NULL) {

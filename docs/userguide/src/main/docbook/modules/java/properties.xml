@@ -154,7 +154,7 @@
             <entry><emphasis>None</emphasis></entry>
             <entry>Apache HTTPD</entry>
             <entry>
-              <para>If specified, httpd proxy advertisements checksums will be verified using this value as a salt</para>
+              <para>If specified, httpd proxy advertisements checksums (using this value as a salt) will be required to be verified on the server side</para>
             </entry>
           </row>
           <row>
