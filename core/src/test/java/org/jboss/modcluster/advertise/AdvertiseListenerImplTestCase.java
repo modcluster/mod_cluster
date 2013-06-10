@@ -120,6 +120,12 @@ public class AdvertiseListenerImplTestCase {
         byte[] buf = data.toString().getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
 
+        try {
+            InetAddress socketInterface = InetAddress.getLocalHost();
+            this.socket.setInterface(socketInterface);
+        } catch (Exception ex) {
+            ; // Ignore it
+        }
         this.socket.send(packet);
 
         try {
