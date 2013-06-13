@@ -100,11 +100,13 @@ public class MulticastSocketFactoryImplTestCase {
             byte[] buffer = data.getBytes();
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, sendAddress, PORT);
 
-            try {
-                InetAddress socketInterface = InetAddress.getLocalHost();
-                sendSocket.setInterface(socketInterface);
-            } catch (Exception ex) {
-                ; // Ignore it
+            if (!System.getProperty("os.name").startsWith("Windows")) {
+                try {
+                    InetAddress socketInterface = InetAddress.getLocalHost();
+                    sendSocket.setInterface(socketInterface);
+                } catch (Exception ex) {
+                    ; // Ignore it
+                }
             }
 
             sendSocket.send(packet);
