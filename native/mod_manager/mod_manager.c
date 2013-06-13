@@ -858,14 +858,14 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             strcpy(nodeinfo.mess.Domain, ptr[i+1]);
         }
         if (strcasecmp(ptr[i], "Host") == 0) {
+            char *p_read = ptr[i+1], *p_write = ptr[i+1];
+            int flag = 0;
             if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.Host)) {
                 *errtype = TYPESYNTAX;
                 return SHOSBIG;
             }
 
             /* Removes %zone from an address */
-            char *p_read = ptr[i+1], *p_write = ptr[i+1];
-            int flag = 0;
             if (*p_read == '[') {
                 while (*p_read) {
                     *p_write = *p_read++;
