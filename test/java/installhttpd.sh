@@ -167,7 +167,7 @@ else
        echo "Warning the file ${PACKVER}-${BUILD_SYS}-${BUILD_CPU}.${EXT} is reused"
      fi
   else
-    echo "Using $root"
+    echo "Using $root (no download)"
     EXT=file
   fi
 fi
@@ -183,6 +183,7 @@ then
 fi
 case ${EXT} in
   file)
+    echo "copying the install from $root to $BASELOC"
     cp -rp $root/* "$BASELOC"
     case $BUILD_TAG in
       *windows*)
