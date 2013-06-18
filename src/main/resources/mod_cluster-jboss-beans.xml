@@ -8,7 +8,7 @@
   <!-- Entry point: catalina lifecycle listener -->
   <bean name="ModClusterListener" class="org.jboss.modcluster.container.jbossweb.JBossWebEventHandlerAdapter">
     <constructor>
-      <parameter class="org.jboss.modcluster.container.ContainerEventHandler"><inject bean="HAModClusterService"/></parameter>
+      <parameter class="org.jboss.modcluster.container.ContainerEventHandler"><inject bean="ModClusterService"/></parameter>
       <parameter class="javax.management.MBeanServer"><inject bean="JMXKernel" property="mbeanServer"/></parameter>
     </constructor>
     <depends>WebServer</depends>
