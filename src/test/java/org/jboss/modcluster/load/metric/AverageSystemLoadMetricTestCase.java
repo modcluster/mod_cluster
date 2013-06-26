@@ -60,7 +60,8 @@ public class AverageSystemLoadMetricTestCase
    @Test
    public void getLoad() throws Exception
    {
-      EasyMock.expect(this.server.getAttribute(this.name, AverageSystemLoadMetric.SYSTEM_LOAD_AVERAGE)).andReturn(0.1);
+      EasyMock.expect(this.server.getAttribute(this.name, AverageSystemLoadMetric.SYSTEM_LOAD_AVERAGE)).andReturn(0.2);
+      EasyMock.expect(this.server.getAttribute(this.name, AverageSystemLoadMetric.AVAILABLE_PROCESSORS)).andReturn(2);
       
       EasyMock.replay(this.server);
       
