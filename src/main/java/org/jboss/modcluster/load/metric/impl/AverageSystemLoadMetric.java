@@ -38,6 +38,7 @@ import org.jboss.logging.Logger;
 public class AverageSystemLoadMetric extends SourcedLoadMetric<MBeanLoadContext>
 {
    public static final String SYSTEM_LOAD_AVERAGE = "SystemLoadAverage";
+   public static final String AVAILABLE_PROCESSORS = "AvailableProcessors";
    
    private Logger logger = Logger.getLogger(this.getClass());
    
@@ -59,7 +60,7 @@ public class AverageSystemLoadMetric extends SourcedLoadMetric<MBeanLoadContext>
    {
       try
       {
-         return context.getAttribute(SYSTEM_LOAD_AVERAGE, Double.class).doubleValue();
+         return context.getAttribute(SYSTEM_LOAD_AVERAGE, Double.class).doubleValue() / context.getAttribute(AVAILABLE_PROCESSORS, Integer.class).intValue();
       }
       catch (AttributeNotFoundException e)
       {
