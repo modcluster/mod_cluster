@@ -127,7 +127,7 @@ public class Maintest {
     	if (adapter != null) {
                 try {
     			adapter.stop();
-                } catch(IOException ex) {
+                } catch(Exception ex) {
                         // Ignore it.
                 }
         }
