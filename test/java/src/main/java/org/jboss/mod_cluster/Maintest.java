@@ -124,8 +124,13 @@ public class Maintest {
      * Stop the adapter for the ClusterListener
      */
     static void StopClusterListener() {
-    	if (adapter != null)
-    		adapter.stop();
+    	if (adapter != null) {
+                try {
+    			adapter.stop();
+                } catch(IOException ex) {
+                        // Ignore it.
+                }
+        }
     	adapter = null;
     }
     /* ping httpd */
