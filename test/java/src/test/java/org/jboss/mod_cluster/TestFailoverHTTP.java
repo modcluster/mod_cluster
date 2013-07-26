@@ -152,9 +152,22 @@ public class TestFailoverHTTP extends TestCase {
             ex.printStackTrace();
         }
 
-        // Wait until httpd as received the stop messages.
+        // Trace the connectors have stopped.
         Maintest.testPort(8011);
         Maintest.testPort(8010);
+
+        // Wait until httpd as received the stop messages.
+        int countinfo = 0;
+        nodes = null;
+        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            countinfo++;
+        }
+
 
         Maintest.StopClusterListener();
         System.gc();
