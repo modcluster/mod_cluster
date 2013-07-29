@@ -130,7 +130,11 @@ public class MulticastSocketFactoryImplTestCase {
                 Assert.assertFalse(expectSuccessfulRead);
             }
 
-            sendSocket.leaveGroup(sendAddress);
+            try {
+                sendSocket.leaveGroup(sendAddress);
+            } catch (java.net.SocketException ex) {
+                // Ignore it (wrong route configuration probably).
+            }
         } finally {
             sendSocket.close();
         }
