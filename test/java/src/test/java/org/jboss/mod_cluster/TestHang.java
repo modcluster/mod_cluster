@@ -129,7 +129,7 @@ public class TestHang extends TestCase {
             nodes[0] = "node1";
             if (!Maintest.checkProxyInfo(result, nodes))
                 fail("can't find node");
-            while (!Maintest.checkProxyInfo(result, null) && countinfo < 60) {
+            while (!Maintest.checkProxyInfo(result, null) && countinfo < 80) {
                 System.out.println("managerclient.getProxyInfo() " + result);
                 try {
                     Thread.sleep(5000);
