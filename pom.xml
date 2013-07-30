@@ -36,7 +36,7 @@
         <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.jbossweb>2.1.12.GA</version.jbossweb>
-        <version.jbossweb7>7.0.17.Final</version.jbossweb7>
+        <version.jbossweb7>7.2.1.Final</version.jbossweb7>
         <version.commons-http-client>3.1</version.commons-http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>

@@ -143,7 +143,7 @@ public class Test133 extends TestCase {
         System.out.println("Connector restarted");
         
         for (int i=0; i<100; i++) {
-            if (!Maintest.testPort(8011))
+            if (Maintest.testPort(8011))
                 break;
              Maintest.waitn();
         }

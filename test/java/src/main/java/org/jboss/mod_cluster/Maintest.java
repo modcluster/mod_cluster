@@ -45,6 +45,7 @@ import org.apache.catalina.connector.Connector;
 
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.container.catalina.CatalinaEventHandlerAdapter;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
 
@@ -94,6 +95,7 @@ public class Maintest {
         config.setStickySessionRemove(stickySessionRemove);
         config.setStickySessionForce(stickySessionForce);
         config.setNodeTimeout(20000);
+        config.setSessionDrainingStrategy(SessionDrainingStrategyEnum.NEVER);
         if (balancer != null)
         	config.setBalancer(balancer);
         if (loadBalancingGroup != null)
@@ -122,8 +124,13 @@ public class Maintest {
      * Stop the adapter for the ClusterListener
      */
     static void StopClusterListener() {
-    	if (adapter != null)
-    		adapter.stop();
+    	if (adapter != null) {
+                try {
+    			adapter.stop();
+                } catch(Exception ex) {
+                        // Ignore it.
+                }
+        }
     	adapter = null;
     }
     /* ping httpd */
