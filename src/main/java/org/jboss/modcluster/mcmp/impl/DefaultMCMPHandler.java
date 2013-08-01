@@ -898,6 +898,7 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
             String errorType = null;
             int contentLength = 0;
             boolean close = false;
+            boolean chuncked = false;
             if (line != null)
             {
                try
@@ -938,6 +939,9 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                      {
                         if ("close".equalsIgnoreCase(headerValue))
                            close = true;
+                     } else if ("Transfer-Encoding".equalsIgnoreCase(headerName)) {
+                       	if ("chunked".equalsIgnoreCase(headerValue))
+                           chuncked = true;
                      }
                      line = reader.readLine();
                   }
@@ -975,21 +979,46 @@ public class DefaultMCMPHandler extends AbstractMCMPHandler
                }
             }
             
-            if (contentLength == 0 && !close) return null;
+            if (close) {
+                contentLength = Integer.MAX_VALUE;
+            } else if (contentLength == 0 && ! chuncked) {
+                return null;
+            }
             
             // Read the request body
             StringBuilder result = new StringBuilder();
             char[] buffer = new char[512];
-            if (close)
-               contentLength = Integer.MAX_VALUE;
-            while (contentLength > 0)
-            {
-               int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
-               
-               if (bytes <= 0) break;
 
-               result.append(buffer, 0, bytes);
-               contentLength -= bytes;
+            if (chuncked) {
+                boolean skipcrlf = false;
+                for (;;) {
+                    if (skipcrlf)
+                        reader.readLine(); // Skip CRLF
+                    else
+                        skipcrlf = true;
+                    line = reader.readLine();
+                    contentLength = Integer.parseInt(line, 16);
+                    if (contentLength == 0) {
+                        reader.readLine(); // Skip last CRLF.
+                        break;
+                    }
+                    while (contentLength > 0) {
+                        int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+                        if (bytes <= 0)
+                            break;
+                        result.append(buffer, 0, bytes);
+                        contentLength -= bytes;
+                    }
+                }
+            } else {
+       	        while (contentLength > 0) {
+           	    int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
+               
+                    if (bytes <= 0) break;
+
+                    result.append(buffer, 0, bytes);
+                    contentLength -= bytes;
+                }
             }
 
             return result.toString();
