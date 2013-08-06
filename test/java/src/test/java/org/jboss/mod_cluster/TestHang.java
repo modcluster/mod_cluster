@@ -41,6 +41,8 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestHang extends TestCase {
 
+    static int MAXSTOPCOUNT = 100;
+
     /* Test that the sessions are really sticky */
     public void testHang() {
 
@@ -129,8 +131,7 @@ public class TestHang extends TestCase {
             nodes[0] = "node1";
             if (!Maintest.checkProxyInfo(result, nodes))
                 fail("can't find node");
-            while (!Maintest.checkProxyInfo(result, null) && countinfo < 80) {
-                System.out.println("managerclient.getProxyInfo() " + result);
+            while (!Maintest.checkProxyInfo(result, null) && countinfo < MAXSTOPCOUNT) {
                 try {
                     Thread.sleep(5000);
                 } catch (InterruptedException ex) {
@@ -138,8 +139,9 @@ public class TestHang extends TestCase {
                 }
                 countinfo++;
                 result = managerclient.getProxyInfo();
+                System.out.println("managerclient.getProxyInfo( " + countinfo + " ) " + result);
             }
-            if (countinfo == 80)
+            if (countinfo == MAXSTOPCOUNT)
                 fail("node doesn't dispair");
 
         } catch(Exception ex) {
