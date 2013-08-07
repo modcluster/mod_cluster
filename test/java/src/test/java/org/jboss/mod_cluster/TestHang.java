@@ -57,7 +57,7 @@ public class TestHang extends TestCase {
 
         try {
             control = new ControlJBossWeb();
-            control.newJBossWeb("node1",  "localhost");
+            control.newJBossWeb("TestHang1",  "localhost");
             control.addConnector(8011);
             control.addService();
             control.addLifecycleListener("224.0.1.105", 23364);
@@ -84,7 +84,7 @@ public class TestHang extends TestCase {
             	fail("can't getProxyInfo");
 
             String [] nodes = new String[1];
-            nodes[0] = "node1";
+            nodes[0] = "TestHang1";
             count = 0;
             while (!Maintest.checkProxyInfo(result, nodes) && count <= 10) {
                 try {
@@ -100,7 +100,7 @@ public class TestHang extends TestCase {
            
         } catch (Exception ex) {
             ex.printStackTrace();
-            fail("can't find node1 running");
+            fail("can't find TestHang1 running");
         }
 
         String proxy = null;
@@ -128,7 +128,7 @@ public class TestHang extends TestCase {
             result = managerclient.getProxyInfo();
             System.out.println("managerclient.getProxyInfo() " + result);
             String [] nodes = new String[1];
-            nodes[0] = "node1";
+            nodes[0] = "TestHang1";
             if (!Maintest.checkProxyInfo(result, nodes))
                 fail("can't find node");
             while (!Maintest.checkProxyInfo(result, null) && countinfo < MAXSTOPCOUNT) {
