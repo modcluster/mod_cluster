@@ -2012,7 +2012,7 @@ static void manager_info_contexts(request_rec *r, int reduce_display, int allow_
 static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd, int node, char *JVMRoute)
 {
     int size, i, j;
-    int *id;
+    int *id, *idChecker;
     int vhost = 0;
 
     /* Process the Vhosts */
@@ -2021,7 +2021,7 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
-    int idChecker[size];
+    idChecker = apr_palloc(r->pool, sizeof(int) * size);
     memset( idChecker, 0, size*sizeof(int) );
     for (i=0; i<size; i++) {
         hostinfo_t *ou;
