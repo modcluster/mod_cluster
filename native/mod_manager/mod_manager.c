@@ -2021,8 +2021,7 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
-    idChecker = apr_palloc(r->pool, sizeof(int) * size);
-    memset( idChecker, 0, size*sizeof(int) );
+    idChecker = apr_pcalloc(r->pool, sizeof(int) * size);
     for (i=0; i<size; i++) {
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
@@ -2063,6 +2062,9 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
 
                 /* mark this entry as logged */
                 idChecker[j]=1;
+                /* step the outer loop forward if we can */
+                if (i == j-1)
+                    i++;
                 if (reduce_display)
                     ap_rprintf(r, "%.*s ", (int) sizeof(pv->host), pv->host);
                 else
