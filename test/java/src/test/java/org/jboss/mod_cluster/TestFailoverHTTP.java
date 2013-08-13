@@ -40,6 +40,8 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestFailoverHTTP extends TestCase {
 
+    static int MAXSTOPCOUNT = 200;
+
     /* Test failover */
     public void testFailoverHTTP() {
 
@@ -159,7 +161,7 @@ public class TestFailoverHTTP extends TestCase {
         // Wait until httpd as received the stop messages.
         int countinfo = 0;
         nodes = null;
-        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
+        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < MAXSTOPCOUNT) {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
@@ -168,8 +170,9 @@ public class TestFailoverHTTP extends TestCase {
             countinfo++;
         }
 
-
         Maintest.StopClusterListener();
+        if (countinfo == MAXSTOPCOUNT)
+            fail("node doesn't dispair");
         System.gc();
 
         // Test client result.

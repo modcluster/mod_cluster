@@ -41,7 +41,7 @@ import org.apache.catalina.core.StandardServer;
 
 public class TestHang extends TestCase {
 
-    static int MAXSTOPCOUNT = 100;
+    static int MAXSTOPCOUNT = 200;
 
     /* Test that the sessions are really sticky */
     public void testHang() {
