@@ -1143,10 +1143,18 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         i++;
     }
 
-    /* Check for JVMRoute */
+    /* Check for JVMRoute, Alias and Context */
     if (nodeinfo.mess.JVMRoute[0] == '\0') {
         *errtype = TYPESYNTAX;
         return SROUBAD;
+    }
+    if (vhost->context == NULL && vhost->host != NULL) {
+        *errtype = TYPESYNTAX;
+        return SALIBAD;
+    }
+    if (vhost->host == NULL && vhost->context != NULL) {
+        *errtype = TYPESYNTAX;
+        return SCONBAD;
     }
 
     /* Read the node */
@@ -1928,7 +1936,7 @@ static int manager_handler(request_rec *r)
     char *errstring = NULL;
     int errtype = 0;
     char *buff;
-    apr_size_t bufsiz=MAXMESSSIZE;
+    apr_size_t bufsiz=0, len=MAXMESSSIZE;
     apr_status_t status;
     int global = 0;
     char **ptr;
@@ -1946,7 +1954,15 @@ static int manager_handler(request_rec *r)
     /* Use a buffer to read the message */
     buff = apr_pcalloc(r->pool, MAXMESSSIZE);
     input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
-    status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, MAXMESSSIZE);
+
+    while ((status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, len)) == APR_SUCCESS) {
+        apr_brigade_flatten(input_brigade, buff + bufsiz, &len);
+        apr_brigade_cleanup(input_brigade);
+        bufsiz += len;
+        if (bufsiz >= MAXMESSSIZE || len == 0) break;
+        len = MAXMESSSIZE - bufsiz;
+    }
+
     if (status != APR_SUCCESS) {
         errstring = apr_psprintf(r->pool, SREADER, r->method);
         r->status_line = apr_psprintf(r->pool, "ERROR");
@@ -1957,7 +1973,6 @@ static int manager_handler(request_rec *r)
                 "manager_handler %s error: %s", r->method, errstring);
         return 500;
     }
-    apr_brigade_flatten(input_brigade, buff, &bufsiz);
     buff[bufsiz] = '\0';
 
     /* XXX: Size limit it? */
