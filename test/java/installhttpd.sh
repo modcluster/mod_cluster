@@ -324,6 +324,7 @@ UseAlias 1
 MaxContext 150
 Maxnode 40
 Maxjgroupsid 40
+EnableOptions
 EOF
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd
