@@ -2056,8 +2056,8 @@ static void manager_info_contexts(request_rec *r, int reduce_display, int allow_
 }
 static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd, int node, char *JVMRoute)
 {
-    int size, i;
-    int *id;
+    int size, i, j;
+    int *id, *idChecker;
     int vhost = 0;
 
     /* Process the Vhosts */
@@ -2066,6 +2066,7 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
         return;
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
+    idChecker = apr_pcalloc(r->pool, sizeof(int) * size);
     for (i=0; i<size; i++) {
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
@@ -2073,6 +2074,9 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
         if (ou->node != node)
             continue;
         if (ou->vhost != vhost) {
+            /* if we've logged this already, contine */
+            if (idChecker[i] == 1)
+                continue;
             if (vhost && !reduce_display)
                 ap_rprintf(r, "</pre>");
             if (!reduce_display)
@@ -2085,11 +2089,33 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
                 ap_rprintf(r, "<pre>");
             }
             vhost = ou->vhost;
+        
+            if (reduce_display)
+                ap_rprintf(r, "%.*s ", (int) sizeof(ou->host), ou->host);
+            else
+                ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), ou->host);
+            
+            /* Go ahead and check for any other later alias entries for this vhost and print them now */
+            for (j=i+1; j<size; j++) {
+                hostinfo_t *pv;
+                if (get_host(hoststatsmem, &pv, id[j]) != APR_SUCCESS)
+                    continue;
+                if (pv->node != node)
+                    continue;
+                if (pv->vhost != vhost)
+                    continue;
+
+                /* mark this entry as logged */
+                idChecker[j]=1;
+                /* step the outer loop forward if we can */
+                if (i == j-1)
+                    i++;
+                if (reduce_display)
+                    ap_rprintf(r, "%.*s ", (int) sizeof(pv->host), pv->host);
+                else
+                    ap_rprintf(r, "%.*s\n", (int) sizeof(pv->host), pv->host);
+            }
         }
-        if (reduce_display)
-            ap_rprintf(r, "%.*s ", (int) sizeof(ou->host), ou->host);
-        else
-            ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), ou->host);
     }
     if (size && !reduce_display)
         ap_rprintf(r, "</pre>");
