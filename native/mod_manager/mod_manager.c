@@ -1311,10 +1311,18 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         i++;
     }
 
-    /* Check for JVMRoute */
+    /* Check for JVMRoute, Alias and Context */
     if (nodeinfo.mess.JVMRoute[0] == '\0') {
         *errtype = TYPESYNTAX;
         return SROUBAD;
+    }
+    if (vhost->context == NULL) {
+        *errtype = TYPESYNTAX;
+        return SALIBAD;
+    }
+    if (vhost->host == NULL) {
+        *errtype = TYPESYNTAX;
+        return SCONBAD;
     }
 
     /* Read the node */
@@ -2560,7 +2568,7 @@ static int manager_handler(request_rec *r)
     char *errstring = NULL;
     int errtype = 0;
     char *buff;
-    apr_size_t bufsiz;
+    apr_size_t bufsiz=0, maxbufsiz, len;
     apr_status_t status;
     int global = 0;
     int ours = 0;
@@ -2585,18 +2593,26 @@ static int manager_handler(request_rec *r)
 
     /* Use a buffer to read the message */
     if (mconf->maxmesssize)
-       bufsiz = mconf->maxmesssize;
+       maxbufsiz = mconf->maxmesssize;
     else {
        /* we calculate it */
-       bufsiz = 9 + JVMROUTESZ;
-       bufsiz = bufsiz + (mconf->maxhost * HOSTALIASZ) + 7;
-       bufsiz = bufsiz + (mconf->maxcontext * CONTEXTSZ) + 8;
+       maxbufsiz = 9 + JVMROUTESZ;
+       maxbufsiz = bufsiz + (mconf->maxhost * HOSTALIASZ) + 7;
+       maxbufsiz = bufsiz + (mconf->maxcontext * CONTEXTSZ) + 8;
     }
-    if (bufsiz< MAXMESSSIZE)
-       bufsiz = MAXMESSSIZE;
-    buff = apr_pcalloc(r->pool, bufsiz);
+    if (maxbufsiz< MAXMESSSIZE)
+       maxbufsiz = MAXMESSSIZE;
+    buff = apr_pcalloc(r->pool, maxbufsiz);
     input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
-    status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, bufsiz);
+    len = maxbufsiz;
+    while ((status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, len)) == APR_SUCCESS) {
+        apr_brigade_flatten(input_brigade, buff + bufsiz, &len);
+        apr_brigade_cleanup(input_brigade);
+        bufsiz += len;
+        if (bufsiz >= maxbufsiz || len == 0) break;
+        len = maxbufsiz - bufsiz;
+    }
+
     if (status != APR_SUCCESS) {
         errstring = apr_psprintf(r->pool, SREADER, r->method);
         r->status_line = apr_psprintf(r->pool, "ERROR");
@@ -2607,7 +2623,6 @@ static int manager_handler(request_rec *r)
                 "manager_handler %s error: %s", r->method, errstring);
         return 500;
     }
-    apr_brigade_flatten(input_brigade, buff, &bufsiz);
     buff[bufsiz] = '\0';
 
     /* XXX: Size limit it? */
