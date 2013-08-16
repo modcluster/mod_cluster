@@ -322,6 +322,7 @@ RewriteRule ^/?([^/.]+)/(.*)$ balancer://mycluster/test/\$2?partnerpath=/\$1 [P,
 
 UseAlias 1
 MaxContext 150
+MaxHost 130
 Maxnode 40
 Maxjgroupsid 40
 EOF
