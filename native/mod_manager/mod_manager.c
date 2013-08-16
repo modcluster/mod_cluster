@@ -1316,11 +1316,11 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         *errtype = TYPESYNTAX;
         return SROUBAD;
     }
-    if (vhost->context == NULL) {
+    if (vhost->context == NULL && vhost->host != NULL) {
         *errtype = TYPESYNTAX;
         return SALIBAD;
     }
-    if (vhost->host == NULL) {
+    if (vhost->host == NULL && vhost->context != NULL) {
         *errtype = TYPESYNTAX;
         return SCONBAD;
     }
