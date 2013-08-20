@@ -483,12 +483,14 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
         writer.append(command).append(NEW_LINE);
 
-        writer.append("Content-Length: ").append(String.valueOf(body.length())).append(NEW_LINE);
+        if (body.length()>0)
+            writer.append("Content-Length: ").append(String.valueOf(body.length())).append(NEW_LINE);
         writer.append("User-Agent: ClusterListener/1.0").append(NEW_LINE);
         writer.append("Connection: Keep-Alive").append(NEW_LINE);
         writer.write(NEW_LINE);
-        writer.write(body);
-        writer.write(NEW_LINE);
+        if (body.length()>0) {
+            writer.write(body);
+        }
         writer.flush();
 
         // Read the first response line and skip the rest of the HTTP header
