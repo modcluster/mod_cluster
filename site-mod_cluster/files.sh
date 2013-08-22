@@ -1,5 +1,5 @@
 # Change the version 1.2.0.Beta4
-VERSION=1.2.0.Final
+VERSION=1.2.5.dev
 export VERSION
 mkdir -p ${VERSION}
 for file in `cat files.list`
@@ -63,7 +63,7 @@ do
   echo $FILE
   echo $BASE
   (cd ${VERSION}
-   wget http://hudson.qa.jboss.com/hudson/view/Mod_cluster/job/${BASE}/lastSuccessfulBuild/artifact/jbossnative/build/unix/output/$HTTPFILE || exit 1
+   wget http://hudson.qa.jboss.com/hudson/view/mod_cluster/view/mod_cluster/job/${BASE}/lastSuccessfulBuild/artifact/jbossnative/build/unix/output/$HTTPFILE || exit 1
    if [ $HTTPFILE != $FILE ]; then
      mv $HTTPFILE $FILE
    fi
