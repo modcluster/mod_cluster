@@ -341,7 +341,8 @@ public class TestAliases extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        Maintest.TestForNodes(cluster, null);
+        if (!Maintest.TestForNodes(cluster, null))
+            fail("Can't stop nodes");
         Maintest.StopClusterListener();
 
         // Test client result.
