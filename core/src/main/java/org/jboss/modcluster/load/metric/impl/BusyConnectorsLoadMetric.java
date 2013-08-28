@@ -35,10 +35,19 @@ public class BusyConnectorsLoadMetric extends AbstractLoadMetric {
     public double getLoad(Engine engine) throws Exception {
         double busy = 0;
         double max = 0;
+        boolean useCapacity = false;
+
         for (Connector connector : engine.getConnectors()) {
             busy += connector.getBusyThreads();
-            max += connector.getMaxThreads();
+            int maxThreads = connector.getMaxThreads();
+
+            // If connector does not maintain a corresponding explicit capacity value (e.g. Undertow listener), leave
+            // load calculation to defined capacity.
+            if (maxThreads == -1) {
+                useCapacity = true;
+            }
+            max += maxThreads;
         }
-        return busy / max;
+        return useCapacity ? busy : busy / max;
     }
 }
