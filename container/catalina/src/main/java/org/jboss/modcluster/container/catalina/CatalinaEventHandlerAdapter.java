@@ -54,6 +54,10 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
     // Flags used to ignore redundant or invalid events
     protected final AtomicBoolean init = new AtomicBoolean(false);
     protected final AtomicBoolean start = new AtomicBoolean(false);
+    
+    protected final int WAITSTATUS = Integer.parseInt(System.getProperty("org.jboss.modcluster.container.catalina.WAITSTATUS", "10"));
+    protected int waited = 0;
+    protected int interval = -1;
 
     // ----------------------------------------------------------- Constructors
 
@@ -240,9 +244,19 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
             }
         } else if (type.equals(Lifecycle.PERIODIC_EVENT)) {
             if (source instanceof Engine) {
-                if (this.start.get()) {
-                    this.eventHandler.status(this.factory.createEngine((Engine) source));
-                }
+            	if (interval==-1) {
+            		Engine eng = (Engine) source;
+            		interval = eng.getBackgroundProcessorDelay();
+            		if (interval==0)
+            			interval = 10;
+            	}
+            	waited = waited + interval;
+            	if (waited>=WAITSTATUS || WAITSTATUS<=interval) {
+            		waited = 0;
+            		if (this.start.get()) {
+            			this.eventHandler.status(this.factory.createEngine((Engine) source));
+            		}
+            	}
             }
         }
     }
