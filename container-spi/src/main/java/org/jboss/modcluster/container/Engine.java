@@ -104,10 +104,4 @@ public interface Engine {
      * @return the default host
      */
     String getDefaultHost();
-    
-    /**
-     * Returns the delay between the invocation of the backgroundProcess method.
-     * @return an int
-     */
-    int getBackgroundProcessorDelay();
 }

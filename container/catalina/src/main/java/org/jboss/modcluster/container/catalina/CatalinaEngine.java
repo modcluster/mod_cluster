@@ -174,9 +174,4 @@ public class CatalinaEngine implements Engine {
     public String toString() {
         return this.engine.getName();
     }
-
-	@Override
-	public int getBackgroundProcessorDelay() {
-		return this.engine.getBackgroundProcessorDelay();
-	}
 }
