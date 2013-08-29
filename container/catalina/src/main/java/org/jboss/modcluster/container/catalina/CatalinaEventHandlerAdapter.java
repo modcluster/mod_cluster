@@ -47,6 +47,8 @@ import org.jboss.modcluster.container.ContainerEventHandler;
  */
 public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
 
+    private static final int STATUS_FREQUENCY = Integer.parseInt(System.getProperty("org.jboss.modcluster.container.catalina.status-frequency", "1"));
+
     protected final ContainerEventHandler eventHandler;
     protected final ServerProvider serverProvider;
     protected final CatalinaFactory factory;
@@ -55,7 +57,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
     protected final AtomicBoolean init = new AtomicBoolean(false);
     protected final AtomicBoolean start = new AtomicBoolean(false);
 
-    // ----------------------------------------------------------- Constructors
+    private volatile int statusCount = 0;
 
     /**
      * Constructs a new CatalinaEventHandlerAdapter using the specified event handler.
@@ -240,8 +242,12 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
             }
         } else if (type.equals(Lifecycle.PERIODIC_EVENT)) {
             if (source instanceof Engine) {
-                if (this.start.get()) {
-                    this.eventHandler.status(this.factory.createEngine((Engine) source));
+                Engine engine = (Engine) source;
+                this.statusCount = (this.statusCount + 1) % STATUS_FREQUENCY;
+                if (this.statusCount == 0) {
+                    if (this.start.get()) {
+                        this.eventHandler.status(this.factory.createEngine(engine));
+                    }
                 }
             }
         }
