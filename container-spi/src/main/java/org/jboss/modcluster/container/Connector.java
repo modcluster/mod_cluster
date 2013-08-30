@@ -55,10 +55,11 @@ public interface Connector {
          * 
          * @see java.lang.Enum#toString()
          */
+        @Override
         public String toString() {
             return this.name().toLowerCase();
         }
-    };
+    }
 
     /**
      * Indicates whether the endpoint of this connector uses a reverse connection to httpd. A reverse connection uses a normal
