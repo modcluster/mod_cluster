@@ -71,7 +71,9 @@
   <!-- Provides information to ModClusterService informing it how much load 
        this server should take.  This impl calculates load factor from a 
        number of metrics and adjusts the value periodically based on runtime
-       conditions, using to the JBossWeb engine's backgroundProcessorDelay. -->
+       conditions, using to the JBossWeb engine's backgroundProcessorDelay.
+       The system property org.jboss.modcluster.container.catalina.status-frequency allows
+       to configure how many event will trigger a STATUS. -->
   <bean name="DynamicLoadBalanceFactorProvider" class="org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor",exposedInterface=org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean.class)</annotation>
     <constructor>
