@@ -1967,7 +1967,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf)
                 /* Nice we have a route, but make sure we have to serve it */
                 int *nodes = find_node_context_host(r, balancer, route, use_alias);
                 if (nodes == NULL)
-                    return NULL; /* we can't serve context/host for the request */
+                    continue; /* we can't serve context/host for the request */
             }
             if (route && *route) {
                 char *domain = NULL;
