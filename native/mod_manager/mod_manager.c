@@ -1936,11 +1936,12 @@ static int manager_handler(request_rec *r)
     char *errstring = NULL;
     int errtype = 0;
     char *buff;
-    apr_size_t bufsiz=0, len=MAXMESSSIZE;
+    apr_size_t bufsiz=0, maxbufsiz, len;
     apr_status_t status;
     int global = 0;
     char **ptr;
-  
+    mod_manager_config *mconf;
+
     if (strcmp(r->handler, "mod_cluster-manager") == 0) {
         /* Display the nodes information */
         if (r->method_number != M_GET)
@@ -1951,16 +1952,26 @@ static int manager_handler(request_rec *r)
     if (strcmp(r->handler, "mod-cluster"))
         return DECLINED;
 
-    /* Use a buffer to read the message */
-    buff = apr_pcalloc(r->pool, MAXMESSSIZE);
-    input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
+    mconf = ap_get_module_config(r->server->module_config, &manager_module);
 
+    /* Use a buffer to read the message */
+    /* we calculate its size*/
+    maxbufsiz = 9 + JVMROUTESZ;
+    maxbufsiz = maxbufsiz + (mconf->maxhost * HOSTALIASZ) + 7;
+    maxbufsiz = maxbufsiz + (mconf->maxcontext * CONTEXTSZ) + 8;
+
+    if (maxbufsiz < MAXMESSSIZE)
+        maxbufsiz = MAXMESSSIZE;
+
+    buff = apr_pcalloc(r->pool, maxbufsiz);
+    input_brigade = apr_brigade_create(r->pool, r->connection->bucket_alloc);
+    len = maxbufsiz;
     while ((status = ap_get_brigade(r->input_filters, input_brigade, AP_MODE_READBYTES, APR_BLOCK_READ, len)) == APR_SUCCESS) {
         apr_brigade_flatten(input_brigade, buff + bufsiz, &len);
         apr_brigade_cleanup(input_brigade);
         bufsiz += len;
         if (bufsiz >= MAXMESSSIZE || len == 0) break;
-        len = MAXMESSSIZE - bufsiz;
+        len = maxbufsiz - bufsiz;
     }
 
     if (status != APR_SUCCESS) {
