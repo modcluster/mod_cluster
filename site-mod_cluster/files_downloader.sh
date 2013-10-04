@@ -1,96 +1,36 @@
-# Change the version...
-VERSION=1.2.6.Final
-# Should I overwrite already downloaded files?
-OVERWRITE=false
+source ${0%\/*}/constants.sh || die "constants.sh failed!"
 
 # TODO:
-#  HP-UX      - as soon as we have some stable build
-#  Linux ia64 - as above
+#  Linux ia64 - as soon as we have some stable build
 
-export VERSION
 declare -a errors
-JENKINS_JOB_URL="http://hudson.qa.jboss.com/hudson/view/mod_cluster/view/mod_cluster/job/"
-JENKINS_ARCHIVE_PATH="lastSuccessfulBuild/artifact/jbossnative/build/unix/output/"
 
-BUILDS="\
-    linux-i686 \
-    linux-x86_64 \
-    macosx \
-    solaris10-sparc \
-    solaris10-sparc64 \
-    solaris10-x86 \
-    windows \
-"
-
-LINUX_I686="\
-    mod_cluster-${VERSION}-linux2-x86-so.tar.gz \
-    mod_cluster-${VERSION}-linux2-x86-ssl.tar.gz \
-    mod_cluster-${VERSION}-linux2-x86.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-LINUX_X86_64="\
-    mod_cluster-${VERSION}-linux2-x64-so.tar.gz \
-    mod_cluster-${VERSION}-linux2-x64-ssl.tar.gz \
-    mod_cluster-${VERSION}-linux2-x64.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-MACOSX="\
-    mod_cluster-${VERSION}-macosx-x64-ssl.tar.gz \
-    mod_cluster-${VERSION}-macosx-x64.tar.gz \
-    mod_cluster-${VERSION}-macosx-x86-so.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-SOLARIS10_SPARC="\
-    mod_cluster-${VERSION}-solaris10-sun4v-so.tar.gz \
-    mod_cluster-${VERSION}-solaris10-sun4v-ssl.tar.gz \
-    mod_cluster-${VERSION}-solaris10-sun4v.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-SOLARIS10_SPARC64="\
-    mod_cluster-${VERSION}-solaris10-sun4v-so.tar.gz \
-    mod_cluster-${VERSION}-solaris10-sun4v-ssl.tar.gz \
-    mod_cluster-${VERSION}-solaris10-sun4v.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-SOLARIS10_X86="\
-    mod_cluster-${VERSION}-solaris10-x86-so.tar.gz \
-    mod_cluster-${VERSION}-solaris10-x86-ssl.tar.gz \
-    mod_cluster-${VERSION}-solaris10-x86.tar.gz \
-    mod_cluster-${VERSION}-src-ssl.tar.gz \
-    mod_cluster-${VERSION}-src.tar.gz \
-"
-WINDOWS="\
-    mod_cluster-${VERSION}-src-ssl.zip \
-    mod_cluster-${VERSION}-src.zip \
-    mod_cluster-${VERSION}-windows-amd64-ssl.zip \
-    mod_cluster-${VERSION}-windows-amd64.zip \
-    mod_cluster-${VERSION}-windows-x86-ssl.zip \
-    mod_cluster-${VERSION}-windows-x86.zip \
-"
-
-function error_report () {
+function error_report_and_exit () {
     if [ ${#errors[@]} -gt 0 ]; then
         echo "ERRORS:"
         for error in "${errors[@]}"; do
             echo "    $error"
         done
-    exit 1;
+        exit 1;
+    else
+        echo "DONE with no errors :-)"
+        exit 0;
     fi
 }
 
 function downloadit () {
     local build="$1"
     local file="$2"
-    url="${JENKINS_JOB_URL}mod_cluster-${build}/${JENKINS_ARCHIVE_PATH}${file}"
+    local overwrite_archive_path="$3"
+    if [ "${overwrite_archive_path}X" == "X" ]; then
+        url="${JENKINS_JOB_URL}mod_cluster-${build}/${JENKINS_ARCHIVE_PATH}${file}"
+    else
+        url="${JENKINS_JOB_URL}mod_cluster-${build}/${overwrite_archive_path}${file}"
+    fi
     if [ -f ${VERSION}/${build}/${file} ] && [ !$OVERWRITE ]; then
         echo "SKIPPING DOWNLOAD for ${url}"
     else
-        wget ${url} -O ${VERSION}/${build}/${file} || errors+=( "Failed to download: ${url}" )
+        wget ${url} -O ${VERSION}/${build}/${file} || errors+=( "Failed to download: ${url} Wget returned:$?" )
     fi
 }
 
@@ -132,11 +72,24 @@ for build in $BUILDS; do
               downloadit $build $file
           done
         ;;
+     *hp-ux-9000_800*)
+          downloadit $build "archive.zip" "lastSuccessfulBuild/artifact/"
+          unzip ${VERSION}/${build}/archive.zip -d to_be_deleted
+          for file in $HP_UX_9000_800; do
+              mv to_be_deleted/jbossnative/build/unix/output/${file} ${VERSION}/${build}/
+          done
+          rm -rf to_be_deleted
+        ;;
+     *hp-ux-ia64*)
+          for file in $HP_UX_IA64; do
+              downloadit $build $file "lastSuccessfulBuild/artifact/jbossnative/build/unix/output/"
+          done
+        ;;
   esac
 done
 cd ${VERSION}
-md5sum */* > MD5SUMS
-error_report
+find -type f ! -name archive.zip ! -name MD5SUMS | xargs md5sum > MD5SUMS
+error_report_and_exit
 
 #Let's move upload to some other script...
-#rsync $VERSION -r -a -v --protocol=29 mod_cluster@filemgmt.jboss.org:downloads_htdocs/mod_cluster/
+#rsync $VERSION --exclude "archive.zip" -r -a -v --protocol=29 mod_cluster@filemgmt.jboss.org:downloads_htdocs/mod_cluster/
