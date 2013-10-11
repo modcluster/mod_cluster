@@ -3,7 +3,7 @@
     <parent>
         <artifactId>mod_cluster-parent</artifactId>
         <groupId>org.jboss.mod_cluster</groupId>
-        <version>1.3.0.Alpha1-SNAPSHOT</version>
+        <version>1.3.0.Alpha1</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container</artifactId>
