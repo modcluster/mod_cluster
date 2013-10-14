@@ -7,6 +7,22 @@
 <chapter id="changelog">
   <title>Change Log</title>
   <section>
+    <title>1.2.6.Final (07 September 2013)</title>
+    <informaltable frame="all">
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
+            <entry>
+              <para>MODCLUSTER-360 mod_proxy_cluster.h doesn't contain the right information</para>
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+  </section>
+
+  <section>
     <title>1.2.5.Final (30 August 2013)</title>
     <informaltable frame="all">
       <tgroup cols="2">
