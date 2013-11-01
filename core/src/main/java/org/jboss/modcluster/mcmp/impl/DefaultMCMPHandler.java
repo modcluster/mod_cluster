@@ -365,6 +365,8 @@ public class DefaultMCMPHandler implements MCMPHandler {
             for (Proxy proxy : this.proxies) {
                 // Attempt to reset any proxies in error
                 if (proxy.getState() == Proxy.State.ERROR) {
+
+                    proxy.closeConnection();
                     proxy.setState(Proxy.State.OK);
 
                     String response = this.sendRequest(this.requestFactory.createInfoRequest(), proxy);
@@ -385,9 +387,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
                             this.sendRequestsToProxy(requests, proxy);
                         }
+                    } else {
+                        proxy.closeConnection();
                     }
-
-                    proxy.closeConnection();
                 }
             }
         } finally {
