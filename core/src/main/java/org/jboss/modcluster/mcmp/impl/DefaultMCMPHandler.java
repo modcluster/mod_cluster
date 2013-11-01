@@ -383,7 +383,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
                             log.trace(requests);
 
-                            this.sendRequests(requests);
+                            this.sendRequestsToProxy(requests, proxy);
                         }
                     }
 
@@ -445,6 +445,21 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
 
         return map;
+    }
+
+    /**
+     * Like sendRequests, but only to a given Proxy, to be used when sending reset requests.
+     *
+     * @param requests list of MCMP requests to send
+     * @param proxy    The designated proxy to send the requests to
+     */
+    private List<String> sendRequestsToProxy(List<MCMPRequest> requests, Proxy proxy) {
+        List<String> list = new ArrayList<String>(requests.size());
+        for (MCMPRequest request : requests) {
+            list.add(this.sendRequest(request, proxy));
+        }
+
+        return list;
     }
 
     // ---------------------------------------------------------------- Private
