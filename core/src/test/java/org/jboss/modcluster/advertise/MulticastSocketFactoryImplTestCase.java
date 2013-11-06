@@ -100,6 +100,15 @@ public class MulticastSocketFactoryImplTestCase {
             byte[] buffer = data.getBytes();
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, sendAddress, PORT);
 
+            if (!System.getProperty("os.name").startsWith("Windows")) {
+                try {
+                    InetAddress socketInterface = InetAddress.getLocalHost();
+                    sendSocket.setInterface(socketInterface);
+                } catch (Exception ex) {
+                    ; // Ignore it
+                }
+            }
+
             sendSocket.send(packet);
 
             try {
@@ -121,7 +130,11 @@ public class MulticastSocketFactoryImplTestCase {
                 Assert.assertFalse(expectSuccessfulRead);
             }
 
-            sendSocket.leaveGroup(sendAddress);
+            try {
+                sendSocket.leaveGroup(sendAddress);
+            } catch (java.net.SocketException ex) {
+                // Ignore it (wrong route configuration probably).
+            }
         } finally {
             sendSocket.close();
         }

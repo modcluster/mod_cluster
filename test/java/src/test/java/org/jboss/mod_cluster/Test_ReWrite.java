@@ -37,6 +37,8 @@ import org.jboss.modcluster.ModClusterService;
 
 public class  Test_ReWrite extends TestCase {
 
+    int MAXSTOPCOUNT = 200;
+
     /* Test that newly created httpd process work ok without sessions */
 
     public void test_ReWrite() {
@@ -157,7 +159,7 @@ public class  Test_ReWrite extends TestCase {
         // Wait until httpd as received the stop messages.
         countinfo = 0;
         nodes = null;
-        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
+        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < MAXSTOPCOUNT) {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
@@ -166,6 +168,8 @@ public class  Test_ReWrite extends TestCase {
             countinfo++;
         }
         Maintest.StopClusterListener();
+        if (countinfo == MAXSTOPCOUNT)
+            fail("node doesn't dispair");
         System.gc();
         System.out.println("Test_ReWrite Done");
     }
