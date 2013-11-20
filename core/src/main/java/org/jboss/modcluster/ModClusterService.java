@@ -135,7 +135,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
      */
     @Override
     public synchronized void init(Server server) {
-        ModClusterLogger.LOGGER.init();
+        ModClusterLogger.LOGGER.init(Version.INSTANCE.toString());
 
         this.server = server;
 
