@@ -32,7 +32,7 @@
 
     <properties>
         <version.jboss-logging>3.1.2.GA</version.jboss-logging>
-        <version.jboss-logging-processor>1.1.0.Beta1</version.jboss-logging-processor>
+        <version.jboss-logging-processor>1.1.0.Final</version.jboss-logging-processor>
         <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.jbossweb>2.1.12.GA</version.jbossweb>
