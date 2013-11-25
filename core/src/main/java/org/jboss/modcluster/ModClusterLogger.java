@@ -47,8 +47,8 @@ public interface ModClusterLogger {
     ModClusterLogger LOGGER = Logger.getMessageLogger(ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Initializing mod_cluster ${project.version}")
-    void init();
+    @Message(id = 1, value = "Initializing mod_cluster version %s")
+    void init(String version);
 
     @LogMessage(level = INFO)
     @Message(id = 2, value = "Initiating mod_cluster shutdown")
