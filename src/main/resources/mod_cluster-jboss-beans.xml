@@ -131,12 +131,6 @@
   <bean name="AverageSystemLoadMetric" class="org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=AverageSystemLoad",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
   </bean>
-  <!-- The system memory usage as ratio of used memory to total memory size -->
-  <!-- Requires com.sun.management.OperatingSystemMXBean, i.e. Sun or OpenJDK JVM -->
-  <bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand">
-    <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster,provider=LoadBalanceFactor,metric=SystemMemoryUsage",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-  </bean>
-
 
   <!-- The number of requests/sec processed by the JBossWeb connectors, with respect to the defined capacity -->
   <!-- Analogous to method=R in mod_jk -->

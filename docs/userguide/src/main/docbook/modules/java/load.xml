@@ -329,27 +329,6 @@
 <bean name="OperatingSystemLoadMetricSource" class="org.jboss.modcluster.load.metric.impl.OperatingSystemLoadMetricSource" mode="On Demand">
 </bean>]]></programlisting>
     </section>
-    <section id="SystemMemoryUsageLoadMetric">
-      <title><code>SystemMemoryUsageLoadMetric</code></title>
-      <itemizedlist>
-        <listitem>
-          <para>Returns system memory usage</para>
-        </listitem>
-        <listitem>
-          <para>Requires com.sun.management.OperatingSystemMXBean (available in Sun's JDK or OpenJDK)</para>
-        </listitem>
-        <listitem>
-          <para>Uses OperatingSystemLoadMetricSource to generically read attributes</para>
-        </listitem>
-      </itemizedlist>
-      <para>e.g.</para>
-      <programlisting><![CDATA[<bean name="SystemMemoryUsageLoadMetric" class="org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric" mode="On Demand">
-  <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=SystemMemoryUsageLoadMetric",exposedInterface=org.jboss.modcluster.load.metric.LoadMetricMBean.class)</annotation>
-  <constructor>
-    <parameter><inject bean="OperatingSystemLoadMetricSource"/></parameter>
-  </constructor>
-</bean>]]></programlisting>
-    </section>
     <section id="HeapMemoryUsageLoadMetric">
       <title><code>HeapMemoryUsageLoadMetric</code></title>
       <itemizedlist>
