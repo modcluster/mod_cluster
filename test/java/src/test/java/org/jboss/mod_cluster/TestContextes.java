@@ -64,7 +64,7 @@ public class TestContextes extends TestCase {
             service.AddContext("/test" + i , "/test" + i, "MyCount", false);
             server.addService(service);
 
-            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, null);
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();
