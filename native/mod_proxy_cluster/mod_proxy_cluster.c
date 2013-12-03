@@ -990,19 +990,17 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, server_rec *server, int check)
 {
     int *id, size, i;
-    apr_time_t last;
+    unsigned int last;
 
     /* Check if we have to do something */
     apr_thread_mutex_lock(lock);
-    if (check)
+    if (check) { 
         last = node_storage->worker_nodes_need_update(main_server, pool);
-    else
-        last = 1;
-
-    /* nodes_need_update will return 1 if last_updated is zero: first time we are called */
-    if (last == 0) {
-        apr_thread_mutex_unlock(lock);
-        return;
+        /* nodes_need_update will return 1 if last_updated is zero: first time we are called */
+        if (last == 0) {
+            apr_thread_mutex_unlock(lock);
+            return;
+        }
     }
 
     /* read the ident of the nodes */
@@ -2533,7 +2531,7 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         void *sconf = s->module_config;
         proxy_server_conf *conf = (proxy_server_conf *)
             ap_get_module_config(sconf, &proxy_module);
-        apr_time_t last;
+        unsigned int last;
 
         if (!conf)
            break;
@@ -2561,7 +2559,7 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         }
         apr_pool_destroy(pool);
         if (last)
-            node_storage->worker_nodes_are_updated(main_server);
+            node_storage->worker_nodes_are_updated(main_server, last);
     }
     apr_thread_exit(thd, 0);
     return NULL;
@@ -2948,15 +2946,11 @@ static int proxy_cluster_trans(request_rec *r)
 
     balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
     if (!balancer) {
-        /* May be the balancer has not been created (XXX: use shared memory to find the balancer ...) */
+        /* May be the balancer has not been created (we use shared memory to find the balancer name) */
         update_workers_node(conf, r->pool, r->server, 1);
         balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
     }
-    if (!balancer)
-        balancer = get_context_host_balancer(r, &vhost_table, &context_table, &node_table);
     if (!balancer) {
-        /* May be the balancer has not been created (we use shared memory to find the balancer name) */
-        update_workers_node(conf, r->pool, r->server, 1);
         balancer = get_context_host_balancer(r, &vhost_table, &context_table, &node_table);
     }
     
