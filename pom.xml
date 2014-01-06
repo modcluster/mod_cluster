@@ -8,7 +8,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.jboss.native</groupId>
   <artifactId>mod-cluster</artifactId>
-  <version>1.0.11-SNAPSHOT</version>
+  <version>MOD_CLUSTER_1_0_10_GA_CP05</version>
   
   <name>mod_cluster</name>
   <description />
@@ -18,7 +18,7 @@
     <connection>scm:git:https://github.com/modcluster/mod_cluster.git</connection>
     <developerConnection>scm:git:https://github.com/modcluster/mod_cluster.git</developerConnection>
     <url>https://github.com/modcluster/mod_cluster</url>
-    <tag>HEAD</tag>
+    <tag>MOD_CLUSTER_1_0_10_GA_CP05</tag>
   </scm>
 
   <repositories>
