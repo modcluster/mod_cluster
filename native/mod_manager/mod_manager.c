@@ -1974,9 +1974,9 @@ static void node_command_string(request_rec *r, char *JVMRoute)
 {
     ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=NODE&%s\">Enable Contexts</a> ",
                r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
-    ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a>",
+    ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a> ",
                r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
-    ap_rprintf(r, "<a href=\"%s?%sCmd=STOP-APP&Range=NODE&%s\">Disable Contexts</a>",
+    ap_rprintf(r, "<a href=\"%s?%sCmd=STOP-APP&Range=NODE&%s\">Stop Contexts</a>",
                r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
 }
 static void domain_command_string(request_rec *r, char *Domain)
