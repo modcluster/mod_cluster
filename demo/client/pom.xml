@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>mod_cluster-demo</artifactId>
-        <version>1.2.7.Final</version>
+        <version>1.2.8.Final-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-demo-client</artifactId>
