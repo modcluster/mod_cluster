@@ -1230,7 +1230,7 @@ static char * process_node_cmd(request_rec *r, int status, int *errtype, nodeinf
 }
 
 /* Process an enable/disable/stop/remove application message */
-static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errtype, int global)
+static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errtype, int global, int fromnode)
 {
     nodeinfo_t nodeinfo;
     nodeinfo_t *node;
@@ -1438,13 +1438,15 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         ou = read_context(contextstatsmem, &in);
         if (ou != NULL) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: STOP-APP nbrequests %d", ou->nbrequests);
-            ap_set_content_type(r, "text/plain");
-            ap_rprintf(r, "Type=STOP-APP-RSP&JvmRoute=%.*s&Alias=%.*s&Context=%.*s&Requests=%d",
-                       (int) sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute,
-                       (int) sizeof(vhost->host), vhost->host,
-                       (int) sizeof(vhost->context), vhost->context,
-                       ou->nbrequests);
-            ap_rprintf(r, "\n");
+            if (fromnode) {
+                ap_set_content_type(r, "text/plain");
+                ap_rprintf(r, "Type=STOP-APP-RSP&JvmRoute=%.*s&Alias=%.*s&Context=%.*s&Requests=%d",
+                           (int) sizeof(nodeinfo.mess.JVMRoute), nodeinfo.mess.JVMRoute,
+                           (int) sizeof(vhost->host), vhost->host,
+                           (int) sizeof(vhost->context), vhost->context,
+                           ou->nbrequests);
+                ap_rprintf(r, "\n");
+            }
         } else {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: STOP-APP can't read_context");
         }
@@ -1453,19 +1455,19 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
 }
 static char * process_enable(request_rec *r, char **ptr, int *errtype, int global)
 {
-    return process_appl_cmd(r, ptr, ENABLED, errtype, global);
+    return process_appl_cmd(r, ptr, ENABLED, errtype, global, 0);
 }
 static char * process_disable(request_rec *r, char **ptr, int *errtype, int global)
 {
-    return process_appl_cmd(r, ptr, DISABLED, errtype, global);
+    return process_appl_cmd(r, ptr, DISABLED, errtype, global, 0);
 }
-static char * process_stop(request_rec *r, char **ptr, int *errtype, int global)
+static char * process_stop(request_rec *r, char **ptr, int *errtype, int global, int fromnode)
 {
-    return process_appl_cmd(r, ptr, STOPPED, errtype, global);
+    return process_appl_cmd(r, ptr, STOPPED, errtype, global, fromnode);
 }
 static char * process_remove(request_rec *r, char **ptr, int *errtype, int global)
 {
-    return process_appl_cmd(r, ptr, REMOVE, errtype, global);
+    return process_appl_cmd(r, ptr, REMOVE, errtype, global, 0);
 }
 
 /*
@@ -1943,12 +1945,24 @@ static char *balancer_nonce_string(request_rec *r)
 }
 static void context_command_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
 {
-    if (ou->status == DISABLED)
+    if (ou->status == DISABLED) {
         ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=CONTEXT&%s\">Enable</a> ",
                    r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
-    if (ou->status == ENABLED)
+        ap_rprintf(r, " <a href=\"%s?%sCmd=STOP-APP&Range=CONTEXT&%s\">Stop</a>",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
+    }
+    if (ou->status == ENABLED) {
         ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=CONTEXT&%s\">Disable</a>",
                    r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
+        ap_rprintf(r, " <a href=\"%s?%sCmd=STOP-APP&Range=CONTEXT&%s\">Stop</a>",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
+    }
+    if (ou->status == STOPPED) {
+        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=CONTEXT&%s\">Enable</a> ",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
+        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=CONTEXT&%s\">Disable</a>",
+                   r->uri, balancer_nonce_string(r), context_string(r, ou, Alias, JVMRoute));
+    }
 }
 /* Create the commands that are possible on the node */
 static char*node_string(request_rec *r, char *JVMRoute)
@@ -1956,23 +1970,23 @@ static char*node_string(request_rec *r, char *JVMRoute)
     char *raw = apr_pstrcat(r->pool, "JVMRoute=", JVMRoute, NULL);
     return raw;
 }
-static void node_command_string(request_rec *r, int status, char *JVMRoute)
+static void node_command_string(request_rec *r, char *JVMRoute)
 {
-    if (status == ENABLED)
-        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=NODE&%s\">Enable Contexts</a> ",
-                   r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
-    if (status == DISABLED)
-        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a>",
-                   r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
+    ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=NODE&%s\">Enable Contexts</a> ",
+               r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
+    ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=NODE&%s\">Disable Contexts</a> ",
+               r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
+    ap_rprintf(r, "<a href=\"%s?%sCmd=STOP-APP&Range=NODE&%s\">Stop Contexts</a>",
+               r->uri, balancer_nonce_string(r), node_string(r, JVMRoute));
 }
-static void domain_command_string(request_rec *r, int status, char *Domain)
+static void domain_command_string(request_rec *r, char *Domain)
 {
-    if (status == ENABLED)
-        ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=DOMAIN&Domain=%s\">Enable Nodes</a> ",
-                   r->uri, balancer_nonce_string(r), Domain);
-    if (status == DISABLED)
-        ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=DOMAIN&Domain=%s\">Disable Nodes</a>",
-                   r->uri, balancer_nonce_string(r), Domain);
+    ap_rprintf(r, "<a href=\"%s?%sCmd=ENABLE-APP&Range=DOMAIN&Domain=%s\">Enable Nodes</a> ",
+               r->uri, balancer_nonce_string(r), Domain);
+    ap_rprintf(r, "<a href=\"%s?%sCmd=DISABLE-APP&Range=DOMAIN&Domain=%s\">Disable Nodes</a> ",
+               r->uri, balancer_nonce_string(r), Domain);
+    ap_rprintf(r, "<a href=\"%s?%sCmd=STOP-APP&Range=DOMAIN&Domain=%s\">Stop Nodes</a>",
+               r->uri, balancer_nonce_string(r), Domain);
 }
 
 /*
@@ -2230,7 +2244,7 @@ static char *process_domain(request_rec *r, char **ptr, int *errtype, const char
         else if (strcasecmp(cmd, "DISABLE-APP") == 0)
             errstring = process_disable(r, ptr, errtype, RANGENODE);
         else if (strcasecmp(cmd, "STOP-APP") == 0)
-            errstring = process_stop(r, ptr, errtype, RANGENODE);
+            errstring = process_stop(r, ptr, errtype, RANGENODE, 0);
         else if (strcasecmp(cmd, "REMOVE-APP") == 0)
             errstring = process_remove(r, ptr, errtype, RANGENODE);
     }
@@ -2391,7 +2405,7 @@ static int manager_info(request_rec *r)
             else if (strcasecmp(cmd, "DISABLE-APP") == 0)
                 errstring = process_disable(r, ptr, &errtype, global);
             else if (strcasecmp(cmd, "STOP-APP") == 0)
-                errstring = process_stop(r, ptr, &errtype, global);
+                errstring = process_stop(r, ptr, &errtype, global, 0);
             else if (strcasecmp(cmd, "REMOVE-APP") == 0)
                 errstring = process_remove(r, ptr, &errtype, global);
             else {
@@ -2473,9 +2487,7 @@ static int manager_info(request_rec *r)
                 ap_rprintf(r, "<h1> LBGroup %.*s: ", (int) sizeof(ou->mess.Domain), ou->mess.Domain);
             domain = ou->mess.Domain;
             if (mconf->allow_cmd)
-                domain_command_string(r, ENABLED, domain);
-            if (mconf->allow_cmd)
-                domain_command_string(r, DISABLED, domain);
+                domain_command_string(r, domain);
             if (!mconf->reduce_display)
                 ap_rprintf(r, "</h1>\n");
         }
@@ -2498,9 +2510,7 @@ static int manager_info(request_rec *r)
         }
 
         if (mconf->allow_cmd)
-            node_command_string(r, ENABLED, ou->mess.JVMRoute);
-        if (mconf->allow_cmd)
-            node_command_string(r, DISABLED, ou->mess.JVMRoute);
+            node_command_string(r, ou->mess.JVMRoute);
 
         if (!mconf->reduce_display) {
             ap_rprintf(r, "<br/>\n");
@@ -2635,7 +2645,7 @@ static int manager_handler(request_rec *r)
     else if (strcasecmp(r->method, "DISABLE-APP") == 0)
         errstring = process_disable(r, ptr, &errtype, global);
     else if (strcasecmp(r->method, "STOP-APP") == 0)
-        errstring = process_stop(r, ptr, &errtype, global);
+        errstring = process_stop(r, ptr, &errtype, global, 1);
     else if (strcasecmp(r->method, "REMOVE-APP") == 0)
         errstring = process_remove(r, ptr, &errtype, global);
     /* Status handling */

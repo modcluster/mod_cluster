@@ -47,8 +47,8 @@ public interface ModClusterLogger {
     ModClusterLogger LOGGER = Logger.getMessageLogger(ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
-    @Message(id = 1, value = "Initializing mod_cluster ${project.version}")
-    void init();
+    @Message(id = 1, value = "Initializing mod_cluster version %s")
+    void init(String version);
 
     @LogMessage(level = INFO)
     @Message(id = 2, value = "Initiating mod_cluster shutdown")
@@ -153,4 +153,12 @@ public interface ModClusterLogger {
     @LogMessage(level = ERROR)
     @Message(id = 43, value = "Failed to send %s to %s")
     void sendFailed(@Cause Throwable cause, MCMPRequestType type, InetSocketAddress proxy);
+
+    @LogMessage(level = WARN)
+    @Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
+    void missingOSBean(String classname);
+
+    @LogMessage(level = WARN)
+    @Message(id = 45, value = "%s is not supported on this system and will be disabled.")
+    void notSupportedOnSystem(String classname);
 }

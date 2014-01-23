@@ -25,6 +25,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Engine;
 
 /**
@@ -33,8 +34,6 @@ import org.jboss.modcluster.container.Engine;
  * @author Paul Ferraro
  */
 public class AverageSystemLoadMetric extends AbstractLoadMetric {
-    private static final Logger logger = Logger.getLogger(AverageSystemLoadMetric.class);
-
     private final OperatingSystemMXBean bean;
 
     public AverageSystemLoadMetric() {
@@ -49,7 +48,7 @@ public class AverageSystemLoadMetric extends AbstractLoadMetric {
     public double getLoad(Engine engine) throws Exception {
         double load = this.bean.getSystemLoadAverage();
         if (load < 0) {
-            logger.warnf("%s is not supported on this system and will be disabled.", this.getClass().getSimpleName());
+            ModClusterLogger.LOGGER.notSupportedOnSystem(this.getClass().getSimpleName());
             this.setWeight(0);
             return 0;
         }
