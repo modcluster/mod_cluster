@@ -501,6 +501,7 @@ public class ModClusterDemo {
 
         EnumSet<ServerLoadServlets> es = EnumSet.allOf(ServerLoadServlets.class);
         Vector<ServerLoadServlets> v = new Vector<ServerLoadServlets>(es);
+        // Don't parametrize as this breaks JDK 1.6 compilation
         final JComboBox targetLoadServletCombo = new JComboBox(v);
         targetLoadServletCombo.setRenderer(new ServerLoadServletCellRenderer());
         gridBagConstraints = new GridBagConstraints();
@@ -930,13 +931,14 @@ public class ModClusterDemo {
 
     }
 
+    // Don't parametrize as this breaks JDK 1.6 compilation
     private class ServerLoadServletCellRenderer extends JLabel implements ListCellRenderer {
         private static final long serialVersionUID = -8010662328204072428L;
 
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
-                boolean cellHasFocus) {
-            setText(value.toString());
-            setToolTipText(((ServerLoadServlets) value).getDescription());
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            this.setText(value.toString());
+            this.setToolTipText(((ServerLoadServlets) value).getDescription());
             return this;
         }
     }

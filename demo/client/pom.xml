@@ -11,10 +11,6 @@
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
-            <groupId>commons-httpclient</groupId>
-            <artifactId>commons-httpclient</artifactId>
-        </dependency>
-        <dependency>
             <groupId>jfree</groupId>
             <artifactId>jfreechart</artifactId>
         </dependency>
