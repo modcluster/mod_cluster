@@ -102,7 +102,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         this.handler = commHandler;
         this.socketFactory = socketFactory;
         this.config = config;
-        this.md = (config.getAdvertiseSecurityKey() != null) ? this.getMessageDigest() : null;
+        this.md = this.getMessageDigest();
     }
 
     private MessageDigest getMessageDigest() throws IOException {
@@ -261,14 +261,22 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         // Neither side is configured to use digest -- pass verification
         if (this.md == null && digest == null) return true;
 
-        // If either the digest is missing or security key is not set -- fail verification
         String securityKey = this.config.getAdvertiseSecurityKey();
-        if (securityKey == null || digest == null) return false;
+        byte[] salt;
+
+        if (securityKey == null) {
+            // Security key is not configured, so the result hash was zero bytes
+            salt = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        } else {
+            // Use security key hash to calculate the final hash
+            this.md.reset();
+            digestString(this.md, securityKey);
+            salt = this.md.digest();
+        }
 
         this.md.reset();
-        digestString(this.md, securityKey);
-        byte[] ssalt = this.md.digest();
-        this.md.update(ssalt);
+        this.md.update(salt);
+
         digestString(this.md, date);
         digestString(this.md, sequence);
         digestString(this.md, server);
@@ -416,8 +424,10 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                     if (server != null && status > 0) {
                         /* We need a digest to match */
                         if (!AdvertiseListenerImpl.this.verifyDigest(digest, server_name, date_str, sequence)) {
+                            log.tracef("Advertise message digest verification failed for server %s", server_name);
                             continue;
                         }
+                        log.tracef("Advertise message digest verification passed for server %s", server_name);
 
                         server.setDate(date);
                         boolean rc = server.setStatus(status, status_desc);

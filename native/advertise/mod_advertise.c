@@ -600,6 +600,9 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
         apr_md5_init(&mc);
         apr_md5_update(&mc, mconf->ma_advertise_skey, strlen(mconf->ma_advertise_skey));
         apr_md5_final(magd->ssalt, &mc);
+    } else {
+        /* If security key is not configured, the digest is calculated from zero bytes */
+        memset(magd->ssalt, '\0', APR_MD5_DIGESTSIZE);
     }
     apr_uuid_get(&magd->suuid);
     magd->srvid[0] = '/';
