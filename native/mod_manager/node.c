@@ -94,7 +94,6 @@ static apr_status_t insert_update(void* mem, void **data, int id, apr_pool_t *po
     nodeinfo_t *in = (nodeinfo_t *)*data;
     nodeinfo_t *ou = (nodeinfo_t *)mem;
     if (strcmp(in->mess.JVMRoute, ou->mess.JVMRoute) == 0) {
-        apr_size_t vsize = sizeof(void *);
         /*
          * The node information is made of several pieces:
          * Information from the cluster (nodemess_t).
@@ -106,7 +105,7 @@ static apr_status_t insert_update(void* mem, void **data, int id, apr_pool_t *po
         ou->mess.id = id;
         ou->updatetime = apr_time_now();
         ou->offset = sizeof(nodemess_t) + sizeof(apr_time_t) + sizeof(int);
-        ou->offset = ou->offset % vsize ? (((ou->offset / vsize) +1 ) * vsize) : ou->offset;
+        ou->offset = APR_ALIGN_DEFAULT(ou->offset);
         *data = ou;
         return APR_SUCCESS;
     }
@@ -117,7 +116,6 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
     apr_status_t rv;
     nodeinfo_t *ou;
     int ident;
-    apr_size_t vsize = sizeof(void *);
 
     node->mess.id = 0;
     s->storage->ap_slotmem_lock(s->slotmem);
@@ -142,7 +140,7 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
 
     /* set of offset to the proxy_worker_stat */
     ou->offset = sizeof(nodemess_t) + sizeof(apr_time_t) + sizeof(int);
-    ou->offset = ou->offset % vsize ? (((ou->offset / vsize) +1 ) * vsize) : ou->offset;
+    ou->offset = APR_ALIGN_DEFAULT(ou->offset);
 
     /* blank the proxy status information */
     memset(&(ou->stat), '\0', SIZEOFSCORE);
