@@ -156,9 +156,8 @@ void restore_slotmem(void *ptr, const char *name, apr_size_t item_size, int item
     apr_file_t *fp;
     apr_size_t nbytes;
     apr_status_t rv;
-    apr_size_t vsize = sizeof(void *);
 
-    item_size = item_size % vsize ? (((item_size / vsize) +1 ) * vsize) : item_size; 
+    item_size = APR_ALIGN_DEFAULT(item_size);
     nbytes = item_size * item_num + sizeof(int) * (item_num + 1);
     storename = store_filename(pool, name);
     rv = apr_file_open(&fp, storename,  APR_READ | APR_WRITE, APR_OS_DEFAULT, pool);
@@ -258,13 +257,10 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
     const char *filename;
     apr_size_t nbytes;
     int i, *ident;
-    apr_size_t vsize = sizeof(void *);
-    apr_size_t dsize = sizeof(desc);
-    apr_size_t tsize = sizeof(int) * (item_num + 1);
+    apr_size_t dsize = APR_ALIGN_DEFAULT(sizeof(desc));
+    apr_size_t tsize = APR_ALIGN_DEFAULT(sizeof(int) * (item_num + 1));
 
-    item_size = item_size % vsize ? (((item_size / vsize) +1 ) * vsize) : item_size; 
-    dsize = dsize % vsize ? (((dsize / vsize) +1 ) * vsize) : dsize; 
-    tsize = tsize % vsize ? (((tsize / vsize) +1 ) * vsize) : tsize;
+    item_size = APR_ALIGN_DEFAULT(item_size);
     nbytes = item_size * item_num + tsize + dsize;
     if (globalpool == NULL)
         return APR_ENOSHMAVAIL;
@@ -399,12 +395,10 @@ static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_
     const char *fname;
     const char *filename;
     apr_status_t rv;
-    apr_size_t vsize = sizeof(void *);
-    apr_size_t dsize = sizeof(desc);
+    apr_size_t dsize = APR_ALIGN_DEFAULT(sizeof(desc));
     apr_size_t tsize;
 
-    dsize = dsize % vsize ? (((dsize / vsize) +1 ) * vsize) : dsize; 
-    *item_size = *item_size % vsize ? (((*item_size / vsize) +1 ) * vsize) : *item_size; 
+    *item_size = APR_ALIGN_DEFAULT(*item_size);
 
     if (globalpool == NULL) {
         return APR_ENOSHMAVAIL;
@@ -449,8 +443,7 @@ static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_
     ptr = apr_shm_baseaddr_get(res->shm);
     memcpy(&desc, ptr, sizeof(desc));
     ptr = ptr + dsize;
-    tsize = sizeof(int) * (desc.item_num + 1);
-    tsize = tsize % vsize ? (((tsize / vsize) +1 ) * vsize) : tsize; 
+    tsize = APR_ALIGN_DEFAULT(sizeof(int) * (desc.item_num + 1));
 
     /* For the chained slotmem stuff */
     res->name = apr_pstrdup(globalpool, fname);

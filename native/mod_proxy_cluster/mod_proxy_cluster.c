@@ -27,6 +27,7 @@
 
 #include "apr_strings.h"
 #include "apr_version.h"
+#include "apr_thread_cond.h"
 
 #include "httpd.h"
 #include "http_config.h"
@@ -78,7 +79,10 @@ static struct balancer_storage_method *balancer_storage = NULL;
 static struct sessionid_storage_method *sessionid_storage = NULL; 
 static struct domain_storage_method *domain_storage = NULL; 
 
+static apr_thread_t *watchdog_thread = NULL;
 static apr_thread_mutex_t *lock = NULL;
+static apr_thread_cond_t *exit_cond = NULL;
+static int watchdog_must_terminate = 0;
 
 static server_rec *main_server = NULL;
 #define CREAT_ALL  0 /* create balancers/workers in all VirtualHost */
@@ -796,8 +800,8 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
 #else
             balancerinfo_t *balan = read_balancer_name(&balancer->name[11], pool);
             if (balan != NULL) {
-                char *sticky = apr_psprintf(conf->pool, "%s|%s", balan->StickySessionCookie,
-                                                                 balan->StickySessionPath);
+                char *sticky = apr_psprintf(pool, "%s|%s", balan->StickySessionCookie,
+                                                           balan->StickySessionPath);
                 int sticky_force=0;
                 int changed = 0;
                 if (balan->StickySession)
@@ -812,7 +816,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
                     changed = -1;
                 }
                 if (balancer->sticky == NULL || strcmp(sticky, balancer->sticky) != 0) {
-                    balancer->sticky = sticky;
+                    balancer->sticky = apr_pstrdup(conf->pool, sticky);
                     changed = -1;
                 }
                 balancer->timeout =  balan->Timeout;
@@ -2480,6 +2484,7 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
 }
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
+    apr_status_t rv;
     apr_pool_t *pool;
     apr_sleep(apr_time_make(1, 0)); /* wait before starting */
     for (;;) {
@@ -2491,7 +2496,20 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
 
         if (!conf)
            break;
-        apr_sleep(apr_time_make(1, 0));
+
+        apr_thread_mutex_lock(lock);
+        if (watchdog_must_terminate) {
+            apr_thread_mutex_unlock(lock);
+            break;
+        }
+        rv = apr_thread_cond_timedwait(exit_cond, lock, apr_time_make(1, 0));
+        apr_thread_mutex_unlock(lock);
+        if (rv == APR_SUCCESS)
+            break; /* If condition variable was signaled, terminate. */
+        if (rv != APR_TIMEUP) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server, "cluster: apr_thread_cond_timedwait() failed");
+        }
+
         apr_pool_create(&pool, conf->pool);
         last = node_storage->worker_nodes_need_update(main_server, pool);
         while (s) {
@@ -2517,8 +2535,39 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         if (last)
             node_storage->worker_nodes_are_updated(main_server);
     }
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server, "cluster: Watchdog thread exiting cleanly.");
     apr_thread_exit(thd, 0);
     return NULL;
+}
+
+/*
+ * Tell the watchdog thread to exit and wait for it to
+ * complete.
+ */
+static int terminate_watchdog(void *data)
+{
+    apr_status_t rv, trv;
+
+    if (watchdog_thread == NULL)
+        return APR_SUCCESS;
+
+    apr_thread_mutex_lock(lock);
+    watchdog_must_terminate = 1;
+    rv = apr_thread_cond_signal(exit_cond);
+    apr_thread_mutex_unlock(lock);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
+                    "terminate_watchdog: apr_thread_cond_signal failed");
+        return APR_SUCCESS; /* There isn't a lot we can do about this. */
+    }
+
+    rv = apr_thread_join(&trv, watchdog_thread);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
+                    "terminate_watchdog: apr_thread_join failed");
+    }
+
+    return APR_SUCCESS;
 }
 
 /*
@@ -2528,7 +2577,6 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
 static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 {
     apr_status_t rv;
-    apr_thread_t *wdt;
 
     main_server = s;
 
@@ -2538,12 +2586,19 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
                     "proxy_cluster_child_init: apr_thread_mutex_create failed");
     }
 
-    rv = apr_thread_create(&wdt, NULL, proxy_cluster_watchdog_func, s, p);
+    rv = apr_thread_cond_create(&exit_cond, p);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
+                    "proxy_cluster_child_init: apr_thread_cond_create failed");
+    }
+
+    rv = apr_thread_create(&watchdog_thread, NULL, proxy_cluster_watchdog_func, s, p);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
                     "proxy_cluster_child_init: apr_thread_create failed");
     }
 
+    apr_pool_pre_cleanup_register(p, NULL, terminate_watchdog);
 }
 
 static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
