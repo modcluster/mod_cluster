@@ -95,6 +95,7 @@ EXT=tar.gz
 BASEHTTPD=opt/jboss/httpd
 BASEHTTPDCONF=opt/jboss/httpd/httpd/conf
 BASEHTTPDSBIN=opt/jboss/httpd/sbin
+BASEHTTPDBIN=opt/jboss/httpd/bin
 BASEHTTPDBUILD=opt/jboss/httpd/htdocs/build
 case $BUILD_TAG in
    *hpux-parisc2*)
@@ -214,7 +215,14 @@ case ${EXT} in
       # Use / test the installhome script
       ${BASELOC}/${BASEHTTPDSBIN}/installhome.sh
     else
-      files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
+      case ${httpd_version} in
+        2.2*)
+         files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
+         ;;
+        2.4*)
+         files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
+         ;;
+      esac
       for FILE in `echo $files`
       do
         file=${BASELOC}/$FILE
