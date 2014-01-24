@@ -215,14 +215,13 @@ case ${EXT} in
       # Use / test the installhome script
       ${BASELOC}/${BASEHTTPDSBIN}/installhome.sh
     else
-      case ${httpd_version} in
-        2.2*)
+      if [ -f ${BASEHTTPDSBIN}/apxs ]; then
          files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDSBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
-         ;;
-        2.4*)
+         echo "httpd-2.2.x"
+      else
          files="${BASEHTTPDSBIN}/apachectl ${BASEHTTPDCONF}/httpd.conf ${BASEHTTPDSBIN}/envvars ${BASEHTTPDBIN}/apxs ${BASEHTTPDBUILD}/config_vars.mk"
-         ;;
-      esac
+         echo "httpd-2.4.x"
+      fi
       for FILE in `echo $files`
       do
         file=${BASELOC}/$FILE
