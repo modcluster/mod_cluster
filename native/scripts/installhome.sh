@@ -69,8 +69,13 @@ echo "Installing in $RPM_BUILD_ROOT"
 BASEHTTPD=/opt/jboss/httpd
 HTTPDCONF=httpd/conf
 HTTPDSBIN=sbin
+HTTPDBIN=bin
 HTTPDBUILD=htdocs/build
-files="${HTTPDSBIN}/apachectl ${HTTPDCONF}/httpd.conf ${HTTPDSBIN}/envvars ${HTTPDSBIN}/apxs ${HTTPDBUILD}/config_vars.mk"
+if [ -f ${RPM_BUILD_ROOT}/${HTTPDSBIN}/apxs ]; then
+  files="${HTTPDSBIN}/apachectl ${HTTPDCONF}/httpd.conf ${HTTPDSBIN}/envvars ${HTTPDSBIN}/apxs ${HTTPDBUILD}/config_vars.mk"
+else
+  files="${HTTPDSBIN}/apachectl ${HTTPDCONF}/httpd.conf ${HTTPDSBIN}/envvars ${HTTPDBIN}/apxs ${HTTPDBUILD}/config_vars.mk"
+fi
 for FILE in `echo $files`
 do
   file=${RPM_BUILD_ROOT}/$FILE
