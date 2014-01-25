@@ -97,6 +97,7 @@ BASEHTTPDCONF=opt/jboss/httpd/httpd/conf
 BASEHTTPDSBIN=opt/jboss/httpd/sbin
 BASEHTTPDBIN=opt/jboss/httpd/bin
 BASEHTTPDBUILD=opt/jboss/httpd/htdocs/build
+BASEHTTPDLIBEXECDIR=opt/jboss/httpd/lib/httpd
 case $BUILD_TAG in
    *hpux-parisc2*)
       BASE=mod_cluster-hp-ux-9000_800
@@ -313,7 +314,7 @@ ProxyPass /testappli1 http://testhost1:8080/
 ProxyPass /testappli2 http://testhost2:8080/
 ProxyPass /testappli3 http://testhost3:8080/
 ProxyPass /testappli4 http://testhost4:8080/
-LoadModule rewrite_module modules/mod_rewrite.so
+LoadModule rewrite_module ${BASELOC}/${BASEHTTPDLIBEXECDIR}/modules/mod_rewrite.so
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
