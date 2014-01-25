@@ -10,12 +10,12 @@ top_srcdir = @APACHE_BASE@
 include $(top_builddir)/build/rules.mk
 SH_COMPILE = $(LIBTOOL) --mode=compile $(BASE_CC) -I../include -prefer-pic -c $< && touch $@
 
-all: mod_slotmem.so
+all: mod_cluster_slotmem.so
 
-mod_slotmem.so: mod_slotmem.la
-	 $(top_builddir)/build/instdso.sh SH_LIBTOOL='$(LIBTOOL)' mod_slotmem.la `pwd`
+mod_cluster_slotmem.so: mod_cluster_slotmem.la
+	 $(top_builddir)/build/instdso.sh SH_LIBTOOL='$(LIBTOOL)' mod_cluster_slotmem.la `pwd`
 
-mod_slotmem.la: sharedmem_util.slo mod_sharedmem.slo
+mod_cluster_slotmem.la: sharedmem_util.slo mod_sharedmem.slo
 	$(SH_LINK) -rpath $(libexecdir) -module -avoid-version  mod_sharedmem.lo sharedmem_util.lo
 
 clean:

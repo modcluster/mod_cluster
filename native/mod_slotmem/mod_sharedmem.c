@@ -97,7 +97,7 @@ static void ap_sharedmem_register_hook(apr_pool_t *p)
     ap_hook_child_init(child_init, NULL, NULL, APR_HOOK_FIRST);
 }
 
-module AP_MODULE_DECLARE_DATA slotmem_module = {
+module AP_MODULE_DECLARE_DATA cluster_slotmem_module = {
     STANDARD20_MODULE_STUFF,
     NULL,       /* create per-directory config structure */
     NULL,       /* merge per-directory config structures */
