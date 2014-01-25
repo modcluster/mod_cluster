@@ -44,7 +44,7 @@
 #include "apr_pools.h"
 #include "apr_shm.h"
 
-#define SLOTMEM_STORAGE "slotmem"
+#define SLOTMEM_STORAGE "mod_cluster_slotmem"
 
 #define ATTACH_SLOTMEM 0 /* Attach to existing slotmem */
 #define CREATE_SLOTMEM 1 /* create a not persistent slotmem */
