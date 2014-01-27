@@ -208,6 +208,15 @@ case ${EXT} in
     ;;
 esac
 
+HTTPD_VERSION=`${BASEHTTPDSBIN}/apachectl -v | grep "Server version"`
+case ${HTTPD_VERSION} in
+  *2.2*)
+    HTTPD_VERSION=2.2
+    ;;
+  *2.4*)
+    HTTPD_VERSION=2.4
+    ;;
+esac
 INSTWIN=false
 case ${EXT} in
   tar.gz)
@@ -277,7 +286,8 @@ fi
 grep MOD_CLUSTER_ADDS "$file"
 if [ $? -ne 0 ]
 then
-  cat >> "$file.new" <<EOF
+  if [ "${HTTPD_VERSION}" = "2.2" ]; then
+    cat >> "$file.new" <<EOF
 <IfModule manager_module>
   Listen @IP@:6666
   ManagerBalancerName mycluster
@@ -305,6 +315,32 @@ then
   </VirtualHost>
 </IfModule>
 EOF
+  else
+    cat >> "$file.new" <<EOF
+<IfModule manager_module>
+  Listen @IP@:6666
+  ManagerBalancerName mycluster
+  <VirtualHost @IP@:6666>
+    <Directory />
+     Require ip @SUBIP@
+    </Directory>
+
+    KeepAliveTimeout 300
+    MaxKeepAliveRequests 0
+    ServerAdvertise on http://@IP@:6666
+    AdvertiseFrequency 5
+    AdvertiseSecurityKey secret
+    AdvertiseGroup @ADVIP@:23364
+
+    <Location /mod_cluster_manager>
+       SetHandler mod_cluster-manager
+       Require ip @SUBIP@
+    </Location>
+
+  </VirtualHost>
+</IfModule>
+EOF
+  fi
 fi
 
 # Add rewrite tests and UseAlias
