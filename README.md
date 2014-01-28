@@ -77,10 +77,10 @@ native (native httpd modules)
 Building
 --------
 
-### Java Part
+### Servlet Container Modules
 
-Before building, ensure you have maven version 3.0 or newer (`mvn -version`) and JDK 6.0 or newer (`java -version`). 
-It is possible to build entire Java part for all containers:
+Before building, ensure you have Maven version 3.0 or newer (`mvn -version`) and JDK 6.0 or newer (`java -version`). 
+It is possible to build modules for all containers:
 
     mvn install
 
@@ -92,7 +92,7 @@ Dynamic load-balancing demo is located in the `/demo` directory:
 
     mvn install
 
-### Native Part
+### Reverse Proxy (httpd) Modules
 
 To build the native component from the sources you need a C compiler and the following tools:
 * m4
