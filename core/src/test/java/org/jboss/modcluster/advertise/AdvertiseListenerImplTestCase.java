@@ -21,20 +21,25 @@
  */
 package org.jboss.modcluster.advertise;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 
+import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl;
 import org.jboss.modcluster.advertise.impl.MulticastSocketFactoryImpl;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
@@ -45,9 +50,10 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
- * Tests of {@link AdvertiseListener}.
- * 
+ * Tests of {@link AdvertiseListener} / {@link AdvertiseListenerImpl}.
+ *
  * @author Brian Stansberry
+ * @author Radoslav Husar
  */
 @SuppressWarnings("boxing")
 public class AdvertiseListenerImplTestCase {
@@ -56,8 +62,6 @@ public class AdvertiseListenerImplTestCase {
     }
     private static final String ADVERTISE_GROUP = "224.0.1.106";
     private static final int ADVERTISE_PORT = 23364;
-    private static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
-    private static final DateFormat df = new SimpleDateFormat(RFC_822_FMT, Locale.US);
     private static final String SERVER1 = "127.0.0.1";
     private static final String SERVER2 = "127.0.1.1";
     private static final int SERVER_PORT = 8888;
@@ -93,7 +97,7 @@ public class AdvertiseListenerImplTestCase {
     }
 
     @Test
-    public void testBasicOperation() throws IOException {
+    public void testBasicOperation() throws IOException, NoSuchAlgorithmException {
         ArgumentCaptor<InetAddress> capturedAddress = ArgumentCaptor.forClass(InetAddress.class);
 
         when(this.socketFactory.createMulticastSocket(capturedAddress.capture(), eq(ADVERTISE_PORT))).thenReturn(this.socket);
@@ -104,20 +108,8 @@ public class AdvertiseListenerImplTestCase {
         assertFalse(this.socket.isClosed());
 
         ArgumentCaptor<InetSocketAddress> capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-        String date = df.format(new Date());
 
-        StringBuilder data = new StringBuilder("HTTP/1.1 200 OK\r\n");
-        data.append("Date: ");
-        data.append(date);
-        data.append("\r\n");
-        data.append("Server: ");
-        data.append(SERVER1);
-        data.append("\r\n");
-        data.append("X-Manager-Address: ");
-        data.append(SERVER1_ADDRESS);
-        data.append("\r\n");
-
-        byte[] buf = data.toString().getBytes();
+        byte[] buf = TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
 
         if (!System.getProperty("os.name").startsWith("Windows")) {
@@ -139,7 +131,7 @@ public class AdvertiseListenerImplTestCase {
 
         verify(this.mcmpHandler).addProxy(capturedSocketAddress.capture());
         reset(this.mcmpHandler);
-        
+
         InetSocketAddress socketAddress = capturedSocketAddress.getValue();
         assertEquals(SERVER1, socketAddress.getAddress().getHostAddress());
         assertEquals(SERVER_PORT, socketAddress.getPort());
@@ -163,18 +155,7 @@ public class AdvertiseListenerImplTestCase {
 
         capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
 
-        data = new StringBuilder("HTTP/1.1 200 OK\r\n");
-        data.append("Date: ");
-        data.append(date);
-        data.append("\r\n");
-        data.append("Server: ");
-        data.append(SERVER2);
-        data.append("\r\n");
-        data.append("X-Manager-Address: ");
-        data.append(SERVER2_ADDRESS);
-        data.append("\r\n");
-
-        buf = data.toString().getBytes();
+        buf = TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER2, SERVER2_ADDRESS);
         packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
 
         this.socket.send(packet);
@@ -214,4 +195,5 @@ public class AdvertiseListenerImplTestCase {
 
         assertTrue(this.socket.isClosed());
     }
+
 }
