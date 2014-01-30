@@ -121,11 +121,12 @@ case $BUILD_TAG in
       BASE=mod_cluster-solaris-x86
       ;;
    *windows*)
+      echo "Windows later for 2.2.x versus 2.4.x"
       BASE=mod_cluster-windows
       EXT=zip
       BASEHTTPD=httpd-2.2
-      BASEHTTPDCONF=httpd-2.2/conf
-      BASEHTTPDSBIN=httpd-2.2/bin
+      BASEHTTPDCONF=${BASEHTTPD}/conf
+      BASEHTTPDSBIN=${BASEHTTPD}/bin
       ;;
 esac
 #PACKVER=rhel-httpd-2.2.8-1.el5s2
@@ -177,11 +178,11 @@ TARBALL=`pwd`/${PACKVER}-${BUILD_SYS}-${BUILD_CPU}.${EXT}
 
 export BASELOC
 echo "Base is: $BASELOC !!!"
-
 # Clean previous install
 if $REMOVE
 then
-  rm -rf "$BASELOC/$BASEHTTPD"
+  rm -rf "$BASELOC"
+  mkdir $BASELOC"
 fi
 case ${EXT} in
   file)
@@ -208,15 +209,34 @@ case ${EXT} in
     ;;
 esac
 
-HTTPD_VERSION=`${BASEHTTPDSBIN}/apachectl -v | grep "Server version"`
-case ${HTTPD_VERSION} in
-  *2.2*)
-    HTTPD_VERSION=2.2
-    ;;
-  *2.4*)
-    HTTPD_VERSION=2.4
-    ;;
+case $BUILD_TAG in
+   *windows*)
+      BASE=mod_cluster-windows
+      EXT=zip
+      if [ -d $BASELOC/httpd-2.2 ]; then
+        BASEHTTPD=httpd-2.2
+        HTTPD_VERSION=2.2
+      else
+        BASEHTTPD=httpd-2.4
+        HTTPD_VERSION=2.4
+      fi
+      BASEHTTPDCONF=${BASEHTTPD}/conf
+      BASEHTTPDSBIN=${BASEHTTPD}/bin
+      ;;
 esac
+
+
+if [ -x ${BASEHTTPDSBIN}/apachectl ]; then
+  HTTPD_VERSION=`${BASEHTTPDSBIN}/apachectl -v | grep "Server version"`
+  case ${HTTPD_VERSION} in
+    *2.2*)
+      HTTPD_VERSION=2.2
+      ;;
+    *2.4*)
+      HTTPD_VERSION=2.4
+      ;;
+  esac
+fi
 INSTWIN=false
 case ${EXT} in
   tar.gz)
@@ -252,7 +272,7 @@ case ${EXT} in
     ;;
   *)
     # Arrange the installed files
-    (cd "$BASELOC/httpd-2.2/bin"
+    (cd "$BASELOC/httpd-${HTTPD_VERSION}/bin"
      ./installconf.bat
     )
     INSTWIN=true
@@ -386,7 +406,7 @@ chmod a+x "$BASELOC/${BASEHTTPD}"/bin/*
 case $BUILD_TAG in
    *windows*)
      # The service is run as Administrators/SYSTEM
-     chown -R Administrators "$BASELOC/httpd-2.2"
-     chgrp -R SYSTEM "$BASELOC/httpd-2.2"
+     chown -R Administrators "$BASELOC/httpd-${HTTPD_VERSION}"
+     chgrp -R SYSTEM "$BASELOC/httpd-${HTTPD_VERSION}"
      ;;
 esac
