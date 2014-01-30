@@ -257,8 +257,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     char *ptr;
     apr_status_t rv = APR_SUCCESS;
     proxy_worker *worker;
-    proxy_worker *runtime;
-    int i, def, fnv;
     proxy_worker_shared *shared;
     proxy_cluster_helper *helper;
 
@@ -1233,8 +1231,11 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
 {
     apr_status_t status;
     apr_interval_time_t timeout;
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+#else
     apr_interval_time_t savetimeout;
     char savetimeout_set;
+#endif
 #if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
 #else
     proxy_cluster_helper *helperping;
