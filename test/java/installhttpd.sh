@@ -213,7 +213,7 @@ case $BUILD_TAG in
    *windows*)
       BASE=mod_cluster-windows
       EXT=zip
-      if [ -d $BASELOC/httpd-2.2 ]; then
+      if [ -d "$BASELOC/httpd-2.2" ]; then
         BASEHTTPD=httpd-2.2
         HTTPD_VERSION=2.2
       else

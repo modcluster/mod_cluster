@@ -23,11 +23,17 @@ REM @author Jean-Frederic Clere
 REM
 @echo on
 
+IF NOT EXIST "@BASELOC@\httpd-2.4" (
+  SET HTTPD_VERSION=2.4
+) ELSE (
+  SET HTTPD_VERSION=2.2
+)
+
 @if "%1" == "stop" goto stop
 @if "%1" == "start" goto start
 
-"@BASELOC@\httpd-2.2\bin\httpd.exe" -k install
-dir "@BASELOC@\httpd-2.2\logs"
+"@BASELOC@\httpd-%HTTPD_VERSION%\bin\httpd.exe" -k install
+dir "@BASELOC@\httpd-%HTTPD_VERSION%\logs"
 goto end
 
 :start
@@ -35,15 +41,15 @@ REM install will test httpd but using the current user so remove the logs files.
 REM wait a little (2 ways)
 REM choice /c C /D C /t 30
 REM ping -n 31 localhost > NUL
-dir "@BASELOC@\httpd-2.2\logs"
-del "@BASELOC@\httpd-2.2\logs\access_log"
-del "@BASELOC@\httpd-2.2\logs\error_log"
-REM "@BASELOC@\httpd-2.2\bin\httpd.exe" -k start
-net start Apache2.2
-dir "@BASELOC@\httpd-2.2\logs"
+dir "@BASELOC@\httpd-%HTTPD_VERSION%\logs"
+del "@BASELOC@\httpd-%HTTPD_VERSION%\logs\access_log"
+del "@BASELOC@\httpd-%HTTPD_VERSION%\logs\error_log"
+REM "@BASELOC@\httpd-%HTTPD_VERSION%\bin\httpd.exe" -k start
+net start Apache%HTTPD_VERSION%
+dir "@BASELOC@\httpd-%HTTPD_VERSION%\logs"
 goto end
 
 :stop
-"@BASELOC@\httpd-2.2\bin\httpd.exe" -k stop
-"@BASELOC@\httpd-2.2\bin\httpd.exe" -k uninstall
+"@BASELOC@\httpd-%HTTPD_VERSION%\bin\httpd.exe" -k stop
+"@BASELOC@\httpd-%HTTPD_VERSION%\bin\httpd.exe" -k uninstall
 :end
