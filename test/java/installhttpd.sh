@@ -182,7 +182,7 @@ echo "Base is: $BASELOC !!!"
 if $REMOVE
 then
   rm -rf "$BASELOC"
-  mkdir $BASELOC"
+  mkdir "$BASELOC"
 fi
 case ${EXT} in
   file)
