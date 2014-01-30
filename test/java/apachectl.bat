@@ -24,9 +24,9 @@ REM
 @echo on
 
 IF NOT EXIST "@BASELOC@\httpd-2.4" (
-  SET HTTPD_VERSION=2.4
-) ELSE (
   SET HTTPD_VERSION=2.2
+) ELSE (
+  SET HTTPD_VERSION=2.4
 )
 
 @if "%1" == "stop" goto stop
