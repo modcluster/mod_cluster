@@ -295,9 +295,9 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             }
         } else {
             /* Check if the shared memory goes to the right place */
+            char *pptr = (char *) node;
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                          "Created: reusing worker for %s", url);
-            char *pptr = (char *) node;
             pptr = pptr + node->offset;
             if (helper->index == node->mess.id && worker->s == (proxy_worker_shared *) pptr) {
                 /* the share memory may have been removed and recreated */
