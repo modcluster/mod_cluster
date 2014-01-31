@@ -127,6 +127,7 @@ case $BUILD_TAG in
       BASEHTTPD=httpd-2.2
       BASEHTTPDCONF=${BASEHTTPD}/conf
       BASEHTTPDSBIN=${BASEHTTPD}/bin
+      BASEHTTPDLIBEXECDIR=${BASEHTTPD}
       ;;
 esac
 #PACKVER=rhel-httpd-2.2.8-1.el5s2
@@ -222,6 +223,7 @@ case $BUILD_TAG in
       fi
       BASEHTTPDCONF=${BASEHTTPD}/conf
       BASEHTTPDSBIN=${BASEHTTPD}/bin
+      BASEHTTPDLIBEXECDIR=${BASEHTTPD}
       ;;
 esac
 
@@ -370,7 +372,7 @@ ProxyPass /testappli1 http://testhost1:8080/
 ProxyPass /testappli2 http://testhost2:8080/
 ProxyPass /testappli3 http://testhost3:8080/
 ProxyPass /testappli4 http://testhost4:8080/
-LoadModule rewrite_module ${BASELOC}/${BASEHTTPDLIBEXECDIR}/modules/mod_rewrite.so
+LoadModule rewrite_module "${BASELOC}/${BASEHTTPDLIBEXECDIR}/modules/mod_rewrite.so"
 RewriteEngine On
 RewriteCond %{HTTP_HOST} ^cluster\.domain\.com [NC]
 RewriteRule ^/$ /myapp/MyCount [PT]
