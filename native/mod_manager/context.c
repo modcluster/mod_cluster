@@ -183,6 +183,24 @@ apr_status_t remove_context(mem_t *s, contextinfo_t *context)
 }
 
 /*
+ * lock the context table
+ * @param pointer to the shared table.
+ */
+void lock_contexts(mem_t *s)
+{
+    s->storage->ap_slotmem_lock(s->slotmem);
+}
+
+/*
+ * unlock the context table
+ * @param pointer to the shared table.
+ */
+void unlock_contexts(mem_t *s)
+{
+    s->storage->ap_slotmem_unlock(s->slotmem);
+}
+
+/*
  * get the ids for the used (not free) contexts in the table
  * @param pointer to the shared table.
  * @param ids array of int to store the used id (must be big enough).

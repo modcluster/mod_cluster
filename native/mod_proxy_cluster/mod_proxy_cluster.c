@@ -3440,14 +3440,17 @@ void remove_session_route(request_rec *r, const char *name)
 
 /*
  * Update the context active request counter
+ * Note: it need to lock the whole context table
  */
-static void upd_context_count(const char *id, int val)
+static void upd_context_count(const char *id, int val, server_rec *s)
 {
     int ident = atoi(id);
     contextinfo_t *context;
+    context_storage->lock_contexts();
     if (context_storage->read_context(ident, &context) == APR_SUCCESS) {
         context->nbrequests = context->nbrequests + val;
     }
+    context_storage->unlock_contexts();
 }
 
 /*
@@ -3510,28 +3513,34 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy_cluster_pre_request: worker %s", worker_name);
 #endif
+            /* Ajust the context counter here */
+            context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+            if (context_id && *context_id) {
+               upd_context_count(context_id, -1, r->server);
+            }
+            apr_thread_mutex_lock(lock);
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
                 proxy_worker **run = (proxy_worker **) ptr;
                 if ((*run)->hash.def == def && (*run)->hash.fnv == fnv) {
                     helper = (proxy_cluster_helper *) (*run)->context;
+                    if (helper->count_active>0)
+                        helper->count_active--;
+                    break;
+                }
+            }
 #else
             for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
                 proxy_worker *run = (proxy_worker *) ptr;
                 if (run->name && strcmp(worker_name, run->name) == 0) {
                     helper = (proxy_cluster_helper *) (run)->opaque;
-#endif
-                    apr_thread_mutex_lock(lock);
                     if (helper->count_active>0)
                         helper->count_active--;
-                    /* Ajust the context counter here too */
-                    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
-                    if (context_id && *context_id) {
-                       upd_context_count(context_id, -1);
-                    }
-                    apr_thread_mutex_unlock(lock);
+                    break;
                 }
             }
+#endif
+            apr_thread_mutex_unlock(lock);
         }
     }
 
@@ -3546,16 +3555,17 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         apr_thread_mutex_unlock(lock);
         /* May be the node has not been created yet */
         update_workers_node(conf, r->pool, r->server, 1);
+        apr_thread_mutex_lock(lock);
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (!(*balancer = ap_proxy_get_balancer(r->pool, conf, *url, 0))) {
 #else
         if (!(*balancer = ap_proxy_get_balancer(r->pool, conf, *url))) {
 #endif
+            apr_thread_mutex_unlock(lock);
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy: CLUSTER no balancer for %s", *url);
             return DECLINED;
         }
-        apr_thread_mutex_lock(lock);
     }
 
     /* Step 2: find the session route */
@@ -3683,6 +3693,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
     (*worker)->s->busy++;
 
+    /* Also mark the context here note that find_best_worker set BALANCER_CONTEXT_ID */
+    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+    if (context_id && *context_id) {
+       upd_context_count(context_id, 1, r->server);
+    }
+
     /* Mark the worker used for the cleanup logic */
     apr_thread_mutex_lock(lock);
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
@@ -3691,12 +3707,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     helper = (proxy_cluster_helper *) (*worker)->opaque;
 #endif
     helper->count_active++;
-
-    /* Also mark the context here note that find_best_worker set BALANCER_CONTEXT_ID */
-    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
-    if (context_id && *context_id) {
-       upd_context_count(context_id, 1);
-    }
     apr_thread_mutex_unlock(lock);
 
     /*
@@ -3749,6 +3759,11 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     char *oroute;
     const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
 
+    /* Ajust the context counter here too */
+    if (context_id && *context_id) {
+       upd_context_count(context_id, -1, r->server);
+    }
+
     /* mark the work as not use */
     apr_thread_mutex_lock(lock);
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
@@ -3757,11 +3772,6 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     helper = (proxy_cluster_helper *) worker->opaque;
 #endif
     helper->count_active--;
-    /* Ajust the context counter here too */
-    context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
-    if (context_id && *context_id) {
-       upd_context_count(context_id, -1);
-    }
     apr_thread_mutex_unlock(lock);
 
 #if HAVE_CLUSTER_EX_DEBUG

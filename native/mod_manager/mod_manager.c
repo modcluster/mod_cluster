@@ -312,11 +312,21 @@ static int loc_get_ids_used_context(int *ids)
 {
     return(get_ids_used_context(contextstatsmem, ids)); 
 }
+static void loc_lock_contexts()
+{
+    lock_contexts(contextstatsmem);
+}
+static void loc_unlock_contexts()
+{
+    unlock_contexts(contextstatsmem);
+}
 static const struct context_storage_method context_storage =
 {
     loc_read_context,
     loc_get_ids_used_context,
-    loc_get_max_size_context
+    loc_get_max_size_context,
+    loc_lock_contexts,
+    loc_unlock_contexts
 };
 
 /*
