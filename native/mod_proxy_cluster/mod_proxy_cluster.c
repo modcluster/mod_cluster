@@ -1200,8 +1200,7 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     rp->proxyreq = PROXYREQ_RESPONSE;
     tmp_bb = apr_brigade_create(r->pool, p_conn->connection->bucket_alloc);
     while (1) {
-        apr_status_t rc;
-        rc = ap_proxygetline(tmp_bb, buffer, sizeof(buffer), rp, 0, &len);
+        ap_proxygetline(tmp_bb, buffer, sizeof(buffer), rp, 0, &len);
         if (len <= 0)
            break;
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
