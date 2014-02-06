@@ -222,6 +222,9 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
                 if (this.init.get() && this.start.compareAndSet(false, true)) {
                     this.eventHandler.start(this.factory.createServer((Server) source));
                 }
+            } else if(source instanceof Context) {
+                // Start a webapp
+                this.eventHandler.start(this.factory.createContext((Context) source));
             }
         } else if (type.equals(Lifecycle.BEFORE_STOP_EVENT)) {
             if (source instanceof Context) {
