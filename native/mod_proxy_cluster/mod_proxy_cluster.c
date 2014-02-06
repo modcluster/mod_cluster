@@ -3322,7 +3322,7 @@ void remove_session_route(request_rec *r, const char *name)
             ++path;
             if (strlen(path)) {
                 char *filename = r->filename;
-                while (*path !='&' || *path !='\0')
+                while (*path !='&' && *path !='\0')
                     path++;
                 /* We have it */
                 *start = '\0';
