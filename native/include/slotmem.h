@@ -68,10 +68,11 @@ struct slotmem_storage_method {
  * @param s ap_slotmem_t to use.
  * @param funct callback function to call for each element.
  * @param data parameter for the callback function.
+ * @param new_version parameter to tell the version should be changed
  * @param pool is pool used to create scoreboard
  * @return APR_SUCCESS if all went well
  */
-apr_status_t (* ap_slotmem_do)(ap_slotmem_t *s, mc_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool);
+apr_status_t (* ap_slotmem_do)(ap_slotmem_t *s, mc_slotmem_callback_fn_t *func, void *data, int new_version, apr_pool_t *pool);
 
 /**
  * create a new slotmem with each item size is item_size.
@@ -144,6 +145,12 @@ apr_status_t (* ap_slotmem_lock)(ap_slotmem_t *s);
  * @return APR_SUCCESS if all went well
  */
 apr_status_t (* ap_slotmem_unlock)(ap_slotmem_t *s);
+/**
+ * Return the version of the slotmem table.
+ * @param s ap_slotmem_t to use.
+ * @return value of the version. version increased each an element is modified.
+ */
+unsigned int (*ap_slotmem_get_version)(ap_slotmem_t *s);
 };
 
 typedef struct slotmem_storage_method slotmem_storage_method;

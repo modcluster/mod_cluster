@@ -95,7 +95,7 @@ apr_status_t insert_update_jgroupsid(mem_t *s, jgroupsidinfo_t *jgroupsid)
     int ident;
 
     jgroupsid->id = 0;
-    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &jgroupsid, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &jgroupsid, 1, s->p);
     if (jgroupsid->id != 0 && rv == APR_SUCCESS) {
         return APR_SUCCESS; /* updated */
     }
@@ -136,7 +136,7 @@ jgroupsidinfo_t * read_jgroupsid(mem_t *s, jgroupsidinfo_t *jgroupsid)
     if (jgroupsid->id)
         rv = s->storage->ap_slotmem_mem(s->slotmem, jgroupsid->id, (void **) &ou);
     else {
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_jgroupsid, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_jgroupsid, &ou, 0, s->p);
     }
     if (rv == APR_SUCCESS)
         return ou;
@@ -168,7 +168,7 @@ apr_status_t remove_jgroupsid(mem_t *s, jgroupsidinfo_t *jgroupsid)
         s->storage->ap_slotmem_free(s->slotmem, jgroupsid->id, jgroupsid);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_jgroupsid, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_jgroupsid, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
             rv = s->storage->ap_slotmem_free(s->slotmem, ou->id, jgroupsid);
     }
