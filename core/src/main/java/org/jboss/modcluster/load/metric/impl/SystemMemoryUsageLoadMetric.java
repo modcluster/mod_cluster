@@ -28,6 +28,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
@@ -39,8 +40,6 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 public class SystemMemoryUsageLoadMetric extends AbstractLoadMetric {
     public static final String FREE_MEMORY = "FreePhysicalMemorySize";
     public static final String TOTAL_MEMORY = "TotalPhysicalMemorySize";
-
-    private Logger logger = Logger.getLogger(this.getClass());
 
     private volatile MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     
@@ -61,7 +60,7 @@ public class SystemMemoryUsageLoadMetric extends AbstractLoadMetric {
             double total = ((Number) this.server.getAttribute(name, TOTAL_MEMORY)).doubleValue();
             return (total - free) / total;
         } catch (AttributeNotFoundException e) {
-            this.logger.warn(this.getClass().getSimpleName() + " requires com.sun.management.OperatingSystemMXBean.");
+            ModClusterLogger.LOGGER.missingOSBean(this.getClass().getSimpleName());
             this.setWeight(0);
             return 0;
         }
