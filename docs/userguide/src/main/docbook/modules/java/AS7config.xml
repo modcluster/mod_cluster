@@ -169,7 +169,7 @@
      <programlisting>
 &lt;subsystem xmlns="urn:jboss:domain:modcluster:1.0"&gt;
   &lt;mod-cluster-config&gt;
-    &lt;simple-load-provider load="1"/&gt;
+    &lt;simple-load-provider factor="1"/&gt;
   &lt;/mod-cluster-config&gt;
 &lt;/subsystem&gt;
      </programlisting>
