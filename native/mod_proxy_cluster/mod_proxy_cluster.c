@@ -716,7 +716,8 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
         strncpy(balancer->s->sticky_path, balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
         balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-        balancer->s->sticky_force = balan->StickySession; /* where to put STSESSREM ? */
+        if (balan->StickySessionForce)
+            balancer->s->sticky_force = 1; /* STSESSREM is keep in the mod_cluster "private" balancer */
         balancer->s->timeout = balan->Timeout;
         balancer->s->max_attempts = balan->Maxattempts;
         balancer->s->max_attempts_set = 1;
@@ -772,8 +773,12 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
             balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
             if (balan != NULL) {
                 int changed = 0;
-                if (balancer->s->sticky_force != balan->StickySessionForce) {
-                    balancer->s->sticky_force = balan->StickySessionForce;
+                if (!balancer->s->sticky_force && balan->StickySessionForce) {
+                    balancer->s->sticky_force = 1;
+                    changed = -1;
+                }
+                if (balancer->s->sticky_force && !balan->StickySessionForce) {
+                    balancer->s->sticky_force = 0;
                     changed = -1;
                 }
                 if (strcmp(balan->StickySessionCookie, balancer->s->sticky) != 0) {
@@ -2945,6 +2950,7 @@ static int proxy_cluster_trans(request_rec *r)
     read_vhost_table(r, &vhost_table);
     read_context_table(r, &context_table);
     read_balancer_table(r, &balancer_table);
+    apr_table_setn(r->notes, "balancer-table",  (char *) &balancer_table);
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
@@ -3207,11 +3213,17 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
     proxy_worker *worker = NULL;
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+#if HAVE_CLUSTER_EX_DEBUG
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "find_session_route: sticky %s sticky_path: %s sticky_force: %d", balancer->s->sticky, balancer->s->sticky_path, balancer->s->sticky_force);
+#endif
     if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path == '\0')
         return NULL;
-    if (! balancer->s->sticky_force)
-        return NULL;
 #else
+#if HAVE_CLUSTER_EX_DEBUG
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                     "find_session_route: sticky %s sticky_force: %d", balancer->sticky, balancer->sticky_force);
+#endif
     if (!balancer->sticky)
         return NULL;
     if (! (balancer->sticky_force & STSESSION))
@@ -3469,6 +3481,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     apr_status_t rv;
     proxy_cluster_helper *helper;
     const char *context_id;
+    int remove_sessionid = 0;
 
     proxy_vhost_table vhost_table;
     proxy_context_table context_table;
@@ -3675,9 +3688,27 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             apr_table_setn(r->subprocess_env, "BALANCER_ROUTE_CHANGED", "1");
         }
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-        /* XXX: we need to support the Remove sessionid somehow */
+        /* we should read Remove sessionid from the proxy_balancer_table */
+        if (route) {
+            const proxy_balancer_table *balancer_table =  (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
+            if (balancer_table) {
+                int i;
+                for (i = 0; i < balancer_table->sizebalancer; i++) {
+                    if (strcmp(balancer_table->balancer_info[i].balancer, &(*balancer)->s->name[11])) {
+                        if ( balancer_table->balancer_info[i].StickySessionRemove)
+                            remove_sessionid = 1;
+                        break;
+                    }
+                } 
+            }
+        }
 #else
+        /* Remove sessionid fits in sticky_force */
         if (route && ((*balancer)->sticky_force & STSESSREM)) {
+            remove_sessionid = 1;
+        }
+#endif
+        if (remove_sessionid) {
             /*
              * Failover to another domain. Remove sessionid information.
              */
@@ -3686,7 +3717,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                 remove_session_route(r, sticky); 
             }
         }
-#endif
         *worker = runtime;
     }
 
