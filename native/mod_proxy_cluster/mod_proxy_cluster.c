@@ -129,6 +129,15 @@ struct proxy_balancer_table
 };
 typedef struct proxy_balancer_table proxy_balancer_table;
 
+/* Node table copy for local use */
+struct proxy_node_table
+{
+	int sizenode;
+	int* nodes;
+	nodeinfo_t*  node_info;
+};
+typedef struct proxy_node_table proxy_node_table;
+
 /* table of node and context selected by find_node_context_host() */
 struct node_context
 {
@@ -988,19 +997,17 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, server_rec *server, int check)
 {
     int *id, size, i;
-    apr_time_t last;
+    unsigned int last;
 
     /* Check if we have to do something */
     apr_thread_mutex_lock(lock);
-    if (check)
+    if (check) { 
         last = node_storage->worker_nodes_need_update(main_server, pool);
-    else
-        last = 1;
-
-    /* nodes_need_update will return 1 if last_updated is zero: first time we are called */
-    if (last == 0) {
-        apr_thread_mutex_unlock(lock);
-        return;
+        /* nodes_need_update will return 1 if last_updated is zero: first time we are called */
+        if (last == 0) {
+            apr_thread_mutex_unlock(lock);
+            return;
+        }
     }
 
     /* read the ident of the nodes */
@@ -1825,6 +1832,40 @@ static void read_balancer_table(request_rec *r, proxy_balancer_table *balancer_t
     }
 }
 
+/* Read the node table from shared memory */
+static void read_node_table(request_rec *r, proxy_node_table *node_table)
+{
+    int i;
+    int size;
+    size = node_storage->get_max_size_node();
+    if (size == 0) { 
+        node_table->sizenode = 0;
+        node_table->nodes = NULL;
+        node_table->node_info = NULL;
+        return;
+    }
+    node_table->nodes =  apr_palloc(r->pool, sizeof(int) * size);
+    node_table->sizenode = node_storage->get_ids_used_node(node_table->nodes);
+    node_table->node_info = apr_palloc(r->pool, sizeof(nodeinfo_t) * node_table->sizenode);
+    for (i = 0; i < node_table->sizenode; i++) {
+        nodeinfo_t* h;
+        int node_index = node_table->nodes[i];
+        node_storage->read_node(node_index, &h);
+        node_table->node_info[i] = *h;
+    }
+}
+
+/* Read a node from the tabel using its it */
+static  nodeinfo_t* table_get_node(proxy_node_table *node_table, int id)
+{
+    int i;
+    for (i = 0; i < node_table->sizenode; i++) {
+        if (node_table->nodes[i] == id)
+            return &node_table->node_info[i];
+    }
+    return NULL;
+}
+
 /**
  * Find the best nodes for a request (check host and context (and balancer))
  * @param r the request_rec
@@ -1833,7 +1874,7 @@ static void read_balancer_table(request_rec *r, proxy_balancer_table *balancer_t
  * @param use_alias compare alias with server_name
  * @return a pointer to a list of nodes.
  */
-static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table)
+static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table, proxy_node_table *node_table)
 {
     int sizecontext = context_table->sizecontext;
     int *contexts;
@@ -1915,8 +1956,9 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
 
         /* keep only the contexts corresponding to our balancer */
         if (balancer != NULL) {
-            nodeinfo_t *node;
-            if (node_storage->read_node(context->node, &node) != APR_SUCCESS)
+
+            nodeinfo_t *node =  table_get_node(node_table, context->node);
+            if (node == NULL)
                 continue;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
@@ -1984,13 +2026,13 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
  * @return the balancer name or NULL if not found.
  */ 
 static char *get_context_host_balancer(request_rec *r,
-		proxy_vhost_table *vhost_table, proxy_context_table *context_table)
+		proxy_vhost_table *vhost_table, proxy_context_table *context_table, proxy_node_table *node_table)
 {
     void *sconf = r->server->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table);
+    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table, node_table);
     if (nodes == NULL)
         return NULL;
     while ((*nodes).node != -1) {
@@ -2025,12 +2067,12 @@ static char *get_context_host_balancer(request_rec *r,
  * (See get_context_host_balancer too).
  */ 
 static node_context *context_host_ok(request_rec *r, proxy_balancer *balancer, int node,
-                             proxy_vhost_table *vhost_table, proxy_context_table *context_table)
+                             proxy_vhost_table *vhost_table, proxy_context_table *context_table, proxy_node_table *node_table)
 {
     const char *route;
     node_context *best;
     route = apr_table_get(r->notes, "session-route");
-    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table);
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
     if (best == NULL)
         return NULL;
     while ((*best).node != -1) {
@@ -2088,7 +2130,7 @@ static int isnode_domain_ok(request_rec *r, nodeinfo_t *node,
 static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, proxy_server_conf *conf,
                                          request_rec *r, const char *domain, int failoverdomain,
                                          proxy_vhost_table *vhost_table,
-                                         proxy_context_table *context_table)
+                                         proxy_context_table *context_table, proxy_node_table *node_table)
 {
     int i;
     proxy_worker *mycandidate = NULL;
@@ -2171,9 +2213,9 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                 continue; /* Can't read node */
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table)) != NULL) {
+            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table, node_table)) != NULL) {
 #else
-            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->id, vhost_table, context_table)) != NULL) {
+            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->id, vhost_table, context_table, node_table)) != NULL) {
 #endif
                 if (!checked_domain) {
                     /* First try only nodes in the domain */
@@ -2253,10 +2295,12 @@ static proxy_worker *find_best_byrequests(proxy_balancer *balancer, request_rec 
 
     proxy_vhost_table vhost_table;
     proxy_context_table context_table;
+    proxy_node_table node_table;
     read_vhost_table(r, &vhost_table);
     read_context_table(r, &context_table);
+    read_node_table(r, &node_table);
 
-    return internal_find_best_byrequests(balancer, conf, r, NULL, 0, &vhost_table, &context_table);
+    return internal_find_best_byrequests(balancer, conf, r, NULL, 0, &vhost_table, &context_table, &node_table);
 }
 
 /*
@@ -2497,7 +2541,7 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         void *sconf = s->module_config;
         proxy_server_conf *conf = (proxy_server_conf *)
             ap_get_module_config(sconf, &proxy_module);
-        apr_time_t last;
+        unsigned int last;
 
         if (!conf)
            break;
@@ -2538,7 +2582,7 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         }
         apr_pool_destroy(pool);
         if (last)
-            node_storage->worker_nodes_are_updated(main_server);
+            node_storage->worker_nodes_are_updated(main_server, last);
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server, "cluster: Watchdog thread exiting cleanly.");
     apr_thread_exit(thd, 0);
@@ -2741,7 +2785,8 @@ static apr_status_t find_nodedomain(request_rec *r, char **domain, char *route, 
 static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                                       proxy_vhost_table *vhost_table,
                                       proxy_context_table *context_table,
-                                      proxy_balancer_table *balancer_table)
+                                      proxy_balancer_table *balancer_table,
+                                      proxy_node_table *node_table)
 {
     char *route = NULL;
     char *sessionid = NULL;
@@ -2789,7 +2834,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                 route++;
             if (route && *route) {
                 /* Nice we have a route, but make sure we have to serve it */
-                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table);
+                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
                 if (nodes == NULL)
                     continue; /* we can't serve context/host for the request with this balancer*/
             }
@@ -2947,9 +2992,11 @@ static int proxy_cluster_trans(request_rec *r)
     proxy_vhost_table vhost_table;
     proxy_context_table context_table;
     proxy_balancer_table balancer_table;
+    proxy_node_table node_table;
     read_vhost_table(r, &vhost_table);
     read_context_table(r, &context_table);
     read_balancer_table(r, &balancer_table);
+    read_node_table(r, &node_table);
     apr_table_setn(r->notes, "balancer-table",  (char *) &balancer_table);
 
 #if HAVE_CLUSTER_EX_DEBUG
@@ -2958,18 +3005,14 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
-    balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table);
-    if (!balancer) {
-        /* May be the balancer has not been created (XXX: use shared memory to find the balancer ...) */
-        update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table);
-    }
-    if (!balancer)
-        balancer = get_context_host_balancer(r, &vhost_table, &context_table);
+    balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
     if (!balancer) {
         /* May be the balancer has not been created (we use shared memory to find the balancer name) */
         update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_context_host_balancer(r, &vhost_table, &context_table);
+        balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
+    }
+    if (!balancer) {
+        balancer = get_context_host_balancer(r, &vhost_table, &context_table, &node_table);
     }
     
 
@@ -3098,7 +3141,8 @@ static int proxy_cluster_canon(request_rec *r, char *url)
 static proxy_worker *find_route_worker(request_rec *r,
                                        proxy_balancer *balancer, const char *route,
                                        proxy_vhost_table *vhost_table,
-                                       proxy_context_table *context_table)
+                                       proxy_context_table *context_table,
+                                       proxy_node_table *node_table)
 {
     int i;
     int checking_standby;
@@ -3139,7 +3183,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                     nodeinfo_t *node;
                     if (node_storage->read_node(index, &node) != APR_SUCCESS)
                         return NULL; /* can't read node */
-                    if (context_host_ok(r, balancer, index, vhost_table, context_table) != NULL)
+                    if (context_host_ok(r, balancer, index, vhost_table, context_table, node_table) != NULL)
                        return worker;
                     else
                        return NULL; /* application has been removed from the node */
@@ -3170,7 +3214,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                         if (*worker->s->redirect) {
                             proxy_worker *rworker = NULL;
                             rworker = find_route_worker(r, balancer, worker->s->redirect,
-                            		vhost_table, context_table);
+                            		vhost_table, context_table, node_table);
                             /* Check if the redirect worker is usable */
                             if (rworker && !PROXY_WORKER_IS_USABLE(rworker)) {
                                 /*
@@ -3208,7 +3252,8 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
                                         char **url,
                                         const char **domain,
                                         proxy_vhost_table *vhost_table,
-                                        proxy_context_table *context_table)
+                                        proxy_context_table *context_table,
+                                        proxy_node_table *node_table)
 {
     proxy_worker *worker = NULL;
 
@@ -3251,7 +3296,7 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
     /* We have a route in path or in cookie
      * Find the worker that has this route defined.
      */
-    worker = find_route_worker(r, balancer, *route, vhost_table, context_table);
+    worker = find_route_worker(r, balancer, *route, vhost_table, context_table, node_table);
     if (worker && strcmp(*route, worker->s->route)) {
         /*
          * Notice that the route of the worker chosen is different from
@@ -3268,7 +3313,8 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
 static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_conf *conf,
                                       request_rec *r, const char *domain, int failoverdomain,
                                       proxy_vhost_table *vhost_table,
-                                      proxy_context_table *context_table)
+                                      proxy_context_table *context_table,
+                                      proxy_node_table *node_table)
 {
     proxy_worker *candidate = NULL;
     apr_status_t rv;
@@ -3287,7 +3333,7 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
 
     /* XXX: candidate = (*balancer->lbmethod->finder)(balancer, r); */
     candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain,
-    		vhost_table, context_table);
+    		vhost_table, context_table, node_table);
 
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
@@ -3338,7 +3384,7 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
                 apr_sleep(step);
                 /* Try again */
                 if ((candidate = find_best_worker(balancer, conf, r,
-                		domain, failoverdomain, vhost_table, context_table)))
+                		domain, failoverdomain, vhost_table, context_table, node_table)))
                     break;
                 tval += step;
             }
@@ -3485,9 +3531,11 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
     proxy_vhost_table vhost_table;
     proxy_context_table context_table;
+    proxy_node_table node_table;
 
     read_vhost_table(r, &vhost_table);
     read_context_table(r, &context_table);
+    read_node_table(r, &node_table);
 
     *worker = NULL;
 #if HAVE_CLUSTER_EX_DEBUG
@@ -3583,7 +3631,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     /* Step 2: find the session route */
 
     runtime = find_session_route(*balancer, r, &route, &sticky, url, &domain,
-    		&vhost_table, &context_table);
+    		&vhost_table, &context_table, &node_table);
     apr_thread_mutex_unlock(lock);
 
     /* Lock the LoadBalancer
@@ -3659,7 +3707,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
          * We have to failover (in domain only may be) or we don't use sticky sessions
          */
         runtime = find_best_worker(*balancer, conf, r, domain, failoverdomain,
-        		&vhost_table, &context_table);
+        		&vhost_table, &context_table, &node_table);
         if (!runtime) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                          "proxy: CLUSTER: (%s). All workers are in error state",

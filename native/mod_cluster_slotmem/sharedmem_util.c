@@ -60,12 +60,14 @@
 struct sharedslotdesc {
     apr_size_t item_size;
     int item_num;
+    unsigned int version; /* integer updated each time we make a change through the API */
 };
 
 struct ap_slotmem {
     char *name;
     apr_shm_t *shm;
     int *ident; /* integer table to process a fast alloc/free */
+    unsigned int *version; /* address of version */
     void *base;
     apr_size_t size;
     int num;
@@ -197,7 +199,7 @@ apr_status_t cleanup_slotmem(void *param)
     return APR_SUCCESS;
 }
 
-static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, mc_slotmem_callback_fn_t *func, void *data, apr_pool_t *pool)
+static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, mc_slotmem_callback_fn_t *func, void *data, int new_version, apr_pool_t *pool)
 {
     int i, j, isfree, *ident;
     char *ptr;
@@ -220,8 +222,11 @@ static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, mc_slotmem_callback_fn_t *f
         }
         if (!isfree) {
             rv = func((void *)ptr, data, i, pool);
-            if (rv == APR_SUCCESS)
+            if (rv == APR_SUCCESS) {
+                if (new_version)
+                   (*mem->version)++;
                 return(rv);
+            }
         }
         ptr = ptr + mem->size;
     }
@@ -249,7 +254,7 @@ static apr_status_t ap_slotmem_unlock(ap_slotmem_t *s)
 static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_size_t item_size, int item_num, int persist, apr_pool_t *pool)
 {
     char *ptr;
-    struct sharedslotdesc desc;
+    struct sharedslotdesc desc, *new_desc;
     ap_slotmem_t *res;
     ap_slotmem_t *next = globallistmem;
     apr_status_t rv;
@@ -321,6 +326,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
             ap_slotmem_unlock(res);
             return APR_EINVAL;
         }
+        new_desc = (struct sharedslotdesc *) ptr;
         ptr = ptr +  dsize;
     }
     else  {
@@ -353,6 +359,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
         ptr = apr_shm_baseaddr_get(res->shm);
         desc.item_size = item_size;
         desc.item_num = item_num;
+        new_desc = (struct sharedslotdesc *) ptr;
         memcpy(ptr, &desc, sizeof(desc));
         ptr = ptr +  dsize;
         /* write the idents table */
@@ -373,6 +380,7 @@ static apr_status_t ap_slotmem_create(ap_slotmem_t **new, const char *name, apr_
     res->base = ptr + tsize;
     res->size = item_size;
     res->num = item_num;
+    res->version = &(new_desc->version);
     res->globalpool = globalpool;
     res->next = NULL;
     if (globallistmem==NULL) {
@@ -451,6 +459,7 @@ static apr_status_t ap_slotmem_attach(ap_slotmem_t **new, const char *name, apr_
     res->base = ptr + tsize;
     res->size = desc.item_size;
     res->num = desc.item_num;
+    *res->version = 0;
     res->globalpool = globalpool;
     res->next = NULL;
     if (globallistmem==NULL) {
@@ -508,6 +517,7 @@ static apr_status_t ap_slotmem_alloc(ap_slotmem_t *score, int *item_id, void**me
         ident[ff] = 0;
         *item_id = ff;
         *mem = (char *) score->base + score->size * (ff - 1);
+        (*score->version)++;
         rv = APR_SUCCESS;
     }
     
@@ -524,12 +534,14 @@ static apr_status_t ap_slotmem_free(ap_slotmem_t *score, int item_id, void*mem)
         ident = score->ident;
         if (ident[item_id]) {
             ap_slotmem_unlock(score);
+            (*score->version)++;
             return APR_SUCCESS;
         }
         ff = ident[0];
         ident[0] = item_id;
         ident[item_id] = ff;
         ap_slotmem_unlock(score);
+        (*score->version)++;
         return APR_SUCCESS;
     }
 }
@@ -554,6 +566,12 @@ static int ap_slotmem_get_max_size(ap_slotmem_t *score)
         return 0;
     return score->num;
 }
+static unsigned int ap_slotmem_get_version(ap_slotmem_t *score)
+{
+    if (score == NULL)
+        return 0;
+    return *score->version;
+}
 static const slotmem_storage_method storage = {
     &ap_slotmem_do,
     &ap_slotmem_create,
@@ -564,7 +582,8 @@ static const slotmem_storage_method storage = {
     &ap_slotmem_get_used,
     &ap_slotmem_get_max_size,
     &ap_slotmem_lock,
-    &ap_slotmem_unlock
+    &ap_slotmem_unlock,
+    &ap_slotmem_get_version
 };
 
 /* make the storage usuable from outside

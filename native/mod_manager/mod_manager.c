@@ -141,8 +141,8 @@ typedef struct mod_manager_config
     /* max number of jgroupsid supported */
     int maxjgroupsid;
 
-    /* last time the node update logic was called */
-    apr_time_t last_updated;
+    /* version, the version is increased each time the node update logic is called */
+    unsigned int tableversion;
 
     /* Should be the slotmem persisted (1) or not (0) */
     int persistent;
@@ -204,42 +204,33 @@ static apr_status_t loc_find_node(nodeinfo_t **node, const char *route)
  * call to worker_nodes_are_updated().
  * return codes:
  *   0 : No update of the nodes since last time.
- *   x : Last time we changed something in the process.
+ *   x: The version has changed the local table need to be updated.
  */
-static apr_time_t loc_worker_nodes_need_update(void *data, apr_pool_t *pool)
+static unsigned int loc_worker_nodes_need_update(void *data, apr_pool_t *pool)
 {
-    int size, i;
-    int *id;
+    int size;
     server_rec *s = (server_rec *) data;
-    apr_time_t last = 0;
+    unsigned int last = 0;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
 
     size = loc_get_max_size_node();
     if (size == 0)
         return 0; /* broken */
-    id = apr_palloc(pool, sizeof(int) * size);
-    size = get_ids_used_node(nodestatsmem, id);
-    for (i=0; i<size; i++) {
-        nodeinfo_t *ou;
-        if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
-            continue;
-        if (ou->updatetime > last)
-            last = ou->updatetime;
-    }
-    if (last >= mconf->last_updated) {
-        if (mconf->last_updated == 0)
-            return(1); /* First time */
-        return(mconf->last_updated);
-    }
 
+    last = get_version_node(nodestatsmem);
+
+    if (last != mconf->tableversion)
+        return last;
+    if (mconf->tableversion == 0)
+        return 1; /* make sure it is updated */
     return (0);
 }
-/* Store the last update time in the proccess config */
-static int loc_worker_nodes_are_updated(void *data)
+/* Store the last version update in the proccess config */
+static int loc_worker_nodes_are_updated(void *data, unsigned int last)
 {
     server_rec *s = (server_rec *) data;
     mod_manager_config *mconf = ap_get_module_config(s->module_config, &manager_module);
-    mconf->last_updated = apr_time_now();
+    mconf->tableversion = last;
     return (0);
 }
 static int loc_get_max_size_context()
@@ -2709,7 +2700,7 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
         return;
     }
 
-    mconf->last_updated = 0;
+    mconf->tableversion = 0;
 
     if (mconf->basefilename) {
         node = apr_pstrcat(p, mconf->basefilename, "/manager.node", NULL);
@@ -3069,7 +3060,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->maxhost = DEFMAXHOST;
     mconf->maxsessionid = DEFMAXSESSIONID;
     mconf->maxjgroupsid = DEFMAXJGROUPSID;
-    mconf->last_updated = 0;
+    mconf->tableversion = 0;
     mconf->persistent = 0;
     mconf->nonce = -1;
     mconf->balancername = NULL;
@@ -3094,7 +3085,7 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
     mconf->basefilename = NULL;
     mconf->maxcontext = DEFMAXCONTEXT;
     mconf->maxnode = DEFMAXNODE;
-    mconf->last_updated = 0;
+    mconf->tableversion = 0;
     mconf->persistent = 0;
     mconf->nonce = -1;
     mconf->balancername = NULL;

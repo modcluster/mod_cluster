@@ -119,7 +119,7 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
 
     node->mess.id = 0;
     s->storage->ap_slotmem_lock(s->slotmem);
-    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &node, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &node, 1, s->p);
     if (node->mess.id != 0 && rv == APR_SUCCESS) {
         s->storage->ap_slotmem_unlock(s->slotmem);
         *id = node->mess.id;
@@ -171,7 +171,7 @@ nodeinfo_t * read_node(mem_t *s, nodeinfo_t *node)
     if (node->mess.id)
         rv = s->storage->ap_slotmem_mem(s->slotmem, node->mess.id, (void **) &ou);
     else {
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, &ou, 0, s->p);
     }
     if (rv == APR_SUCCESS)
         return ou;
@@ -203,7 +203,7 @@ apr_status_t remove_node(mem_t *s, nodeinfo_t *node)
         rv = s->storage->ap_slotmem_free(s->slotmem, node->mess.id, node);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
             rv = s->storage->ap_slotmem_free(s->slotmem, ou->mess.id, node);
     }
@@ -224,7 +224,7 @@ apr_status_t find_node(mem_t *s, nodeinfo_t **node, const char *route)
 
     strcpy(ou.mess.JVMRoute, route);
     *node = &ou;
-    rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, node, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, node, 0, s->p);
     return rv;
 }
 
@@ -250,6 +250,19 @@ int get_max_size_node(mem_t *s)
         return 0;
     else
         return (s->storage->ap_slotmem_get_max_size(s->slotmem));
+}
+
+/*
+ * read the version of the table.
+ * @param pointer to the shared table.
+ * @return the version of the table
+ */
+unsigned int get_version_node(mem_t *s)
+{
+    if (s->storage == NULL)
+        return 0;
+    else
+        return (s->storage->ap_slotmem_get_version(s->slotmem));
 }
 
 /**
