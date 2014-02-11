@@ -2357,7 +2357,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     }
 
     /* Try a  ping/pong to check the node */
-    if (load > 0 || load == -2) {
+    if (load >= 0 || load == -2) {
         /* Only try usuable nodes */
         char sport[7];
         char *url;
@@ -2391,13 +2391,14 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         worker->s->lbfactor = -1;
     }
     else if (load == 0) {
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
+        worker->s->status |= PROXY_WORKER_HOT_STANDBY;
+#else
         /*
          * XXX: PROXY_WORKER_HOT_STANDBY Doesn't look supported
          * mark worker in error for the moment
          */
         worker->s->status |= PROXY_WORKER_IN_ERROR;
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-        worker->s->status |= PROXY_WORKER_HOT_STANDBY;
 #endif
     }
     else {
