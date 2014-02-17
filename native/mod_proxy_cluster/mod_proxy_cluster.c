@@ -3829,6 +3829,9 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     const char *sticky;
     char *oroute;
     const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
+    apr_status_t rv;
+#endif
 
     /* Ajust the context counter here too */
     if (context_id && *context_id) {
@@ -3843,6 +3846,10 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     helper = (proxy_cluster_helper *) worker->opaque;
 #endif
     helper->count_active--;
+
+    if (worker && worker->s->busy)
+        worker->s->busy--;
+
     apr_thread_mutex_unlock(lock);
 
 #if HAVE_CLUSTER_EX_DEBUG
@@ -3855,9 +3862,6 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 #endif
                   );
 #endif
-
-    if (worker && worker->s->busy)
-        worker->s->busy--;
 
     if (sessionid_storage) {
 
@@ -3877,46 +3881,93 @@ static int proxy_cluster_post_request(proxy_worker *worker,
             sticky = (const char *) stick;
         }
 #endif
-        if (sticky == NULL) {
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                 "proxy_cluster_post_request for (%s) %s",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-                  balancer->s->name, balancer->s->sticky
-#else
-                  balancer->name, balancer->sticky
-#endif
-                  );
-            return OK;
-        }
-
-        cookie = get_cookie_param(r, sticky, 0);
-        sessionid =  apr_table_get(r->notes, "session-id");
-        route =  apr_table_get(r->notes, "session-route");
-        if (cookie) {
-            if (sessionid && strcmp(cookie, sessionid)) {
-                /* The cookie has changed, remove the old one and store the next one */
-                sessionidinfo_t ou;
+        if (sticky != NULL) {
+            cookie = get_cookie_param(r, sticky, 0);
+            sessionid =  apr_table_get(r->notes, "session-id");
+            route =  apr_table_get(r->notes, "session-route");
+            if (cookie) {
+                if (sessionid && strcmp(cookie, sessionid)) {
+                    /* The cookie has changed, remove the old one and store the next one */
+                    sessionidinfo_t ou;
 #if HAVE_CLUSTER_EX_DEBUG
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy_cluster_post_request sessionid changed (%s to %s)", sessionid, cookie);
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                                 "proxy_cluster_post_request sessionid changed (%s to %s)", sessionid, cookie);
 #endif
-                strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
-                ou.id = 0;
-                sessionid_storage->remove_sessionid(&ou);
+                    strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
+                    ou.id = 0;
+                    sessionid_storage->remove_sessionid(&ou);
+                }
+                if ((oroute = strchr(cookie, '.')) != NULL )
+                    oroute++;
+                route = oroute;
+                sessionid = cookie;
             }
-            if ((oroute = strchr(cookie, '.')) != NULL )
-                oroute++;
-            route = oroute;
-            sessionid = cookie;
-        }
 
-        if (sessionid && route) {
-            sessionidinfo_t ou;
-            strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
-            strncpy(ou.JVMRoute, route, JVMROUTESZ);
-            sessionid_storage->insert_update_sessionid(&ou);
+            if (sessionid && route) {
+                sessionidinfo_t ou;
+                strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
+                strncpy(ou.JVMRoute, route, JVMROUTESZ);
+                sessionid_storage->insert_update_sessionid(&ou);
+            }
         }
     }
+
+    /*  20051115.25 (2.2.17) Add errstatuses member to proxy_balancer */
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
+    if ((rv = PROXY_THREAD_LOCK(balancer)) != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
+            "proxy: BALANCER: (%s). Lock failed for post_request",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            balancer->s->name
+#else
+            balancer->name
+#endif
+            );
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    if (!apr_is_empty_array(balancer->errstatuses)) {
+        int i;
+        for (i = 0; i < balancer->errstatuses->nelts; i++) {
+            int val = ((int *)balancer->errstatuses->elts)[i];
+            if (r->status == val) {
+                ap_log_rerror(APLOG_MARK, APLOG_ERR, 0, r, APLOGNO(01174)
+                              "%s: Forcing worker (%s) into error state "
+                              "due to status code %d matching 'failonstatus' "
+                              "balancer parameter",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+                              balancer->s->name,
+#else
+                              balancer->name,
+#endif
+                              worker->s->name, val);
+                worker->s->status |= PROXY_WORKER_IN_ERROR;
+                worker->s->error_time = apr_time_now();
+                break;
+            }
+        }
+    }
+
+    if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
+            "proxy: BALANCER: (%s). Unlock failed for post_request",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            balancer->s->name
+#else
+            balancer->name
+#endif
+            );
+    }
+#endif
+
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                 "proxy_cluster_post_request %d for (%s)", r->status,
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+                 balancer->s->name
+#else
+                 balancer->name
+#endif
+                 );
 
     return OK;
 }
