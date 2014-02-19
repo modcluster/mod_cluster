@@ -221,8 +221,6 @@ static unsigned int loc_worker_nodes_need_update(void *data, apr_pool_t *pool)
 
     if (last != mconf->tableversion)
         return last;
-    if (mconf->tableversion == 0)
-        return 1; /* make sure it is updated */
     return (0);
 }
 /* Store the last version update in the proccess config */
