@@ -281,6 +281,16 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                      "Created: worker for %s", url);
     } else {
+        if (!worker->context) {
+            /* That is BalancerMember */
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
+                         "Created: reusing BalancerMember worker for %s", url);
+            worker->context = (proxy_cluster_helper *) apr_pcalloc(conf->pool,  sizeof(proxy_cluster_helper));
+            if (!worker->context)
+                return APR_EGENERAL;
+            helper = (proxy_cluster_helper *) worker->context;
+            helper->index = -1; /* not remove and not a possible node */
+        }
         helper = (proxy_cluster_helper *) worker->context;
         if (helper->index == 0) {
             /* We are going to reuse a removed one */
@@ -452,6 +462,10 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         }
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                      "Created: can't reuse worker as it for %s cleaning...", url);
+        if (!worker->opaque)
+            worker->opaque = (proxy_cluster_helper *) apr_pcalloc(conf->pool,  sizeof(proxy_cluster_helper));
+        if (!worker->opaque)
+            return APR_EGENERAL;
         if (worker->cp->pool) {
             /* destroy and create a new one */
             apr_pool_destroy(worker->cp->pool);
@@ -588,6 +602,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
                     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                                  "Created: reuse worker %s of %s", runtime->name, balancer->name);
                     memcpy(runtime, worker, sizew);
+                    break;
                 }
             }
         }
@@ -1198,8 +1213,7 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     rp->proxyreq = PROXYREQ_RESPONSE;
     tmp_bb = apr_brigade_create(r->pool, p_conn->connection->bucket_alloc);
     while (1) {
-        apr_status_t rc;
-        rc = ap_proxygetline(tmp_bb, buffer, sizeof(buffer), rp, 0, &len);
+        ap_proxygetline(tmp_bb, buffer, sizeof(buffer), rp, 0, &len);
         if (len <= 0)
            break;
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1388,8 +1402,6 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
                 return status;
             }
         }
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "proxy_cluster_try_pingpong: %d" , backend->connection);
         status = http_handle_cping_cpong(backend, r, timeout);
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
