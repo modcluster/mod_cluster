@@ -98,7 +98,7 @@ apr_status_t insert_update_context(mem_t *s, contextinfo_t *context)
 
     context->id = 0;
     s->storage->ap_slotmem_lock(s->slotmem);
-    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &context, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &context, 1, s->p);
     if (context->id != 0 && rv == APR_SUCCESS) {
         s->storage->ap_slotmem_unlock(s->slotmem);
         return APR_SUCCESS; /* updated */
@@ -143,7 +143,7 @@ contextinfo_t * read_context(mem_t *s, contextinfo_t *context)
     if (context->id)
         rv = s->storage->ap_slotmem_mem(s->slotmem, context->id, (void **) &ou);
     else {
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_context, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_context, &ou, 0, s->p);
     }
     if (rv == APR_SUCCESS)
         return ou;
@@ -175,7 +175,7 @@ apr_status_t remove_context(mem_t *s, contextinfo_t *context)
         s->storage->ap_slotmem_free(s->slotmem, context->id, context);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_context, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_context, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
             rv = s->storage->ap_slotmem_free(s->slotmem, ou->id, context);
     }

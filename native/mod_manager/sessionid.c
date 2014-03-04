@@ -96,7 +96,7 @@ apr_status_t insert_update_sessionid(mem_t *s, sessionidinfo_t *sessionid)
 
     sessionid->id = 0;
     s->storage->ap_slotmem_lock(s->slotmem);
-    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &sessionid, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &sessionid, 1, s->p);
     if (sessionid->id != 0 && rv == APR_SUCCESS) {
         s->storage->ap_slotmem_unlock(s->slotmem);
         return APR_SUCCESS; /* updated */
@@ -140,7 +140,7 @@ sessionidinfo_t * read_sessionid(mem_t *s, sessionidinfo_t *sessionid)
     if (sessionid->id)
         rv = s->storage->ap_slotmem_mem(s->slotmem, sessionid->id, (void **) &ou);
     else {
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_sessionid, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_sessionid, &ou, 0, s->p);
     }
     if (rv == APR_SUCCESS)
         return ou;
@@ -172,7 +172,7 @@ apr_status_t remove_sessionid(mem_t *s, sessionidinfo_t *sessionid)
         s->storage->ap_slotmem_free(s->slotmem, sessionid->id, sessionid);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_sessionid, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_sessionid, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
             rv = s->storage->ap_slotmem_free(s->slotmem, ou->id, sessionid);
     }

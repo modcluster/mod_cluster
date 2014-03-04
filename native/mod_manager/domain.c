@@ -96,7 +96,7 @@ apr_status_t insert_update_domain(mem_t *s, domaininfo_t *domain)
 
     domain->id = 0;
     s->storage->ap_slotmem_lock(s->slotmem);
-    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &domain, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &domain, 1, s->p);
     if (domain->id != 0 && rv == APR_SUCCESS) {
          s->storage->ap_slotmem_unlock(s->slotmem);
         return APR_SUCCESS; /* updated */
@@ -140,7 +140,7 @@ domaininfo_t * read_domain(mem_t *s, domaininfo_t *domain)
     if (domain->id)
         rv = s->storage->ap_slotmem_mem(s->slotmem, domain->id, (void **) &ou);
     else {
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, &ou, 0, s->p);
     }
     if (rv == APR_SUCCESS)
         return ou;
@@ -172,7 +172,7 @@ apr_status_t remove_domain(mem_t *s, domaininfo_t *domain)
         s->storage->ap_slotmem_free(s->slotmem, domain->id, domain);
     else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
-        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, &ou, s->p);
+        rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
             rv = s->storage->ap_slotmem_free(s->slotmem, ou->id, domain);
     }
@@ -194,7 +194,7 @@ apr_status_t find_domain(mem_t *s, domaininfo_t **domain, const char *route, con
     strcpy(ou.JVMRoute, route);
     strcpy(ou.balancer, balancer);
     *domain = &ou;
-    rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, domain, s->p);
+    rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, domain, 0, s->p);
     return rv;
 }
 
