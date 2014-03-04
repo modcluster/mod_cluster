@@ -3739,6 +3739,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     const char *sticky;
     char *oroute;
     const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
+    apr_status_t rv;
 
     /* mark the work as not use */
     apr_thread_mutex_lock(lock);
@@ -3766,8 +3767,54 @@ static int proxy_cluster_post_request(proxy_worker *worker,
                   );
 #endif
 
+
+    if ((rv = PROXY_THREAD_LOCK(balancer)) != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
+            "proxy: CLUSTER:: (%s). Lock failed for post_request",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            balancer->s->name
+#else
+            balancer->name
+#endif
+            );
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
     if (worker && worker->s->busy)
         worker->s->busy--;
+
+#if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
+   if (!apr_is_empty_array(balancer->errstatuses)) {
+        int i;
+        for (i = 0; i < balancer->errstatuses->nelts; i++) {
+            int val = ((int *)balancer->errstatuses->elts)[i];
+            if (r->status == val) {
+                ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
+                             "proxy: BALANCER: (%s).  Forcing recovery for worker (%s), failonstatus %d",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+                             balancer->s->name, worker->s->name,
+#else
+                             balancer->name, worker->name,
+#endif
+                             val);
+                worker->s->status |= PROXY_WORKER_IN_ERROR;
+                worker->s->error_time = apr_time_now();
+                break;
+            }
+        }
+    }
+#endif
+
+    if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
+            "proxy: BALANCER: (%s). Unlock failed for post_request",
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            balancer->s->name
+#else
+            balancer->name
+#endif
+            );
+    }
 
     if (sessionid_storage) {
 
