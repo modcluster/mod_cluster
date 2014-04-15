@@ -2604,7 +2604,6 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                                      apr_pool_t *ptemp, server_rec *s)
 {
     const char *userdata_key = "mod_cluster_init";
-    void *data;
     void *sconf = s->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
     int sizew = conf->workers->elt_size;
@@ -2627,13 +2626,6 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
             return HTTP_INTERNAL_SERVER_ERROR;
         }
 #endif
-    }
-
-    apr_pool_userdata_get(&data, userdata_key, s->process->pool);
-    if (data && sessionid_storage) {
-        int nb_sessionid = sessionid_storage->get_max_size_sessionid();
-        if (! nb_sessionid)
-            sessionid_storage = NULL; /* don't use it */
     }
 
     /* Check that the mod_proxy_balancer.c is not loaded */
@@ -2673,7 +2665,19 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
                     "proxy_cluster_post_config: Can't find mod_manager for sessionids");
         return !OK;
+    } else {
+        int nb_sessionid = sessionid_storage->get_max_size_sessionid();
+        if (! nb_sessionid) {
+            sessionid_storage = NULL; /* don't use it */
+        } else if (nb_sessionid == 0) {
+            sessionid_storage = NULL; /* don't use it */
+        } else {
+            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
+                        "proxy_cluster_post_config: sessionid_storage is not null. This can impact performance.");
+        }
     }
+
+
     domain_storage = ap_lookup_provider("manager" , "shared", "5");
     if (domain_storage == NULL) {
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
