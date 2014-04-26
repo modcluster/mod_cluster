@@ -282,5 +282,12 @@ root@jfcpc docs]# semodule -i mod_cluster.pp
 ]]></programlisting>
     </para>
   </section>
+  <section id="systemproperties">
+    <title>System properties to modify behaviour</title>
+    <para>org.jboss.modcluster.container.catalina.status-frequency (default: 1) send STATUS
+          messages only 1/n periodic event (tomcat, jbossweb).
+          The events occur every backgroundProcessorDelay (default 10 seconds).
+    </para>
+  </section>
 
 </chapter>
