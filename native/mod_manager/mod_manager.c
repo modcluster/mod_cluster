@@ -547,10 +547,13 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         return  !OK;
     }
 
-    sessionidstatsmem = create_mem_sessionid(sessionid, &mconf->maxsessionid, mconf->persistent, p, storage);
-    if (sessionidstatsmem == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_sessionid failed");
-        return  !OK;
+    if (mconf->maxsessionid) {
+        /* Only create sessionid stuff if required */
+        sessionidstatsmem = create_mem_sessionid(sessionid, &mconf->maxsessionid, mconf->persistent, p, storage);
+        if (sessionidstatsmem == NULL) {
+            ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_sessionid failed");
+            return  !OK;
+        }
     }
 
     domainstatsmem = create_mem_domain(domain, &mconf->maxnode, mconf->persistent, p, storage);
@@ -559,10 +562,13 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         return  !OK;
     }
 
-    jgroupsidstatsmem = create_mem_jgroupsid(jgroupsid, &mconf->maxjgroupsid, mconf->persistent, p, storage);
-    if (jgroupsidstatsmem == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_jgroupsid failed");
-        return  !OK;
+    if (mconf->maxjgroupsid) {
+        /* Only create jgroupsid stuff if required */
+        jgroupsidstatsmem = create_mem_jgroupsid(jgroupsid, &mconf->maxjgroupsid, mconf->persistent, p, storage);
+        if (jgroupsidstatsmem == NULL) {
+            ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "create_mem_jgroupsid failed");
+            return  !OK;
+        }
     }
 
     /* Get a provider to ping/pong logics */
