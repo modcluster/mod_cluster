@@ -96,7 +96,7 @@ static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the l
 
 static apr_time_t wait_for_remove =  apr_time_from_sec(10); /* wait until that before removing a removed node */
 
-static int enable_options = 0; /* Use OPTIONS * for CPING/CPONG */
+static int enable_options = -1; /* Use OPTIONS * for CPING/CPONG */
 
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
@@ -4070,9 +4070,27 @@ static const char*cmd_proxy_cluster_wait_for_remove(cmd_parms *cmd, void *dummy,
     return NULL;
 }
 
-static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy)
+static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy, const char *arg)
 {
-    enable_options = -1;
+    int val;
+    int parsed = sscanf(arg, "%d", &val);
+
+    if (parsed < 0) {
+        /* Non-parametrized option enables HTTP/HTTPs pings */
+        enable_options = -1;
+        return NULL;
+    }
+
+    if (parsed > 0 && val == 0) {
+        /* Disables OPTIONS, overrides the default */
+        enable_options = 0;
+    } else if (parsed > 0 && val == -1) {
+        /* Explicitly set default */
+        enable_options = -1;
+    } else {
+        return "EnableOptions must be either without value or -1 or 0";
+    }
+
     return NULL;
 }
 
