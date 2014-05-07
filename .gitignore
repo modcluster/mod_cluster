@@ -20,3 +20,6 @@ native/*/autom4te.cache/
 native/*/config.status
 native/*/configure
 
+# Native testsuite
+test/java/node*/
+
