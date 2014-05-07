@@ -4072,23 +4072,15 @@ static const char*cmd_proxy_cluster_wait_for_remove(cmd_parms *cmd, void *dummy,
 
 static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy, const char *arg)
 {
-    int val;
-    int parsed = sscanf(arg, "%d", &val);
 
-    if (parsed < 0) {
-        /* Non-parametrized option enables HTTP/HTTPs pings */
-        enable_options = -1;
-        return NULL;
-    }
-
-    if (parsed > 0 && val == 0) {
+    if (strcasecmp(arg, "Off") == 0 || strcasecmp(arg, "0") == 0 ) {
         /* Disables OPTIONS, overrides the default */
         enable_options = 0;
-    } else if (parsed > 0 && val == -1) {
-        /* Explicitly set default */
+    } else if (strcmp(arg, "") == 0 || strcasecmp(arg, "On") == 0 || strcasecmp(arg, "1") == 0) {
+        /* No param or explicitly set default */
         enable_options = -1;
     } else {
-        return "EnableOptions must be either without value or -1 or 0";
+        return "EnableOptions must be either without value or On or Off";
     }
 
     return NULL;
@@ -4124,12 +4116,13 @@ static const command_rec  proxy_cluster_cmds[] =
         OR_ALL,
         "WaitBeforeRemove - Time in seconds before a node removed is forgotten by httpd: (Default: 10 seconds)"
     ),
+    /* This is not the ideal type, it either takes no parameters (for backwards compatibility) or 1 flag argument. */
     AP_INIT_NO_ARGS(
         "EnableOptions",
          cmd_proxy_cluster_enable_options,
          NULL,
          OR_ALL,
-         "EnableOptions - Use OPTIONS with http/https for CPING/CPONG."
+         "EnableOptions - Use OPTIONS with HTTP/HTTPS for CPING/CPONG. (Default: On)"
     ),
     {NULL}
 };

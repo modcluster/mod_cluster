@@ -15,7 +15,7 @@
           <row>
             <entry><mediaobject><imageobject role="fix"><imagedata fileref="images/fix.jpg" format="JPEG" align="center"/></imageobject></mediaobject></entry>
             <entry>
-              <para>MODCLUSTER-344 Pings for HTTP/HTTPS connections are now sent by default, can be disabled by "EnableOptions -1"</para>
+              <para>MODCLUSTER-344 Pings for HTTP/HTTPS connections are now sent by default, can be disabled by "EnableOptions Off"</para>
             </entry>
           </row>
         </tbody>

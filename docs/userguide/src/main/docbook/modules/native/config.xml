@@ -128,12 +128,12 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
       <title>EnableOptions</title>
       <para>
         Use OPTIONS method to periodically check the active connection.
-        Fulfils the same role as the CPING/CPONG used by AJP but for HTTP/S connections.
+        Fulfils the same role as the CPING/CPONG used by AJP but for HTTP/HTTPS connections.
         The endpoint needs to implement at least HTTP/1.1.
       </para>
 
-      <para>-1: Use OPTIONS (default)</para>
-      <para>0: Don't use OPTIONS</para>
+      <para>On (or no value): Use OPTIONS (default)</para>
+      <para>Off: Don't use OPTIONS</para>
     </section>
   </section>
 
