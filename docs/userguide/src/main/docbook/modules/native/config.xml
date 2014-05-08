@@ -80,9 +80,10 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     <ulink
     url="http://labs.jboss.com/file-access/default/members/jbossweb/freezone/docs/latest/config/host.html">Host
     Name Aliases</ulink>)</para>
-    <para>0: Don't (ignore Aliases)</para>
-    <para>1: Check it</para>
-    <para>Default: 0 Ignore the Alias information from the nodes.</para>
+    <para>Off: Don't check (ignore Aliases)</para>
+    <para>On: Check aliases</para>
+    <para>Default: Off Ignore the Alias information from the nodes.</para>
+    <para><emphasis>Versions older than 1.3.1.Final only accept values 0 and 1 respectively.</emphasis></para>
     </section>
 
     <section><title>LBstatusRecalTime</title>
