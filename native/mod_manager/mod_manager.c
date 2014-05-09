@@ -2750,10 +2750,13 @@ static void  manager_child_init(apr_pool_t *p, server_rec *s)
         return;
     }
 
-    sessionidstatsmem = get_mem_sessionid(sessionid, &mconf->maxsessionid, p, storage);
-    if (sessionidstatsmem == NULL) {
-        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "get_mem_sessionid failed");
-        return;
+    if (mconf->maxsessionid) {
+        /*  Try to get sessionid stuff only if required */
+        sessionidstatsmem = get_mem_sessionid(sessionid, &mconf->maxsessionid, p, storage);
+        if (sessionidstatsmem == NULL) {
+            ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_EMERG, 0, s, "get_mem_sessionid failed");
+            return;
+        }
     }
 }
 
