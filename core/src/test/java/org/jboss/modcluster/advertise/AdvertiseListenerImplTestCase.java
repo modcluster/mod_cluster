@@ -54,7 +54,9 @@ public class AdvertiseListenerImplTestCase {
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");
     }
-    private static final String ADVERTISE_GROUP = "224.0.1.106";
+
+    private static final String ADVERTISE_GROUP = System.getProperty("multicast.address1", "224.0.1.106");
+    private static final String ADVERTISE_INTERFACE = System.getProperty("multicast.interface");
     private static final int ADVERTISE_PORT = 23364;
     private static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
     private static final DateFormat df = new SimpleDateFormat(RFC_822_FMT, Locale.US);
@@ -120,14 +122,15 @@ public class AdvertiseListenerImplTestCase {
         byte[] buf = data.toString().getBytes();
         DatagramPacket packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
 
-        if (!System.getProperty("os.name").startsWith("Windows")) {
+        if (ADVERTISE_INTERFACE != null && !System.getProperty("os.name").startsWith("Windows")) {
             try {
-                InetAddress socketInterface = InetAddress.getLocalHost();
+                InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
                 this.socket.setInterface(socketInterface);
             } catch (Exception ex) {
                 ; // Ignore it
             }
         }
+
         this.socket.send(packet);
 
         try {
