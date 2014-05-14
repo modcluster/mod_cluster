@@ -701,7 +701,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         for (Engine engine : this.server.getEngines()) {
             for (Host host : engine.getHosts()) {
                 for (Context context : host.getContexts()) {
-                    if (!this.drainSessions(context, start, end)) {
+                    if (this.mcmpConfig.getSessionDrainingStrategy().isEnabled(context) && !this.drainSessions(context, start, end)) {
                         return false;
                     }
                 }
@@ -733,7 +733,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         long start = System.currentTimeMillis();
 
-        boolean success = this.drainSessions(context, start, start + unit.toMillis(timeout));
+        boolean success = true;
+
+        if (this.mcmpConfig.getSessionDrainingStrategy().isEnabled(context)) {
+            success = this.drainSessions(context, start, start + unit.toMillis(timeout));
+        }
 
         if (success) {
             this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
