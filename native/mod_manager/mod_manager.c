@@ -109,6 +109,10 @@
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
 #define HAVE_CLUSTER_EX_DEBUG 0
 
+/* define content-type */
+#define TEXT_PLAIN 1
+#define TEXT_XML 2
+
 /* shared memory */
 static mem_t *contextstatsmem = NULL;
 static mem_t *nodestatsmem = NULL;
@@ -1012,42 +1016,133 @@ static char * process_dump(request_rec *r, int *errtype)
     int size, i;
     int *id;
 
-    ap_set_content_type(r, "text/plain");
+    unsigned char type;
+    const char *accept_header = apr_table_get(r->headers_in, "Accept");
+
+    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+        ap_set_content_type(r, "text/xml");
+        type = TEXT_XML;
+        ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
+    } else {
+        ap_set_content_type(r, "text/plain");
+        type = TEXT_PLAIN;
+    }
 
     size = loc_get_max_size_balancer();
     if (size == 0)
        return NULL;
+
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "<Dump><Balancers>");
+    }
+
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_balancer(balancerstatsmem, id);
     for (i=0; i<size; i++) {
         balancerinfo_t *ou;
         if (get_balancer(balancerstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d maxAttempts: %d\n",
-                   id[i], (int) sizeof(ou->balancer), ou->balancer, ou->StickySession,
-                   (int) sizeof(ou->StickySessionCookie), ou->StickySessionCookie, (int) sizeof(ou->StickySessionPath), ou->StickySessionPath,
-                   ou->StickySessionRemove, ou->StickySessionForce,
-                   (int) apr_time_sec(ou->Timeout),
-                   ou->Maxattempts);
+
+        switch (type) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Balancer id=\"%d\" name=\"%.*s\">\
+                                <StickySession>\
+                                    <Enabled>%d</Enabled>\
+                                    <Cookie>%.*s</Cookie>\
+                                    <Path>%.*s</Path>\
+                                    <Remove>%d</Remove>\
+                                    <Force>%d</Force>\
+                                </StickySession>\
+                                <Timeout>%d</Timeout>\
+                                <MaxAttempts>%d</MaxAttempts>\
+                                </Balancer>",
+                           id[i], (int) sizeof(ou->balancer), ou->balancer, ou->StickySession,
+                           (int) sizeof(ou->StickySessionCookie), ou->StickySessionCookie, (int) sizeof(ou->StickySessionPath), ou->StickySessionPath,
+                           ou->StickySessionRemove, ou->StickySessionForce,
+                           (int) apr_time_sec(ou->Timeout),
+                           ou->Maxattempts);
+                           break;
+            }
+            case TEXT_PLAIN:
+            default: {
+
+                ap_rprintf(r, "balancer: [%d] Name: %.*s Sticky: %d [%.*s]/[%.*s] remove: %d force: %d Timeout: %d maxAttempts: %d\n",
+                           id[i], (int) sizeof(ou->balancer), ou->balancer, ou->StickySession,
+                           (int) sizeof(ou->StickySessionCookie), ou->StickySessionCookie, (int) sizeof(ou->StickySessionPath), ou->StickySessionPath,
+                           ou->StickySessionRemove, ou->StickySessionForce,
+                           (int) apr_time_sec(ou->Timeout),
+                           ou->Maxattempts);
+                break;
+            }
+
+        }
+    }
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "</Balancers>");
     }
 
     size = loc_get_max_size_node();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_node(nodestatsmem, id);
+
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "<Nodes>");
+    }
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "node: [%d:%d],Balancer: %.*s,JVMRoute: %.*s,LBGroup: [%.*s],Host: %.*s,Port: %.*s,Type: %.*s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
-                   id[i], ou->mess.id,
-                   (int) sizeof(ou->mess.balancer), ou->mess.balancer,
-                   (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
-                   (int) sizeof(ou->mess.Domain), ou->mess.Domain,
-                   (int) sizeof(ou->mess.Host), ou->mess.Host,
-                   (int) sizeof(ou->mess.Port), ou->mess.Port,
-                   (int) sizeof(ou->mess.Type), ou->mess.Type,
-                   ou->mess.flushpackets, ou->mess.flushwait/1000, (int) apr_time_sec(ou->mess.ping), ou->mess.smax,
-                   (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
+
+        switch(type) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Node id=\"%d\">\
+                                    <Balancer>%.*s</Balancer>\
+                                    <JVMRoute>%.*s</JVMRoute>\
+                                    <LBGroup>%.*s</LBGroup>\
+                                    <Host>%.*s</Host>\
+                                    <Port>%.*s</Port>\
+                                    <Type>%.*s</Type>\
+                                    <FlushPackets>%d</FlushPackets>\
+                                    <FlushWait>%d</FlushWait>\
+                                    <Ping>%d</Ping>\
+                                    <Smax>%d</Smax>\
+                                    <Ttl>%d</Ttl>\
+                                    <Timeout>%d</Timeout>\
+                                </Node>",
+                            ou->mess.id,
+                           (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+                           (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                           (int) sizeof(ou->mess.Domain), ou->mess.Domain,
+                           (int) sizeof(ou->mess.Host), ou->mess.Host,
+                           (int) sizeof(ou->mess.Port), ou->mess.Port,
+                           (int) sizeof(ou->mess.Type), ou->mess.Type,
+                           ou->mess.flushpackets, ou->mess.flushwait/1000, (int) apr_time_sec(ou->mess.ping), ou->mess.smax,
+                           (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "node: [%d:%d],Balancer: %.*s,JVMRoute: %.*s,LBGroup: [%.*s],Host: %.*s,Port: %.*s,Type: %.*s,flushpackets: %d,flushwait: %d,ping: %d,smax: %d,ttl: %d,timeout: %d\n",
+                           id[i], ou->mess.id,
+                           (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+                           (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                           (int) sizeof(ou->mess.Domain), ou->mess.Domain,
+                           (int) sizeof(ou->mess.Host), ou->mess.Host,
+                           (int) sizeof(ou->mess.Port), ou->mess.Port,
+                           (int) sizeof(ou->mess.Type), ou->mess.Type,
+                           ou->mess.flushpackets, ou->mess.flushwait/1000, (int) apr_time_sec(ou->mess.ping), ou->mess.smax,
+                           (int) apr_time_sec(ou->mess.ttl), (int) apr_time_sec(ou->mess.timeout));
+
+                break;
+            }
+        }
+    }
+
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "</Nodes><Hosts>");
     }
 
     size = loc_get_max_size_host();
@@ -1057,8 +1152,29 @@ static char * process_dump(request_rec *r, int *errtype)
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "host: %d [%.*s] vhost: %d node: %d\n", id[i], (int) sizeof(ou->host), ou->host, ou->vhost,
-                  ou->node);
+
+        switch (type) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Host id=\"%d\" alias=\"%.*s\">\
+                                    <Vhost>%d</Vhost>\
+                                    <Node>%d</Node>\
+                                </Host>",
+                 id[i], (int) sizeof(ou->host), ou->host, ou->vhost,ou->node);
+                 break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "host: %d [%.*s] vhost: %d node: %d\n", id[i], (int) sizeof(ou->host), ou->host, ou->vhost,
+                          ou->node);
+                break;
+
+            }
+        }
+    }
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "</Hosts><Contexts>");
     }
 
     size = loc_get_max_size_context();
@@ -1068,10 +1184,45 @@ static char * process_dump(request_rec *r, int *errtype)
         contextinfo_t *ou;
         if (get_context(contextstatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "context: %d [%.*s] vhost: %d node: %d status: %d\n", id[i],
-                   (int) sizeof(ou->context), ou->context,
-                   ou->vhost, ou->node,
-                   ou->status);
+
+        switch ( type ) {
+            case TEXT_XML:
+            {
+                char *status;
+                status = "REMOVED";
+                switch (ou->status) {
+                    case ENABLED:
+                        status = "ENABLED";
+                        break;
+                    case DISABLED:
+                        status = "DISABLED";
+                        break;
+                    case STOPPED:
+                        status = "STOPPED";
+                        break;
+                }
+                ap_rprintf(r, "<Context id=\"%d\" path=\"%.*s\">\
+                                <Vhost>%d</Vhost>\
+                                <Node>%d</Node>\
+                                <Status id=\"%d\">%s</Status>\
+                               </Context>",
+                    id[i], (int) sizeof(ou->context), ou->context, ou->vhost, ou->node,ou->status, status);        
+                    break;
+                }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "context: %d [%.*s] vhost: %d node: %d status: %d\n", id[i],
+                           (int) sizeof(ou->context), ou->context,
+                           ou->vhost, ou->node,
+                           ou->status);
+                break;
+            }
+        }
+    }
+
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "</Contexts></Dump>");
     }
     return NULL;
 }
@@ -1084,13 +1235,28 @@ static char * process_info(request_rec *r, int *errtype)
     int size, i;
     int *id;
 
-    ap_set_content_type(r, "text/plain");
+    unsigned char type;
+    const char *accept_header = apr_table_get(r->headers_in, "Accept");
+
+    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+        ap_set_content_type(r, "text/xml");
+        type = TEXT_XML;
+        ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
+    } else {
+        ap_set_content_type(r, "text/plain");
+        type = TEXT_PLAIN;
+    }
 
     size = loc_get_max_size_node();
     if (size == 0)
         return NULL;
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_node(nodestatsmem, id);
+
+    if ( type == TEXT_XML ) {
+       ap_rprintf(r, "<Info><Nodes>");
+    }
+
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
@@ -1102,14 +1268,40 @@ static char * process_info(request_rec *r, int *errtype)
         char *pptr;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,LBGroup: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
-                   id[i],
-                   (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
-                   (int) sizeof(ou->mess.balancer), ou->mess.balancer,
-                   (int) sizeof(ou->mess.Domain), ou->mess.Domain,
-                   (int) sizeof(ou->mess.Host), ou->mess.Host,
-                   (int) sizeof(ou->mess.Port), ou->mess.Port,
-                   (int) sizeof(ou->mess.Type), ou->mess.Type);
+
+        switch ( type ) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Node id=\"%d\" name=\"%.*s\">\
+                    <Balancer>%.*s</Balancer>\
+                    <LBGroup>%.*s</LBGroup>\
+                    <Host>%.*s</Host>\
+                    <Port>%.*s</Port>\
+                    <Type>%.*s</Type>", 
+                       id[i],
+                       (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                       (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+                       (int) sizeof(ou->mess.Domain), ou->mess.Domain,
+                       (int) sizeof(ou->mess.Host), ou->mess.Host,
+                       (int) sizeof(ou->mess.Port), ou->mess.Port,
+                       (int) sizeof(ou->mess.Type), ou->mess.Type);
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "Node: [%d],Name: %.*s,Balancer: %.*s,LBGroup: %.*s,Host: %.*s,Port: %.*s,Type: %.*s",
+                           id[i],
+                           (int) sizeof(ou->mess.JVMRoute), ou->mess.JVMRoute,
+                           (int) sizeof(ou->mess.balancer), ou->mess.balancer,
+                           (int) sizeof(ou->mess.Domain), ou->mess.Domain,
+                           (int) sizeof(ou->mess.Host), ou->mess.Host,
+                           (int) sizeof(ou->mess.Port), ou->mess.Port,
+                           (int) sizeof(ou->mess.Type), ou->mess.Type);
+                break;
+            }
+        }
+
         flushpackets = "Off";
         switch (ou->mess.flushpackets) {
             case flush_on:
@@ -1118,11 +1310,33 @@ static char * process_info(request_rec *r, int *errtype)
             case flush_auto:
                 flushpackets = "Auto";
         }
-        ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
-                   flushpackets, ou->mess.flushwait/1000,
-                   (int) apr_time_sec(ou->mess.ping),
-                   ou->mess.smax,
-                   (int) apr_time_sec(ou->mess.ttl));
+
+        switch ( type ) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Flushpackets>%s</Flushpackets>\
+                              <Flushwait>%d</Flushwait>\
+                              <Ping>%d</Ping>\
+                              <Smax>%d</Smax>\
+                              <Ttl>%d</Ttl>",
+                           flushpackets, ou->mess.flushwait/1000,
+                           (int) apr_time_sec(ou->mess.ping),
+                           ou->mess.smax,
+                           (int) apr_time_sec(ou->mess.ttl));
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, ",Flushpackets: %s,Flushwait: %d,Ping: %d,Smax: %d,Ttl: %d",
+                           flushpackets, ou->mess.flushwait/1000,
+                           (int) apr_time_sec(ou->mess.ping),
+                           ou->mess.smax,
+                           (int) apr_time_sec(ou->mess.ttl));
+                break;
+            }
+        }
+
         pptr = (char *) ou;
         pptr = pptr + ou->offset;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
@@ -1130,28 +1344,81 @@ static char * process_info(request_rec *r, int *errtype)
 #else
         proxystat  = (proxy_worker_stat *) pptr;
 #endif
-        ap_rprintf(r, ",Elected: %d,Read: %d,Transfered: %d,Connected: %d,Load: %d\n",
-                   (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
-                   (int) proxystat->busy, proxystat->lbfactor);
+
+        switch ( type ) {
+            case TEXT_XML:  
+            {
+                ap_rprintf(r, "<Elected>%d</Elected>\
+                                <Read>%d</Read>\
+                                <Transfered>%d</Transfered>\
+                                <Connected>%d</Connected>\
+                                <Load>%d</Load>\
+                                </Node>",
+                           (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
+                           (int) proxystat->busy, proxystat->lbfactor);
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, ",Elected: %d,Read: %d,Transfered: %d,Connected: %d,Load: %d\n",
+                           (int) proxystat->elected, (int) proxystat->read, (int) proxystat->transferred,
+                           (int) proxystat->busy, proxystat->lbfactor);
+                break;
+            }
+        }
         
+    }
+
+    if ( type == TEXT_XML ) {
+        ap_rprintf(r, "</Nodes>");
     }
 
     /* Process the Vhosts */
     size = loc_get_max_size_host();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_host(hoststatsmem, id);
+    if ( type == TEXT_XML ) {
+        ap_rprintf(r, "<Vhosts>");
+    }
     for (i=0; i<size; i++) {
         hostinfo_t *ou;
         if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
             continue;
-        ap_rprintf(r, "Vhost: [%d:%d:%d], Alias: %.*s\n",
-                   ou->node, ou->vhost, id[i], (int ) sizeof(ou->host), ou->host);
+
+        switch ( type ) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Vhost id=\"%d\" alias=\"%.*s\">\
+                                <Node id=\"%d\"/>\
+                                </Vhost>\
+                ",
+                    ou->vhost, (int ) sizeof(ou->host), ou->host, ou->node);
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "Vhost: [%d:%d:%d], Alias: %.*s\n",
+                           ou->node, ou->vhost, id[i], (int ) sizeof(ou->host), ou->host);
+                break;
+            }
+        }
+    }
+
+    if ( type == TEXT_XML ) {
+        ap_rprintf(r, "</Vhosts>");
     }
 
     /* Process the Contexts */
     size = loc_get_max_size_context();
     id = apr_palloc(r->pool, sizeof(int) * size);
     size = get_ids_used_context(contextstatsmem, id);
+
+    if ( type == TEXT_XML ) {
+        ap_rprintf(r, "<Contexts>");
+    }
+
     for (i=0; i<size; i++) {
         contextinfo_t *ou;
         char *status;
@@ -1169,10 +1436,33 @@ static char * process_info(request_rec *r, int *errtype)
                 status = "STOPPED";
                 break;
         }
-        ap_rprintf(r, "Context: [%d:%d:%d], Context: %.*s, Status: %s\n",
-                   ou->node, ou->vhost, id[i],
-                   (int) sizeof(ou->context), ou->context,
-                   status);
+
+        switch ( type ) {
+            case TEXT_XML:
+            {
+                ap_rprintf(r, "<Context id=\"%d\">\
+                                 <Status id=\"%d\">%s</Status>\
+                                 <Context>%.*s</Context>\
+                                 <Node id=\"%d\"/>\
+                                 <Vhost id=\"%d\"/>\
+                                </Context>",
+                                id[i], ou->status, status, (int) sizeof(ou->context), ou->context, ou->node, ou->vhost);
+                break;
+            }
+            case TEXT_PLAIN:
+            default:
+            {
+                ap_rprintf(r, "Context: [%d:%d:%d], Context: %.*s, Status: %s\n",
+                           ou->node, ou->vhost, id[i],
+                           (int) sizeof(ou->context), ou->context,
+                           status);
+                break;
+            }
+        }
+    }
+
+    if ( type == TEXT_XML ) {
+        ap_rprintf(r, "</Contexts></Info>");
     }
     return NULL;
 }
