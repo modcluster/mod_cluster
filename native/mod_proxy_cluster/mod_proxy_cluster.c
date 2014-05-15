@@ -4025,7 +4025,7 @@ static const char*cmd_proxy_cluster_creatbal(cmd_parms *cmd, void *dummy, const 
 {
     int val = atoi(arg);
     if (val<0 || val>2) {
-        return "CreateBalancers  must be one of: 0, 1 or 2";
+        return "CreateBalancers must be one of: 0, 1 or 2";
     } else {
         creat_bal = val;
     }
@@ -4034,13 +4034,18 @@ static const char*cmd_proxy_cluster_creatbal(cmd_parms *cmd, void *dummy, const 
 
 static const char*cmd_proxy_cluster_use_alias(cmd_parms *cmd, void *dummy, const char *arg)
 {
-    int val = atoi(arg);
-    if (val<0 || val>1) {
-        return "UseAlias  must be one of: 0 or 1";
-    } else {
-        use_alias = val;
-    }
-    return NULL;
+
+   /* Cannot use AP_INIT_FLAG, to keep compatibility with versions <= 1.3.0.Final which accepted
+      only values 1 and 0. (see MODCLUSTER-403) */
+   if (strcasecmp(arg, "Off") == 0 || strcasecmp(arg, "0") == 0) {
+       use_alias = 0;
+   } else if (strcasecmp(arg, "On") == 0 || strcasecmp(arg, "1") == 0) {
+       use_alias = 1;
+   } else {
+       return "UseAlias must be either On or Off";
+   }
+
+   return NULL;
 }
 
 static const char*cmd_proxy_cluster_lbstatus_recalc_time(cmd_parms *cmd, void *dummy, const char *arg)
@@ -4085,7 +4090,7 @@ static const command_rec  proxy_cluster_cmds[] =
         cmd_proxy_cluster_use_alias,
         NULL,
         OR_ALL,
-        "UseAlias - Check that the Alias corresponds to the ServerName 0: Don't (ignore Aliases), 1: Check it (Default: 0 Ignore)"
+        "UseAlias - Check that the Alias corresponds to the ServerName Off: Don't check (ignore Aliases), On: Check aliases (Default: Off)"
     ),
     AP_INIT_TAKE1(
         "LBstatusRecalTime",
