@@ -3320,7 +3320,8 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
                                       request_rec *r, const char *domain, int failoverdomain,
                                       proxy_vhost_table *vhost_table,
                                       proxy_context_table *context_table,
-                                      proxy_node_table *node_table)
+                                      proxy_node_table *node_table,
+                                      int recurse)
 {
     proxy_worker *candidate = NULL;
     apr_status_t rv;
@@ -3362,9 +3363,9 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
          */
 #if APR_HAS_THREADS
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-        if (balancer->s->timeout) {
+        if (balancer->s->timeout && recurse) {
 #else
-        if (balancer->timeout) {
+        if (balancer->timeout && recurse) {
 #endif
             /* XXX: This can perhaps be build using some
              * smarter mechanism, like tread_cond.
@@ -3377,29 +3378,16 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
             apr_interval_time_t timeout = balancer->timeout;
 #endif
             apr_interval_time_t step, tval = 0;
-            /* Set the timeout to 0 so that we don't
-             * end in infinite loop
-             */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-            balancer->s->timeout = 0;
-#else
-            balancer->timeout = 0;
-#endif
+
             step = timeout / 100;
             while (tval < timeout) {
                 apr_sleep(step);
                 /* Try again */
                 if ((candidate = find_best_worker(balancer, conf, r,
-                		domain, failoverdomain, vhost_table, context_table, node_table)))
+                		domain, failoverdomain, vhost_table, context_table, node_table, 0)))
                     break;
                 tval += step;
             }
-            /* restore the timeout */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-            balancer->s->timeout = timeout;
-#else
-            balancer->timeout = timeout;
-#endif
         }
 #endif
     }
@@ -3713,7 +3701,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
          * We have to failover (in domain only may be) or we don't use sticky sessions
          */
         runtime = find_best_worker(*balancer, conf, r, domain, failoverdomain,
-        		&vhost_table, &context_table, &node_table);
+        		&vhost_table, &context_table, &node_table, 1);
         if (!runtime) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                          "proxy: CLUSTER: (%s). All workers are in error state",
