@@ -35,7 +35,7 @@ import org.junit.Test;
 
 /**
  * Tests {@link MulticastSocketFactoryImpl}.
- * 
+ *
  * @author Brian Stansberry
  * @author Paul Ferraro
  */
@@ -43,8 +43,10 @@ public class MulticastSocketFactoryImplTestCase {
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");
     }
-    private static final String GROUP1 = "224.0.1.106";
-    private static final String GROUP2 = "224.0.1.107";
+
+    private static final String GROUP1 = System.getProperty("multicast.address1", "224.0.1.106");
+    private static final String GROUP2 = System.getProperty("multicast.address2", "224.0.1.107");
+    private static final String ADVERTISE_INTERFACE = System.getProperty("multicast.interface");
     private static final int PORT = 23364;
 
     @Test
@@ -100,9 +102,9 @@ public class MulticastSocketFactoryImplTestCase {
             byte[] buffer = data.getBytes();
             DatagramPacket packet = new DatagramPacket(buffer, buffer.length, sendAddress, PORT);
 
-            if (!System.getProperty("os.name").startsWith("Windows")) {
+            if (ADVERTISE_INTERFACE != null && !System.getProperty("os.name").startsWith("Windows")) {
                 try {
-                    InetAddress socketInterface = InetAddress.getLocalHost();
+                    InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
                     sendSocket.setInterface(socketInterface);
                 } catch (Exception ex) {
                     ; // Ignore it
