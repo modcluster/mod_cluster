@@ -1682,6 +1682,24 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
 }
 
 /*
+ * Process the VERSION command
+ */
+static char * process_version(request_rec *r, char **ptr, int *errtype)
+{
+    const char *accept_header = apr_table_get(r->headers_in, "Accept");
+
+    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+        ap_set_content_type(r, "text/xml");
+        ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
+        ap_rprintf(r, "<version><release>%s</release><protocol>%s</protocol></version>", MOD_CLUSTER_EXPOSED_VERSION, VERSION_PROTOCOL);
+    } else {
+        ap_set_content_type(r, "text/plain");
+        ap_rprintf(r, "release: %s, protocol: %s", MOD_CLUSTER_EXPOSED_VERSION, VERSION_PROTOCOL);
+    }
+    ap_rprintf(r, "\n");
+    return NULL;
+}
+/*
  * Process the PING command
  * With a JVMRoute does a cping/cpong in the node.
  * Without just answers ok.
@@ -1882,6 +1900,8 @@ static int check_method(request_rec *r)
     else if (strcasecmp(r->method, "REMOVEID") == 0)
         ours = 1;
     else if (strcasecmp(r->method, "QUERY") == 0)
+        ours = 1;
+    else if (strcasecmp(r->method, "VERSION") == 0)
         ours = 1;
     return ours;
 }
@@ -2668,6 +2688,8 @@ static int manager_handler(request_rec *r)
         errstring = process_removeid(r, ptr, &errtype);
     else if (strcasecmp(r->method, "QUERY") == 0)
         errstring = process_query(r, ptr, &errtype);
+    else if (strcasecmp(r->method, "VERSION") == 0)
+        errstring = process_version(r, ptr, &errtype);
     else {
         errstring = SCMDUNS;
         errtype = TYPESYNTAX;
