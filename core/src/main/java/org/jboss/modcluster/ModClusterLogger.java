@@ -154,9 +154,10 @@ public interface ModClusterLogger {
     @Message(id = 43, value = "Failed to send %s to %s")
     void sendFailed(@Cause Throwable cause, MCMPRequestType type, InetSocketAddress proxy);
 
-    @LogMessage(level = WARN)
-    @Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
-    void missingOSBean(String classname);
+    // Message retired since 1.3.0
+    //@LogMessage(level = WARN)
+    //@Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
+    //void missingOSBean(String classname);
 
     @LogMessage(level = WARN)
     @Message(id = 45, value = "%s is not supported on this system and will be disabled.")
