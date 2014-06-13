@@ -3156,6 +3156,7 @@ static proxy_worker *find_route_worker(request_rec *r,
     int sizew = balancer->workers->elt_size;
     
     proxy_worker *worker;
+    node_context *nodecontext;
 
     checking_standby = checked_standby = 0;
     while (!checked_standby) {
@@ -3189,10 +3190,12 @@ static proxy_worker *find_route_worker(request_rec *r,
                     nodeinfo_t *node;
                     if (node_storage->read_node(index, &node) != APR_SUCCESS)
                         return NULL; /* can't read node */
-                    if (context_host_ok(r, balancer, index, vhost_table, context_table, node_table) != NULL)
-                       return worker;
-                    else
-                       return NULL; /* application has been removed from the node */
+                    if ((nodecontext = context_host_ok(r, balancer, index, vhost_table, context_table, node_table)) != NULL) {
+                        apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", (*nodecontext).context));
+                        return worker;
+                    } else {
+                        return NULL; /* application has been removed from the node */
+                    }
                 } else {
                     /*
                      * If the worker is in error state run
@@ -3207,7 +3210,16 @@ static proxy_worker *find_route_worker(request_rec *r,
                     ap_proxy_retry_worker("BALANCER", worker, r->server);
 #endif
                     if (PROXY_WORKER_IS_USABLE(worker)) {
-                            return worker;
+                            /* The context may not be available */
+                            nodeinfo_t *node;
+                            if (node_storage->read_node(index, &node) != APR_SUCCESS)
+                                return NULL; /* can't read node */
+                            if ((nodecontext = context_host_ok(r, balancer, index, vhost_table, context_table, node_table)) != NULL) {
+                                apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", (*nodecontext).context));
+                                return worker;
+                            } else {
+                                return NULL; /* application has been removed from the node */
+                            }
                     } else {
                         /*
                          * We have a worker that is unusable.
@@ -3236,8 +3248,18 @@ static proxy_worker *find_route_worker(request_rec *r,
                                 ap_proxy_retry_worker("BALANCER", rworker, r->server);
 #endif
                             }
-                            if (rworker && PROXY_WORKER_IS_USABLE(rworker))
-                                return rworker;
+                            if (rworker && PROXY_WORKER_IS_USABLE(rworker)) {
+                                /* The context may not be available */
+                                nodeinfo_t *node;
+                                if (node_storage->read_node(index, &node) != APR_SUCCESS)
+                                    return NULL; /* can't read node */
+                                if ((nodecontext = context_host_ok(r, balancer, index, vhost_table, context_table, node_table)) != NULL) {
+                                    apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", (*nodecontext).context));
+                                    return rworker;
+                                } else {
+                                    return NULL; /* application has been removed from the node */
+                                }
+                            }
                         }
                     }
                 }
