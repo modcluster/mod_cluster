@@ -585,9 +585,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
         synchronized (proxy) {
             try {
                 String line = null;
-                StringBuilder proxyheadBuilder = new StringBuilder(head);
-                proxyheadBuilder.append(proxy.getSocketAddress().getHostName() + ":" + proxy.getSocketAddress().getPort());
-                String proxyhead = proxyheadBuilder.toString();
+                String proxyhead = head + proxy.getSocketAddress().getHostName() + ":" + proxy.getSocketAddress().getPort();
                 try {
                     line = sendRequest(proxy, proxyhead, body);
                 } catch (IOException e) {
