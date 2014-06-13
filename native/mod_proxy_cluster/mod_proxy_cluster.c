@@ -96,7 +96,7 @@ static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the l
 
 static apr_time_t wait_for_remove =  apr_time_from_sec(10); /* wait until that before removing a removed node */
 
-static int enable_options = 0; /* Use OPTIONS * for CPING/CPONG */
+static int enable_options = -1; /* Use OPTIONS * for CPING/CPONG */
 
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
@@ -4092,9 +4092,20 @@ static const char*cmd_proxy_cluster_wait_for_remove(cmd_parms *cmd, void *dummy,
     return NULL;
 }
 
-static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy)
+static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy, const char *args)
 {
-    enable_options = -1;
+    char *val = ap_getword_conf(cmd->pool, &args);
+
+    if (strcasecmp(val, "Off") == 0 || strcasecmp(val, "0") == 0) {
+        /* Disables OPTIONS, overrides the default */
+        enable_options = 0;
+    } else if (strcmp(val, "") == 0 || strcasecmp(val, "On") == 0 || strcasecmp(val, "1") == 0) {
+        /* No param or explicitly set default */
+        enable_options = -1;
+    } else {
+        return "EnableOptions must be either without value or On or Off";
+    }
+
     return NULL;
 }
 
@@ -4128,12 +4139,13 @@ static const command_rec  proxy_cluster_cmds[] =
         OR_ALL,
         "WaitBeforeRemove - Time in seconds before a node removed is forgotten by httpd: (Default: 10 seconds)"
     ),
-    AP_INIT_NO_ARGS(
+    /* This is not the ideal type, but it either takes no parameters (for backwards compatibility) or 1 flag argument. */
+    AP_INIT_RAW_ARGS(
         "EnableOptions",
          cmd_proxy_cluster_enable_options,
          NULL,
          OR_ALL,
-         "EnableOptions - Use OPTIONS with http/https for CPING/CPONG."
+         "EnableOptions - Use OPTIONS with HTTP/HTTPS for CPING/CPONG. On: Use OPTIONS, Off: Do not use OPTIONS (Default: On)"
     ),
     {NULL}
 };
