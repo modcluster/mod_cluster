@@ -168,9 +168,9 @@ apr_status_t remove_balancer(mem_t *s, balancerinfo_t *balancer)
 {
     apr_status_t rv;
     balancerinfo_t *ou = balancer;
-    if (balancer->id)
-        s->storage->ap_slotmem_free(s->slotmem, balancer->id, balancer);
-    else {
+    if (balancer->id) {
+        rv = s->storage->ap_slotmem_free(s->slotmem, balancer->id, balancer);
+    } else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_balancer, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
