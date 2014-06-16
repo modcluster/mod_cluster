@@ -674,7 +674,6 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
 #endif
     if (!balancer) {
        int sizeb = conf->balancers->elt_size;
-       int sizew = conf->workers->elt_size;
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         proxy_balancer_shared *bshared;
 #endif
@@ -717,6 +716,7 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
                           "add_balancer_node: Can't create lock for balancer");
         }
 #endif
+        int sizew = conf->workers->elt_size;
         balancer->workers = apr_array_make(conf->pool, 5, sizew);
 #endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
         balancer->lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
@@ -952,16 +952,16 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 #endif
 
     if (i == 0) {
-        /* No connection in use: clean the worker */
-        char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
-        char *ptr = conf->balancers->elts;
-        int sizeb = conf->balancers->elt_size;
-
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* The worker already comes from the apr_array of the balancer */
         proxy_worker_shared *stat = worker->s;
         proxy_cluster_helper *helper = (proxy_cluster_helper *) worker->context;
 #else
+        /* No connection in use: clean the worker */
+        char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
+        char *ptr = conf->balancers->elts;
+        int sizeb = conf->balancers->elt_size;
+
         /* mark the worker removed in the apr_array of the balancer */
         for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
             proxy_balancer *balancer =  (proxy_balancer *) ptr;
@@ -1404,6 +1404,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         }
         
     } else {
+        /* non-AJP connections */
         if (!backend->connection) {
             if ((status = ap_proxy_connection_create(scheme, backend,
                                                      (conn_rec *) NULL, r->server)) == OK) {
@@ -1417,7 +1418,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
             }
         }
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "proxy_cluster_try_pingpong: %d" , backend->connection);
+                     "proxy_cluster_try_pingpong: trying %s" , backend->connection->client_ip);
         status = http_handle_cping_cpong(backend, r, timeout);
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1706,7 +1707,7 @@ static char *cluster_get_sessionid(request_rec *r, const char *stickyval, char *
  */
 static int hassession_byname(request_rec *r, int nodeid, const char *route)
 {
-    proxy_balancer *balancer;
+    proxy_balancer *balancer = NULL;
     char *sessionid;
     char *uri;
     char *sticky_used;
@@ -2666,7 +2667,6 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                                      apr_pool_t *ptemp, server_rec *s)
 {
-    const char *userdata_key = "mod_cluster_init";
     void *sconf = s->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
     int sizew = conf->workers->elt_size;
