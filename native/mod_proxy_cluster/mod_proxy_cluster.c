@@ -3446,6 +3446,18 @@ static void upd_context_count(const char *id, int val)
     }
 }
 
+static apr_status_t decrement_busy_count(void *worker_)
+{
+    proxy_worker *worker = worker_;
+    
+    if (worker->s->busy) {
+        worker->s->busy--;
+    }
+
+    return APR_SUCCESS;
+}
+
+
 /*
  * Find a worker for mod_proxy logic
  */
@@ -3680,6 +3692,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     }
 
     (*worker)->s->busy++;
+    apr_pool_cleanup_register(r->pool, *worker, decrement_busy_count,
+                              apr_pool_cleanup_null);
 
     /* Mark the worker used for the cleanup logic */
     apr_thread_mutex_lock(lock);
@@ -3787,8 +3801,6 @@ static int proxy_cluster_post_request(proxy_worker *worker,
         return HTTP_INTERNAL_SERVER_ERROR;
     }
 
-    if (worker && worker->s->busy)
-        worker->s->busy--;
 
 #if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
    if (!apr_is_empty_array(balancer->errstatuses)) {
