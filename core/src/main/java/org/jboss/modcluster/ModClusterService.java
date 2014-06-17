@@ -180,7 +180,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
                 this.advertiseListener.start();
             } catch (IOException e) {
-                // TODO What now?
                 ModClusterLogger.LOGGER.advertiseStartFailed(e);
             }
         }

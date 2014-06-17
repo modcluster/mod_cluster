@@ -46,6 +46,17 @@ import org.jboss.modcluster.mcmp.MCMPRequestType;
 public interface ModClusterLogger {
     ModClusterLogger LOGGER = Logger.getMessageLogger(ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
 
+    String CATCHING_MARKER = "Catching";
+
+    /**
+     * Logging message that logs stack trace at the DEBUG level.
+     *
+     * @param throwable Throwable that has been caught
+     */
+    @LogMessage(level = DEBUG)
+    @Message(id = 0, value = CATCHING_MARKER)
+    void catchingDebug(@Cause Throwable throwable);
+
     @LogMessage(level = INFO)
     @Message(id = 1, value = "Initializing mod_cluster version %s")
     void init(String version);
@@ -123,8 +134,8 @@ public interface ModClusterLogger {
     void createMulticastSocketWithUnicastAddress(InetAddress address);
 
     @LogMessage(level = WARN)
-    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address); make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see http://www.jboss.org/community/docs/DOC-9469 for details).")
-    void potentialCrossTalking(@Cause Throwable cause, InetAddress address, String addressType);
+    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address): %s; make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see http://www.jboss.org/community/docs/DOC-9469 for details).")
+    void potentialCrossTalking(InetAddress address, String addressType, String message);
 
     @LogMessage(level = INFO)
     @Message(id = 32, value = "Listening to proxy advertisements on %s")
@@ -151,12 +162,13 @@ public interface ModClusterLogger {
     void recoverableErrorResponse(String errorType, MCMPRequestType type, InetSocketAddress proxy, String message);
 
     @LogMessage(level = ERROR)
-    @Message(id = 43, value = "Failed to send %s to %s")
-    void sendFailed(@Cause Throwable cause, MCMPRequestType type, InetSocketAddress proxy);
+    @Message(id = 43, value = "Failed to send %s command to %s: %s")
+    void sendFailed(MCMPRequestType type, InetSocketAddress proxy, String message);
 
-    @LogMessage(level = WARN)
-    @Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
-    void missingOSBean(String classname);
+    // Message retired since 1.3.0
+    //@LogMessage(level = WARN)
+    //@Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
+    //void missingOSBean(String classname);
 
     @LogMessage(level = WARN)
     @Message(id = 45, value = "%s is not supported on this system and will be disabled.")

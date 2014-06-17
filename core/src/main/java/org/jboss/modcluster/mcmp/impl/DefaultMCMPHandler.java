@@ -719,8 +719,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 proxy.setState(Proxy.State.ERROR);
 
                 // Log it only if we haven't done so already. Don't spam the log
-                if (proxy.isIoExceptionLogged() == false) {
-                    ModClusterLogger.LOGGER.sendFailed(e, requestType, proxy.getSocketAddress());
+                if (!proxy.isIoExceptionLogged()) {
+                    ModClusterLogger.LOGGER.sendFailed(requestType, proxy.getSocketAddress(), e.getLocalizedMessage());
+                    ModClusterLogger.LOGGER.catchingDebug(e);
                     proxy.setIoExceptionLogged(true);
                 }
 

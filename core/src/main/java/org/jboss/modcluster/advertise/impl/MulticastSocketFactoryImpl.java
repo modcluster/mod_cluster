@@ -81,7 +81,8 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
         try {
             return new MulticastSocket(new InetSocketAddress(address, port));
         } catch (IOException e) {
-            ModClusterLogger.LOGGER.potentialCrossTalking(e, address, (address instanceof Inet4Address) ? "IPv4" : "IPv6");
+            ModClusterLogger.LOGGER.potentialCrossTalking(address, (address instanceof Inet4Address) ? "IPv4" : "IPv6", e.getLocalizedMessage());
+            ModClusterLogger.LOGGER.catchingDebug(e);
             return new MulticastSocket(port);
         }
     }
