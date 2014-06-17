@@ -23,9 +23,10 @@
     </scm>
 
     <repositories>
+        <!-- Getting started with JBoss Maven Repositories: https://community.jboss.org/wiki/MavenGettingStarted-Developers -->
         <repository>
-            <id>repository.jboss.org</id>
-            <name>JBoss Public Repository</name>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
             <url>http://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
