@@ -3526,6 +3526,17 @@ static void upd_context_count(const char *id, int val, server_rec *s)
     context_storage->unlock_contexts();
 }
 
+static apr_status_t decrement_busy_count(void *worker_)
+{
+    proxy_worker *worker = worker_;
+    
+    if (worker->s->busy) {
+        worker->s->busy--;
+    }
+
+    return APR_SUCCESS;
+}
+
 /*
  * Find a worker for mod_proxy logic
  */
@@ -3785,6 +3796,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     }
 
     (*worker)->s->busy++;
+    apr_pool_cleanup_register(r->pool, *worker, decrement_busy_count,
+                              apr_pool_cleanup_null);
 
     /* Also mark the context here note that find_best_worker set BALANCER_CONTEXT_ID */
     context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
@@ -3868,9 +3881,6 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     helper = (proxy_cluster_helper *) worker->opaque;
 #endif
     helper->count_active--;
-
-    if (worker && worker->s->busy)
-        worker->s->busy--;
 
     apr_thread_mutex_unlock(lock);
 
