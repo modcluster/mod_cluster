@@ -2408,12 +2408,14 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     else if (load == 0) {
 #if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
         worker->s->status |= PROXY_WORKER_HOT_STANDBY;
+        worker->s->lbfactor = 0;
 #else
         /*
          * XXX: PROXY_WORKER_HOT_STANDBY Doesn't look supported
          * mark worker in error for the moment
          */
         worker->s->status |= PROXY_WORKER_IN_ERROR;
+        worker->s->lbfactor = -1;
 #endif
     }
     else {
