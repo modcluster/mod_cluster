@@ -27,28 +27,23 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
-import org.apache.catalina.Engine;
-import org.apache.catalina.Service;
 import org.jboss.modcluster.ModClusterService;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
 
 public class TestFailAppover extends TestCase {
 
-    /* Test failAppover */
+    /* Test testFailAppover
+     * We test the failover for one node to the other when a context is undeployed.
+     * NOTE" See testFailAppoverNo where we test it doesn't failover.
+     */
     public void testFailAppover() {
 
         boolean clienterror = false;
         StandardServer server = new StandardServer();
         JBossWeb service = null;
         JBossWeb service2 = null;
-        Connector connector = null;
-        Connector connector2 = null;
         ModClusterService cluster = null;
         System.out.println("TestFailAppover Started");
 
@@ -58,16 +53,16 @@ public class TestFailAppover extends TestCase {
         try {
 
             service = new JBossWeb("node3",  "localhost");
-            connector = service.addConnector(8013);
+            service.addConnector(8013);
             service.AddContext("/test", "/test", "MyCount", false);
             server.addService(service);
 
             service2 = new JBossWeb("node4",  "localhost");
-            connector2 = service2.addConnector(8014);
+            service2.addConnector(8014);
             service2.AddContext("/test", "/test", "MyCount", false);
             server.addService(service2);
 
-            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, true, "secret");
+            cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, "dom1", true, false, false, "secret");
 
         } catch(Exception ex) {
             ex.printStackTrace();
