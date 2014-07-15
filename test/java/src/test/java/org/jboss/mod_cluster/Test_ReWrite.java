@@ -82,6 +82,26 @@ public class  Test_ReWrite extends TestCase {
         if (countinfo == 20)
             fail("can't find node in httpd");
 
+        /*
+         * Check for Apache httpd
+         */
+        try {
+            String proxy = Maintest.getProxyAddress(cluster);
+            ManagerClient managerclient = new ManagerClient(proxy);
+            if (!managerclient.isApacheHttpd()) {
+                stop(wait, server, service, cluster);
+                System.gc();
+                System.out.println("Test_ReWrite Skipped");
+                return;
+            }
+        } catch (Exception ex) {
+                ex.printStackTrace();
+                fail("Can't check proxy type");
+        }
+
+        String proxyinfo = Maintest.getProxyInfo(cluster);
+        System.out.println(proxyinfo);
+
         // Test RewriteRule ^/$ /myapp/MyCount [PT]
         Client client = new Client();
         client.setVirtualHost("cluster.domain.com");
@@ -145,6 +165,12 @@ public class  Test_ReWrite extends TestCase {
             fail("Failed: client failed");
         }
 
+        stop(wait, server, service, cluster);
+        System.gc();
+        System.out.println("Test_ReWrite Done");
+    }
+
+    private void stop(ServerThread wait, StandardServer server, JBossWeb service, ModClusterService cluster) {
         // Stop the jboss and remove the services.
         try {
             wait.stopit();
@@ -157,8 +183,8 @@ public class  Test_ReWrite extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        countinfo = 0;
-        nodes = null;
+        int countinfo = 0;
+        String [] nodes = null;
         while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < MAXSTOPCOUNT) {
             try {
                 Thread.sleep(3000);
@@ -170,7 +196,5 @@ public class  Test_ReWrite extends TestCase {
         Maintest.StopClusterListener();
         if (countinfo == MAXSTOPCOUNT)
             fail("node doesn't dispair");
-        System.gc();
-        System.out.println("Test_ReWrite Done");
     }
 }

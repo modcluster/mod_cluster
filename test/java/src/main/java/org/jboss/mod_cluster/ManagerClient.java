@@ -143,4 +143,18 @@ public class  ManagerClient {
             String DURL = URL + "?nonce=" + nonce + "&Cmd=INFO&Range=ALL";
             return DoCmd(DURL);
         }
+	public boolean isApacheHttpd() throws Exception {
+            GetMethod gm = new GetMethod(URL);
+            try {
+                httpResponseCode = httpClient.executeMethod(gm);
+            } catch (HttpException e) {
+                    System.out.println("error: " + e);
+                    throw(e);
+            }
+            gm.releaseConnection();
+            Header head = gm.getResponseHeader("Server");
+            if (head != null)
+               return head.toString().contains("Apache/2");
+            return false;
+        }
 }
