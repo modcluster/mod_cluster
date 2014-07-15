@@ -85,6 +85,7 @@ public class TestAliases extends TestCase {
         virtualhosts[0].aliases[0] = "alias0v0";
         virtualhosts[0].aliases[1] = "alias1v0";
         virtualhosts[0].servletname = "MyCount";
+        virtualhosts[0].context = "test3";
         
         virtualhosts[1] = new VirtualHost();
         virtualhosts[1].addtofirst = false;
@@ -93,6 +94,7 @@ public class TestAliases extends TestCase {
         virtualhosts[1].aliases[0] = "alias0v1";
         virtualhosts[1].aliases[1] = "alias1v1";
         virtualhosts[1].servletname = "MyCount";
+        virtualhosts[1].context = "test3";
         
         virtualhosts[2] = new VirtualHost();
         virtualhosts[2].addtofirst = true;
@@ -101,6 +103,7 @@ public class TestAliases extends TestCase {
         virtualhosts[2].aliases[0] = "alias0v2";
         virtualhosts[2].aliases[1] = "alias1v2";
         virtualhosts[2].servletname = "MyCount";
+        virtualhosts[2].context = "test3";
 //        Doesn't work with more 404 from jbossweb :-(
 //        virtualhosts[3] = new VirtualHost();
 //        virtualhosts[3].addtofirst = false;
