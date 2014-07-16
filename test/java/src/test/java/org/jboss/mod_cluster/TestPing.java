@@ -123,6 +123,23 @@ public class TestPing extends TestCase {
             fail("can't find proxy");
         }
 
+        /*
+         * Untertow doesn't support yet (2014/07/15) to ping an URL
+         */
+        try {
+           String proxy = Maintest.getProxyAddress(cluster);
+           ManagerClient managerclient = new ManagerClient(proxy);
+           if (!managerclient.isApacheHttpd()) {
+              stop(wait, server, service, service2, cluster);
+           System.gc();
+           System.out.println("Test_ReWrite Skipped");
+           return;
+           }
+        } catch (Exception ex) {
+           ex.printStackTrace();
+           fail("Can't check proxy type");
+        }
+
         // Ping using url
         result = Maintest.doProxyPing(cluster, "ajp", "localhost", 8011);
         if (result == null)
@@ -154,6 +171,12 @@ public class TestPing extends TestCase {
         if (Maintest.checkProxyPing(result))
            fail("doProxyPing on " + "ajp://localhost:8012" + " should have failed");
 
+        stop(wait, server, service, service2, cluster);
+        System.gc();
+        System.out.println("TestPing Done");
+    }
+
+    private void stop(ServerThread wait, StandardServer server, JBossWeb service, JBossWeb service2, ModClusterService cluster) {
         // Stop the jboss and remove the services.
         try {
             wait.stopit();
@@ -167,8 +190,8 @@ public class TestPing extends TestCase {
         }
 
         // Wait until httpd as received the stop messages.
-        countinfo = 0;
-        nodes = null;
+        int countinfo = 0;
+        String [] nodes = null;
         while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < 20) {
             try {
                 Thread.sleep(3000);
@@ -178,7 +201,5 @@ public class TestPing extends TestCase {
             countinfo++;
         }
         Maintest.StopClusterListener();
-        System.gc();
-        System.out.println("TestPing Done");
     }
 }
