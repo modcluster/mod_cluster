@@ -27,6 +27,7 @@
 
 package org.jboss.mod_cluster;
 
+import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -387,5 +388,33 @@ public class Maintest {
     		}
 
     	}
+    }
+
+    static void stop(int MAXSTOPCOUNT, ServerThread wait, StandardServer server, JBossWeb service, ModClusterService cluster) {
+        // Stop the jboss and remove the services.
+        try {
+            wait.stopit();
+            wait.join();
+
+            server.removeService(service);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+            Assert.fail("can't stop service");
+        }
+
+        // Wait until httpd as received the stop messages.
+        int countinfo = 0;
+        String [] nodes = null;
+        while ((!checkProxyInfo(cluster, nodes)) && countinfo < MAXSTOPCOUNT) {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            countinfo++;
+        }
+        StopClusterListener();
+        if (countinfo == MAXSTOPCOUNT)
+            Assert.fail("node doesn't dispair");
     }
 }
