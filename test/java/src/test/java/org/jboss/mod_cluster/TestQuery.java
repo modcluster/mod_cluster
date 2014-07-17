@@ -27,18 +27,14 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
-
-import org.apache.catalina.Engine;
-import org.apache.catalina.Service;
-import org.jboss.modcluster.ModClusterService;
-import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardServer;
+import org.jboss.modcluster.ModClusterService;
 
 public class TestQuery extends TestCase {
+
+    int MAXSTOPCOUNT = 200;
 
     /* Test Context handling:
      * / 
@@ -106,6 +102,23 @@ public class TestQuery extends TestCase {
         if (response.indexOf("name=edwin&state=NY") == -1) {
             System.out.println("response: " + client.getResponse());
             fail("Can't find the query string in the response");
+        }
+
+                /*
+         * Check for Apache httpd
+         */
+        try {
+            String proxy = Maintest.getProxyAddress(cluster);
+            ManagerClient managerclient = new ManagerClient(proxy);
+            if (!managerclient.isApacheHttpd()) {
+                Maintest.stop(MAXSTOPCOUNT, wait, server, service, cluster);
+                System.gc();
+                System.out.println("TestQuery Skipped");
+                return;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Can't check proxy type");
         }
 
         // Try with the rewrite rule.

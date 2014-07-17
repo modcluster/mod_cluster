@@ -27,8 +27,6 @@
 
 package org.jboss.mod_cluster;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
 import org.apache.catalina.core.StandardServer;
@@ -89,7 +87,7 @@ public class  Test_ReWrite extends TestCase {
             String proxy = Maintest.getProxyAddress(cluster);
             ManagerClient managerclient = new ManagerClient(proxy);
             if (!managerclient.isApacheHttpd()) {
-                stop(wait, server, service, cluster);
+                Maintest.stop(MAXSTOPCOUNT, wait, server, service, cluster);
                 System.gc();
                 System.out.println("Test_ReWrite Skipped");
                 return;
@@ -165,36 +163,9 @@ public class  Test_ReWrite extends TestCase {
             fail("Failed: client failed");
         }
 
-        stop(wait, server, service, cluster);
+        Maintest.stop(MAXSTOPCOUNT, wait, server, service, cluster);
         System.gc();
         System.out.println("Test_ReWrite Done");
     }
 
-    private void stop(ServerThread wait, StandardServer server, JBossWeb service, ModClusterService cluster) {
-        // Stop the jboss and remove the services.
-        try {
-            wait.stopit();
-            wait.join();
-
-            server.removeService(service);
-        } catch (InterruptedException ex) {
-            ex.printStackTrace();
-            fail("can't stop service");
-        }
-
-        // Wait until httpd as received the stop messages.
-        int countinfo = 0;
-        String [] nodes = null;
-        while ((!Maintest.checkProxyInfo(cluster, nodes)) && countinfo < MAXSTOPCOUNT) {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            countinfo++;
-        }
-        Maintest.StopClusterListener();
-        if (countinfo == MAXSTOPCOUNT)
-            fail("node doesn't dispair");
-    }
 }

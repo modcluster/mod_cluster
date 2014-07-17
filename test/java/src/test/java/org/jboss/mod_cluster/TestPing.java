@@ -123,23 +123,6 @@ public class TestPing extends TestCase {
             fail("can't find proxy");
         }
 
-        /*
-         * Untertow doesn't support yet (2014/07/15) to ping an URL
-         */
-        try {
-           String proxy = Maintest.getProxyAddress(cluster);
-           ManagerClient managerclient = new ManagerClient(proxy);
-           if (!managerclient.isApacheHttpd()) {
-              stop(wait, server, service, service2, cluster);
-           System.gc();
-           System.out.println("Test_ReWrite Skipped");
-           return;
-           }
-        } catch (Exception ex) {
-           ex.printStackTrace();
-           fail("Can't check proxy type");
-        }
-
         // Ping using url
         result = Maintest.doProxyPing(cluster, "ajp", "localhost", 8011);
         if (result == null)
@@ -152,6 +135,24 @@ public class TestPing extends TestCase {
            fail("Maintest.doProxyPing failed");
         if (Maintest.checkProxyPing(result))
            fail("doProxyPing on " + "ajp://localhost:8012" + " should have failed");
+
+        /*
+         * Untertow doesn't support yet (2014/07/15) to ping an ajp URL
+         */
+        try {
+            String proxy = Maintest.getProxyAddress(cluster);
+            ManagerClient managerclient = new ManagerClient(proxy);
+            if (!managerclient.isApacheHttpd()) {
+                stop(wait, server, service, service2, cluster);
+                System.gc();
+                System.out.println("Test_ReWrite Skipped");
+                return;
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Can't check proxy type");
+        }
+
         // Try a timeout node.
         try {
         ServerSocket sock = new ServerSocket(8012);
