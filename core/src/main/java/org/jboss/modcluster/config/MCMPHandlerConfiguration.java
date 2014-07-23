@@ -31,14 +31,25 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * Configuration object for an {@link MCMPHandler}.
- * 
+ *
  * @author Brian Stansberry
- * 
  */
 public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseConfiguration {
+
     /**
-     * Proxy list, format "address:port,address:port".
+     * Gets list of proxies as a collection of {@link ProxyConfiguration}s.
+     *
+     * @return list of proxies as a collection of {@link ProxyConfiguration}s
      */
+    Collection<ProxyConfiguration> getProxyConfigurations();
+
+    /**
+     * Gets list of proxies as a collection of {@link InetSocketAddress}es.
+     *
+     * @return list of proxies as a collection of {@link InetSocketAddress}es
+     * @deprecated as of 1.3.1 use {@link #getProxyConfigurations()} to also specify local addresses to bind to
+     */
+    @Deprecated
     Collection<InetSocketAddress> getProxies();
 
     /**
@@ -58,7 +69,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
 
     /**
      * Returns a list of contexts that should never be enabled in mod_cluster. Contexts may be
-     * 
+     *
      * @return a comma delimited list of contexts of the form "[host:]context"
      */
     Map<String, Set<String>> getExcludedContextsPerHost();
@@ -70,7 +81,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
 
     /**
      * Indicates whether or not to automatically enable contexts. If false, context will need to be enabled manually.
-     * 
+     *
      * @return true, if contexts should auto-enable, false otherwise.
      */
     boolean isAutoEnableContexts();
@@ -78,14 +89,14 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     /**
      * Returns the number of {@link #getStopContextTimeoutUnit()} to wait for pending requests to complete when stopping a
      * context.
-     * 
+     *
      * @return timeout in seconds.
      */
     long getStopContextTimeout();
 
     /**
      * Returns the unit of time to which {@link #getStopContextTimeout()} pertains.
-     * 
+     *
      * @return a unit of time
      */
     TimeUnit getStopContextTimeoutUnit();

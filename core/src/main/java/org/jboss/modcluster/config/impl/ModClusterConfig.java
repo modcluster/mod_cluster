@@ -44,6 +44,7 @@ import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
+import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.SSLConfiguration;
 import org.jboss.modcluster.config.SessionDrainingStrategy;
 
@@ -143,28 +144,86 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseThreadFactory = advertiseThreadFactory;
     }
 
-    private Collection<InetSocketAddress> proxies = Collections.emptySet();
+    private Collection<ProxyConfiguration> proxyConfigurations = Collections.emptySet();
+
+    public Collection<ProxyConfiguration> getProxyConfigurations() {
+        return this.proxyConfigurations;
+    }
+
+    /**
+     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
+     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
+     *
+     * @param proxyConfigurations a collection of {@link ProxyConfiguration}s
+     */
+    public void setProxyConfigurations(Collection<ProxyConfiguration> proxyConfigurations) {
+        this.proxyConfigurations = proxyConfigurations;
+    }
 
     @Override
     public Collection<InetSocketAddress> getProxies() {
-        return this.proxies;
+        Set<InetSocketAddress> proxies = new HashSet<InetSocketAddress>();
+        for (ProxyConfiguration proxy : proxyConfigurations) {
+            proxies.add(proxy.getRemoteAddress());
+        }
+        return proxies;
     }
 
+    /**
+     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
+     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
+     *
+     * @param proxies a collection of {@link InetSocketAddress} of remote proxy addresses
+     * @deprecated as of 1.3.1 use {@link MCMPHandlerConfiguration#getProxyConfigurations()} to also specify local addresses to bind to
+     */
+    @Deprecated
     public void setProxies(Collection<InetSocketAddress> proxies) {
-        this.proxies = proxies;
+        Collection<ProxyConfiguration> proxyConfigs = new HashSet<ProxyConfiguration>();
+        for (final InetSocketAddress destination : proxies) {
+            proxyConfigs.add(new ProxyConfiguration() {
+                @Override
+                public InetSocketAddress getRemoteAddress() {
+                    return destination;
+                }
+
+                @Override
+                public InetSocketAddress getLocalAddress() {
+                    return null;
+                }
+            });
+        }
+        this.proxyConfigurations = proxyConfigs;
     }
 
+    /**
+     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
+     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
+     *
+     * @param addresses comma separated host:port couples
+     * @deprecated as of 1.3.1 use {@link MCMPHandlerConfiguration#getProxyConfigurations()} to also specify local addresses to bind to
+     */
     @Deprecated
     public void setProxyList(String addresses) {
         if ((addresses == null) || (addresses.length() == 0)) {
-            this.proxies = Collections.emptySet();
+            this.proxyConfigurations = Collections.emptySet();
         } else {
             String[] tokens = addresses.split(",");
-            this.proxies = new ArrayList<InetSocketAddress>(tokens.length);
+            this.proxyConfigurations = new ArrayList<ProxyConfiguration>(tokens.length);
 
             for (String token: tokens) {
                 try {
-                    this.proxies.add(Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT));
+                    final InetSocketAddress remoteAddress = Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT);
+                    this.proxyConfigurations.add(new ProxyConfiguration() {
+                        @Override
+                        public InetSocketAddress getRemoteAddress() {
+                            return remoteAddress;
+                        }
+
+                        @Override
+                        public InetSocketAddress getLocalAddress() {
+                            return null;
+                        }
+                    });
                 } catch (UnknownHostException e) {
                     throw new IllegalArgumentException(e);
                 }
@@ -174,10 +233,13 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     @Deprecated
     public String getProxyList() {
-        if (this.proxies == null) return null;
+        if (this.proxyConfigurations.isEmpty()) {
+            return null;
+        }
 
         StringBuilder builder = new StringBuilder();
-        for (InetSocketAddress socketAddress: this.proxies) {
+        for (ProxyConfiguration proxy : this.proxyConfigurations) {
+            InetSocketAddress socketAddress = proxy.getRemoteAddress();
             if (builder.length() > 0) {
                 builder.append(",");
             }

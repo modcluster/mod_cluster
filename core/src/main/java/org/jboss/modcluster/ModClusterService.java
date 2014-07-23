@@ -139,7 +139,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         this.server = server;
 
-        this.mcmpHandler.init(this.mcmpConfig.getProxies(), this);
+        this.mcmpHandler.init(this.mcmpConfig.getProxyConfigurations(), this);
 
         this.autoEnableContexts = this.mcmpConfig.isAutoEnableContexts();
         this.excludedContexts.clear();
