@@ -446,6 +446,27 @@ struct cluster_host {
     struct cluster_host *next;
 };
 
+/* HTTP methods */
+
+enum {
+    MCMP_M_DUMP = 0,
+    MCMP_M_INFO,
+    MCMP_M_PING,
+    MCMP_M_ADDID,
+    MCMP_M_ERROR,
+    MCMP_M_QUERY,
+    MCMP_M_CONFIG,
+    MCMP_M_STATUS,
+    MCMP_M_REMOVEID,
+    MCMP_M_STOPAPP,
+    MCMP_M_ENABLEAPP,
+    MCMP_M_REMOVEAPP,
+    MCMP_M_DISABLEAPP,
+    MCMP_M_LAST
+};
+
+static int mcmp_methods[MCMP_M_LAST];
+
 /*
  * cleanup logic
  */
@@ -490,6 +511,20 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
         return OK;
     }
+
+    mcmp_methods[MCMP_M_DUMP]       = ap_method_register(p, "DUMP");
+    mcmp_methods[MCMP_M_INFO]       = ap_method_register(p, "INFO");
+    mcmp_methods[MCMP_M_PING]       = ap_method_register(p, "PING");
+    mcmp_methods[MCMP_M_ADDID]      = ap_method_register(p, "ADDID");
+    mcmp_methods[MCMP_M_ERROR]      = ap_method_register(p, "ERROR");
+    mcmp_methods[MCMP_M_QUERY]      = ap_method_register(p, "QUERY");
+    mcmp_methods[MCMP_M_CONFIG]     = ap_method_register(p, "CONFIG");
+    mcmp_methods[MCMP_M_STATUS]     = ap_method_register(p, "STATUS");
+    mcmp_methods[MCMP_M_REMOVEID]   = ap_method_register(p, "REMOVEID");
+    mcmp_methods[MCMP_M_STOPAPP]    = ap_method_register(p, "STOP-APP");
+    mcmp_methods[MCMP_M_ENABLEAPP]  = ap_method_register(p, "ENABLE-APP");
+    mcmp_methods[MCMP_M_REMOVEAPP]  = ap_method_register(p, "REMOVE-APP");
+    mcmp_methods[MCMP_M_DISABLEAPP] = ap_method_register(p, "DISABLE-APP");
 
     if (mconf->basefilename) {
         node = apr_pstrcat(ptemp, mconf->basefilename, "/manager.node", NULL);
@@ -2161,40 +2196,6 @@ static int decodeenc(char *x)
     return j;
 }
 
-/* Check that the method is one of ours */
-static int check_method(request_rec *r)
-{
-    int ours = 0;
-    if (strcasecmp(r->method, "CONFIG") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "ENABLE-APP") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "DISABLE-APP") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "STOP-APP") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "REMOVE-APP") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "STATUS") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "DUMP") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "ERROR") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "INFO") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "PING") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "ADDID") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "REMOVEID") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "QUERY") == 0)
-        ours = 1;
-    else if (strcasecmp(r->method, "VERSION") == 0)
-        ours = 1;
-    return ours;
-}
 /*
  * This routine is called before mod_proxy translate name.
  * This allows us to make decisions before mod_proxy
@@ -2202,7 +2203,6 @@ static int check_method(request_rec *r)
  */
 static int manager_trans(request_rec *r)
 {
-    int ours = 0;
     core_dir_config *conf =
         (core_dir_config *)ap_get_module_config(r->per_dir_config,
                                                 &core_module);
@@ -2215,28 +2215,23 @@ static int manager_trans(request_rec *r)
         r->filename = apr_pstrdup(r->pool, r->uri);
         return OK;
     }
-    if (r->method_number != M_INVALID)
-        return DECLINED;
+
     if (!mconf->enable_mcpm_receive)
         return DECLINED; /* Not allowed to receive MCMP */
 
-    ours = check_method(r); 
-    if (ours) {
-        int i;
-        /* The method one of ours */
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                    "manager_trans %s (%s)", r->method, r->uri);
-        r->handler = "mod-cluster"; /* that hack doesn't work on httpd-2.4.x */
-        i = strlen(r->uri);
-        if (strcmp(r->uri, "*") == 0 || (i>=2 && r->uri[i-1] == '*' && r->uri[i-2] == '/')) {
-            r->filename = apr_pstrdup(r->pool, NODE_COMMAND);
-        } else {
-            r->filename = apr_pstrdup(r->pool, r->uri);
-        }
-        return OK;
+    int i;
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                "manager_trans %s (%s)", r->method, r->uri);
+    r->handler = "mod-cluster"; /* that hack doesn't work on httpd-2.4.x */
+    i = strlen(r->uri);
+
+    if (strcmp(r->uri, "*") == 0 || (i>=2 && r->uri[i-1] == '*' && r->uri[i-2] == '/')) {
+        r->filename = apr_pstrdup(r->pool, NODE_COMMAND);
+    } else {
+        r->filename = apr_pstrdup(r->pool, r->uri);
     }
+    return OK;
     
-    return DECLINED;
 }
 
 /* Create the commands that are possible on the context */
@@ -2885,11 +2880,18 @@ static int manager_handler(request_rec *r)
     apr_size_t bufsiz=0, maxbufsiz, len;
     apr_status_t status;
     int global = 0;
-    int ours = 0;
     char **ptr;
     void *sconf = r->server->module_config;
     mod_manager_config *mconf;
   
+    ap_allow_methods(r,1,"DUMP","INFO","PING","ADDID","ERROR","CONFIG","STATUS","REMOVEID","STOP-APP","ENABLE-APP","REMOVE-APP","DISABLE-APP",NULL);
+
+    if ( r->method_number == M_INVALID ) {
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                    "manager_handler not registered  method: %s", r->method);
+        return DECLINED;
+    }
+
     if (strcmp(r->handler, "mod_cluster-manager") == 0) {
         /* Display the nodes information */
         if (r->method_number != M_GET)
@@ -2897,13 +2899,13 @@ static int manager_handler(request_rec *r)
         return(manager_info(r));
     }
 
+    if (r->method_number == M_OPTIONS) 
+           return DECLINED; 
+
     mconf = ap_get_module_config(sconf, &manager_module);
     if (!mconf->enable_mcpm_receive)
         return DECLINED; /* Not allowed to receive MCMP */
 
-    ours = check_method(r);
-    if (!ours)
-        return DECLINED;
 
     /* Use a buffer to read the message */
     if (mconf->maxmesssize)
@@ -2952,35 +2954,31 @@ static int manager_handler(request_rec *r)
     if (strstr(r->filename, NODE_COMMAND))
         global = 1;
 
-    if (strcasecmp(r->method, "CONFIG") == 0)
+    if ( r->method_number == mcmp_methods[MCMP_M_CONFIG] ) {
         errstring = process_config(r, ptr, &errtype);
-    /* Application handling */
-    else if (strcasecmp(r->method, "ENABLE-APP") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_ENABLEAPP] ) {
         errstring = process_enable(r, ptr, &errtype, global);
-    else if (strcasecmp(r->method, "DISABLE-APP") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_DISABLEAPP] ) {
         errstring = process_disable(r, ptr, &errtype, global);
-    else if (strcasecmp(r->method, "STOP-APP") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_STOPAPP] ) {
         errstring = process_stop(r, ptr, &errtype, global, 1);
-    else if (strcasecmp(r->method, "REMOVE-APP") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_REMOVEAPP] ) {
         errstring = process_remove(r, ptr, &errtype, global);
-    /* Status handling */
-    else if (strcasecmp(r->method, "STATUS") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_STATUS] ) {
         errstring = process_status(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "DUMP") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_DUMP] ) {
         errstring = process_dump(r, &errtype);
-    else if (strcasecmp(r->method, "INFO") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_INFO] ) {
         errstring = process_info(r, &errtype);
-    else if (strcasecmp(r->method, "PING") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_PING] ) {
         errstring = process_ping(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "ADDID") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_ADDID] ) {
         errstring = process_addid(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "REMOVEID") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_REMOVEID] ) {
         errstring = process_removeid(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "QUERY") == 0)
+    } else if ( r->method_number == mcmp_methods[MCMP_M_QUERY] ) {
         errstring = process_query(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "VERSION") == 0)
-        errstring = process_version(r, ptr, &errtype);
-    else {
+    } else  {
         errstring = SCMDUNS;
         errtype = TYPESYNTAX;
     }
