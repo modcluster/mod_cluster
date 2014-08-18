@@ -59,6 +59,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequest;
@@ -130,7 +131,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
      * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
      */
     @Override
-    public void init(Collection<InetSocketAddress> proxies, MCMPConnectionListener connectionListener) {
+    public void init(Collection<ProxyConfiguration> proxies, MCMPConnectionListener connectionListener) {
         this.connectionListener = connectionListener;
 
         if (proxies != null) {
@@ -138,8 +139,8 @@ public class DefaultMCMPHandler implements MCMPHandler {
             lock.lock();
 
             try {
-                for (InetSocketAddress proxy : proxies) {
-                    this.add(proxy);
+                for (final ProxyConfiguration proxy : proxies) {
+                    this.add(proxy.getRemoteAddress(), proxy.getRemoteAddress());
                 }
 
                 this.status(false);
@@ -182,8 +183,17 @@ public class DefaultMCMPHandler implements MCMPHandler {
         this.add(socketAddress);
     }
 
+    @Override
+    public void addProxy(ProxyConfiguration proxyConfiguration) {
+        this.add(proxyConfiguration.getRemoteAddress(), proxyConfiguration.getLocalAddress());
+    }
+
     private Proxy add(InetSocketAddress socketAddress) {
-        Proxy proxy = new Proxy(socketAddress, this.config);
+        return this.add(socketAddress, null);
+    }
+
+    private Proxy add(InetSocketAddress socketAddress, InetSocketAddress localAddress) {
+        Proxy proxy = new Proxy(socketAddress, localAddress, this.config);
 
         this.addRemoveProxiesLock.lock();
 
@@ -227,6 +237,11 @@ public class DefaultMCMPHandler implements MCMPHandler {
     @Override
     public void addProxy(InetSocketAddress socketAddress, boolean established) {
         this.add(socketAddress).setEstablished(established);
+    }
+
+    @Override
+    public void addProxy(ProxyConfiguration proxyConfiguration, boolean established) {
+        this.add(proxyConfiguration.getRemoteAddress(), proxyConfiguration.getLocalAddress()).setEstablished(established);
     }
 
     /**
@@ -744,6 +759,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
         private static final long serialVersionUID = 5219680414337319908L;
 
         private final InetSocketAddress socketAddress;
+        private final InetSocketAddress sourceAddress;
 
         private volatile State state = State.OK;
         private volatile boolean established = false;
@@ -763,6 +779,14 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
         Proxy(InetSocketAddress socketAddress, MCMPHandlerConfiguration config) {
             this.socketAddress = socketAddress;
+            this.sourceAddress = null;
+            this.socketFactory = config.isSsl() ? new JSSESocketFactory(config) : SocketFactory.getDefault();
+            this.socketTimeout = config.getSocketTimeout();
+        }
+
+        Proxy(InetSocketAddress socketAddress, InetSocketAddress sourceAddress, MCMPHandlerConfiguration config) {
+            this.socketAddress = socketAddress;
+            this.sourceAddress = sourceAddress;
             this.socketFactory = config.isSsl() ? new JSSESocketFactory(config) : SocketFactory.getDefault();
             this.socketTimeout = config.getSocketTimeout();
         }
@@ -822,17 +846,18 @@ public class DefaultMCMPHandler implements MCMPHandler {
          * Return a reader to the proxy.
          */
         private synchronized Socket getConnection() throws IOException {
-            if ((this.socket == null) || this.socket.isClosed()) {
+            if (this.socket == null || this.socket.isClosed()) {
                 this.socket = this.socketFactory.createSocket();
                 InetAddress address = this.socketAddress.getAddress();
-                if ( address instanceof Inet6Address && ((Inet6Address)address).isLinkLocalAddress()) {
-                    /* We need to work-around a java6 bug */
-                    InetSocketAddress addr = new InetSocketAddress(address, 0);
-                    this.socket.bind(addr);
-                    this.socket.connect(this.socketAddress, this.socketTimeout);
-                } else {
-                    this.socket.connect(this.socketAddress, this.socketTimeout);
+                if (sourceAddress != null) {
+                    // If bind address is specified for the proxy, use it
+                    this.socket.bind(sourceAddress);
+                } else if (address instanceof Inet6Address && address.isLinkLocalAddress()) {
+                    // If the bind address is unspecified, workaround a JDK 6 IPv6 bug
+                    InetSocketAddress bindAddr = new InetSocketAddress(address, 0);
+                    this.socket.bind(bindAddr);
                 }
+                this.socket.connect(this.socketAddress, this.socketTimeout);
                 this.socket.setSoTimeout(this.socketTimeout);
                 this.localAddress = this.socket.getLocalAddress();
             }
