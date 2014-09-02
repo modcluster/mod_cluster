@@ -235,6 +235,14 @@ static int loc_worker_nodes_are_updated(void *data, unsigned int last)
     mconf->tableversion = last;
     return (0);
 }
+static void loc_lock_nodes()
+{
+    lock_nodes(nodestatsmem);
+}
+static void loc_unlock_nodes()
+{
+    unlock_nodes(nodestatsmem);
+}
 static int loc_get_max_size_context()
 {
     if (contextstatsmem)
@@ -292,6 +300,8 @@ static const struct node_storage_method node_storage =
     loc_remove_node,
     loc_find_node,
     loc_remove_host_context,
+    loc_lock_nodes,
+    loc_unlock_nodes
 };
 
 /*

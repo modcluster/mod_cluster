@@ -144,6 +144,18 @@ apr_status_t remove_node(mem_t *s, nodeinfo_t *node);
 apr_status_t find_node(mem_t *s, nodeinfo_t **node, const char *route);
 
 /*
+ *  * lock the nodes table
+ *   * @param pointer to the shared table.
+ *    */
+void lock_nodes(mem_t *s);
+
+/*
+ *  * unlock the nodes table
+ *   * @param pointer to the shared table.
+ *    */
+void unlock_nodes(mem_t *s);
+
+/*
  * get the ids for the used (not free) nodes in the table
  * @param pointer to the shared table.
  * @param ids array of int to store the used id (must be big enough).
@@ -225,5 +237,16 @@ apr_status_t (*find_node)(nodeinfo_t **node, const char *route);
  * Remove the virtual hosts and contexts corresponding the node.
  */
 void (*remove_host_context)(int node, apr_pool_t *pool);
+
+/*
+ * lock the nodes table
+ */
+void (*lock_nodes)();
+
+/*
+ * unlock the nodes table
+ */
+void (*unlock_nodes)();
+
 };
 #endif /*NODE_H*/
