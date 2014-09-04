@@ -86,7 +86,6 @@ typedef struct mod_advertise_config
 
 /* Advertise sockets */
 static apr_socket_t     *ma_mgroup_socket = NULL;
-static apr_socket_t     *ma_listen_socket = NULL;
 static apr_sockaddr_t   *ma_mgroup_sa     = NULL;
 static apr_sockaddr_t   *ma_listen_sa     = NULL;
 static apr_sockaddr_t   *ma_niface_sa     = NULL;
@@ -175,7 +174,7 @@ static const char *cmd_advertise_g(cmd_parms *cmd, void *dummy,
 {
     mod_advertise_config *mconf = ap_get_module_config(cmd->server->module_config, &advertise_module);
     if (mconf->ma_advertise_port != MA_DEFAULT_ADVPORT &&
-        mconf->ma_advertise_adrs != MA_DEFAULT_GROUP)
+        (strcmp(mconf->ma_advertise_adrs, MA_DEFAULT_GROUP) != 0))
         return "Duplicate AdvertiseGroup directives are not allowed";
 
     if (apr_parse_addr_port(&mconf->ma_advertise_adrs,
@@ -654,7 +653,7 @@ static int post_config_hook(apr_pool_t *pconf, apr_pool_t *plog,
             } else {
                 port = ma_server_rec->port;
              }
-            ptr = apr_psprintf(pproc, "%s:%lu", ma_server_rec->server_hostname, port);
+            ptr = apr_psprintf(pproc, "%s:%u", ma_server_rec->server_hostname, port);
         }
         rv = apr_parse_addr_port(&mconf->ma_advertise_srvs,
                                  &mconf->ma_advertise_srvi,
@@ -727,9 +726,9 @@ static void advertise_info(request_rec *r)
         }
         if (mconf->ma_advertise_server != NULL) {
             ap_rprintf(r, " Advertising on Group %s Port %d ", mconf->ma_advertise_adrs, mconf->ma_advertise_port);
-            ap_rprintf(r, "for %s://%s:%d every %d seconds<br/>",
+            ap_rprintf(r, "for %s://%s:%d every %ld seconds<br/>",
                        mconf->ma_advertise_srvm, mconf->ma_advertise_srvs,
-                       mconf-> ma_advertise_srvp,
+                       mconf->ma_advertise_srvp,
                        apr_time_sec(mconf->ma_advertise_freq)
                        );
         } else {

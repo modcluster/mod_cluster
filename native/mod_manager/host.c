@@ -168,9 +168,9 @@ apr_status_t remove_host(mem_t *s, hostinfo_t *host)
 {
     apr_status_t rv;
     hostinfo_t *ou = host;
-    if (host->id)
-        s->storage->ap_slotmem_free(s->slotmem, host->id, host);
-    else {
+    if (host->id) {
+        rv = s->storage->ap_slotmem_free(s->slotmem, host->id, host);
+    } else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_host, &ou, 0, s->p);
         if (rv == APR_SUCCESS)

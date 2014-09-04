@@ -168,9 +168,9 @@ apr_status_t remove_domain(mem_t *s, domaininfo_t *domain)
 {
     apr_status_t rv;
     domaininfo_t *ou = domain;
-    if (domain->id)
-        s->storage->ap_slotmem_free(s->slotmem, domain->id, domain);
-    else {
+    if (domain->id) {
+        rv = s->storage->ap_slotmem_free(s->slotmem, domain->id, domain);
+    } else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, &ou, 0, s->p);
         if (rv == APR_SUCCESS)

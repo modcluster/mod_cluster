@@ -168,9 +168,9 @@ apr_status_t remove_sessionid(mem_t *s, sessionidinfo_t *sessionid)
 {
     apr_status_t rv;
     sessionidinfo_t *ou = sessionid;
-    if (sessionid->id)
-        s->storage->ap_slotmem_free(s->slotmem, sessionid->id, sessionid);
-    else {
+    if (sessionid->id) {
+        rv = s->storage->ap_slotmem_free(s->slotmem, sessionid->id, sessionid);
+    } else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_sessionid, &ou, 0, s->p);
         if (rv == APR_SUCCESS)

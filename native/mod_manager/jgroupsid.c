@@ -164,9 +164,9 @@ apr_status_t remove_jgroupsid(mem_t *s, jgroupsidinfo_t *jgroupsid)
 {
     apr_status_t rv;
     jgroupsidinfo_t *ou = jgroupsid;
-    if (jgroupsid->id)
-        s->storage->ap_slotmem_free(s->slotmem, jgroupsid->id, jgroupsid);
-    else {
+    if (jgroupsid->id) {
+        rv = s->storage->ap_slotmem_free(s->slotmem, jgroupsid->id, jgroupsid);
+    } else {
         /* XXX: for the moment January 2007 ap_slotmem_free only uses ident to remove */
         rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_jgroupsid, &ou, 0, s->p);
         if (rv == APR_SUCCESS)
