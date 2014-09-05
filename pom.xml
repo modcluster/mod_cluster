@@ -13,7 +13,7 @@
     <version>1.3.1.Alpha2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>mod_cluster</name>
+    <name>mod_cluster (parent)</name>
     <description>An httpd-based load balancer</description>
     <url>http://jboss.org/mod_cluster</url>
 

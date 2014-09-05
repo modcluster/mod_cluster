@@ -9,6 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-demo-client</artifactId>
+    <name>mod_cluster: Demo - Client</name>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>

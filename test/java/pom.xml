@@ -9,8 +9,7 @@
         <relativePath>../..</relativePath>
     </parent>
     <artifactId>mod_cluster-tests</artifactId>
-
-    <name>mod_cluster_tests</name>
+    <name>mod_cluster: Integration Tests</name>
     <description>Test for mod_cluster</description>
     <url>http://jboss.org/mod_cluster</url>
 

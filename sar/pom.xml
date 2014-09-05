@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>mod_cluster-sar</artifactId>
+    <name>mod_cluster: SAR - JBoss AS 5</name>
 
     <build>
         <resources>

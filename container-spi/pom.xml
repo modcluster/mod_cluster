@@ -9,6 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-spi</artifactId>
+    <name>mod_cluster: Container SPI</name>
     <dependencies>
         <dependency>
             <groupId>org.jboss.spec.javax.servlet</groupId>

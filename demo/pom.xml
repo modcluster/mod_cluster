@@ -9,6 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-demo</artifactId>
+    <name>mod_cluster: Demo (parent)</name>
     <packaging>pom</packaging>
     <modules>
         <module>client</module>

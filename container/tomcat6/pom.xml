@@ -9,6 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-tomcat6</artifactId>
+    <name>mod_cluster: Container - Tomcat 6</name>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>

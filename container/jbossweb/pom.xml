@@ -9,6 +9,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-jbossweb</artifactId>
+    <name>mod_cluster: Container - JBoss Web</name>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
