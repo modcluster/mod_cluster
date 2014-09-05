@@ -54,7 +54,7 @@ public class  Test_ReWrite extends TestCase {
             Aliases[2] = "cluster.domain.net";
             service = new JBossWeb("node1",  "localhost", false, "myapp", Aliases);
             service.addConnector(8011);
-            service.addConnector(8080, "http");
+            service.addConnector(8012, "http");
             server.addService(service);
             cluster = Maintest.createClusterListener(server, "224.0.1.105", 23364, false, null, true, false, true, "secret");
         } catch(Exception ex) {

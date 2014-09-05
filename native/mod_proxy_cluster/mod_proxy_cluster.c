@@ -354,46 +354,59 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         }
     }
 
-    /* Get the shared memory for this worker */
+    /*
+     * Get the shared memory for this worker
+     * we are here for 3 reasons:
+     * 1 - the worker was created.
+     * 2 - it is the BalancerMember and we try to change the shared status.
+     * 3 - we are reusing a removed worker.
+     */
+    node_storage->lock_nodes();
     ptr = (char *) node;
     ptr = ptr + node->offset;
     shared = worker->s;
     worker->s = (proxy_worker_shared *) ptr;
-    worker->s->was_malloced = 0; /* Prevent mod_proxy to free it */
-    worker->s->index = node->mess.id;
     helper->index = node->mess.id;
-    strcpy(worker->s->name, shared->name);
-    strcpy(worker->s->hostname, shared->hostname);
-    strcpy(worker->s->scheme, shared->scheme);
-    worker->s->port = shared->port;
-    worker->s->hmax = shared->hmax;
-    if (worker->s->hmax < node->mess.smax)
-        worker->s->hmax = node->mess.smax + 1;
-    strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZE-1);
-    worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZE-1] = '\0';
-    worker->s->redirect[0] = '\0';
-    worker->s->smax = node->mess.smax;
-    worker->s->ttl = node->mess.ttl;
-    if (node->mess.timeout) {
-        worker->s->timeout_set = 1;
-        worker->s->timeout = node->mess.timeout;
+
+    /* Changing the shared memory requires looking it... */
+    if (strncmp(worker->s->name, shared->name, sizeof(worker->s->name))) {
+        /* We will modify it only is the name has changed to minimize access */
+        worker->s->was_malloced = 0; /* Prevent mod_proxy to free it */
+        worker->s->index = node->mess.id;
+        strncpy(worker->s->name, shared->name, sizeof(worker->s->name));
+        strncpy(worker->s->hostname, shared->hostname, sizeof(worker->s->hostname));
+        strncpy(worker->s->scheme, shared->scheme, sizeof(worker->s->scheme));
+        worker->s->port = shared->port;
+        worker->s->hmax = shared->hmax;
+        if (worker->s->hmax < node->mess.smax)
+            worker->s->hmax = node->mess.smax + 1;
+        strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZE-1);
+        worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZE-1] = '\0';
+        worker->s->redirect[0] = '\0';
+        worker->s->smax = node->mess.smax;
+        worker->s->ttl = node->mess.ttl;
+        if (node->mess.timeout) {
+            worker->s->timeout_set = 1;
+            worker->s->timeout = node->mess.timeout;
+        }
+        worker->s->flush_packets = node->mess.flushpackets;
+        worker->s->flush_wait = node->mess.flushwait;
+        worker->s->ping_timeout = node->mess.ping;
+        worker->s->ping_timeout_set = 1;
+        worker->s->acquire_set = 1;
+        worker->s->conn_timeout_set = 1;
+        worker->s->conn_timeout = node->mess.ping;
+        worker->s->keepalive = 1;
+        worker->s->keepalive_set = 1;
+        worker->s->is_address_reusable = 1;
+        worker->s->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
+        worker->s->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
     }
-    worker->s->flush_packets = node->mess.flushpackets;
-    worker->s->flush_wait = node->mess.flushwait;
-    worker->s->ping_timeout = node->mess.ping;
-    worker->s->ping_timeout_set = 1;
-    worker->s->acquire_set = 1;
-    worker->s->conn_timeout_set = 1;
-    worker->s->conn_timeout = node->mess.ping;
-    worker->s->keepalive = 1;
-    worker->s->keepalive_set = 1;
-    worker->s->is_address_reusable = 1;
-    worker->s->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
-    worker->s->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
 
     if ((rv = ap_proxy_initialize_worker(worker, server, conf->pool)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, server,
                      "ap_proxy_initialize_worker failed %d for %s", rv, url);
+        node_storage->unlock_nodes();
         return rv;
     }
 
@@ -408,6 +421,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         worker->s->lbfactor = -1; /* prevent using the node using status message */
     }
 
+    node_storage->unlock_nodes();
     return rv;
 }
 #else
