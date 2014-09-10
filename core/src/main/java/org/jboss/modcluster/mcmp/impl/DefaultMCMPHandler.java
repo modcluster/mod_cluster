@@ -140,7 +140,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
             try {
                 for (final ProxyConfiguration proxy : proxies) {
-                    this.add(proxy.getRemoteAddress(), proxy.getRemoteAddress());
+                    this.add(proxy.getRemoteAddress(), proxy.getLocalAddress());
                 }
 
                 this.status(false);
