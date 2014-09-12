@@ -393,6 +393,16 @@ Maxnode 40
 Maxjgroupsid 40
 EnableOptions
 EOF
+
+# Use /tmp for the MemManagerFile
+if [ -d /tmp ]; then
+  rm -rf /tmp/mod_cluster_MemManagerFiles
+  mkdir /tmp/mod_cluster_MemManagerFiles
+cat >> "$file.new" <<EOF
+MemManagerFile /tmp/mod_cluster_MemManagerFiles
+EOF
+fi
+
 echo "s/@IP@/${IP}/" > sed.cmd
 echo "s/@ADVIP@/${ADVIP}/" >> sed.cmd
 echo "s/@SUBIP@/${SUBIP}/" >> sed.cmd
