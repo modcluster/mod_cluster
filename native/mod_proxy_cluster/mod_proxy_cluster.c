@@ -2660,9 +2660,17 @@ static int terminate_watchdog(void *data)
  */
 static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 {
-    apr_status_t rv;
 
+    apr_status_t rv;
+    server_rec *s2;
+    void *sconf;
+    proxy_server_conf *conf;
+
+    /* s2,sconf,conf preload logic due to [MODCLUSTER-427] */
     main_server = s;
+    s2 = s;
+    sconf = s2->module_config;
+    conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
 
     rv = apr_thread_mutex_create(&lock, APR_THREAD_MUTEX_DEFAULT, p);
     if (rv != APR_SUCCESS) {
@@ -2676,20 +2684,14 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
                     "proxy_cluster_child_init: apr_thread_cond_create failed");
     }
 
-    server_rec *s2 = main_server;
-    void *sconf = s2->module_config;
-    proxy_server_conf *conf = (proxy_server_conf *)
-        ap_get_module_config(sconf, &proxy_module);
+    /* See [MODCLUSTER-427] */
     if (conf) {
         apr_pool_t *pool;
         apr_pool_create(&pool, conf->pool);
         while (s2) {
             sconf = s2->module_config;
-            conf = (proxy_server_conf *)
-                ap_get_module_config(sconf, &proxy_module);
-
+            conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
             update_workers_node(conf, pool, s2, 0);
-
             s2 = s2->next;
         }
         apr_pool_destroy(pool);
