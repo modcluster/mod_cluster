@@ -850,6 +850,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 this.socket = this.socketFactory.createSocket();
                 InetAddress address = this.socketAddress.getAddress();
                 if (sourceAddress != null) {
+                    // If using a specific port enable SO_REUSEADDR to avoid "Address already in use" errors
+                    if (sourceAddress.getPort() != 0) {
+                        this.socket.setReuseAddress(true);
+                    }
                     // If bind address is specified for the proxy, use it
                     this.socket.bind(sourceAddress);
                 } else if (address instanceof Inet6Address && address.isLinkLocalAddress()) {
