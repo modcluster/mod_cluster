@@ -3830,7 +3830,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
             int val = ((int *)balancer->errstatuses->elts)[i];
             if (r->status == val) {
                 ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
-                             "proxy: BALANCER: (%s).  Forcing recovery for worker (%s), failonstatus %d",
+                             "proxy: BALANCER: (%s).  Forcing error for worker (%s), failonstatus %d",
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                              balancer->s->name, worker->s->name,
 #else
