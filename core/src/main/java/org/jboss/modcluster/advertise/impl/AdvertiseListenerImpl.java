@@ -55,7 +55,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
  * @author Mladen Turk
  */
 public class AdvertiseListenerImpl implements AdvertiseListener {
-    public static final String DEFAULT_ENCODING = "8859_1";
+    public static final String DEFAULT_ENCODING = "ISO8859_1";
     public static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
 
     static final Logger log = Logger.getLogger(AdvertiseListenerImpl.class);
