@@ -73,7 +73,7 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
     public MulticastSocket createMulticastSocket(InetAddress address, int port) throws IOException {
         if ((address == null) || !this.linuxlike) return new MulticastSocket(port);
 
-        if (!address.isMulticastAddress()) {
+        if (address.isMulticastAddress()) {
             ModClusterLogger.LOGGER.createMulticastSocketWithUnicastAddress(address);
             return new MulticastSocket(port);
         }

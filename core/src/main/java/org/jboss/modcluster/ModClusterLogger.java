@@ -130,7 +130,7 @@ public interface ModClusterLogger {
     void sessionDrainTimeout(int sessions, Host host, Context context, float seconds);
 
     @LogMessage(level = WARN)
-    @Message(id = 30, value = "Attempted to bind multicast socket to a unicast address: %s.  Multicast socket will not be bound to an address.")
+    @Message(id = 30, value = "Attempted to bind multicast socket to a multicast address: %s.  Multicast socket will not be bound to an address.")
     void createMulticastSocketWithUnicastAddress(InetAddress address);
 
     @LogMessage(level = WARN)
