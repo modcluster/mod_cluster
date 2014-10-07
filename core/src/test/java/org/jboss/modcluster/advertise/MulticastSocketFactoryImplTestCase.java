@@ -62,7 +62,8 @@ public class MulticastSocketFactoryImplTestCase {
 
             this.testMulticastSocket(socket, address, true);
             // Test for cross-talking
-            this.testMulticastSocket(socket, InetAddress.getByName(GROUP2), false);
+            if (Double.parseDouble(System.getProperty("java.specification.version")) >= 1.8)
+                this.testMulticastSocket(socket, InetAddress.getByName(GROUP2), false);
 
             socket.leaveGroup(address);
         } finally {
