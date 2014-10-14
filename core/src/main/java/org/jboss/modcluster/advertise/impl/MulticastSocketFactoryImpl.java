@@ -46,7 +46,21 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
 
     public MulticastSocketFactoryImpl() {
         String value = this.getSystemProperty("os.name");
-        this.linuxlike = (value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("mac") || value.toLowerCase().startsWith("hp"));
+        boolean linuxlike = (value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("hp"));
+        if (value != null && value.toLowerCase().startsWith("mac")) {
+            value = this.getSystemProperty("os.version");
+            if (value != null) {
+                  String[] subs = value.split("\\." );
+                  if (Integer.parseInt(subs[0]) > 10) {
+                      linuxlike = false;
+                  } else if (Integer.parseInt(subs[0]) == 10 && Integer.parseInt(subs[1]) > 9) {
+                      linuxlike = false;
+                  } else if (Integer.parseInt(subs[0]) == 10 && Integer.parseInt(subs[1]) == 9 && Integer.parseInt(subs[2]) >=5 ) {
+                      linuxlike = false;
+                  }
+            }
+        }
+        this.linuxlike = linuxlike;
     }
 
     private String getSystemProperty(final String key) {
