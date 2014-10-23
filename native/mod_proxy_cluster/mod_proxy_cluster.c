@@ -56,7 +56,9 @@
 #endif
 
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
-#define HAVE_CLUSTER_EX_DEBUG 0
+#ifndef HAVE_CLUSTER_EX_DEBUG
+    #define HAVE_CLUSTER_EX_DEBUG 0
+#endif
 
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
@@ -85,10 +87,10 @@ static apr_thread_cond_t *exit_cond = NULL;
 static int watchdog_must_terminate = 0;
 
 static server_rec *main_server = NULL;
-#define CREAT_ALL  0 /* create balancers/workers in all VirtualHost */
-#define CREAT_NONE 1 /* don't create balancers (but add workers) */
+#define CREAT_ALL  0 /* Create balancers/workers in all VirtualHosts and in the main server */
+#define CREAT_NONE 1 /* Don't create balancers (but add workers) */
 #define CREAT_ROOT 2 /* Only create balancers/workers in the main server */
-static int creat_bal = CREAT_ROOT;
+static int creat_bal = CREAT_ALL;
 
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
 
@@ -798,6 +800,15 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
 #endif
 
+#if HAVE_CLUSTER_EX_DEBUG
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, "add_balancers_workers: node->mess.balancer=%s, node->mess.Host=%s, node->mess.Port=%s, name=%s",
+                                                    node->mess.balancer, node->mess.Host, node->mess.Port, name);
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, "add_balancers_workers: balancer=%pp, creat_bal=%d,    s=%pp, s->server_hostname:port=%s:%d, s->server_scheme=%s, s->defn_name=%s, s->is_virtual=%d    "
+                                                    "main_server=%pp, main_server->server_hostname:port=%s:%d, main_server->server_scheme=%s, main_server->defn_name=%s, main_server->is_virtual=%d",
+                                                    balancer, creat_bal, s, s->server_hostname, s->port, s->server_scheme, s->defn_name, s->is_virtual, main_server, main_server->server_hostname,
+                                                    main_server->port, main_server->server_scheme, main_server->defn_name, main_server->is_virtual);
+#endif
+
         if (!balancer && (creat_bal == CREAT_NONE ||
             (creat_bal == CREAT_ROOT && s!=main_server))) {
             s = s->next;
@@ -1432,7 +1443,12 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
             }
         }
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "proxy_cluster_try_pingpong: trying %s" , backend->connection->client_ip);
+                     "proxy_cluster_try_pingpong: trying %s"
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+                     , backend->connection->client_ip);
+#else
+                     , backend->connection->remote_ip);
+#endif
         status = http_handle_cping_cpong(backend, r, timeout);
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -2705,6 +2721,10 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                                      apr_pool_t *ptemp, server_rec *s)
 {
+    void *data_two_calls_check;
+    const char *userdata_key_two_calls_check = "MODCLUSTER-430";
+    proxy_server_conf *main_server_conf;
+
     void *sconf = s->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
     int sizew = conf->workers->elt_size;
@@ -2790,6 +2810,108 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
 
     /* Add version information */
     ap_add_version_component(p, MOD_CLUSTER_EXPOSED_VERSION);
+
+    /* The following while loop deals with MODCLUSTER-430 */
+
+    /* We don't want to have the following while loop called twice, so let's execute only on the second lap. */
+    apr_pool_userdata_get(&data_two_calls_check, userdata_key_two_calls_check, s->process->pool);
+    if (!data_two_calls_check) {
+        apr_pool_userdata_set((const void *)1, userdata_key_two_calls_check, apr_pool_cleanup_null, s->process->pool);
+        return OK;
+    }
+
+    /* main_server is the first record... */
+    main_server_conf = conf;
+    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, "proxy_cluster_post_config: First state: s=%pp, s->module_config=%pp, conf=%pp, s->server_hostname:port=%s:%d, s->is_virtual=%pp", s, s->module_config, conf, s->server_hostname, s->port, s->is_virtual);
+
+    s = s->next;
+
+    while (s) {
+        conf = (proxy_server_conf *)ap_get_module_config(s->module_config, &proxy_module);
+        /* Server, its module configs and the proxy_module config pointers: */
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, "proxy_cluster_post_config: BEFORE the new allocation: s=%pp, s->module_config=%pp, conf=%pp, s->server_hostname:port=%s:%d, s->is_virtual=%pp, ", s, s->module_config, conf, s->server_hostname, s->port, s->is_virtual);
+        /* Is this a dummy copy? */
+        /* VirtualHosts inherit the conf pointer from the main_server. We don't want that, we need them to have their own configurations. */
+        if(conf == main_server_conf) {
+            proxy_server_conf *ps = apr_pcalloc(p, sizeof(proxy_server_conf));
+ #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            ps->sec_proxy = apr_array_make(p, 10, sizeof(ap_conf_vector_t *));
+            ps->proxies = apr_array_make(p, 10, sizeof(struct proxy_remote));
+            ps->aliases = apr_array_make(p, 10, sizeof(struct proxy_alias));
+            ps->noproxies = apr_array_make(p, 10, sizeof(struct noproxy_entry));
+            ps->dirconn = apr_array_make(p, 10, sizeof(struct dirconn_entry));
+            ps->workers = apr_array_make(p, 10, sizeof(proxy_worker));
+            ps->balancers = apr_array_make(p, 10, sizeof(proxy_balancer));
+            ps->forward = NULL;
+            ps->reverse = NULL;
+            ps->domain = NULL;
+            ps->id = apr_psprintf(p, "p%x", 1);
+            ps->viaopt = via_off;
+            ps->viaopt_set = 0;
+            ps->req = 0;
+            ps->max_balancers = 0;
+            ps->bal_persist = 0;
+            ps->inherit = 1;
+            ps->inherit_set = 0;
+            ps->ppinherit = 1;
+            ps->ppinherit_set = 0;
+            ps->bgrowth = 5;
+            ps->bgrowth_set = 0;
+            ps->req_set = 0;
+            ps->recv_buffer_size = 0;
+            ps->recv_buffer_size_set = 0;
+            ps->io_buffer_size = AP_IOBUFSIZE;
+            ps->io_buffer_size_set = 0;
+            ps->maxfwd = DEFAULT_MAX_FORWARDS;
+            ps->maxfwd_set = 0;
+            ps->timeout = 0;
+            ps->timeout_set = 0;
+            ps->badopt = bad_error;
+            ps->badopt_set = 0;
+            ps->source_address = NULL;
+            ps->source_address_set = 0;
+            apr_pool_create_ex(&ps->pool, p, NULL, NULL);
+ #else
+            ps->sec_proxy = apr_array_make(p, 10, sizeof(ap_conf_vector_t *));
+            ps->proxies = apr_array_make(p, 10, sizeof(struct proxy_remote));
+            ps->aliases = apr_array_make(p, 10, sizeof(struct proxy_alias));
+            ps->noproxies = apr_array_make(p, 10, sizeof(struct noproxy_entry));
+            ps->dirconn = apr_array_make(p, 10, sizeof(struct dirconn_entry));
+            ps->allowed_connect_ports = apr_array_make(p, 10, sizeof(int));
+            ps->workers = apr_array_make(p, 10, sizeof(proxy_worker));
+            ps->balancers = apr_array_make(p, 10, sizeof(proxy_balancer));
+            ps->forward = NULL;
+            ps->reverse = NULL;
+            ps->domain = NULL;
+            ps->viaopt = via_off;
+            ps->viaopt_set = 0;
+            ps->req = 0;
+            ps->req_set = 0;
+            ps->recv_buffer_size = 0;
+            ps->recv_buffer_size_set = 0;
+            ps->io_buffer_size = AP_IOBUFSIZE;
+            ps->io_buffer_size_set = 0;
+            ps->maxfwd = DEFAULT_MAX_FORWARDS;
+            ps->maxfwd_set = 0;
+            ps->error_override = 0;
+            ps->error_override_set = 0;
+            ps->preserve_host_set = 0;
+            ps->preserve_host = 0;
+            ps->timeout = 0;
+            ps->timeout_set = 0;
+            ps->badopt = bad_error;
+            ps->badopt_set = 0;
+            ps->pool = p;
+ #endif
+            ap_set_module_config(s->module_config, &proxy_module, ps);
+        }
+        conf = (proxy_server_conf *)ap_get_module_config(s->module_config, &proxy_module);
+        /* Server, its module configs and the proxy_module config pointers: */
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s, "proxy_cluster_post_config: AFTER the new allocation: s=%pp, s->module_config=%pp, conf=%pp, s->server_hostname:port=%s:%d, s->is_virtual=%pp, ", s, s->module_config, conf, s->server_hostname, s->port, s->is_virtual);
+
+        s = s->next;
+    }
+
     return OK;
 }
 
