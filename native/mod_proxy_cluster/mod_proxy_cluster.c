@@ -2092,9 +2092,9 @@ static int isbalancer_ours(proxy_balancer *balancer, proxy_balancer_table *balan
     int i;
     for (i = 0; i < balancer_table->sizebalancer; i++) {
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-        if (strcmp(balancer_table->balancer_info[i].balancer, &balancer->s->name[11]))
+        if (strcasecmp(balancer_table->balancer_info[i].balancer, &balancer->s->name[11]))
 #else
-        if (strcmp(balancer_table->balancer_info[i].balancer, &balancer->name[11]))
+        if (strcasecmp(balancer_table->balancer_info[i].balancer, &balancer->name[11]))
 #endif
             continue;
         else
@@ -2725,7 +2725,7 @@ static apr_status_t find_nodedomain(request_rec *r, char **domain, char *route, 
                  "find_nodedomain: finding node for %s: %s", route, balancer);
 #endif
     if (node_storage->find_node(&ou, route) == APR_SUCCESS) {
-        if (!strcmp(balancer, ou->mess.balancer)) {
+        if (!strcasecmp(balancer, ou->mess.balancer)) {
             if (ou->mess.Domain[0] != '\0') {
                 *domain = ou->mess.Domain;
             }
