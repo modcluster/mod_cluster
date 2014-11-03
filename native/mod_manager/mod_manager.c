@@ -476,6 +476,22 @@ static void mc_initialize_cleanup(apr_pool_t *p)
     apr_pool_cleanup_register(p, NULL, cleanup_manager, apr_pool_cleanup_null);
 }
 
+void normalize_balancer_name(char* balancer_name, server_rec *s)
+{
+    int upper_case_char_found = 0;
+    char* balancer_name_start = balancer_name;
+    for (;*balancer_name; ++balancer_name) {
+        if(!upper_case_char_found) {
+            upper_case_char_found = apr_isupper(*balancer_name);
+        }
+        *balancer_name = apr_tolower(*balancer_name);
+    }
+    balancer_name = balancer_name_start;
+    if(upper_case_char_found) {
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, s, "Balancer name contained an upper case character. We will use %s instead.", balancer_name);
+    }
+}
+
 /*
  * call after parser the configuration.
  * create the shared memory.
@@ -783,6 +799,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     /* Fill default nodes values */
     memset(&nodeinfo.mess, '\0', sizeof(nodeinfo.mess));
     if (mconf->balancername != NULL) {
+        normalize_balancer_name(mconf->balancername, r->server);
         strcpy(nodeinfo.mess.balancer, mconf->balancername);
     } else {
         strcpy(nodeinfo.mess.balancer, "mycluster");
@@ -805,6 +822,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     /* Fill default balancer values */
     memset(&balancerinfo, '\0', sizeof(balancerinfo));
     if (mconf->balancername != NULL) {
+        normalize_balancer_name(mconf->balancername, r->server);
         strcpy(balancerinfo.balancer, mconf->balancername);
     } else {
         strcpy(balancerinfo.balancer, "mycluster");
@@ -3151,6 +3169,7 @@ static const char *cmd_manager_balancername(cmd_parms *cmd, void *mconfig, const
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
     mconf->balancername = apr_pstrdup(cmd->pool, word);
+    normalize_balancer_name(mconf->balancername, cmd->server);
     return NULL;
 }
 static const char*cmd_manager_pers(cmd_parms *cmd, void *dummy, const char *arg)
