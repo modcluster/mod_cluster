@@ -46,7 +46,6 @@ import org.mockito.ArgumentCaptor;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class ContextTestCase {
     protected final Host host = mock(Host.class);

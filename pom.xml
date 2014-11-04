@@ -63,6 +63,7 @@
         <version.jboss-logging-processor>1.1.0.Final</version.jboss-logging-processor>
         <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
+        <version.tomcat8>8.0.14</version.tomcat8>
         <version.jbossweb>2.1.12.GA</version.jbossweb>
         <version.jbossweb7>7.2.1.Final</version.jbossweb7>
         <version.http-client>4.2.3</version.http-client>
@@ -230,6 +231,17 @@
                 <module>container</module>
                 <module>demo</module>
             </modules>
+        </profile>
+        <profile>
+            <id>TC8</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+           </modules>
         </profile>
         <profile>
             <id>TC7</id>
