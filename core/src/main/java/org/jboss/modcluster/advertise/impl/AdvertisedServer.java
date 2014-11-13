@@ -31,15 +31,7 @@ import java.util.HashMap;
  */
 public class AdvertisedServer {
     /** Manager-Address header */
-    public static String MANAGER_ADDRESS = "X-Manager-Address";
-    /** Manager-Url header */
-    public static String MANAGER_URL = "X-Manager-Url";
-    /** Manager-Protocol header */
-    public static String MANAGER_PROTOCOL = "X-Manager-Protocol";
-    /** Manager-Version header */
-    public static String MANAGER_VERSION = "X-Manager-Version";
-    /** Manager-Host header */
-    public static String MANAGER_HOST = "X-Manager-Host";
+    public static final String MANAGER_ADDRESS = "X-Manager-Address";
 
     private String server;
     private Date date;
