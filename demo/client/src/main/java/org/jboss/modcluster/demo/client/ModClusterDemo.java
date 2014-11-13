@@ -893,7 +893,7 @@ public class ModClusterDemo {
         String contextPath = contextPathField.getText();
         if (contextPath == null)
             contextPath = "";
-        contextPath.trim();
+        contextPath = contextPath.trim();
         if (contextPath.length() > 0 && '/' == contextPath.charAt(0))
             contextPath = contextPath.length() == 1 ? "" : contextPath.substring(1);
         if (contextPath.length() > 0 && '/' == contextPath.charAt(contextPath.length() - 1))
