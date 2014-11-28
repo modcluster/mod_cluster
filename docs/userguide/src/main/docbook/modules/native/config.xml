@@ -239,7 +239,7 @@ LoadModule advertise_module modules/mod_advertise.so</programlisting></para>
     the nodes like INFO and additionaly counts the number of active
     sessions.</para>
 
-    <para><programlisting>&lt;Location /mod_cluster-manager&gt;
+    <para><programlisting>&lt;Location /mod_cluster_manager&gt;
 SetHandler mod_cluster-manager
 Order deny,allow
 Deny from all
