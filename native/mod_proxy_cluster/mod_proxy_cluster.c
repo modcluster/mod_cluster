@@ -1937,8 +1937,13 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
     uri = ap_strchr_c(luri, '?');
     if (uri)
        uri = apr_pstrndup(r->pool, luri, uri - luri);
-    else
-       uri = luri;
+    else {
+       uri = ap_strchr_c(luri, ';');
+       if (uri)
+          uri = apr_pstrndup(r->pool, luri, uri - luri);
+       else
+          uri = luri;
+    }
 
     /* read the contexts */
     if (sizecontext == 0)
