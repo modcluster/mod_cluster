@@ -113,6 +113,8 @@
 #define TEXT_PLAIN 1
 #define TEXT_XML 2
 
+static int use_ws = 0;
+
 /* shared memory */
 static mem_t *contextstatsmem = NULL;
 static mem_t *nodestatsmem = NULL;
@@ -515,6 +517,11 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         /* first call do nothing */
         apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
         return OK;
+    } else {
+        /* check if we should use ws or http */
+        if (ap_find_linked_module("mod_proxy_wstunnel.c") != NULL) {
+           use_ws = -1;
+        }
     }
 
     if (mconf->basefilename) {
@@ -993,6 +1000,12 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
         return SROUBAD;
     }
 
+    if (use_ws && strcmp(nodeinfo.mess.Type, "ajp")) {
+        if (!strcmp(nodeinfo.mess.Type, "http"))
+            strcpy(nodeinfo.mess.Type, "ws");
+        if (!strcmp(nodeinfo.mess.Type, "https"))
+            strcpy(nodeinfo.mess.Type, "wss");
+    }
     /* Insert or update balancer description */
     if (insert_update_balancer(balancerstatsmem, &balancerinfo) != APR_SUCCESS) {
         *errtype = TYPEMEM;
