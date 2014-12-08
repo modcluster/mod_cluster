@@ -2590,6 +2590,9 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 {
     apr_status_t rv;
     apr_thread_t *wdt;
+    server_rec *s2;
+    void *sconf;
+    proxy_server_conf *conf;
 
     main_server = s;
 
@@ -2599,9 +2602,9 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
                     "proxy_cluster_child_init: apr_thread_mutex_create failed");
     }
 
-    server_rec *s2 = main_server;
-    void *sconf = s2->module_config;
-    proxy_server_conf *conf = (proxy_server_conf *)
+    s2 = main_server;
+    sconf = s2->module_config;
+    conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
     if (conf) {
         apr_pool_t *pool;
@@ -2629,7 +2632,6 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                                      apr_pool_t *ptemp, server_rec *s)
 {
-    const char *userdata_key = "mod_cluster_init";
     void *sconf = s->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
     int sizew = conf->workers->elt_size;
