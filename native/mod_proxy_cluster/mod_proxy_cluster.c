@@ -260,6 +260,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
 {
     char *url;
     char *ptr;
+    char *pptr;
     apr_status_t rv = APR_SUCCESS;
     proxy_worker *worker;
     proxy_worker *runtime;
@@ -312,7 +313,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             /* Check if the shared memory goes to the right place */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                          "Created: reusing worker for %s", url);
-            char *pptr = (char *) node;
+            pptr = (char *) node;
             pptr = pptr + node->offset;
             if (helper->index == node->mess.id && worker->s == (proxy_worker_shared *) pptr) {
                 /* the share memory may have been removed and recreated */
@@ -2593,7 +2594,6 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
     server_rec *s2;
     void *sconf;
     proxy_server_conf *conf;
-
     main_server = s;
 
     rv = apr_thread_mutex_create(&lock, APR_THREAD_MUTEX_DEFAULT, p);
@@ -2604,8 +2604,7 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 
     s2 = main_server;
     sconf = s2->module_config;
-    conf = (proxy_server_conf *)
-        ap_get_module_config(sconf, &proxy_module);
+    conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
     if (conf) {
         apr_pool_t *pool;
         apr_pool_create(&pool, conf->pool);
