@@ -367,6 +367,7 @@ public class JBossWeb extends StandardService {
         }
 
         IntrospectionUtils.setProperty(connector, "port", "" + port);
+        IntrospectionUtils.setProperty(connector, "backlog", "400");
 
         // Look in StandardService to see why it works ;-)
         addConnector( connector );
