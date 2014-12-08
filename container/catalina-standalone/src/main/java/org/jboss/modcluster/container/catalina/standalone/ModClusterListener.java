@@ -361,6 +361,16 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     public Map<InetSocketAddress, String> getProxyConfiguration() {
         return this.service.getProxyConfiguration();
     }
+    public String getProxyConfigurationString() {
+        String result = null;
+
+        Map<InetSocketAddress, String> map = this.service.getProxyConfiguration();
+        if (map.isEmpty())
+                return null;
+        Object results[] = map.values().toArray();
+        result = (String) results[0];
+        return result;
+    }
 
     /**
      * {@inhericDoc}
@@ -370,6 +380,16 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     @Override
     public Map<InetSocketAddress, String> getProxyInfo() {
         return this.service.getProxyInfo();
+    }
+    public String getProxyInfoString() {
+        String result = null;
+
+        Map<InetSocketAddress, String> map = this.service.getProxyInfo();
+        if (map.isEmpty())
+                return null;
+        Object results[] = map.values().toArray();
+        result = (String) results[0];
+        return result;
     }
 
     /**
@@ -411,6 +431,9 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     public boolean stop(long timeout, TimeUnit unit) {
         return this.service.stop(timeout, unit);
     }
+    public boolean stop(long timeout) {
+        return this.service.stop(timeout, TimeUnit.SECONDS);
+    }
 
     /**
      * {@inhericDoc}
@@ -421,5 +444,8 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     @Override
     public boolean stopContext(String host, String path, long timeout, TimeUnit unit) {
         return this.service.stopContext(host, path, timeout, unit);
+    }
+    public boolean stopContext(String host, String path, long timeout) {
+        return this.service.stopContext(host, path, timeout, TimeUnit.SECONDS);
     }
 }
