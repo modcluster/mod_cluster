@@ -113,8 +113,6 @@
 #define TEXT_PLAIN 1
 #define TEXT_XML 2
 
-static int use_ws = 0;
-
 /* shared memory */
 static mem_t *contextstatsmem = NULL;
 static mem_t *nodestatsmem = NULL;
@@ -169,6 +167,8 @@ typedef struct mod_manager_config
     int maxmesssize;
     /* Enable MCPM receiver */
     int enable_mcpm_receive;
+    /* Enable WebSocket Proxy */
+    int enable_ws_tunnel;
 
 } mod_manager_config;
 
@@ -517,11 +517,6 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
         /* first call do nothing */
         apr_pool_userdata_set((const void *)1, userdata_key, apr_pool_cleanup_null, s->process->pool);
         return OK;
-    } else {
-        /* check if we should use ws or http */
-        if (ap_find_linked_module("mod_proxy_wstunnel.c") != NULL) {
-           use_ws = -1;
-        }
     }
 
     if (mconf->basefilename) {
@@ -1000,7 +995,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
         return SROUBAD;
     }
 
-    if (use_ws && strcmp(nodeinfo.mess.Type, "ajp")) {
+    if ( mconf->enable_ws_tunnel && strcmp(nodeinfo.mess.Type, "ajp")) {
         if (!strcmp(nodeinfo.mess.Type, "http"))
             strcpy(nodeinfo.mess.Type, "ws");
         if (!strcmp(nodeinfo.mess.Type, "https"))
@@ -3275,6 +3270,20 @@ static const char*cmd_manager_enable_mcpm_receive(cmd_parms *cmd, void *dummy)
     mconf->enable_mcpm_receive = -1;
     return NULL;
 }
+static const char*cmd_manager_enable_ws_tunnel(cmd_parms *cmd, void *dummy)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+    if (ap_find_linked_module("mod_proxy_wstunnel.c") != NULL) {
+        mconf->enable_ws_tunnel = -1;
+        return NULL;
+    } else {
+        return "EnableWsTunnel requires mod_proxy_wstunnel.c";
+    }
+}
 
 
 static const command_rec  manager_cmds[] =
@@ -3377,6 +3386,13 @@ static const command_rec  manager_cmds[] =
          OR_ALL,
          "EnableMCPMReceive - Allow the VirtualHost to receive MCPM."
     ),
+    AP_INIT_NO_ARGS(
+        "EnableWsTunnel",
+         cmd_manager_enable_ws_tunnel,
+         NULL,
+         OR_ALL,
+         "EnableWsTunnel - Use ws or wss instead http or https when creating nodes (Allow Websockets proxing)."
+    ),
     {NULL}
 };
 
@@ -3429,6 +3445,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->allow_cmd = -1;
     mconf->reduce_display = 0;
     mconf->enable_mcpm_receive = 0;
+    mconf->enable_ws_tunnel = 0;
     return mconf;
 }
 
@@ -3518,6 +3535,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->enable_mcpm_receive = mconf2->enable_mcpm_receive;
     else if (mconf1->enable_mcpm_receive != 0)
         mconf->enable_mcpm_receive = mconf1->enable_mcpm_receive;
+
+    if (mconf2->enable_ws_tunnel != 0)
+        mconf->enable_ws_tunnel = mconf2->enable_ws_tunnel;
+    else if (mconf1->enable_ws_tunnel != 0)
+        mconf->enable_ws_tunnel = mconf1->enable_ws_tunnel;
 
     return mconf;
 }
