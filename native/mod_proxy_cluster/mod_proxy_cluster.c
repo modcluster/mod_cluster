@@ -1253,10 +1253,11 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                "http_cping_cpong: apr_socket_timeout_set failed");
+        p_conn->close = 1;
         return rv;
     }
 
-    p_conn->close++;
+    p_conn->close = 1;
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "http_cping_cpong: Done");
     return status;
@@ -1289,12 +1290,15 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
     int is_ssl = 0;
 
     if ((strcasecmp(scheme, "HTTPS") == 0 ||
+        strcasecmp(scheme, "WSS") == 0 ||
+        strcasecmp(scheme, "WS") == 0 ||
         strcasecmp(scheme, "HTTP") == 0) &&
         !enable_options) {
         /* we cant' do CPING/CPONG so we just return OK */
         return APR_SUCCESS;
     }
-    if (strcasecmp(scheme, "HTTPS") == 0) {
+    if (strcasecmp(scheme, "HTTPS") == 0 ||
+        strcasecmp(scheme, "WSS") == 0 ) {
 
         if (!ap_proxy_ssl_enable(NULL)) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1414,7 +1418,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy_cluster_try_pingpong: cping_cpong failed");
-            backend->close++;
+            backend->close = 1;
         }
         
     } else {
@@ -1442,7 +1446,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy_cluster_try_pingpong: cping_cpong failed");
-            backend->close++;
+            backend->close = 1;
         }
     }
     ap_proxy_release_connection(scheme, backend, r->server);
