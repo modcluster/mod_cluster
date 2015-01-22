@@ -18,7 +18,7 @@
   <bean name="ModClusterService" class="org.jboss.modcluster.ModClusterService" mode="On Demand">
     <annotation>@org.jboss.aop.microcontainer.aspects.jmx.JMX(name="jboss.web:service=ModCluster",exposedInterface=org.jboss.modcluster.ModClusterServiceMBean.class)</annotation>
     <constructor>
-      <parameter class="org.jboss.modcluster.config.ModClusterConfig"><inject bean="ModClusterConfig"/></parameter>
+      <parameter class="org.jboss.modcluster.config.impl.ModClusterConfig"><inject bean="ModClusterConfig"/></parameter>
       <parameter class="org.jboss.modcluster.load.LoadBalanceFactorProvider"><inject bean="DynamicLoadBalanceFactorProvider"/></parameter>
     </constructor>
   </bean>
