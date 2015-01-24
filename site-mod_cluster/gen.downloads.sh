@@ -116,6 +116,11 @@ generate_document() {
                 print_formatter "${build}" "${file}" "$src_or_bin"
               done
             ;;
+         *solaris10-x64*)
+              for file in $SOLARIS10_X64; do
+                print_formatter "${build}" "${file}" "$src_or_bin"
+              done
+            ;;
          *windows*)
               for file in $WINDOWS; do
                 print_formatter "${build}" "${file}" "$src_or_bin"

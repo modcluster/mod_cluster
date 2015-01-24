@@ -1,13 +1,13 @@
 # Constants
 
 # Change the version...
-VERSION=1.2.6.Final
+VERSION=1.3.1.Beta2
 export VERSION
 
 # Should I overwrite already downloaded files?
 OVERWRITE=false
 
-JENKINS_JOB_URL="http://hudson.qa.jboss.com/hudson/view/mod_cluster/view/mod_cluster/job/"
+JENKINS_JOB_URL="http://jenkins.mw.lab.eng.bos.redhat.com/hudson/view/mod_cluster/view/mod_cluster/job/"
 JENKINS_ARCHIVE_PATH="lastSuccessfulBuild/artifact/jbossnative/build/unix/output/"
 
 OUTPUT_XML_FILE="website.mod_cluster.downloads.${VERSION}.xml"
@@ -16,15 +16,17 @@ OUTPUT_XML_FILE="website.mod_cluster.downloads.${VERSION}.xml"
 # very first elements. This makes sure the java bundle appears as the first thing on the download page.
 # The order of all other elements is of no consequence but for the fact that it affects the
 # order of appearance on the download page...
+# broken for the moment.
+#    solaris10-sparc \
+#    solaris10-sparc64 \
+#    hp-ux-9000_800 \
+#    solaris10-x86 \
 BUILDS="\
     linux-x86_64 \
     linux-i686 \
     macosx \
-    solaris10-sparc \
-    solaris10-sparc64 \
-    solaris10-x86 \
+    solaris10-x64 \
     windows \
-    hp-ux-9000_800 \
     hp-ux-ia64 \
 "
 
@@ -68,6 +70,13 @@ SOLARIS10_X86="\
     mod_cluster-${VERSION}-solaris10-x86-so.tar.gz \
     mod_cluster-${VERSION}-solaris10-x86-ssl.tar.gz \
     mod_cluster-${VERSION}-solaris10-x86.tar.gz \
+    mod_cluster-${VERSION}-src-ssl.tar.gz \
+    mod_cluster-${VERSION}-src.tar.gz \
+"
+SOLARIS10_X64="\
+    mod_cluster-${VERSION}-solaris10-x84-so.tar.gz \
+    mod_cluster-${VERSION}-solaris10-x84-ssl.tar.gz \
+    mod_cluster-${VERSION}-solaris10-x84 \
     mod_cluster-${VERSION}-src-ssl.tar.gz \
     mod_cluster-${VERSION}-src.tar.gz \
 "
