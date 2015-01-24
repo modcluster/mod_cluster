@@ -31,6 +31,12 @@ function downloadit () {
         echo "SKIPPING DOWNLOAD for ${url}"
     else
         wget ${url} -O ${VERSION}/${build}/${file} || errors+=( "Failed to download: ${url} Wget returned:$?" )
+        # -O create the file even in case of errors
+        if [ -s ${VERSION}/${build}/${file} ]; then
+           echo "${VERSION}/${build}/${file} downloaded"
+        else
+           rm -f ${VERSION}/${build}/${file}
+        fi
     fi
 }
 
@@ -64,6 +70,11 @@ for build in $BUILDS; do
         ;;
      *solaris10-x86*)
           for file in $SOLARIS10_X86; do
+              downloadit $build $file
+          done
+        ;;
+     *solaris10-x64*)
+          for file in $SOLARIS10_X64; do
               downloadit $build $file
           done
         ;;
