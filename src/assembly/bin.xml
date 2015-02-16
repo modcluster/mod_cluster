@@ -122,6 +122,17 @@
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
     </fileSet>
+    <fileSet>
+      <directory>container/tomcat8/target/</directory>
+      <includes>
+        <include>*.jar</include>
+      </includes>
+      <excludes>
+        <exclude>*-sources.jar</exclude>
+        <exclude>*-tests.jar</exclude>
+      </excludes>
+      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
+    </fileSet>
     <!-- AS5/6 sar file -->
     <fileSet>
       <directory>sar/target/mod_cluster-sar.sar</directory>
