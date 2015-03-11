@@ -48,7 +48,7 @@ LINUX_I686="\
 MACOSX="\
     mod_cluster-${VERSION}-macosx-x64-ssl.tar.gz \
     mod_cluster-${VERSION}-macosx-x64.tar.gz \
-    mod_cluster-${VERSION}-macosx-x86-so.tar.gz \
+    mod_cluster-${VERSION}-macosx-x64-so.tar.gz \
     mod_cluster-${VERSION}-src-ssl.tar.gz \
     mod_cluster-${VERSION}-src.tar.gz \
 "   
@@ -74,9 +74,9 @@ SOLARIS10_X86="\
     mod_cluster-${VERSION}-src.tar.gz \
 "
 SOLARIS10_X64="\
-    mod_cluster-${VERSION}-solaris10-x84-so.tar.gz \
-    mod_cluster-${VERSION}-solaris10-x84-ssl.tar.gz \
-    mod_cluster-${VERSION}-solaris10-x84 \
+    mod_cluster-${VERSION}-solaris10-x86-so.tar.gz \
+    mod_cluster-${VERSION}-solaris10-x64-ssl.tar.gz \
+    mod_cluster-${VERSION}-solaris10-x64.tar.gz \
     mod_cluster-${VERSION}-src-ssl.tar.gz \
     mod_cluster-${VERSION}-src.tar.gz \
 "

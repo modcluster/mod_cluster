@@ -83,7 +83,12 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseSocketAddress = new InetSocketAddress(advertiseGroupAddress, this.advertiseSocketAddress.getPort());
     }
 
-    @Deprecated
+    /* Used by Tomcat modeler and server.xml */
+    public String getAdvertiseGroupAddress() {
+        return this.advertiseSocketAddress.getHostString();
+    }
+
+    /* Used by Tomcat modeler and server.xml */
     public void setAdvertiseGroupAddress(String advertiseGroupAddress) {
         try {
             this.setAdvertiseGroupAddress(InetAddress.getByName(advertiseGroupAddress));
@@ -92,12 +97,12 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         }
     }
 
-    @Deprecated
+    /* Used by Tomcat modeler and server.xml */
     public int getAdvertisePort() {
         return this.advertiseSocketAddress.getPort();
     }
 
-    @Deprecated
+    /* Used by Tomcat modeler and server.xml */
     public void setAdvertisePort(int advertisePort) {
         this.advertiseSocketAddress = new InetSocketAddress(this.advertiseSocketAddress.getAddress(), advertisePort);
     }
