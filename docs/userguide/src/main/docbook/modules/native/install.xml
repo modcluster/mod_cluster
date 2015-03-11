@@ -32,7 +32,7 @@
 
     <para>The bundles are tar.gz on POSIX platforms just extract them in root
     something like:<programlisting>  cd /
-  tar xvf mod-cluster-1.0.0-linux2-x86-ssl.tar.gz</programlisting></para>
+  tar xvf mod-cluster-1.x.y-linux2-x86-ssl.tar.gz</programlisting></para>
 
     <para>The httpd.conf is located in /opt/jboss/httpd/httpd/conf to quick
     test just add something like:</para>
