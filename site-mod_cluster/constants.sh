@@ -1,7 +1,7 @@
 # Constants
 
 # Change the version...
-VERSION=1.3.1.Beta2
+VERSION=1.3.1.Final
 export VERSION
 
 # Should I overwrite already downloaded files?
