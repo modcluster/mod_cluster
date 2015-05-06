@@ -644,6 +644,13 @@ static char **process_buff(request_rec *r, char *buff)
     ptr[i+1] = NULL;
     i = 1;
     for (; *s != '\0'; s++) {
+        /* from apr_escape_entity() (minus '&' one of our seperators) */
+        if (*s == '<' || *s == '>' || *s == '\"' ||  *s == '\'')
+            return NULL;
+        /* from  apr_escape_shell() */
+        if (*s == '\r' || *s == '\n')
+            return NULL;
+        /* our separators */
         if (*s == '&' || *s == '=') {
             *s = '\0';
             ptr[i] = s + 1;
