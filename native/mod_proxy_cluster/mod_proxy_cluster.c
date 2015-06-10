@@ -951,7 +951,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     if (worker->cp->res)
         i = apr_reslist_acquired_count(worker->cp->res);
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-             "remove_workers_node (reslist) %d %s", i, node->mess.JVMRoute);
+             "remove_workers_node (reslist) apr_reslist_acquired_count: %d JVMRoute: %s", i, node->mess.JVMRoute);
 #else
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     helper = (proxy_cluster_helper *) worker->context;
@@ -962,7 +962,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
         i = helper->count_active;
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-             "remove_workers_node (helper) %d %s", i, node->mess.JVMRoute);
+             "remove_workers_node (helper) count_active: %d JVMRoute: %s", i, node->mess.JVMRoute);
 #endif
 
     if (i == 0) {
