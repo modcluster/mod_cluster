@@ -62,14 +62,14 @@
 
 /* Error messages */
 #define TYPESYNTAX 1
-#define SMESPAR "SYNTAX: Can't parse message"
+#define SMESPAR "SYNTAX: Can't parse MCMP message. It might have contained illegal symbols or unknown elements."
 #define SBALBIG "SYNTAX: Balancer field too big"
 #define SBAFBIG "SYNTAX: A field is too big"
 #define SROUBIG "SYNTAX: JVMRoute field too big"
 #define SROUBAD "SYNTAX: JVMRoute can't be empty"
 #define SDOMBIG "SYNTAX: LBGroup field too big"
 #define SHOSBIG "SYNTAX: Host field too big"
-#define SPORBIG "SYNTAX: Port field too big"    
+#define SPORBIG "SYNTAX: Port field too big"
 #define STYPBIG "SYNTAX: Type field too big"
 #define SALIBAD "SYNTAX: Alias without Context"
 #define SCONBAD "SYNTAX: Context without Alias"
@@ -85,13 +85,13 @@
 #define SJIDBAD "SYNTAX: JGroupUuid can't be empty"
 
 #define TYPEMEM 2
-#define MNODEUI "MEM: Can't update or insert node"
-#define MNODERM "MEM: Old node still exist"
-#define MBALAUI "MEM: Can't update or insert balancer"
-#define MNODERD "MEM: Can't read node"
-#define MHOSTRD "MEM: Can't read host alias"
-#define MHOSTUI "MEM: Can't update or insert host alias"
-#define MCONTUI "MEM: Can't update or insert context"
+#define MNODEUI "MEM: Can't update or insert node with \"%s\" JVMRoute"
+#define MNODERM "MEM: Old node with \"%s\" JVMRoute still exists"
+#define MBALAUI "MEM: Can't update or insert balancer for node with \"%s\" JVMRoute"
+#define MNODERD "MEM: Can't read node with \"%s\" JVMRoute"
+#define MHOSTRD "MEM: Can't read host alias for node with \"%s\" JVMRoute"
+#define MHOSTUI "MEM: Can't update or insert host alias for node with \"%s\" JVMRoute"
+#define MCONTUI "MEM: Can't update or insert context for node with \"%s\" JVMRoute"
 #define MJBIDRD "MEM: Can't read JGroupId"
 #define MJBIDUI "MEM: Can't update or insert JGroupId"
 
@@ -1011,7 +1011,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     /* Insert or update balancer description */
     if (insert_update_balancer(balancerstatsmem, &balancerinfo) != APR_SUCCESS) {
         *errtype = TYPEMEM;
-        return MBALAUI;
+        return apr_psprintf(r->pool, MBALAUI, nodeinfo.mess.JVMRoute);
     }
 
     /* check for removed node */
@@ -1027,14 +1027,14 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             insert_update_node(nodestatsmem, node, &id);
             loc_remove_host_context(node->mess.id, r->pool);
             *errtype = TYPEMEM;
-            return MNODERM;
+            return apr_psprintf(r->pool, MNODERM, node->mess.JVMRoute);
         }
     }
 
     /* Insert or update node description */
     if (insert_update_node(nodestatsmem, &nodeinfo, &id) != APR_SUCCESS) {
         *errtype = TYPEMEM;
-        return MNODEUI;
+        return apr_psprintf(r->pool, MNODEUI, nodeinfo.mess.JVMRoute);
     }
 
     /* Insert the Alias and corresponding Context */
@@ -1043,9 +1043,9 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
         return NULL; /* Alias and Context missing */
     while (phost) {
         if (insert_update_hosts(hoststatsmem, phost->host, id, vid) != APR_SUCCESS)
-            return MHOSTUI;
+            return apr_psprintf(r->pool, MHOSTUI, nodeinfo.mess.JVMRoute);
         if (insert_update_contexts(contextstatsmem, phost->context, id, vid, STOPPED) != APR_SUCCESS)
-            return MCONTUI;
+            return apr_psprintf(r->pool, MCONTUI, nodeinfo.mess.JVMRoute);
         phost = phost->next;
         vid++;
     }
@@ -1632,7 +1632,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         if (status == REMOVE)
             return NULL; /* Already done */
         *errtype = TYPEMEM;
-        return MNODERD;
+        return apr_psprintf(r->pool, MNODERD, nodeinfo.mess.JVMRoute);
     }
 
     /* If the node is marked removed check what to do */
@@ -1642,7 +1642,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         else {
             /* Act has if the node wasn't found */
             *errtype = TYPEMEM;
-            return MNODERD;
+            return apr_psprintf(r->pool, MNODERD, node->mess.JVMRoute);
         }
     }
 
@@ -1683,8 +1683,8 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
                 if (get_host(hoststatsmem, &ou, id[i]) != APR_SUCCESS)
                     continue;
 
-	        if(ou->node == node->mess.id && ou->vhost > vid)
-	            vid = ou->vhost;
+            if(ou->node == node->mess.id && ou->vhost > vid)
+                vid = ou->vhost;
             }
             vid++; /* Use next one. */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "process_appl_cmd: adding vhost: %d node: %d",
@@ -1693,7 +1693,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
             /* If the Host doesn't exist yet create it */
             if (insert_update_hosts(hoststatsmem, vhost->host, node->mess.id, vid) != APR_SUCCESS) {
                 *errtype = TYPEMEM;
-                return MHOSTUI; 
+                return apr_psprintf(r->pool, MHOSTUI, nodeinfo.mess.JVMRoute);
             }
             hostinfo.id = 0;
             hostinfo.node = node->mess.id;
@@ -1704,7 +1704,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
             host = read_host(hoststatsmem, &hostinfo);
             if (host == NULL) {
                 *errtype = TYPEMEM;
-                return MHOSTRD; 
+                return apr_psprintf(r->pool, MHOSTRD, node->mess.JVMRoute);
             }
         }
     }
@@ -1736,7 +1736,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
     /* Now update each context from Context: part */
     if (insert_update_contexts(contextstatsmem, vhost->context, node->mess.id, host->vhost, status) != APR_SUCCESS) {
         *errtype = TYPEMEM;
-        return MCONTUI; 
+        return apr_psprintf(r->pool, MCONTUI, node->mess.JVMRoute);
     }
 
     /* Remove the host if all the contextes have been removed */
@@ -1987,7 +1987,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
     node = read_node(nodestatsmem, &nodeinfo);
     if (node == NULL) {
         *errtype = TYPEMEM;
-        return MNODERD;
+        return apr_psprintf(r->pool, MNODERD, nodeinfo.mess.JVMRoute);
     }
 
     /*
@@ -2097,7 +2097,7 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
         node = read_node(nodestatsmem, &nodeinfo);
         if (node == NULL) {
             *errtype = TYPEMEM;
-            return MNODERD;
+            return apr_psprintf(r->pool, MNODERD, nodeinfo.mess.JVMRoute);
         }
 
         /*
