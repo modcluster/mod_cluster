@@ -54,10 +54,6 @@
     </repositories>
 
     <properties>
-        <!-- Override default 1.7 target/source in jboss-parent -->
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <maven.compiler.source>1.6</maven.compiler.source>
-
         <!-- Dependency versions -->
         <version.jboss-logging>3.1.2.GA</version.jboss-logging>
         <version.jboss-logging-processor>1.1.0.Final</version.jboss-logging-processor>
