@@ -85,7 +85,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     /* Used by Tomcat modeler and server.xml */
     public String getAdvertiseGroupAddress() {
-        return this.advertiseSocketAddress.getHostString();
+        return this.advertiseSocketAddress.getHostName();
     }
 
     /* Used by Tomcat modeler and server.xml */
