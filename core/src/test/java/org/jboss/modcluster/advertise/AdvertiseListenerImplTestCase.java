@@ -46,7 +46,6 @@ import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -100,7 +99,6 @@ public class AdvertiseListenerImplTestCase {
     }
 
     @Test
-    @Ignore("MODCLUSTER-432")
     public void testBasicOperation() throws IOException, NoSuchAlgorithmException {
         ArgumentCaptor<InetAddress> capturedAddress = ArgumentCaptor.forClass(InetAddress.class);
 
