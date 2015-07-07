@@ -28,8 +28,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface AdvertiseListenerFactory {
-    public AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException;
+    AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException;
 }
