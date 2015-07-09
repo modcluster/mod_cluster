@@ -31,7 +31,6 @@ import java.util.Arrays;
 
 import org.jboss.modcluster.advertise.impl.MulticastSocketFactoryImpl;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -51,7 +50,6 @@ public class MulticastSocketFactoryImplTestCase {
     private static final int PORT = 23364;
 
     @Test
-    @Ignore("MODCLUSTER-432")
     public void testMulticastSocketNoCrossTalk() throws IOException {
         InetAddress address = InetAddress.getByName(GROUP1);
 
