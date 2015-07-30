@@ -1716,9 +1716,9 @@ static char *cluster_get_sessionid(request_rec *r, const char *stickyval, char *
          sticky_path = path;
     }
     *sticky_used = sticky_path;
-    route = get_path_param(r->pool, uri , sticky_path);
+    route = get_cookie_param(r, sticky, 1);
     if (!route) {
-        route = get_cookie_param(r, sticky, 1);
+        route = get_path_param(r->pool, uri, sticky_path);
         *sticky_used = sticky;
     }
     return route;
