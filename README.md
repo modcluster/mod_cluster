@@ -47,7 +47,7 @@ The `tar.gz` from the assembly contains the `JBossWeb-Tomcat`.
 
 1. Extract the `JBossWeb-Tomcat` directory.
 2. Copy the JAR files from `JBossWeb-Tomcat/lib` to the Tomcat lib.
-3. Remove the `mod_cluster-container-tomcat(n).jar` that does correspond to
+3. Remove the `mod_cluster-container-tomcat(n).jar` that don't correspond to
    the Tomcat version you are using.
 3. Copy the `JBossWeb-Tomcat/lib/jboss-logging-jdk.jar` and `JBossWeb-Tomcat/lib/jboss-logging-spi.jar`
    dependency jars into the same `lib` directory.
