@@ -542,7 +542,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     if (mpm_threads > 1) {
         /* Set hard max to no more then mpm_threads */
         if (worker->hmax == 0 || worker->hmax > mpm_threads) {
-            worker->hmax = mpm_threads;
+            worker->hmax = mpm_threads+1;
         }
         if (worker->smax == -1 || worker->smax > worker->hmax) {
             worker->smax = worker->hmax;
