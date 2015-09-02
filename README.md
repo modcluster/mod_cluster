@@ -120,5 +120,5 @@ All can be downloaded from [http://www.sunfreeware.com/](http://www.sunfreeware.
 License
 -------
 
-This software is distributed under the terms of the FSF Lesser Gnu Public License (see [lgpl.txt](lgpl.txt)).
+This software is distributed under the terms of the GNU Lesser General Public License (see [lgpl.txt](lgpl.txt)).
 
