@@ -161,4 +161,12 @@ public class CatalinaContext implements Context {
     public String toString() {
         return this.context.getPath();
     }
+    
+    /**
+     * implementation is specific by Tomcat version (defined in module "tomcatX")
+     * @see {@link org.jboss.modcluster.container.tomcat.TomcatContext#configureJvmRoute(String)}
+     */
+    @Override
+    public void configureJvmRoute(String jvmRoute) {
+	}
 }

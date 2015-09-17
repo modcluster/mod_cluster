@@ -113,4 +113,16 @@ public class TomcatContext extends CatalinaContext {
             return this.listener == valve.listener;
         }
     }
+    
+    @Override
+    public void configureJvmRoute(String jvmRoute) {
+    	org.apache.catalina.Manager manager = context.getManager();
+    	if (manager != null) {
+    		org.apache.catalina.SessionIdGenerator sessionIdGenerator = manager.getSessionIdGenerator();
+    		if (sessionIdGenerator != null) {
+    			sessionIdGenerator.setJvmRoute(jvmRoute);
+    		}
+    	}
+	}
+    
 }

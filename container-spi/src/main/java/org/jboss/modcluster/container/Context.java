@@ -82,4 +82,11 @@ public interface Context {
      * @return true, if this context distributes sessions, false otherwise
      */
     boolean isDistributable();
+    
+    /**
+     * Configure the jvmRoute for this context.
+     * 
+     * @param jvmRoute value of the jvmRoute
+     */
+    void configureJvmRoute(String jvmRoute);    	
 }
