@@ -66,6 +66,7 @@ container
   jbossweb (JBoss Web container implementation, all versions)
   tomcat6 (Tomcat 6.0 container implementation)
   tomcat7 (Tomcat 7.0 container implementation)
+  tomcat8 (Tomcat 8.0 container implementation)
 core
 demo
   client
