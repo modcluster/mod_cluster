@@ -34,20 +34,19 @@ import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.advertise.MulticastSocketFactory;
 
 /**
- * On Linux, Solaris and HP-UX, we attempt to avoid cross-talk problem by binding the {@link MulticastSocket} to the
- * multicast address, if possible. See <a href="https://jira.jboss.org/jira/browse/JGRP-777">JGRP-777</a>.
+ * On Linux, we attempt to avoid cross-talk problem by binding the MulticastSocket to the multicast address, if possible. See
+ * {@linkplain https://jira.jboss.org/jira/browse/JGRP-777}
  * 
  * @author Paul Ferraro
  */
 public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
     final Logger log = Logger.getLogger(this.getClass());
 
-    private final boolean canBindMulticastSocket;
+    private final boolean linuxlike;
 
     public MulticastSocketFactoryImpl() {
         String value = this.getSystemProperty("os.name");
-        this.canBindMulticastSocket = (value != null) && (value.toLowerCase().startsWith("linux") ||
-                value.toLowerCase().startsWith("sun") || value.toLowerCase().startsWith("hp"));
+        this.linuxlike = (value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("mac") || value.toLowerCase().startsWith("hp"));
     }
 
     private String getSystemProperty(final String key) {
@@ -66,9 +65,13 @@ public class MulticastSocketFactoryImpl implements MulticastSocketFactory {
         return AccessController.doPrivileged(action);
     }
 
+    /**
+     * @{inheritDoc
+     * @see org.jboss.modcluster.advertise.MulticastSocketFactory#createMulticastSocket(java.net.InetAddress, int)
+     */
     @Override
     public MulticastSocket createMulticastSocket(InetAddress address, int port) throws IOException {
-        if ((address == null) || !this.canBindMulticastSocket) return new MulticastSocket(port);
+        if ((address == null) || !this.linuxlike) return new MulticastSocket(port);
 
         if (!address.isMulticastAddress()) {
             ModClusterLogger.LOGGER.createMulticastSocketWithUnicastAddress(address);
