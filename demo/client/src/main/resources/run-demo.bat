@@ -13,8 +13,6 @@ set "OPTS=%OPTS% -Dhttp.maxConnections=400"
 REM Set defaults for the load balancer
 set "OPTS=%OPTS% -Dmod_cluster.proxy.host=localhost -Dmod_cluster.proxy.port=8000"
 
-echo java -classpath %CP% %OPTS% org.jboss.modcluster.demo.client.ModClusterDemo 
-
 java -cp %CP% %OPTS% org.jboss.modcluster.demo.client.ModClusterDemo 
 
 goto end
