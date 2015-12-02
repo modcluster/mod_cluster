@@ -36,7 +36,9 @@ public interface Context {
     Host getHost();
 
     /**
-     * @return
+     * Returns the context path. The root context needs to be represented as an empty string ("").
+     *
+     * @return context path; empty string if it's a root context
      */
     String getPath();
 
