@@ -23,9 +23,14 @@ package org.jboss.modcluster.container.jbossweb;
 
 import java.io.IOException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Valve;
@@ -58,6 +63,45 @@ public class JBossWebContext extends CatalinaContext {
     @Override
     public boolean isStarted() {
         return this.context.isStarted() && super.isStarted();
+    }
+
+    @Override
+    public void addSessionListener(HttpSessionListener listener) {
+        synchronized (this.context) {
+            this.context.setApplicationSessionLifecycleListeners(this.addListener(listener, this.context.getApplicationSessionLifecycleListeners()));
+        }
+    }
+
+    @Override
+    public void removeSessionListener(HttpSessionListener listener) {
+        synchronized (this.context) {
+            this.context.setApplicationSessionLifecycleListeners(this.removeListener(listener, this.context.getApplicationSessionLifecycleListeners()));
+        }
+    }
+
+    private Object[] addListener(Object listener, Object[] listeners) {
+        if (listeners == null) return new Object[] { listener };
+
+        List<Object> listenerList = new ArrayList<Object>(listeners.length + 1);
+
+        listenerList.add(listener);
+        listenerList.addAll(Arrays.asList(listeners));
+
+        return listenerList.toArray();
+    }
+
+    private Object[] removeListener(Object listener, Object[] listeners) {
+        if (listeners == null)  return null;
+
+        List<Object> listenerList = new ArrayList<Object>(listeners.length - 1);
+
+        for (Object existingListener : listeners) {
+            if (!existingListener.equals(listener)) {
+                listenerList.add(existingListener);
+            }
+        }
+
+        return listenerList.toArray();
     }
 
     static class RequestListenerValve extends ValveBase {
