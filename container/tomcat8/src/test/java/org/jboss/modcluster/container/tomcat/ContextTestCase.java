@@ -36,7 +36,6 @@ import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
-import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -50,7 +49,6 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
         return new TomcatContext(context, host);
     }
 
-    @Test
     @Override
     public void isStarted() {
         when(this.context.getState()).thenReturn(LifecycleState.STOPPED);
@@ -65,7 +63,6 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
 
         assertTrue(result);
     }
-
 
     @Override
     public void requestListener() throws IOException, ServletException {
@@ -89,5 +86,14 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
         this.catalinaContext.removeRequestListener(listener);
 
         verify(pipeline).removeValve(same(valve));
+    }
+
+    @Override
+    public void isDistributable() {
+        when(this.context.getDistributable()).thenReturn(true);
+
+        boolean result = this.catalinaContext.isDistributable();
+
+        assertTrue(result);
     }
 }

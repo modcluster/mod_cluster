@@ -58,6 +58,11 @@ public class TomcatContext extends CatalinaContext {
         return LifecycleState.STARTED.equals(this.context.getState());
     }
 
+    @Override
+    public boolean isDistributable() {
+        return context.getDistributable();
+    }
+
     private static class RequestListenerValve extends ValveBase {
         private final ServletRequestListener listener;
 
