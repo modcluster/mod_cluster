@@ -72,13 +72,18 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
         String address = connector.getAddress().toString();
         int index = address.indexOf("/");
         if (connector.getAddress() instanceof Inet6Address) {
-            /* IPv6 address require a [] */
-            String saddr = null;
+            // IPv6 address require a []
+            // ^No it does not. The RFC only requires [] in case when used in conjunction with port, lets keep it
+            // if some implementations depend on it. (Rado)
+            String saddr;
             if (index > 0) {
                 saddr = address.substring(0, index); // Name.
             } else {
                 saddr = "[";
-                saddr = saddr.concat(address.substring(1));
+                // MODCLUSTER-483 remove zone id completely
+                String ipv6addr = address.substring(1);
+                int zoneIndex = ipv6addr.indexOf("%");
+                saddr = saddr.concat((zoneIndex < 0) ? ipv6addr : ipv6addr.substring(0, zoneIndex));
                 saddr = saddr.concat("]");
             }
             parameters.put("Host", saddr);
