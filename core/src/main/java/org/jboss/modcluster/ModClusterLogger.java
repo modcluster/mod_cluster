@@ -161,4 +161,8 @@ public interface ModClusterLogger {
     @LogMessage(level = WARN)
     @Message(id = 45, value = "%s is not supported on this system and will be disabled.")
     void notSupportedOnSystem(String classname);
+
+    @LogMessage(level = INFO)
+    @Message(id = 46, value = "Starting to drain %d active sessions from %s:%s in %d seconds.")
+    void startSessionDraining(int sessions, Host host, Context context, long timeout);
 }

@@ -828,6 +828,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         if (remainingSessions == 0)
             return true;
 
+        // Notify the user that the server is draining sessions since it might appear stuck since messages while draining are on DEBUG
+        ModClusterLogger.LOGGER.startSessionDraining(remainingSessions, context.getHost(), context, TimeUnit.MILLISECONDS.toSeconds(end - start));
+
         boolean noTimeout = (start >= end);
 
         HttpSessionListener listener = new NotifyOnDestroySessionListener();
@@ -844,7 +847,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
                 while ((remainingSessions > 0) && (noTimeout || (timeout > 0))) {
                     ModClusterLogger.LOGGER.drainSessions(remainingSessions, context.getHost(), context);
 
-                    listener.wait(noTimeout ? 0 : timeout);
+                    // Poll active sessions every second since since right after the notify, the session manager implementation
+                    // will still account for that last session.
+                    listener.wait(noTimeout ? 0 : Math.min(timeout, 1000));
 
                     current = System.currentTimeMillis();
                     timeout = end - current;
@@ -890,13 +895,13 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return context;
     }
 
-    static interface Enablable {
+    interface Enablable {
         boolean isEnabled();
 
         void setEnabled(boolean enabled);
     }
 
-    static interface EnablableRequestListener extends Enablable, ServletRequestListener {
+    interface EnablableRequestListener extends Enablable, ServletRequestListener {
     }
 
     static class NotifyOnDestroyRequestListener implements EnablableRequestListener {
