@@ -29,11 +29,13 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
+import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 
@@ -91,5 +93,40 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
         this.catalinaContext.removeRequestListener(listener);
 
         verify(pipeline).removeValve(same(valve));
+    }
+
+    @Test
+    public void addSessionListener() {
+        HttpSessionListener listener = mock(HttpSessionListener.class);
+        ArgumentCaptor<Object[]> capturedListeners = ArgumentCaptor.forClass(Object[].class);
+        Object otherListener = new Object();
+
+        when(this.context.getApplicationSessionLifecycleListeners()).thenReturn(new Object[] { otherListener });
+
+        this.catalinaContext.addSessionListener(listener);
+
+        verify(this.context).setApplicationSessionLifecycleListeners(capturedListeners.capture());
+        Object[] listeners = capturedListeners.getValue();
+
+        assertEquals(2, listeners.length);
+        assertSame(listener, listeners[0]);
+        assertSame(otherListener, listeners[1]);
+    }
+
+    @Test
+    public void removeSessionListener() {
+        HttpSessionListener listener = mock(HttpSessionListener.class);
+        ArgumentCaptor<Object[]> capturedListeners = ArgumentCaptor.forClass(Object[].class);
+        Object otherListener = new Object();
+
+        when(this.context.getApplicationSessionLifecycleListeners()).thenReturn(new Object[] { otherListener, listener });
+
+        this.catalinaContext.removeSessionListener(listener);
+
+        verify(this.context).setApplicationSessionLifecycleListeners(capturedListeners.capture());
+        Object[] listeners = capturedListeners.getValue();
+
+        assertEquals(1, listeners.length);
+        assertSame(otherListener, listeners[0]);
     }
 }
