@@ -58,6 +58,9 @@
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
 #define HAVE_CLUSTER_EX_DEBUG 0
 
+/* Error messages */
+#define SAMEURL "Apparently, there are workers that reported the same url %s. This will cause problems with failover."
+
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
 #if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
@@ -100,6 +103,33 @@ static int enable_options = -1; /* Use OPTIONS * for CPING/CPONG */
 
 #define TIMESESSIONID 300                    /* after 5 minutes the sessionid have probably timeout */
 #define TIMEDOMAIN    300                    /* after 5 minutes the sessionid have probably timeout */
+
+/* From apr_reslist.c
+ * A ring of resources representing the list of available resources.
+ */
+APR_RING_HEAD(apr_resring_t, apr_res_t);
+typedef struct apr_resring_t apr_resring_t;
+
+/* From apr_reslist.c */
+struct apr_reslist_t {
+    apr_pool_t *pool; /* the pool used in constructor and destructor calls */
+    int ntotal;       /* total number of resources managed by this list */
+    int nidle;        /* number of available resources */
+    int min;  /* desired minimum number of available resources */
+    int smax; /* soft maximum on the total number of resources */
+    int hmax; /* hard maximum on the total number of resources */
+    apr_interval_time_t ttl;     /* TTL when we have too many resources */
+    apr_interval_time_t timeout; /* Timeout for waiting on resource */
+    apr_reslist_constructor constructor;
+    apr_reslist_destructor destructor;
+    void *params; /* opaque data passed to constructor and destructor calls */
+    apr_resring_t avail_list;
+    apr_resring_t free_list;
+#if APR_HAS_THREADS
+    apr_thread_mutex_t *listlock;
+    apr_thread_cond_t *avail;
+#endif
+};
 
 /* Context table copy for local use */
 struct proxy_context_table
@@ -332,8 +362,9 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
                 }
                 return APR_SUCCESS; /* Done Already existing */
             } else {
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                             "Created: can't reuse worker as it for %s cleaning...", url);
+                //MODCLUSTER-448
+                ap_log_error(APLOG_MARK, APLOG_ERR, 0, server, SAMEURL, url);
+                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server, "Created: can't reuse worker as it for %s. Creating...", url);
                 ptr = (char *) node;
                 ptr = ptr + node->offset;
                 shared = worker->s;
@@ -485,14 +516,19 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             }
             return APR_SUCCESS; /* Done Already existing */
         }
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                     "Created: can't reuse worker as it for %s cleaning...", url);
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, server, SAMEURL, url);
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server, "Created: can't reuse worker as it for %s cleaning...", url);
         if (!worker->opaque)
             worker->opaque = (proxy_cluster_helper *) apr_pcalloc(conf->pool,  sizeof(proxy_cluster_helper));
         if (!worker->opaque)
             return APR_EGENERAL;
         if (worker->cp->pool) {
             /* destroy and create a new one */
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server, "Reslist stats: worker->cp->res->ntotal:%d, worker->cp->res->nidle:%d", worker->cp->res->ntotal, worker->cp->res->nidle);
+            //MODCLUSTER-448
+            if(worker->cp->res->ntotal != worker->cp->res->nidle) {
+                return APR_EGENERAL;
+            }
             apr_pool_destroy(worker->cp->pool);
             worker->cp->pool = NULL;
             init_conn_pool(conf->pool, worker);
@@ -983,7 +1019,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
                 int j;
                 int sizew = balancer->workers->elt_size;
                 char *ptrw = balancer->workers->elts;
-                
+
                 for (j = 0; j < balancer->workers->nelts; j++, ptrw=ptrw+sizew) {
                     /* Here we loop through our workers not need to check that the worker->s is OK */
                     proxy_worker *searched = (proxy_worker *) ptrw;
