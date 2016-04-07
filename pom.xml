@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jboss.mod_cluster</groupId>
     <artifactId>mod_cluster-parent</artifactId>
-    <version>1.2.12.Final-SNAPSHOT</version>
+    <version>1.2.12.Final</version>
     <packaging>pom</packaging>
   
     <name>mod_cluster</name>
