@@ -1577,7 +1577,8 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
     int i = 0;
     hostinfo_t hostinfo;
     hostinfo_t *host;
-    
+    char *p_tmp;
+
     memset(&nodeinfo.mess, '\0', sizeof(nodeinfo.mess));
     /* Map nothing by default */
     vhost = apr_palloc(r->pool, sizeof(struct cluster_host));
@@ -1598,6 +1599,12 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
             if (vhost->host) {
                 *errtype = TYPESYNTAX;
                 return SMULALB;
+            }
+            p_tmp = ptr[i+1];
+            /* Aliases to lower case for further case-insensitive treatment, IETF RFC 1035 Section 2.3.3. */
+            while (*p_tmp) {
+                *p_tmp = apr_tolower(*p_tmp);
+                ++p_tmp;
             }
             vhost->host = ptr[i+1];
         }
