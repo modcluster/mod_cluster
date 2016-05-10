@@ -33,14 +33,6 @@ This is the first version of AS that bundled mod_cluster, the configuration is l
 `/server/<profile>/deploy/mod_cluster.sar/META-INF` directory.
 
 
-### JBoss AS 5/6
-
-1. Copy the exploded sar `mod_cluster.sar` directory into the deploy directory
-   of a JBoss AS server profile.
-2. Modify the `server.xml` within `jbossweb.sar` and add a clustered mode engine
-   listener as documented [here](http://docs.jboss.org/mod_cluster/1.2.0/html/Quick_Start_Guide.html).
-
-
 ### JBoss Web / Tomcat
 
 The `tar.gz` from the assembly contains the `JBossWeb-Tomcat`.
