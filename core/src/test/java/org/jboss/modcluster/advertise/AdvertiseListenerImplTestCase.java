@@ -30,52 +30,48 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.concurrent.Executors;
-
 import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl;
-import org.jboss.modcluster.advertise.impl.MulticastSocketFactoryImpl;
+import org.jboss.modcluster.advertise.impl.DatagramChannelFactoryImpl;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
+import java.util.concurrent.Executors;
 
 /**
  * Tests of {@link AdvertiseListener} / {@link AdvertiseListenerImpl}.
  *
  * @author Brian Stansberry
  * @author Radoslav Husar
+ * @version May 2016
  */
-@SuppressWarnings("boxing")
 public class AdvertiseListenerImplTestCase {
-    static {
-        System.setProperty("java.net.preferIPv4Stack", "true");
-    }
 
     private static final String ADVERTISE_GROUP = System.getProperty("multicast.address1", "224.0.1.106");
     private static final String ADVERTISE_INTERFACE = System.getProperty("multicast.interface");
     private static final int ADVERTISE_PORT = 23364;
     private static final String SERVER1 = "127.0.0.1";
     private static final String SERVER2 = "127.0.1.1";
-    private static final int SERVER_PORT = 8888;
+    private static final int SERVER_PORT = 8989;
     private static final String SERVER1_ADDRESS = String.format("%s:%d", SERVER1, SERVER_PORT);
     private static final String SERVER2_ADDRESS = String.format("%s:%d", SERVER2, SERVER_PORT);
 
     private MCMPHandler mcmpHandler = mock(MCMPHandler.class);
     private AdvertiseConfiguration config = mock(AdvertiseConfiguration.class);
-    private MulticastSocketFactory socketFactory = mock(MulticastSocketFactory.class);
+    private DatagramChannelFactory channelFactory = mock(DatagramChannelFactory.class);
 
-    private MulticastSocket socket;
+    private DatagramChannel channel;
     private InetAddress groupAddress;
     private AdvertiseListener listener;
 
@@ -86,46 +82,34 @@ public class AdvertiseListenerImplTestCase {
         when(this.config.getAdvertiseSecurityKey()).thenReturn(null);
         when(this.config.getAdvertiseInterface()).thenReturn(null);
 
-        this.listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.socketFactory);
-
         this.groupAddress = InetAddress.getByName(ADVERTISE_GROUP);
-        this.socket = new MulticastSocketFactoryImpl().createMulticastSocket(this.groupAddress, ADVERTISE_PORT);
+        this.channel = new DatagramChannelFactoryImpl().createDatagramChannel(this.groupAddress, ADVERTISE_PORT);
     }
 
     @After
-    public void tearDown() {
-        if ((this.socket != null) && !this.socket.isClosed()) {
-            this.socket.close();
+    public void tearDown() throws IOException {
+        if ((this.channel != null) && !this.channel.isOpen()) {
+            this.channel.close();
         }
     }
 
     @Test
-    @Ignore("MODCLUSTER-432")
     public void testBasicOperation() throws IOException, NoSuchAlgorithmException {
         ArgumentCaptor<InetAddress> capturedAddress = ArgumentCaptor.forClass(InetAddress.class);
-
-        when(this.socketFactory.createMulticastSocket(capturedAddress.capture(), eq(ADVERTISE_PORT))).thenReturn(this.socket);
-
-        this.listener.start();
+        when(this.channelFactory.createDatagramChannel(capturedAddress.capture(), eq(ADVERTISE_PORT))).thenReturn(this.channel);
+        this.listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.channelFactory);
 
         assertEquals(ADVERTISE_GROUP, capturedAddress.getValue().getHostAddress());
-        assertFalse(this.socket.isClosed());
+        assertTrue(this.channel.isOpen());
 
         ArgumentCaptor<InetSocketAddress> capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
 
-        byte[] buf = TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
+        ByteBuffer buf = ByteBuffer.allocate(512);
+        buf.put(TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS));
+        buf.flip();
 
-        if (ADVERTISE_INTERFACE != null && !System.getProperty("os.name").startsWith("Windows")) {
-            try {
-                InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
-                this.socket.setInterface(socketInterface);
-            } catch (Exception ex) {
-                ; // Ignore it
-            }
-        }
-
-        this.socket.send(packet);
+        this.channel.send(buf, config.getAdvertiseSocketAddress());
+        buf.flip();
 
         try {
             // Give time for advertise worker to process message
@@ -141,7 +125,8 @@ public class AdvertiseListenerImplTestCase {
         assertEquals(SERVER1, socketAddress.getAddress().getHostAddress());
         assertEquals(SERVER_PORT, socketAddress.getPort());
 
-        this.socket.send(packet);
+        this.channel.send(buf, config.getAdvertiseSocketAddress());
+        buf.flip();
 
         try {
             // Give time for advertise worker to process message
@@ -149,8 +134,6 @@ public class AdvertiseListenerImplTestCase {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-
-        this.listener.pause();
 
         try {
             Thread.sleep(1000);
@@ -160,10 +143,11 @@ public class AdvertiseListenerImplTestCase {
 
         capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
 
-        buf = TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER2, SERVER2_ADDRESS);
-        packet = new DatagramPacket(buf, buf.length, this.groupAddress, ADVERTISE_PORT);
+        buf.put(TestUtils.generateAdvertisePacketData(new Date(), 1, SERVER2, SERVER2_ADDRESS));
+        buf.flip();
 
-        this.socket.send(packet);
+        this.channel.send(buf, config.getAdvertiseSocketAddress());
+        buf.flip();
 
         try {
             // Give time for advertise worker to process message
@@ -172,9 +156,10 @@ public class AdvertiseListenerImplTestCase {
             Thread.currentThread().interrupt();
         }
 
-        this.listener.resume();
+        buf.rewind();
 
-        this.socket.send(packet);
+        this.channel.send(buf, config.getAdvertiseSocketAddress());
+        buf.flip();
 
         try {
             // Give time for advertise worker to process message
@@ -190,15 +175,11 @@ public class AdvertiseListenerImplTestCase {
         assertEquals(SERVER2, socketAddress.getAddress().getHostAddress());
         assertEquals(SERVER_PORT, socketAddress.getPort());
 
-        this.listener.stop();
+        assertFalse(this.channel.isConnected());
 
-        assertFalse(this.socket.isConnected());
+        this.listener.close();
 
-        this.socket.send(packet);
-
-        this.listener.destroy();
-
-        assertTrue(this.socket.isClosed());
+        assertFalse(this.channel.isOpen());
     }
 
 }
