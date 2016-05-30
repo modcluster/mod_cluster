@@ -14,10 +14,6 @@
 
     <!-- Demo -->
     <fileSet>
-      <directory>target/mod_cluster.sar</directory>
-      <outputDirectory>mod_cluster.sar</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>demo/client/target/dependencies/lib</directory>
       <outputDirectory>demo/client/lib</outputDirectory>
     </fileSet>
@@ -132,18 +128,6 @@
         <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
-    </fileSet>
-    <!-- AS5/6 sar file -->
-    <fileSet>
-      <directory>sar/target/mod_cluster-sar.sar</directory>
-      <excludes>
-        <exclude>classes/**</exclude>
-        <exclude>dependencies/**</exclude>
-        <exclude>maven-archiver/**</exclude>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-tests.jar</exclude>
-      </excludes>
-      <outputDirectory>mod_cluster.sar</outputDirectory>
     </fileSet>
   </fileSets>
 </assembly>
