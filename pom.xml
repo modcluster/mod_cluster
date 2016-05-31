@@ -64,6 +64,7 @@
         <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.tomcat8>8.0.21</version.tomcat8>
+        <version.tomcat85>8.5.2</version.tomcat85>
         <version.tomcat9>9.0.0.M4</version.tomcat9>
         <version.jbossweb7>7.2.1.Final</version.jbossweb7>
         <version.http-client>4.2.3</version.http-client>
@@ -243,6 +244,28 @@
                 <module>core</module>
                 <module>container</module>
                 <module>demo</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC9</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC85</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
             </modules>
         </profile>
         <profile>
