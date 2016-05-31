@@ -625,6 +625,7 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
 
     return OK;
 }
+static apr_status_t decodeenc(char **ptr);
 static char **process_buff(request_rec *r, char *buff)
 {
     int i = 0;
@@ -644,12 +645,6 @@ static char **process_buff(request_rec *r, char *buff)
     ptr[i+1] = NULL;
     i = 1;
     for (; *s != '\0'; s++) {
-        /* from apr_escape_entity() (minus '&' one of our seperators) */
-        if (*s == '<' || *s == '>' || *s == '\"' ||  *s == '\'')
-            return NULL;
-        /* from  apr_escape_shell() */
-        if (*s == '\r' || *s == '\n')
-            return NULL;
         /* our separators */
         if (*s == '&' || *s == '=') {
             *s = '\0';
@@ -657,6 +652,11 @@ static char **process_buff(request_rec *r, char *buff)
             i++;
         }
     }
+
+    if (decodeenc(ptr) != APR_SUCCESS) {
+        return NULL;
+    }
+
     return ptr;
 }
 /*
@@ -2185,23 +2185,41 @@ static int mod_manager_hex2c(const char *x)
     }
 #endif /*APR_CHARSET_EBCDIC*/
 }
-static int decodeenc(char *x)
-{
-    int i, j, ch;
 
-    if (x[0] == '\0')
-        return 0;               /* special case for no characters */
-    for (i = 0, j = 0; x[i] != '\0'; i++, j++) {
-        /* decode it if not already done */
-        ch = x[i];
-        if (ch == '%' && apr_isxdigit(x[i + 1]) && apr_isxdigit(x[i + 2])) {
-            ch = mod_manager_hex2c(&x[i + 1]);
-            i += 2;
+/* Processing of decoded characters */
+static apr_status_t decodeenc(char **ptr)
+{
+    int val, i, j;
+    char ch;
+    val = 0;
+    while (NULL != ptr[val]) {
+        if (ptr[val][0] == '\0') {
+            return APR_SUCCESS;   /* special case for no characters */
         }
-        x[j] = ch;
+        for (i = 0, j = 0; ptr[val][i] != '\0'; i++, j++) {
+            /* decode it if not already done */
+            ch = ptr[val][i];
+            if (ch == '%' && apr_isxdigit(ptr[val][i + 1]) && apr_isxdigit(ptr[val][i + 2])) {
+                ch = (char) mod_manager_hex2c(&(ptr[val][i + 1]));
+                i += 2;
+            }
+
+            /* process decoded, = and & are legit characters */
+            /* from apr_escape_entity() */
+            if (ch == '<' || ch == '>' || ch == '\"' || ch == '\'') {
+                return TYPESYNTAX;
+            }
+            /* from apr_escape_shell() */
+            if (ch == '\r' || ch == '\n') {
+                return TYPESYNTAX;
+            }
+
+            ptr[val][j] = ch;
+        }
+        ptr[val][j] = '\0';
+        val++;
     }
-    x[j] = '\0';
-    return j;
+    return APR_SUCCESS;
 }
 
 /* Check that the method is one of ours */
@@ -2986,7 +3004,6 @@ static int manager_handler(request_rec *r)
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                 "manager_handler %s (%s) processing: \"%s\"", r->method, r->filename, buff);
 
-    decodeenc(buff);
     ptr = process_buff(r, buff);
     if (ptr == NULL) {
         process_error(r, SMESPAR, TYPESYNTAX);
