@@ -68,6 +68,16 @@
             </modules>
         </profile>
         <profile>
+            <id>TC85</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>catalina</module>
+                <module>tomcat85</module>
+            </modules>
+        </profile>
+        <profile>
             <id>TC8</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
