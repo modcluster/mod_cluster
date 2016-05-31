@@ -43,6 +43,7 @@
                 <module>tomcat6</module>
                 <module>tomcat7</module>
                 <module>tomcat8</module>
+                <module>tomcat9</module>
                 <module>jbossweb</module>
             </modules>
         </profile>
@@ -54,6 +55,16 @@
             <modules>
                 <module>catalina</module>
                 <module>jbossweb</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC9</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>catalina</module>
+                <module>tomcat9</module>
             </modules>
         </profile>
         <profile>

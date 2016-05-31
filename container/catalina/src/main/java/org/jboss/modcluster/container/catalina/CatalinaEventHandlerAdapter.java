@@ -280,7 +280,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         this.eventHandler.shutdown();
     }
 
-    private void addListeners(Server server) {
+    protected void addListeners(Server server) {
         // Register ourself as a listener for child services
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
@@ -298,7 +298,7 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
         }
     }
 
-    private void removeListeners(Server server) {
+    protected void removeListeners(Server server) {
         // Unregister ourself as a listener to child components
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
