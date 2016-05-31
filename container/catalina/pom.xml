@@ -79,6 +79,7 @@
                 </dependency>
             </dependencies>
         </profile>
+        <!--
         <profile>
             <id>TC9</id>
             <activation>
@@ -107,6 +108,38 @@
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-servlet-api</artifactId>
                     <version>${version.tomcat9}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>TC85</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-catalina</artifactId>
+                    <version>${version.tomcat85}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-coyote</artifactId>
+                    <version>${version.tomcat85}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-util</artifactId>
+                    <version>${version.tomcat85}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-servlet-api</artifactId>
+                    <version>${version.tomcat85}</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -143,6 +176,7 @@
                 </dependency>
             </dependencies>
         </profile>
+        -->
         <profile>
             <id>TC7</id>
             <activation>
