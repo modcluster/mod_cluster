@@ -39,22 +39,9 @@
             </activation>
             <modules>
                 <module>catalina</module>
-                <module>catalina-standalone</module>
-                <module>tomcat6</module>
                 <module>tomcat7</module>
                 <module>tomcat8</module>
                 <module>tomcat85</module>
-                <module>jbossweb</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>AS7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>catalina</module>
-                <module>jbossweb</module>
             </modules>
         </profile>
         <profile>
@@ -95,16 +82,6 @@
             <modules>
                 <module>catalina</module>
                 <module>tomcat7</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC6</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>catalina</module>
-                <module>tomcat6</module>
             </modules>
         </profile>
     </profiles>

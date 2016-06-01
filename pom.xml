@@ -61,12 +61,10 @@
         <!-- Dependency versions -->
         <version.jboss-logging>3.1.2.GA</version.jboss-logging>
         <version.jboss-logging-processor>1.1.0.Final</version.jboss-logging-processor>
-        <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.tomcat8>8.0.21</version.tomcat8>
         <version.tomcat85>8.5.2</version.tomcat85>
         <version.tomcat9>9.0.0.M4</version.tomcat9>
-        <version.jbossweb7>7.2.1.Final</version.jbossweb7>
         <version.http-client>4.2.3</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
@@ -91,18 +89,6 @@
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.jboss-logging-processor}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>catalina</artifactId>
-                <version>${version.tomcat6}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>coyote</artifactId>
-                <version>${version.tomcat6}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-catalina</artifactId>
@@ -118,13 +104,6 @@
                 <artifactId>tomcat-util</artifactId>
                 <version>${version.tomcat7}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.jboss.web</groupId>
-                <artifactId>jbossweb</artifactId>
-                <version>${version.jbossweb7}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -211,18 +190,6 @@
             </modules>
         </profile>
         <profile>
-            <id>AS7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>container-spi</module>
-                <module>core</module>
-                <module>container</module>
-                <module>demo</module>
-            </modules>
-        </profile>
-        <profile>
             <id>TC9</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -257,17 +224,6 @@
         </profile>
         <profile>
             <id>TC7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>container-spi</module>
-                <module>core</module>
-                <module>container</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC6</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
