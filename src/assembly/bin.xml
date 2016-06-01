@@ -86,17 +86,6 @@
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>container/tomcat7/target/</directory>
-      <includes>
-        <include>*.jar</include>
-      </includes>
-      <excludes>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-tests.jar</exclude>
-      </excludes>
-      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
-    </fileSet>
-    <fileSet>
       <directory>container/tomcat8/target/</directory>
       <includes>
         <include>*.jar</include>

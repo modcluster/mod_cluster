@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-
 /**
  * @author Paul Ferraro
  */

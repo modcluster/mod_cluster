@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 /**
- * Needs to recompile against Tomcat 9 Jar due to {@link Service#getContainer()} signature change.
+ * Needs to recompile against Tomcat 8.5/9 Jars due to {@link Service#getContainer()} signature change.
  *
  * @author Paul Ferraro
  * @author Radoslav Husar
@@ -54,7 +54,7 @@ public class TomcatServer extends CatalinaServer {
 
             @Override
             public Engine next() {
-                return TomcatServer.this.registry.getEngineFactory().createEngine(TomcatServer.this.registry, (org.apache.catalina.Engine) services.next().getContainer(), TomcatServer.this);
+                return TomcatServer.this.registry.getEngineFactory().createEngine(TomcatServer.this.registry, services.next().getContainer(), TomcatServer.this);
             }
 
             @Override

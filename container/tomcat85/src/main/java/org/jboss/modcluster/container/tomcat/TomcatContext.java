@@ -21,13 +21,6 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-
-import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Context;
 import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Request;
@@ -36,6 +29,11 @@ import org.apache.catalina.valves.ValveBase;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.catalina.CatalinaContext;
 import org.jboss.modcluster.container.catalina.RequestListenerValveFactory;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
+import java.io.IOException;
 
 /**
  * @author Paul Ferraro
@@ -53,23 +51,12 @@ public class TomcatContext extends CatalinaContext {
         });
     }
 
-    @Override
-    public boolean isStarted() {
-        return LifecycleState.STARTED.equals(this.context.getState());
-    }
-
-    @Override
-    public boolean isDistributable() {
-        return context.getDistributable();
-    }
-
     private static class RequestListenerValve extends ValveBase {
         private final ServletRequestListener listener;
 
         RequestListenerValve(ServletRequestListener listener) {
             this.listener = listener;
         }
-
 
         @Override
         public void invoke(Request request, Response response) throws IOException, ServletException {
@@ -86,21 +73,11 @@ public class TomcatContext extends CatalinaContext {
             }
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
             return this.listener.hashCode();
         }
 
-        /**
-         * {@inheritDoc}
-         *
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public boolean equals(Object object) {
             if ((object == null) || !(object instanceof RequestListenerValve)) return false;

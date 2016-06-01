@@ -21,79 +21,9 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestListener;
-
-import org.apache.catalina.LifecycleState;
-import org.apache.catalina.Pipeline;
-import org.apache.catalina.Valve;
-import org.jboss.modcluster.container.Context;
-import org.jboss.modcluster.container.Host;
-import org.mockito.ArgumentCaptor;
-
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
 public class ContextTestCase extends org.jboss.modcluster.container.catalina.ContextTestCase {
-
-    @Override
-    protected Context createContext(org.apache.catalina.Context context, Host host) {
-        return new TomcatContext(context, host);
-    }
-
-    @Override
-    public void isStarted() {
-        when(this.context.getState()).thenReturn(LifecycleState.STOPPED);
-
-        boolean result = this.catalinaContext.isStarted();
-
-        assertFalse(result);
-
-        when(this.context.getState()).thenReturn(LifecycleState.STARTED);
-
-        result = this.catalinaContext.isStarted();
-
-        assertTrue(result);
-    }
-
-    @Override
-    public void requestListener() throws IOException, ServletException {
-        // Test addRequestListener()
-        ServletRequestListener listener = mock(ServletRequestListener.class);
-        Pipeline pipeline = mock(Pipeline.class);
-        ArgumentCaptor<Valve> capturedValve = ArgumentCaptor.forClass(Valve.class);
-
-        when(this.context.getPipeline()).thenReturn(pipeline);
-
-        this.catalinaContext.addRequestListener(listener);
-
-        verify(pipeline).addValve(capturedValve.capture());
-
-        Valve valve = capturedValve.getValue();
-
-        // Test removeRequestListener()
-        when(this.context.getPipeline()).thenReturn(pipeline);
-        when(pipeline.getValves()).thenReturn(new Valve[] { valve });
-
-        this.catalinaContext.removeRequestListener(listener);
-
-        verify(pipeline).removeValve(same(valve));
-    }
-
-    @Override
-    public void isDistributable() {
-        when(this.context.getDistributable()).thenReturn(true);
-
-        boolean result = this.catalinaContext.isDistributable();
-
-        assertTrue(result);
-    }
 }

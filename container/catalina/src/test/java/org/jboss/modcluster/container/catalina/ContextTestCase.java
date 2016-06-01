@@ -30,12 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
-
+import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
@@ -43,6 +38,11 @@ import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSessionListener;
+import java.io.IOException;
 
 /**
  * @author Paul Ferraro
@@ -75,13 +75,13 @@ public class ContextTestCase {
 
     @Test
     public void isStarted() {
-        when(this.context.getAvailable()).thenReturn(false);
+        when(this.context.getState()).thenReturn(LifecycleState.STOPPED);
 
         boolean result = this.catalinaContext.isStarted();
 
         assertFalse(result);
 
-        when(this.context.getAvailable()).thenReturn(true);
+        when(this.context.getState()).thenReturn(LifecycleState.STARTED);
 
         result = this.catalinaContext.isStarted();
 
@@ -161,10 +161,7 @@ public class ContextTestCase {
 
     @Test
     public void isDistributable() {
-        Manager manager = mock(Manager.class);
-
-        when(this.context.getManager()).thenReturn(manager);
-        when(manager.getDistributable()).thenReturn(true);
+        when(this.context.getDistributable()).thenReturn(true);
 
         boolean result = this.catalinaContext.isDistributable();
 

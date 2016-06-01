@@ -21,15 +21,8 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.jboss.modcluster.container.Engine;
-
 /**
  * @author Paul Ferraro
  */
 public class EngineTestCase extends org.jboss.modcluster.container.catalina.EngineTestCase {
-
-    @Override
-    protected Engine createEngine() {
-        return new TomcatEngine(this.registry, this.engine, this.server);
-    }
 }

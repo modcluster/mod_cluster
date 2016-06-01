@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.util.SessionConfig;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -146,14 +147,16 @@ public class CatalinaEngine implements Engine {
         return (host != null) ? this.registry.getHostFactory().createHost(this.registry, host, this) : null;
     }
 
+    // TODO MODCLUSTER-477 Broken design: cookie-name should be specified on the Context level instead of only on the Engine level
     @Override
     public String getSessionCookieName() {
-        return "JSESSIONID";
+        return SessionConfig.getSessionCookieName(null);
     }
 
+    // TODO MODCLUSTER-477 Broken design: cookie-name should be specified on the Context level instead of only on the Engine level
     @Override
     public String getSessionParameterName() {
-        return "jsessionid";
+        return SessionConfig.getSessionUriParamName(null);
     }
 
     @Override

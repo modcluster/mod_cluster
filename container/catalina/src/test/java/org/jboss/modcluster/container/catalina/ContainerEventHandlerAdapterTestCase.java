@@ -47,13 +47,15 @@ import org.mockito.Mockito;
 /**
  * @author Paul Ferraro
  */
-public abstract class ContainerEventHandlerAdapterTestCase {
+public class ContainerEventHandlerAdapterTestCase {
     protected final ContainerEventHandler eventHandler = mock(ContainerEventHandler.class);
     protected final LifecycleServer server = mock(LifecycleServer.class);
     protected final CatalinaFactory factory = mock(CatalinaFactory.class);
     protected final ServerProvider provider = mock(ServerProvider.class);
 
-    protected abstract CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory);
+    protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
+        return new CatalinaEventHandlerAdapter(eventHandler, provider, factory);
+    }
 
     @After
     public void init() {
@@ -309,11 +311,11 @@ public abstract class ContainerEventHandlerAdapterTestCase {
     }
 
     protected LifecycleEvent createAfterInitEvent(Lifecycle lifecycle) {
-        return new LifecycleEvent(lifecycle, "init", null);
+        return new LifecycleEvent(lifecycle, Lifecycle.AFTER_INIT_EVENT, null);
     }
 
     protected LifecycleEvent createBeforeDestroyInitEvent(Lifecycle lifecycle) {
-        return new LifecycleEvent(lifecycle, "destroy", null);
+        return new LifecycleEvent(lifecycle, Lifecycle.BEFORE_DESTROY_EVENT, null);
     }
 
     @Test

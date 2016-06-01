@@ -21,21 +21,29 @@
  */
 package org.jboss.modcluster.container.catalina;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionListener;
 
+import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
+import org.apache.catalina.comet.CometEvent;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
+import org.apache.catalina.valves.ValveBase;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
 
 /**
  * {@link Context} implementation that wraps a {@link org.apache.catalina.Context}.
- * 
+ *
  * @author Paul Ferraro
  */
 public class CatalinaContext implements Context {
@@ -45,14 +53,69 @@ public class CatalinaContext implements Context {
 
     /**
      * Constructs a new CatalinaContext wrapping the specified context.
-     * 
+     *
      * @param context the catalina context
-     * @param host the parent container
+     * @param host    the parent container
      */
     public CatalinaContext(org.apache.catalina.Context context, Host host, RequestListenerValveFactory valveFactory) {
         this.context = context;
         this.host = host;
         this.valveFactory = valveFactory;
+    }
+
+    public CatalinaContext(org.apache.catalina.Context context, Host host) {
+        this(context, host, new RequestListenerValveFactory() {
+            @Override
+            public Valve createValve(ServletRequestListener listener) {
+                return new RequestListenerValve(listener);
+            }
+        });
+    }
+
+    private static class RequestListenerValve extends ValveBase {
+        private final ServletRequestListener listener;
+
+        RequestListenerValve(ServletRequestListener listener) {
+            this.listener = listener;
+        }
+
+        @Override
+        public void invoke(Request request, Response response) throws IOException, ServletException {
+            this.event(request, response, null);
+        }
+
+        @Override
+        public void event(Request request, Response response, CometEvent event) throws IOException, ServletException {
+            ServletRequestEvent requestEvent = new ServletRequestEvent(request.getContext().getServletContext(), request);
+
+            this.listener.requestInitialized(requestEvent);
+
+            Valve valve = this.getNext();
+
+            try {
+                if (event != null) {
+                    valve.event(request, response, event);
+                } else {
+                    valve.invoke(request, response);
+                }
+            } finally {
+                this.listener.requestDestroyed(requestEvent);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return this.listener.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if ((object == null) || !(object instanceof RequestListenerValve)) return false;
+
+            RequestListenerValve valve = (RequestListenerValve) object;
+
+            return this.listener == valve.listener;
+        }
     }
 
     @Override
@@ -67,7 +130,7 @@ public class CatalinaContext implements Context {
 
     @Override
     public boolean isStarted() {
-        return this.context.getAvailable();
+        return LifecycleState.STARTED.equals(this.context.getState());
     }
 
     @Override
@@ -101,7 +164,7 @@ public class CatalinaContext implements Context {
 
     @Override
     public boolean isDistributable() {
-        return this.context.getManager().getDistributable();
+        return this.context.getDistributable();
     }
 
     @Override
@@ -121,7 +184,7 @@ public class CatalinaContext implements Context {
     private Object[] addListener(Object listener, Object[] listeners) {
         if (listeners == null) return new Object[] { listener };
 
-        List<Object> listenerList = new ArrayList<Object>(listeners.length + 1);
+        List<Object> listenerList = new ArrayList<>(listeners.length + 1);
 
         listenerList.add(listener);
         listenerList.addAll(Arrays.asList(listeners));
@@ -130,9 +193,9 @@ public class CatalinaContext implements Context {
     }
 
     private Object[] removeListener(Object listener, Object[] listeners) {
-        if (listeners == null)  return null;
+        if (listeners == null) return null;
 
-        List<Object> listenerList = new ArrayList<Object>(listeners.length - 1);
+        List<Object> listenerList = new ArrayList<>(listeners.length - 1);
 
         for (Object existingListener : listeners) {
             if (!existingListener.equals(listener)) {

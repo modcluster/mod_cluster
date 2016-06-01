@@ -257,11 +257,11 @@ public class CatalinaEventHandlerAdapter implements CatalinaEventHandler {
     }
 
     protected boolean isAfterInit(LifecycleEvent event) {
-        return false;
+        return event.getType().equals(Lifecycle.AFTER_INIT_EVENT);
     }
 
     protected boolean isBeforeDestroy(LifecycleEvent event) {
-        return false;
+        return event.getType().equals(Lifecycle.BEFORE_DESTROY_EVENT);
     }
 
     /**

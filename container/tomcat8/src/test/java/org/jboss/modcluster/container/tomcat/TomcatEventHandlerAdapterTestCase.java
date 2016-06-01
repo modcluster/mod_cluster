@@ -21,31 +21,10 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleEvent;
-import org.jboss.modcluster.container.ContainerEventHandler;
-import org.jboss.modcluster.container.catalina.CatalinaEventHandler;
-import org.jboss.modcluster.container.catalina.CatalinaFactory;
 import org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase;
-import org.jboss.modcluster.container.catalina.ServerProvider;
 
 /**
  * @author Paul Ferraro
  */
 public class TomcatEventHandlerAdapterTestCase extends ContainerEventHandlerAdapterTestCase {
-
-    @Override
-    protected CatalinaEventHandler createEventHandler(ContainerEventHandler eventHandler, ServerProvider provider, CatalinaFactory factory) {
-        return new TomcatEventHandlerAdapter(eventHandler, provider, factory);
-    }
-
-    @Override
-    protected LifecycleEvent createAfterInitEvent(Lifecycle lifecycle) {
-        return new LifecycleEvent(lifecycle, Lifecycle.AFTER_INIT_EVENT, null);
-    }
-
-    @Override
-    protected LifecycleEvent createBeforeDestroyInitEvent(Lifecycle lifecycle) {
-        return new LifecycleEvent(lifecycle, Lifecycle.BEFORE_DESTROY_EVENT, null);
-    }
 }

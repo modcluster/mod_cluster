@@ -22,8 +22,6 @@
 package org.jboss.modcluster.container.tomcat;
 
 import org.apache.catalina.Container;
-import org.apache.catalina.Lifecycle;
-import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -44,16 +42,6 @@ public class TomcatEventHandlerAdapter extends CatalinaEventHandlerAdapter {
 
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, CatalinaFactory factory) {
         super(eventHandler, serverProvider, factory);
-    }
-
-    @Override
-    protected boolean isAfterInit(LifecycleEvent event) {
-        return event.getType().equals(Lifecycle.AFTER_INIT_EVENT);
-    }
-
-    @Override
-    protected boolean isBeforeDestroy(LifecycleEvent event) {
-        return event.getType().equals(Lifecycle.BEFORE_DESTROY_EVENT);
     }
 
     @Override

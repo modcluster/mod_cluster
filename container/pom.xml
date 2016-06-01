@@ -39,7 +39,6 @@
             </activation>
             <modules>
                 <module>catalina</module>
-                <module>tomcat7</module>
                 <module>tomcat8</module>
                 <module>tomcat85</module>
             </modules>
@@ -81,7 +80,6 @@
             </activation>
             <modules>
                 <module>catalina</module>
-                <module>tomcat7</module>
             </modules>
         </profile>
     </profiles>

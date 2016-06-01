@@ -24,15 +24,20 @@ package org.jboss.modcluster.container.catalina;
 import java.lang.reflect.Field;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import org.apache.catalina.LifecycleState;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.coyote.RequestGroupInfo;
 import org.apache.tomcat.util.IntrospectionUtils;
+import org.apache.tomcat.util.net.AbstractEndpoint;
+import org.apache.tomcat.util.threads.ResizableExecutor;
 import org.jboss.modcluster.container.Connector;
 
 /**
  * {@link Connector} implementation that wraps a {@link org.apache.catalina.connector.Connector}.
- * 
+ *
  * @author Paul Ferraro
  */
 public class CatalinaConnector implements Connector {
@@ -40,7 +45,7 @@ public class CatalinaConnector implements Connector {
 
     /**
      * Constructs a new CatalinaConnector wrapping the specified catalina connector.
-     * 
+     *
      * @param connector the catalina connector
      */
     public CatalinaConnector(org.apache.catalina.connector.Connector connector) {
@@ -110,7 +115,7 @@ public class CatalinaConnector implements Connector {
 
     /**
      * Indicates whether or not the specified connector use the AJP protocol.
-     * 
+     *
      * @param connector a connector
      * @return true, if the specified connector is AJP, false otherwise
      */
@@ -121,25 +126,35 @@ public class CatalinaConnector implements Connector {
 
     @Override
     public boolean isAvailable() {
-        return false;
+        return LifecycleState.STARTED.equals(this.connector.getState());
     }
 
     @Override
     public int getMaxThreads() {
-        Integer result = (Integer) IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "maxThreads");
-        return (result != null) ? result.intValue() : 0;
+        Executor executor = this.connector.getProtocolHandler().getExecutor();
+        if (executor != null) {
+            if (executor instanceof ThreadPoolExecutor) {
+                return ((ThreadPoolExecutor) executor).getMaximumPoolSize();
+            } else if (executor instanceof ResizableExecutor) {
+                return ((ResizableExecutor) executor).getMaxThreads();
+            }
+        }
+        return 0;
     }
 
     @Override
     public int getBusyThreads() {
-        Object endpoint = this.getEndpoint();
-        return (endpoint != null) ? (Integer) IntrospectionUtils.getProperty(endpoint, "currentThreadsBusy") : 0;
+        Executor executor = this.connector.getProtocolHandler().getExecutor();
+        if (executor != null) {
+            if (executor instanceof ThreadPoolExecutor) {
+                return ((ThreadPoolExecutor) executor).getActiveCount();
+            } else if (executor instanceof ResizableExecutor) {
+                return ((ResizableExecutor) executor).getActiveCount();
+            }
+        }
+        return 0;
     }
-    
-    protected Object getEndpoint() {
-        return this.getProtocolHandlerProperty("endpoint");
-    }
-    
+
     protected Object getProtocolHandlerProperty(String property) {
         Field field = this.findField(this.connector.getProtocolHandler().getClass(), property);
         if (field == null) {
@@ -150,9 +165,9 @@ public class CatalinaConnector implements Connector {
             return field.get(this.connector.getProtocolHandler());
         } catch (IllegalAccessException e) {
             throw new IllegalStateException(e);
-        } 
+        }
     }
-    
+
     Field findField(Class<?> targetClass, String name) {
         if ((targetClass == null) || Object.class.equals(targetClass)) return null;
         for (Field field: targetClass.getDeclaredFields()) {
@@ -162,7 +177,7 @@ public class CatalinaConnector implements Connector {
         }
         return this.findField(targetClass.getSuperclass(), name);
     }
-    
+
     @Override
     public long getBytesSent() {
         RequestGroupInfo info = this.getRequestGroupInfo();
@@ -184,21 +199,15 @@ public class CatalinaConnector implements Connector {
     protected Object getConnectionHandler() {
         return this.getProtocolHandlerProperty("cHandler");
     }
-    
+
     protected RequestGroupInfo getRequestGroupInfo() {
         Object connectionHandler = this.getConnectionHandler();
         if (connectionHandler == null) return null;
         return this.getRequestGroupInfo(connectionHandler);
     }
-    
+
     protected RequestGroupInfo getRequestGroupInfo(Object connectionHandler) {
-        Field field = this.findField(connectionHandler.getClass(), "global");
-        if (field == null) return null;
-        field.setAccessible(true);
-        try {
-            return (RequestGroupInfo) field.get(connectionHandler);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException(e);
-        }
+        AbstractEndpoint.Handler handler = (AbstractEndpoint.Handler) connectionHandler;
+        return (RequestGroupInfo) handler.getGlobal();
     }
 }

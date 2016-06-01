@@ -37,7 +37,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Needs to recompile against Tomcat 9 Jar due to {@link Service#getContainer()} signature change.
+ * Needs to recompile against Tomcat 8.5/9 Jar due to {@link Service#getContainer()} signature change.
  *
  * @author Paul Ferraro
  * @author Radoslav Husar

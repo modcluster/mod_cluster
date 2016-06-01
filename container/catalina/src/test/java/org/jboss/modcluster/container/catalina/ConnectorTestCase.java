@@ -40,7 +40,7 @@ public class ConnectorTestCase {
         this.setSecure(connector, secure);
         return this.createConnector(connector);
     }
-    
+
     protected org.apache.catalina.connector.Connector createConnector(String protocol) {
         try {
             return new org.apache.catalina.connector.Connector(protocol);
@@ -48,7 +48,7 @@ public class ConnectorTestCase {
             throw new IllegalStateException(String.format("Failed to create %s connector", protocol), e);
         }
     }
-    
+
     protected void setSecure(org.apache.catalina.connector.Connector connector, boolean secure) {
         IntrospectionUtils.setProperty(connector.getProtocolHandler(), "secure", Boolean.toString(secure));
     }
@@ -93,25 +93,39 @@ public class ConnectorTestCase {
         this.httpsConnector.setAddress(InetAddress.getByName(address));
         Assert.assertEquals(address, this.httpsConnector.getAddress().getHostAddress());
     }
-    
+
     @Test
     public void getBytesSent() {
         Assert.assertEquals(0, this.httpConnector.getBytesSent());
         Assert.assertEquals(0, this.httpsConnector.getBytesSent());
         Assert.assertEquals(0, this.ajpConnector.getBytesSent());
     }
-    
+
     @Test
     public void getBytesReceived() {
         Assert.assertEquals(0, this.httpConnector.getBytesReceived());
         Assert.assertEquals(0, this.httpsConnector.getBytesReceived());
         Assert.assertEquals(0, this.ajpConnector.getBytesReceived());
     }
-    
+
     @Test
     public void getRequestCount() {
         Assert.assertEquals(0, this.httpConnector.getRequestCount());
         Assert.assertEquals(0, this.httpsConnector.getRequestCount());
         Assert.assertEquals(0, this.ajpConnector.getRequestCount());
+    }
+
+    @Test
+    public void getMaxThreads() {
+        Assert.assertEquals(0, this.httpConnector.getMaxThreads());
+        Assert.assertEquals(0, this.httpsConnector.getMaxThreads());
+        Assert.assertEquals(0, this.ajpConnector.getMaxThreads());
+    }
+    
+    @Test
+    public void getBusyThreads() {
+        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
+        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
+        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
     }
 }

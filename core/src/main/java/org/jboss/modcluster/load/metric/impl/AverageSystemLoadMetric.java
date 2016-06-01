@@ -24,7 +24,6 @@ package org.jboss.modcluster.load.metric.impl;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 
-import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Engine;
 

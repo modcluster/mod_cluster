@@ -21,38 +21,8 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.apache.tomcat.util.IntrospectionUtils;
-import org.jboss.modcluster.container.Connector;
-import org.junit.Assert;
-import org.junit.Test;
-
 /**
  * @author Paul Ferraro
  */
 public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.ConnectorTestCase {
-
-    @Override
-    protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
-        return new TomcatConnector(connector);
-    }
-
-    @Override
-    protected void setSecure(org.apache.catalina.connector.Connector connector, boolean secure) {
-        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "secure", Boolean.toString(secure));
-    }
-
-    @Test
-    public void getMaxThreads() {
-        Assert.assertEquals(0, this.httpConnector.getMaxThreads());
-        Assert.assertEquals(0, this.httpsConnector.getMaxThreads());
-        Assert.assertEquals(0, this.ajpConnector.getMaxThreads());
-    }
-
-    @Test
-    public void getBusyThreads() {
-        Assert.assertEquals(0, this.httpConnector.getBusyThreads());
-        Assert.assertEquals(0, this.httpsConnector.getBusyThreads());
-        Assert.assertEquals(0, this.ajpConnector.getBusyThreads());
-    }
-
 }

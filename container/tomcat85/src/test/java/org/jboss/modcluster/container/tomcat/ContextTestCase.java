@@ -21,7 +21,11 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.apache.catalina.LifecycleState;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
@@ -31,13 +35,6 @@ import org.mockito.ArgumentCaptor;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequestListener;
 import java.io.IOException;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Paul Ferraro
@@ -49,21 +46,6 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
     @Override
     protected Context createContext(org.apache.catalina.Context context, Host host) {
         return new TomcatContext(context, host);
-    }
-
-    @Override
-    public void isStarted() {
-        when(this.context.getState()).thenReturn(LifecycleState.STOPPED);
-
-        boolean result = this.catalinaContext.isStarted();
-
-        assertFalse(result);
-
-        when(this.context.getState()).thenReturn(LifecycleState.STARTED);
-
-        result = this.catalinaContext.isStarted();
-
-        assertTrue(result);
     }
 
     @Override
@@ -88,17 +70,5 @@ public class ContextTestCase extends org.jboss.modcluster.container.catalina.Con
         this.catalinaContext.removeRequestListener(listener);
 
         verify(pipeline).removeValve(same(valve));
-    }
-
-    @Override
-    public void isDistributable() {
-        org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
-        when(context.getDistributable()).thenReturn(true);
-
-        Context distributableContext = this.createContext(context, host);
-
-        boolean result = distributableContext.isDistributable();
-
-        assertTrue(result);
     }
 }
