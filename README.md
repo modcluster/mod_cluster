@@ -59,7 +59,7 @@ container
   tomcat6 (Tomcat 6.0 container implementation)
   tomcat7 (Tomcat 7.0 container implementation)
   tomcat8 (Tomcat 8.0 container implementation)
-  tomcat9 (experimental Tomcat 9.0 milestone release container implementation)
+  tomcat85 (Tomcat 8.5 and 9.0 milestone container implementation)
 core
 demo
   client

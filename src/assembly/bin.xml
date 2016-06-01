@@ -130,7 +130,7 @@
       <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>container/tomcat9/target/</directory>
+      <directory>container/tomcat85/target/</directory>
       <includes>
         <include>*.jar</include>
       </includes>
