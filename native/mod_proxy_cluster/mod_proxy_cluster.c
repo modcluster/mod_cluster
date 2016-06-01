@@ -3093,6 +3093,29 @@ static int proxy_cluster_canon(request_rec *r, char *url)
 
     r->filename = apr_pstrcat(r->pool, "proxy:balancer://", host,
             "/", path, (search) ? "?" : "", (search) ? search : "", NULL);
+
+    /*
+     * Check sticky sessions again in case of ProxyPass
+     */
+    const char *route;
+    route = apr_table_get(r->notes, "session-route");
+    if (!route) {
+        void *sconf = r->server->module_config;
+        proxy_server_conf *conf = (proxy_server_conf *)
+            ap_get_module_config(sconf, &proxy_module);
+
+        proxy_vhost_table vhost_table;
+        proxy_context_table context_table;
+        proxy_balancer_table balancer_table;
+        proxy_node_table node_table;
+        read_vhost_table(r, &vhost_table);
+        read_context_table(r, &context_table);
+        read_balancer_table(r, &balancer_table);
+        read_node_table(r, &node_table);
+
+        get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
+    }
+
     return OK;
 }
 
