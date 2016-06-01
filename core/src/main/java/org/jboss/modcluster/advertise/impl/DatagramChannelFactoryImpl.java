@@ -22,18 +22,35 @@
 package org.jboss.modcluster.advertise.impl;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.StandardProtocolFamily;
+import java.net.StandardSocketOptions;
+import java.nio.channels.DatagramChannel;
 
-import org.jboss.modcluster.advertise.AdvertiseListener;
-import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
-import org.jboss.modcluster.config.AdvertiseConfiguration;
-import org.jboss.modcluster.mcmp.MCMPHandler;
+import org.jboss.modcluster.ModClusterLogger;
+import org.jboss.modcluster.advertise.DatagramChannelFactory;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
+ * @version May 2016
  */
-public class AdvertiseListenerFactoryImpl implements AdvertiseListenerFactory {
+public class DatagramChannelFactoryImpl implements DatagramChannelFactory {
+
     @Override
-    public AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException {
-        return new AdvertiseListenerImpl(handler, config, new DatagramChannelFactoryImpl());
+    public DatagramChannel createDatagramChannel(InetAddress address, int port) throws IOException {
+        if (!address.isMulticastAddress()) {
+            ModClusterLogger.LOGGER.createMulticastSocketWithUnicastAddress(address);
+        }
+
+        boolean isJdk7 = System.getProperty("java.version").startsWith("1.7.0");
+
+        return DatagramChannel
+                .open(address instanceof Inet4Address ? StandardProtocolFamily.INET : StandardProtocolFamily.INET6)
+                .setOption(StandardSocketOptions.SO_REUSEADDR, true)
+                .bind(isJdk7 ? new InetSocketAddress(address, port) : new InetSocketAddress(port))
+                ;
     }
 }

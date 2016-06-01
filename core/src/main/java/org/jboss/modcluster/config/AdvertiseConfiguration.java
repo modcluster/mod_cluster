@@ -21,20 +21,22 @@
  */
 package org.jboss.modcluster.config;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface AdvertiseConfiguration {
-    static final InetSocketAddress DEFAULT_SOCKET_ADDRESS = new InetSocketAddress("224.0.1.105", 23364);
+    InetSocketAddress DEFAULT_SOCKET_ADDRESS = new InetSocketAddress("224.0.1.105", 23364);
 
     InetSocketAddress getAdvertiseSocketAddress();
 
-    InetAddress getAdvertiseInterface();
+    /**
+     * {@link NetworkInterface} to listen for advertisements.
+     */
+    NetworkInterface getAdvertiseInterface();
 
     /**
      * Advertise security key.

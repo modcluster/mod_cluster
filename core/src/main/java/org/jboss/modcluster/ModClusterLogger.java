@@ -133,17 +133,17 @@ public interface ModClusterLogger {
     @Message(id = 30, value = "Attempted to bind multicast socket to a unicast address: %s.  Multicast socket will not be bound to an address.")
     void createMulticastSocketWithUnicastAddress(InetAddress address);
 
-    @LogMessage(level = WARN)
-    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address): %s; make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see http://www.jboss.org/community/docs/DOC-9469 for details).")
-    void potentialCrossTalking(InetAddress address, String addressType, String message);
+//    @LogMessage(level = WARN)
+//    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address): %s; make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see http://www.jboss.org/community/docs/DOC-9469 for details).")
+//    void potentialCrossTalking(InetAddress address, String addressType, String message);
 
     @LogMessage(level = INFO)
     @Message(id = 32, value = "Listening to proxy advertisements on %s")
     void startAdvertise(InetSocketAddress address);
 
-    @LogMessage(level = WARN)
-    @Message(id = 33, value = "Failed to interrupt socket reception.")
-    void socketInterruptFailed(@Cause Throwable cause);
+//    @LogMessage(level = WARN)
+//    @Message(id = 33, value = "Failed to interrupt socket reception.")
+//    void socketInterruptFailed(@Cause Throwable cause);
 
     @LogMessage(level = ERROR)
     @Message(id = 34, value = "Failed to start advertise listener")
@@ -177,4 +177,8 @@ public interface ModClusterLogger {
     @LogMessage(level = INFO)
     @Message(id = 46, value = "Starting to drain %d active sessions from %s:%s in %d seconds.")
     void startSessionDraining(int sessions, Host host, Context context, long timeout);
+
+    @LogMessage(level = WARN)
+    @Message(id = 47, value = "No advertise interface configured! Attempted to join on interfaces: %s.")
+    void noAdvertiseInterfaceConfigured(String joinedInterfaces);
 }

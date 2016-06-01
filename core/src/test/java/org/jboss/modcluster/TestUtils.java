@@ -3,17 +3,17 @@
  * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
- *
+ * <p>
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation; either version 2.1 of
  * the License, or (at your option) any later version.
- *
+ * <p>
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
@@ -22,6 +22,10 @@
 
 package org.jboss.modcluster;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
@@ -38,19 +42,33 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class TestUtils {
 
+    private static final String ADVERTISE_INTERFACE_ADDRESS = System.getProperty("multicast.interface.address");
+    private static final String ADVERTISE_INTERFACE_NAME = System.getProperty("multicast.interface.name");
+
     public static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
     public static final DateFormat df = new SimpleDateFormat(RFC_822_FMT, Locale.US);
     public static final byte[] zeroMd5Sum = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+    public static NetworkInterface getAdvertiseInterface() throws SocketException, UnknownHostException {
+        InetAddress address = InetAddress.getByName(ADVERTISE_INTERFACE_ADDRESS);
+        NetworkInterface ifaceByAddress = NetworkInterface.getByInetAddress(address);
+
+        NetworkInterface ifaceByName;
+        if (ADVERTISE_INTERFACE_NAME != null) {
+            ifaceByName = NetworkInterface.getByName(ADVERTISE_INTERFACE_NAME);
+        } else {
+            return ifaceByAddress;
+        }
+
+        if (ADVERTISE_INTERFACE_ADDRESS == null || ifaceByAddress.equals(ifaceByName)) {
+            return ifaceByName;
+        } else {
+            throw new IllegalStateException("Both -Dmulticast.interface.address and -Dmulticast.interface.name specified but resolve to different interfaces!");
+        }
+    }
+
     /**
      * Generates datagram packet content buffer including all fields as sent by native code.
-     *
-     * @param date
-     * @param sequence
-     * @param server
-     * @param serverAddress
-     * @return byte buffer
-     * @throws NoSuchAlgorithmException
      */
     public static byte[] generateAdvertisePacketData(Date date, int sequence, String server, String serverAddress) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -82,8 +100,7 @@ public class TestUtils {
         data.append(serverAddress);
         data.append("\r\n");
 
-        byte[] buf = data.toString().getBytes();
-        return buf;
+        return data.toString().getBytes();
     }
 
     /**

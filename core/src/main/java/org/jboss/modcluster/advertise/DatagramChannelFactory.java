@@ -23,13 +23,15 @@ package org.jboss.modcluster.advertise;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.nio.channels.DatagramChannel;
 
 /**
- * Factory for creating multicast sockets.
- * 
+ * Factory for creating datagram multicast channels.
+ *
  * @author Paul Ferraro
+ * @author Radoslav Husar
+ * @version May 2016
  */
-public interface MulticastSocketFactory {
-    MulticastSocket createMulticastSocket(InetAddress address, int port) throws IOException;
+public interface DatagramChannelFactory {
+    DatagramChannel createDatagramChannel(InetAddress address, int port) throws IOException;
 }

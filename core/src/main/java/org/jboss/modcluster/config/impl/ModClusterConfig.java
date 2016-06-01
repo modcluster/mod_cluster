@@ -23,6 +23,8 @@ package org.jboss.modcluster.config.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -107,22 +109,39 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseSocketAddress = new InetSocketAddress(this.advertiseSocketAddress.getAddress(), advertisePort);
     }
 
-    private InetAddress advertiseInterface = null;
+    private NetworkInterface advertiseInterface = null;
 
     @Override
-    public InetAddress getAdvertiseInterface() {
+    public NetworkInterface getAdvertiseInterface() {
         return this.advertiseInterface;
     }
 
-    public void setAdvertiseInterface(InetAddress advertiseInterface) {
+    public void setAdvertiseInterface(NetworkInterface advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
     }
 
-    @Deprecated
+    public void setAdvertiseInterface(InetAddress advertiseInterfaceAddress) {
+        try {
+            this.setAdvertiseInterface(NetworkInterface.getByInetAddress(advertiseInterfaceAddress));
+        } catch (SocketException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /* Used by Tomcat modeler and server.xml */
     public void setAdvertiseInterface(String advertiseInterface) {
         try {
             this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
         } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    /* Used by Tomcat modeler and server.xml */
+    public void setAdvertiseInterfaceName(String advertiseInterfaceName) {
+        try {
+            this.setAdvertiseInterface(NetworkInterface.getByName(advertiseInterfaceName));
+        } catch (SocketException e) {
             throw new IllegalArgumentException(e);
         }
     }
