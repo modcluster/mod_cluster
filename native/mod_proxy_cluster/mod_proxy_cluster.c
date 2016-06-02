@@ -1764,16 +1764,17 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
 
 
 /* Read the virtual host table from shared memory */
-static void read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
+static proxy_vhost_table *read_vhost_table(request_rec *r)
 {
     int i;
     int size;
+    proxy_vhost_table *vhost_table = apr_palloc(r->pool, sizeof(proxy_vhost_table));
     size = host_storage->get_max_size_host();
     if (size == 0) {
         vhost_table->sizevhost = 0;
         vhost_table->vhosts = NULL;
         vhost_table->vhost_info = NULL;
-        return; 
+        return vhost_table;
     }
 
     vhost_table->vhosts =  apr_palloc(r->pool, sizeof(int) * host_storage->get_max_size_host());
@@ -1785,19 +1786,21 @@ static void read_vhost_table(request_rec *r, proxy_vhost_table *vhost_table)
         host_storage->read_host(host_index, &h);
         vhost_table->vhost_info[i] = *h;
     }
+    return vhost_table;
 }
 
 /* Read the context table from shared memory */
-static void read_context_table(request_rec *r, proxy_context_table *context_table)
+static proxy_context_table *read_context_table(request_rec *r)
 {
     int i;
     int size;
+    proxy_context_table *context_table = apr_palloc(r->pool, sizeof(proxy_context_table));
     size = context_storage->get_max_size_context();
     if (size == 0) { 
         context_table->sizecontext = 0;
         context_table->contexts = NULL;
         context_table->context_info = NULL;
-        return;
+        return context_table;
     }
     context_table->contexts =  apr_palloc(r->pool, sizeof(int) * size);
     context_table->sizecontext = context_storage->get_ids_used_context(context_table->contexts);
@@ -1808,19 +1811,21 @@ static void read_context_table(request_rec *r, proxy_context_table *context_tabl
         context_storage->read_context(context_index, &h);
         context_table->context_info[i] = *h;
     }
+    return context_table;
 }
 
 /* Read the balancer table from shared memory */
-static void read_balancer_table(request_rec *r, proxy_balancer_table *balancer_table)
+static proxy_balancer_table *read_balancer_table(request_rec *r)
 {
     int i;
     int size;
+    proxy_balancer_table *balancer_table = apr_palloc(r->pool, sizeof(proxy_balancer_table));
     size = balancer_storage->get_max_size_balancer();
     if (size == 0) { 
         balancer_table->sizebalancer = 0;
         balancer_table->balancers = NULL;
         balancer_table->balancer_info = NULL;
-        return;
+        return balancer_table;
     }
     balancer_table->balancers =  apr_palloc(r->pool, sizeof(int) * size);
     balancer_table->sizebalancer = balancer_storage->get_ids_used_balancer(balancer_table->balancers);
@@ -1831,19 +1836,21 @@ static void read_balancer_table(request_rec *r, proxy_balancer_table *balancer_t
         balancer_storage->read_balancer(balancer_index, &h);
         balancer_table->balancer_info[i] = *h;
     }
+    return balancer_table;
 }
 
 /* Read the node table from shared memory */
-static void read_node_table(request_rec *r, proxy_node_table *node_table)
+static proxy_node_table *read_node_table(request_rec *r)
 {
     int i;
     int size;
+    proxy_node_table *node_table =  apr_palloc(r->pool, sizeof(proxy_node_table));
     size = node_storage->get_max_size_node();
     if (size == 0) { 
         node_table->sizenode = 0;
         node_table->nodes = NULL;
         node_table->node_info = NULL;
-        return;
+        return node_table;
     }
     node_table->nodes =  apr_palloc(r->pool, sizeof(int) * size);
     node_table->sizenode = node_storage->get_ids_used_node(node_table->nodes);
@@ -1854,9 +1861,10 @@ static void read_node_table(request_rec *r, proxy_node_table *node_table)
         node_storage->read_node(node_index, &h);
         node_table->node_info[i] = *h;
     }
+    return node_table;
 }
 
-/* Read a node from the tabel using its it */
+/* Read a node from the table using its it */
 static  nodeinfo_t* table_get_node(proxy_node_table *node_table, int id)
 {
     int i;
@@ -2299,14 +2307,11 @@ static proxy_worker *find_best_byrequests(proxy_balancer *balancer, request_rec 
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    proxy_vhost_table vhost_table;
-    proxy_context_table context_table;
-    proxy_node_table node_table;
-    read_vhost_table(r, &vhost_table);
-    read_context_table(r, &context_table);
-    read_node_table(r, &node_table);
+    proxy_vhost_table *vhost_table = read_vhost_table(r);
+    proxy_context_table *context_table = read_context_table(r);
+    proxy_node_table *node_table = read_node_table(r);
 
-    return internal_find_best_byrequests(balancer, conf, r, NULL, 0, &vhost_table, &context_table, &node_table);
+    return internal_find_best_byrequests(balancer, conf, r, NULL, 0, vhost_table, context_table, node_table);
 }
 
 /*
@@ -2961,15 +2966,15 @@ static int proxy_cluster_trans(request_rec *r)
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    proxy_vhost_table vhost_table;
-    proxy_context_table context_table;
-    proxy_balancer_table balancer_table;
-    proxy_node_table node_table;
-    read_vhost_table(r, &vhost_table);
-    read_context_table(r, &context_table);
-    read_balancer_table(r, &balancer_table);
-    read_node_table(r, &node_table);
-    apr_table_setn(r->notes, "balancer-table",  (char *) &balancer_table);
+    proxy_vhost_table *vhost_table = read_vhost_table(r);
+    proxy_context_table *context_table = read_context_table(r);
+    proxy_balancer_table *balancer_table = read_balancer_table(r);
+    proxy_node_table *node_table = read_node_table(r);
+
+    apr_table_setn(r->notes, "vhost-table",  (char *) vhost_table);
+    apr_table_setn(r->notes, "context-table",  (char *) context_table);
+    apr_table_setn(r->notes, "balancer-table",  (char *) balancer_table);
+    apr_table_setn(r->notes, "node-table",  (char *) node_table);
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
@@ -2977,14 +2982,14 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
-    balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
+    balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
     if (!balancer) {
         /* May be the balancer has not been created (we use shared memory to find the balancer name) */
         update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf, &vhost_table, &context_table, &balancer_table, &node_table);
+        balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
     }
     if (!balancer) {
-        balancer = get_context_host_balancer(r, &vhost_table, &context_table, &node_table);
+        balancer = get_context_host_balancer(r, vhost_table, context_table, node_table);
     }
     
 
@@ -3053,6 +3058,7 @@ static int proxy_cluster_canon(request_rec *r, char *url)
     char *search = NULL;
     const char *err;
     apr_port_t port = 0;
+    const char *route;
 
     if (strncasecmp(url, "balancer:", 9) == 0) {
         url += 9;
@@ -3093,6 +3099,34 @@ static int proxy_cluster_canon(request_rec *r, char *url)
 
     r->filename = apr_pstrcat(r->pool, "proxy:balancer://", host,
             "/", path, (search) ? "?" : "", (search) ? search : "", NULL);
+
+    /*
+     * Check sticky sessions again in case of ProxyPass
+     */
+    route = apr_table_get(r->notes, "session-route");
+    if (!route) {
+        void *sconf = r->server->module_config;
+        proxy_server_conf *conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
+
+        proxy_vhost_table *vhost_table = (proxy_vhost_table *) apr_table_get(r->notes, "vhost-table");
+        if (!vhost_table)
+            vhost_table = read_vhost_table(r);
+
+        proxy_context_table *context_table  = (proxy_context_table *) apr_table_get(r->notes, "context-table");
+        if (!context_table)
+            context_table = read_context_table(r);
+
+        proxy_balancer_table *balancer_table  = (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
+        if (!balancer_table)
+            balancer_table = read_balancer_table(r);
+
+        proxy_node_table *node_table  = (proxy_node_table *) apr_table_get(r->notes, "node-table");
+        if (!node_table)
+            node_table = read_node_table(r);
+
+        get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
+    }
+
     return OK;
 }
 
@@ -3503,13 +3537,9 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     proxy_cluster_helper *helper;
     const char *context_id;
 
-    proxy_vhost_table vhost_table;
-    proxy_context_table context_table;
-    proxy_node_table node_table;
-
-    read_vhost_table(r, &vhost_table);
-    read_context_table(r, &context_table);
-    read_node_table(r, &node_table);
+    proxy_vhost_table *vhost_table = read_vhost_table(r);
+    proxy_context_table *context_table = read_context_table(r);
+    proxy_node_table *node_table = read_node_table(r);
 
     *worker = NULL;
 #if HAVE_CLUSTER_EX_DEBUG
@@ -3598,7 +3628,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     /* Step 2: find the session route */
 
     runtime = find_session_route(*balancer, r, &route, &sticky, url, &domain,
-    		&vhost_table, &context_table, &node_table);
+    		vhost_table, context_table, node_table);
     apr_thread_mutex_unlock(lock);
 
     /* Lock the LoadBalancer
@@ -3674,7 +3704,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
          * We have to failover (in domain only may be) or we don't use sticky sessions
          */
         runtime = find_best_worker(*balancer, conf, r, domain, failoverdomain,
-        		&vhost_table, &context_table, &node_table, 1);
+        		vhost_table, context_table, node_table, 1);
         if (!runtime) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                          "proxy: CLUSTER: (%s). All workers are in error state",
