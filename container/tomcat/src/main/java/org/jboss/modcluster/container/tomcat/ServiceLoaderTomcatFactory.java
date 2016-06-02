@@ -41,7 +41,7 @@ public class ServiceLoaderTomcatFactory implements TomcatFactory, TomcatFactoryR
     private final ConnectorFactory connectorFactory;
     private final ProxyConnectorProvider provider;
 
-    private static <T> T load(final Class<T> targetClass, final Class<? extends T> defaultClass) {
+    static <T> T load(final Class<T> targetClass, final Class<? extends T> defaultClass) {
         PrivilegedAction<T> action = new PrivilegedAction<T>() {
             @Override
             public T run() {

@@ -46,8 +46,6 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -73,20 +71,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         ModClusterService service = new ModClusterService(this, this);
 
         this.service = service;
-        this.listener = this.loadFactory().createListener(service);
-    }
-
-    private LifecycleListenerFactory loadFactory() {
-        PrivilegedAction<LifecycleListenerFactory> action = new PrivilegedAction<LifecycleListenerFactory>() {
-            @Override
-            public LifecycleListenerFactory run() {
-                for (LifecycleListenerFactory factory: ServiceLoader.load(LifecycleListenerFactory.class, LifecycleListenerFactory.class.getClassLoader())) {
-                    return factory;
-                }
-                throw new ServiceConfigurationError(LifecycleListenerFactory.class.getName());
-            }
-        };
-        return AccessController.doPrivileged(action);
+        this.listener = ServiceLoaderTomcatFactory.load(LifecycleListenerFactory.class, TomcatEventHandlerAdapterFactory.class).createListener(service);
     }
 
     protected ModClusterListener(ModClusterServiceMBean mbean, LifecycleListener listener) {
