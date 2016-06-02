@@ -361,9 +361,12 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     worker->s->was_malloced = 0; /* Prevent mod_proxy to free it */
     worker->s->index = node->mess.id;
     helper->index = node->mess.id;
-    strcpy(worker->s->name, shared->name);
-    strcpy(worker->s->hostname, shared->hostname);
-    strcpy(worker->s->scheme, shared->scheme);
+    strncpy(worker->s->name, shared->name, sizeof(worker->s->name));
+    worker->s->name[sizeof(worker->s->name) - 1] = '\0';
+    strncpy(worker->s->hostname, shared->hostname, sizeof(worker->s->hostname));
+    worker->s->hostname[sizeof(worker->s->hostname) - 1] = '\0';
+    strncpy(worker->s->scheme, shared->scheme, sizeof(worker->s->scheme));
+    worker->s->scheme[sizeof(worker->s->scheme) - 1] = '\0';
     worker->s->port = shared->port;
     worker->s->hmax = shared->hmax;
     if (worker->s->hmax < node->mess.smax)
@@ -2508,9 +2511,12 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
 #endif
             if (ou->mess.Domain[0] != '\0') {
                 domaininfo_t dom;
-                strcpy(dom.JVMRoute, ou->mess.JVMRoute);
-                strcpy(dom.balancer, ou->mess.balancer);
-                strcpy(dom.domain, ou->mess.Domain);
+                strncpy(dom.JVMRoute, ou->mess.JVMRoute, sizeof(dom.JVMRoute));
+                dom.JVMRoute[sizeof(dom.JVMRoute) - 1] = '\0';
+                strncpy(dom.balancer, ou->mess.balancer, sizeof(dom.balancer));
+                dom.balancer[sizeof(dom.balancer) - 1] = '\0';
+                strncpy(dom.domain, ou->mess.Domain, sizeof(dom.domain));
+                dom.domain[sizeof(dom.domain) - 1] = '\0';
                 if (domain_storage->insert_update_domain(&dom)!=APR_SUCCESS) {
                     remove_timeout_domain(pool, server);
                     domain_storage->insert_update_domain(&dom);
