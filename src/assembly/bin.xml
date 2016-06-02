@@ -75,7 +75,7 @@
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>container/catalina/target/</directory>
+      <directory>container/tomcat/target/</directory>
       <includes>
         <include>*.jar</include>
       </includes>

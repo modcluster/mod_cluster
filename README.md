@@ -53,8 +53,7 @@ Project Structure
 ```
 container-spi (contains no dependencies on a specific web container)
 container
-  catalina (base for Tomcat container implementations, based on Tomcat 7)
-  tomcat7 (Tomcat 7.0 container implementation)
+  tomcat (base for Tomcat container implementations, based on Tomcat 7)
   tomcat8 (Tomcat 8.0 container implementation)
   tomcat85 (Tomcat 8.5 and 9.0 milestone container implementation)
 core
