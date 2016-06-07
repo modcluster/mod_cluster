@@ -1,12 +1,14 @@
+#!/usr/bin/env bash
+
 CP=./classes
 
 for i in lib/*.jar
 do
-    CP=$CP:./${i}
+    CP=${CP}:./${i}
 done
 
-# NOTE -Xss8K may cause troubles check ulimit -s should be >= 8192
-OPTS="-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=31"
+# Uncomment the following line for enabling JVM performance options; note -Xss8K may cause troubles check ulimit -s should be >= 8192
+#OPTS="-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=15"
 
 # Tell the HttpURLConnection pool to maintain 400 connections max
 OPTS="$OPTS -Dhttp.maxConnections=400"
