@@ -809,7 +809,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     memset(&nodeinfo.mess, '\0', sizeof(nodeinfo.mess));
     if (mconf->balancername != NULL) {
         normalize_balancer_name(mconf->balancername, r->server);
-        strcpy(nodeinfo.mess.balancer, mconf->balancername);
+        strncpy(nodeinfo.mess.balancer, mconf->balancername, sizeof(nodeinfo.mess.balancer));
+        nodeinfo.mess.balancer[sizeof(nodeinfo.mess.balancer) -1] = '\0';
     } else {
         strcpy(nodeinfo.mess.balancer, "mycluster");
     }
@@ -832,7 +833,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     memset(&balancerinfo, '\0', sizeof(balancerinfo));
     if (mconf->balancername != NULL) {
         normalize_balancer_name(mconf->balancername, r->server);
-        strcpy(balancerinfo.balancer, mconf->balancername);
+        strncpy(balancerinfo.balancer, mconf->balancername, sizeof(balancerinfo.balancer));
+        balancerinfo.balancer[sizeof(balancerinfo.balancer) - 1] = '\0';
     } else {
         strcpy(balancerinfo.balancer, "mycluster");
     }
@@ -850,8 +852,10 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
                 *errtype = TYPESYNTAX;
                 return SBALBIG;
             }
-            strcpy(nodeinfo.mess.balancer, ptr[i+1]);
-            strcpy(balancerinfo.balancer, ptr[i+1]);
+            strncpy(nodeinfo.mess.balancer, ptr[i+1], sizeof(nodeinfo.mess.balancer));
+            nodeinfo.mess.balancer[sizeof(nodeinfo.mess.balancer) - 1] = '\0';
+            strncpy(balancerinfo.balancer, ptr[i+1], sizeof(balancerinfo.balancer));
+            balancerinfo.balancer[sizeof(balancerinfo.balancer) - 1] = '\0';
         }
         if (strcasecmp(ptr[i], "StickySession") == 0) {
             if (strcasecmp(ptr[i+1], "no") == 0)
@@ -1704,10 +1708,12 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
             }
             hostinfo.id = 0;
             hostinfo.node = node->mess.id;
-            if (vhost->host != NULL)
-                strcpy(hostinfo.host, vhost->host);
-            else
+            if (vhost->host != NULL) {
+                strncpy(hostinfo.host, vhost->host, sizeof(hostinfo.host));
+                hostinfo.host[sizeof(hostinfo.host) - 1] = '\0';
+            } else {
                 hostinfo.host[0] = '\0';
+            }
             host = read_host(hoststatsmem, &hostinfo);
             if (host == NULL) {
                 *errtype = TYPEMEM;
