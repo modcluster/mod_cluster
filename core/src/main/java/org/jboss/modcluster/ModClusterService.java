@@ -328,11 +328,23 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             String jvmRoute = this.mcmpConfig.getJvmRouteFactory().createJvmRoute(engine);
 
             engine.setJvmRoute(jvmRoute);
+            configureJvmRoute(engine, jvmRoute);
 
             ModClusterLogger.LOGGER.detectJvmRoute(engine, jvmRoute);
         }
     }
 
+    /**
+     * For each context reset the value of the jvmRoute
+     */
+    private void configureJvmRoute(Engine engine, String jvmRoute) {
+		for(Host host : engine.getHosts()) {
+			for (Context context : host.getContexts()) {
+				context.configureJvmRoute(jvmRoute);
+			}
+		}
+    }
+    
     /**
      * {@inhericDoc}
      * 
