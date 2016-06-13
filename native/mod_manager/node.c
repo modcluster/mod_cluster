@@ -222,7 +222,8 @@ apr_status_t find_node(mem_t *s, nodeinfo_t **node, const char *route)
     nodeinfo_t ou;
     apr_status_t rv;
 
-    strcpy(ou.mess.JVMRoute, route);
+    strncpy(ou.mess.JVMRoute, route, sizeof(ou.mess.JVMRoute));
+    ou.mess.JVMRoute[sizeof(ou.mess.JVMRoute) - 1] = '\0';
     *node = &ou;
     rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_node, node, 0, s->p);
     return rv;

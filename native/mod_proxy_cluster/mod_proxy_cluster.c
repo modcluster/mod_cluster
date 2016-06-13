@@ -2550,9 +2550,12 @@ static void remove_removed_node(apr_pool_t *pool, server_rec *server)
 #endif
             if (ou->mess.Domain[0] != '\0') {
                 domaininfo_t dom;
-                strcpy(dom.JVMRoute, ou->mess.JVMRoute);
-                strcpy(dom.balancer, ou->mess.balancer);
-                strcpy(dom.domain, ou->mess.Domain);
+                strncpy(dom.JVMRoute, ou->mess.JVMRoute, sizeof(dom.JVMRoute));
+                dom.JVMRoute[sizeof(dom.JVMRoute) - 1] = '\0';
+                strncpy(dom.balancer, ou->mess.balancer, sizeof(dom.balancer));
+                dom.balancer[sizeof(dom.balancer) - 1] = '\0';
+                strncpy(dom.domain, ou->mess.Domain, sizeof(dom.domain));
+                dom.domain[sizeof(dom.domain) - 1] = '\0';
                 if (domain_storage->insert_update_domain(&dom)!=APR_SUCCESS) {
                     remove_timeout_domain(pool, server);
                     domain_storage->insert_update_domain(&dom);
