@@ -887,9 +887,6 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
     int sizeb = conf->balancers->elt_size;
     int sizew = sizeof(proxy_worker *);
 
-    int mpm_generation;
-    ap_mpm_query(AP_MPMQ_GENERATION, &mpm_generation);
-
     for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
         int j;
         char *ptrw;
@@ -907,7 +904,10 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
                     strcmp((*worker)->s->hostname, node->mess.Host) ||
                     strcmp(sport, node->mess.Port)) {
                     (*worker)->s->index = 0;
-                    mpm_generation--; /* mark old generation that will recreate the process */
+                    int mpm_generation;
+                    ap_mpm_query(AP_MPMQ_GENERATION, &mpm_generation);
+                    ap_scoreboard_image->global->running_generation = mpm_generation - 1;
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server, "Worker cannot recover from data inconsistency. Marking mpm_generation for re-creation. Old: %d, Marked %d", mpm_generation, ap_scoreboard_image->global->running_generation);
                     continue; /* skip it */
                 }
 
@@ -1568,15 +1568,16 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 if (worker == NULL)
                     continue; /* skip it */
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-                int mpm_generation;
-                ap_mpm_query(AP_MPMQ_GENERATION, &mpm_generation);
                 apr_snprintf(sport, sizeof(sport), "%d", worker->s->port);
                 if (strcmp(worker->s->scheme, ou->mess.Type) ||
                     strcmp(worker->s->hostname, ou->mess.Host) ||
                     strcmp(sport, ou->mess.Port)) {
                     /* the worker doesn't correspond to the node */
                     worker->s->index = 0;
-                    mpm_generation--; /* mark old generation that will recreate the process */
+                    int mpm_generation;
+                    ap_mpm_query(AP_MPMQ_GENERATION, &mpm_generation);
+                    ap_scoreboard_image->global->running_generation = mpm_generation - 1;
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server, "Worker cannot recover from data inconsistency. Marking mpm_generation for re-creation. Old: %d, Marked %d", mpm_generation, ap_scoreboard_image->global->running_generation);
                     continue; /* skip it */
                 }
                 if (strchr(worker->s->hostname, ':') != NULL)
