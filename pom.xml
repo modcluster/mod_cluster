@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>16</version>
+        <version>20</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -54,19 +54,17 @@
     </repositories>
 
     <properties>
-        <!-- Override default 1.7 target/source in jboss-parent -->
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <maven.compiler.source>1.6</maven.compiler.source>
+        <!-- Override default 1.8 target/source in jboss-parent -->
+        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
 
         <!-- Dependency versions -->
         <version.jboss-logging>3.1.2.GA</version.jboss-logging>
         <version.jboss-logging-processor>1.1.0.Final</version.jboss-logging-processor>
-        <version.tomcat6>6.0.35</version.tomcat6>
         <version.tomcat7>7.0.30</version.tomcat7>
         <version.tomcat8>8.0.21</version.tomcat8>
         <version.tomcat85>8.5.2</version.tomcat85>
-        <version.tomcat9>9.0.0.M4</version.tomcat9>
-        <version.jbossweb7>7.2.1.Final</version.jbossweb7>
+        <version.tomcat9>9.0.0.M6</version.tomcat9>
         <version.http-client>4.2.3</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
@@ -91,18 +89,6 @@
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.jboss-logging-processor}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>catalina</artifactId>
-                <version>${version.tomcat6}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>coyote</artifactId>
-                <version>${version.tomcat6}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-catalina</artifactId>
@@ -118,13 +104,6 @@
                 <artifactId>tomcat-util</artifactId>
                 <version>${version.tomcat7}</version>
             </dependency>
-
-            <dependency>
-                <groupId>org.jboss.web</groupId>
-                <artifactId>jbossweb</artifactId>
-                <version>${version.jbossweb7}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
                 <artifactId>httpclient</artifactId>
@@ -194,30 +173,6 @@
                 <artifactId>versions-maven-plugin</artifactId>
                 <version>1.3.1</version>
             </plugin>
-            <!-- In order to build everything in one take, we need to use JDK7 because of the Tomcat 8
-                  dependency, however we need to ensure that the code will be run correctly on JDK6 for Tomcat 6
-                  support. -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>animal-sniffer-maven-plugin</artifactId>
-                <version>1.14</version>
-                <configuration>
-                    <signature>
-                        <groupId>org.codehaus.mojo.signature</groupId>
-                        <artifactId>java16</artifactId>
-                        <version>1.1</version>
-                    </signature>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>ensure-java-1.6-class-library</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -226,18 +181,6 @@
             <id>default</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>container-spi</module>
-                <module>core</module>
-                <module>container</module>
-                <module>demo</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>AS7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>container-spi</module>
@@ -281,17 +224,6 @@
         </profile>
         <profile>
             <id>TC7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>container-spi</module>
-                <module>core</module>
-                <module>container</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC6</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>

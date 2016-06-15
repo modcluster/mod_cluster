@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2012, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,38 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.load.metric.impl;
+package org.jboss.modcluster.container.tomcat;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.OperatingSystemMXBean;
-
-import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Engine;
+import org.jboss.modcluster.container.Server;
 
 /**
- * Uses {@link OperatingSystemMXBean#getSystemLoadAverage} to calculate average system load.
- * 
  * @author Paul Ferraro
  */
-public class AverageSystemLoadMetric extends AbstractLoadMetric {
-    private final OperatingSystemMXBean bean;
-
-    public AverageSystemLoadMetric() {
-        this(ManagementFactory.getOperatingSystemMXBean());
-    }
-
-    public AverageSystemLoadMetric(OperatingSystemMXBean bean) {
-        this.bean = bean;
-    }
-
+public class TomcatEngineFactory implements EngineFactory {
     @Override
-    public double getLoad(Engine engine) throws Exception {
-        double load = this.bean.getSystemLoadAverage();
-        if (load < 0) {
-            ModClusterLogger.LOGGER.notSupportedOnSystem(this.getClass().getSimpleName());
-            this.setWeight(0);
-            return 0;
-        }
-        return load / this.bean.getAvailableProcessors();
+    public Engine createEngine(TomcatFactoryRegistry registry, org.apache.catalina.Engine engine, Server server) {
+        return new TomcatEngine(registry, engine, server);
     }
 }

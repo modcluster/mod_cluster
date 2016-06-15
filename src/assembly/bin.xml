@@ -44,7 +44,7 @@
       </includes>
     </fileSet>
 
-    <!-- Tomcat6/7 and jbossweb standalone -->
+    <!-- Container implementations -->
     <fileSet>
       <directory>container-spi/target/</directory>
       <includes>
@@ -75,7 +75,7 @@
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
     </fileSet>
     <fileSet>
-      <directory>container/catalina/target/</directory>
+      <directory>container/tomcat/target/</directory>
       <includes>
         <include>*.jar</include>
       </includes>
@@ -84,39 +84,6 @@
         <exclude>*-tests.jar</exclude>
       </excludes>
       <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>container/catalina-standalone/target/</directory>
-      <includes>
-        <include>*.jar</include>
-      </includes>
-      <excludes>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-tests.jar</exclude>
-      </excludes>
-      <outputDirectory>JBossWeb-Tomcat/lib</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>container/tomcat6/target/</directory>
-      <includes>
-        <include>*.jar</include>
-      </includes>
-      <excludes>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-tests.jar</exclude>
-      </excludes>
-      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
-    </fileSet>
-    <fileSet>
-      <directory>container/tomcat7/target/</directory>
-      <includes>
-        <include>*.jar</include>
-      </includes>
-      <excludes>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-tests.jar</exclude>
-      </excludes>
-      <outputDirectory>JBossWeb-Tomcat/lib/</outputDirectory>
     </fileSet>
     <fileSet>
       <directory>container/tomcat8/target/</directory>
