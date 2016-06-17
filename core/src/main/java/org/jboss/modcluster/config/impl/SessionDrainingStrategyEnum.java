@@ -37,17 +37,15 @@ public enum SessionDrainingStrategyEnum implements SessionDrainingStrategy {
 
     private final Boolean drainSessions;
 
-    private SessionDrainingStrategyEnum(Boolean drainSessions) {
+    SessionDrainingStrategyEnum(Boolean drainSessions) {
         this.drainSessions = drainSessions;
     }
 
     /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.SessionDrainingStrategy#isEnabled(org.jboss.modcluster.Context)
+     * @see SessionDrainingStrategy#isEnabled(org.jboss.modcluster.container.Context)
      */
     @Override
     public boolean isEnabled(Context context) {
-        return (this.drainSessions != null) ? this.drainSessions.booleanValue() : !context.isDistributable();
+        return (this.drainSessions != null) ? this.drainSessions : !context.isDistributable();
     }
 }

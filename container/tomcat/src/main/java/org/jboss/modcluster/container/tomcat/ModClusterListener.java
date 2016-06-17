@@ -30,8 +30,11 @@ import org.apache.tomcat.util.modeler.Registry;
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.ModClusterServiceMBean;
+import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.config.JvmRouteFactory;
+import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
+import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
@@ -41,16 +44,23 @@ import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Mod_cluster lifecycle listener for use in Tomcat.
- * 
+ *
  * @author Paul Ferraro
  */
 public class ModClusterListener extends ModClusterConfig implements LifecycleListener, LoadBalanceFactorProviderFactory, ModClusterServiceMBean {
@@ -64,9 +74,6 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
 
-    /**
-     * Constructs a new ModClusterListener
-     */
     public ModClusterListener() {
         ModClusterService service = new ModClusterService(this, this);
 
@@ -79,10 +86,6 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         this.listener = listener;
     }
 
-    /**
-     * @{inheritDoc
-     * @see LoadBalanceFactorProviderFactory#createLoadBalanceFactorProvider()
-     */
     @Override
     public LoadBalanceFactorProvider createLoadBalanceFactorProvider() {
         PrivilegedAction<LoadMetric> action = new PrivilegedAction<LoadMetric>() {
@@ -90,9 +93,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
             public LoadMetric run() {
                 try {
                     return ModClusterListener.this.loadMetricClass.newInstance();
-                } catch (IllegalAccessException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
@@ -109,11 +110,6 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         return provider;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see LifecycleListener#lifecycleEvent(LifecycleEvent)
-     */
     @Override
     public void lifecycleEvent(LifecycleEvent event) {
         this.listener.lifecycleEvent(event);
@@ -160,9 +156,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
             public JvmRouteFactory run() {
                 try {
                     return factoryClass.newInstance();
-                } catch (IllegalAccessException e) {
-                    throw new IllegalArgumentException(e);
-                } catch (InstantiationException e) {
+                } catch (IllegalAccessException | InstantiationException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
@@ -183,7 +177,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
      * Sets the class of the desired load metric
      *
      * @param loadMetricClass a class implementing {@link LoadMetric}
-     * @throws ClassNotFoundException
+     * @throws IllegalArgumentException if metric class could not be loaded
      */
     public void setLoadMetricClass(final String loadMetricClass) {
         PrivilegedAction<Class<? extends LoadMetric>> action = new PrivilegedAction<Class<? extends LoadMetric>>() {
@@ -237,10 +231,6 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         this.history = history;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.config.LoadMetricConfiguration#getLoadMetricCapacity()
-     */
     public double getLoadMetricCapacity() {
         return this.capacity;
     }
@@ -255,181 +245,277 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
         this.capacity = Double.parseDouble(capacity);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#addProxy(String, int)
-     */
+    // ---------------------------------------- ModClusterServiceMBean ----------------------------------------
+
     @Override
     public void addProxy(String host, int port) {
         this.service.addProxy(host, port);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#disable()
-     */
     @Override
     public boolean disable() {
         return this.service.disable();
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#disableContext(String, String)
-     */
     @Override
     public boolean disableContext(String hostName, String contextPath) {
         return this.service.disableContext(hostName, contextPath);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#ping()
-     */
     @Override
     public Map<InetSocketAddress, String> ping() {
         return this.service.ping();
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#ping(String)
-     */
     @Override
     public Map<InetSocketAddress, String> ping(String jvmRoute) {
         return this.service.ping(jvmRoute);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#ping(String, String, int)
-     */
     @Override
     public Map<InetSocketAddress, String> ping(String scheme, String host, int port) {
         return this.service.ping(scheme, host, port);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#enable()
-     */
     @Override
     public boolean enable() {
         return this.service.enable();
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#enableContext(String, String)
-     */
     @Override
     public boolean enableContext(String hostName, String contextPath) {
         return this.service.enableContext(hostName, contextPath);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#getProxyConfiguration()
-     */
     @Override
     public Map<InetSocketAddress, String> getProxyConfiguration() {
         return this.service.getProxyConfiguration();
     }
-    public String getProxyConfigurationString() {
-        String result = null;
 
-        Map<InetSocketAddress, String> map = this.service.getProxyConfiguration();
-        if (map.isEmpty())
-                return null;
-        Object results[] = map.values().toArray();
-        result = (String) results[0];
-        return result;
-    }
-
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#getProxyInfo()
-     */
     @Override
     public Map<InetSocketAddress, String> getProxyInfo() {
         return this.service.getProxyInfo();
     }
-    public String getProxyInfoString() {
-        String result = null;
 
-        Map<InetSocketAddress, String> map = this.service.getProxyInfo();
-        if (map.isEmpty())
-                return null;
-        Object results[] = map.values().toArray();
-        result = (String) results[0];
-        return result;
-    }
-
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#refresh()
-     */
     @Override
     public void refresh() {
         this.service.refresh();
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#removeProxy(String, int)
-     */
     @Override
     public void removeProxy(String host, int port) {
         this.service.removeProxy(host, port);
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#reset()
-     */
     @Override
     public void reset() {
         this.service.reset();
     }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#stop(long, TimeUnit)
-     */
     @Override
     public boolean stop(long timeout, TimeUnit unit) {
         return this.service.stop(timeout, unit);
     }
-    public boolean stop(long timeout) {
-        return this.service.stop(timeout, TimeUnit.SECONDS);
-    }
 
-    /**
-     * {@inhericDoc}
-     *
-     * @see ModClusterServiceMBean#stopContext(String, String, long,
-     *      TimeUnit)
-     */
     @Override
     public boolean stopContext(String host, String path, long timeout, TimeUnit unit) {
         return this.service.stopContext(host, path, timeout, unit);
     }
 
+    // ---------------------- RHQ support methods introduced in https://bugzilla.redhat.com/show_bug.cgi?id=822250 ----------------------
+
+    // FIXME Why do these two following methods return only the first proxy configuration?
+    // FIXME Can we fix this without breaking RHQ?
+    public String getProxyConfigurationString() {
+        String result = null;
+
+        Map<InetSocketAddress, String> map = this.service.getProxyConfiguration();
+        if (map.isEmpty())
+            return null;
+        Object results[] = map.values().toArray();
+        result = (String) results[0];
+        return result;
+    }
+
+    public String getProxyInfoString() {
+        String result = null;
+
+        Map<InetSocketAddress, String> map = this.service.getProxyInfo();
+        if (map.isEmpty())
+            return null;
+        Object results[] = map.values().toArray();
+        result = (String) results[0];
+        return result;
+    }
+
+    public boolean stop(long timeout) {
+        return this.service.stop(timeout, TimeUnit.SECONDS);
+    }
+
     public boolean stopContext(String host, String path, long timeout) {
         return this.service.stopContext(host, path, timeout, TimeUnit.SECONDS);
+    }
+
+    // ---------------------------------------- String-based Tomcat modeler and server.xml methods ----------------------------------------
+
+    public String getAdvertiseGroupAddress() {
+        return this.getAdvertiseSocketAddress().getHostName();
+    }
+
+    public void setAdvertiseGroupAddress(String advertiseGroupAddress) {
+        try {
+            this.setAdvertiseSocketAddress(new InetSocketAddress(InetAddress.getByName(advertiseGroupAddress), this.getAdvertiseSocketAddress().getPort()));
+         } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public int getAdvertisePort() {
+        return this.getAdvertiseSocketAddress().getPort();
+    }
+
+    public void setAdvertisePort(int advertisePort) {
+        this.setAdvertiseSocketAddress(new InetSocketAddress(this.getAdvertiseSocketAddress().getAddress(), advertisePort));
+     }
+
+    public void setAdvertiseInterface(String advertiseInterface) {
+        try {
+            this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
+        } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public void setProxyList(String addresses) {
+        Collection<ProxyConfiguration> proxyConfigurations;
+        if ((addresses == null) || (addresses.length() == 0)) {
+            proxyConfigurations = Collections.emptySet();
+        } else {
+            String[] tokens = addresses.split(",");
+            proxyConfigurations = new ArrayList<>(tokens.length);
+
+            for (String token: tokens) {
+                try {
+                    final InetSocketAddress remoteAddress = Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT);
+                    proxyConfigurations.add(new ProxyConfiguration() {
+                        @Override
+                        public InetSocketAddress getRemoteAddress() {
+                            return remoteAddress;
+                        }
+
+                        @Override
+                        public InetSocketAddress getLocalAddress() {
+                            return null;
+                        }
+                    });
+                } catch (UnknownHostException e) {
+                    throw new IllegalArgumentException(e);
+                }
+            }
+        }
+        this.setProxyConfigurations(proxyConfigurations);
+    }
+
+    public String getProxyList() {
+        if (this.getProxyConfiguration().isEmpty()) {
+            return null;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (ProxyConfiguration proxy : this.getProxyConfigurations()) {
+            InetSocketAddress socketAddress = proxy.getRemoteAddress();
+            if (builder.length() > 0) {
+                builder.append(",");
+            }
+            InetAddress address = socketAddress.getAddress();
+            String host = address.toString();
+            int index = host.indexOf("/");
+            // Prefer host name, but perform reverse DNS lookup to find it
+            host = (index > 0) ? host.substring(0, index) : host.substring(1);
+            if (host.contains(":")) {
+                // Escape IPv6
+                builder.append('[').append(host).append(']');
+            } else {
+                builder.append(host);
+            }
+            builder.append(':').append(socketAddress.getPort());
+        }
+        return builder.toString();
+    }
+
+    private static final String ROOT_CONTEXT = "ROOT";
+    private static final String CONTEXT_DELIMITER = ",";
+    private static final String HOST_CONTEXT_DELIMITER = ":";
+
+    public void setExcludedContexts(String contexts) {
+        Map<String, Set<String>> excludedContextsPerHost = Collections.emptyMap();
+        if (contexts == null) {
+            excludedContextsPerHost = Collections.emptyMap();
+        } else {
+            String trimmedContexts = contexts.trim();
+
+            if (trimmedContexts.isEmpty()) {
+                this.setExcludedContextsPerHost(Collections.<String, Set<String>>emptyMap());
+            } else {
+                excludedContextsPerHost = new HashMap<>();
+
+                for (String context : trimmedContexts.split(CONTEXT_DELIMITER)) {
+                    String[] parts = context.trim().split(HOST_CONTEXT_DELIMITER);
+
+                    if (parts.length > 2) {
+                        throw new IllegalArgumentException(trimmedContexts + " is not a valid value for excludedContexts");
+                    }
+
+                    String host = null;
+                    String trimmedContext = parts[0].trim();
+
+                    if (parts.length == 2) {
+                        host = trimmedContext;
+                        trimmedContext = parts[1].trim();
+                    }
+
+                    String path = trimmedContext.equals(ROOT_CONTEXT) ? "" : "/" + trimmedContext;
+
+                    Set<String> paths = excludedContextsPerHost.get(host);
+
+                    if (paths == null) {
+                        paths = new HashSet<>();
+                        excludedContextsPerHost.put(host, paths);
+                    }
+
+                    paths.add(path);
+                }
+            }
+        }
+        this.setExcludedContextsPerHost(excludedContextsPerHost);
+    }
+
+    public String getExcludedContexts() {
+        if (this.getExcludedContextsPerHost() == null) return null;
+
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, Set<String>> entry: this.getExcludedContextsPerHost().entrySet()) {
+            String host = entry.getKey();
+            for (String path: entry.getValue()) {
+                if (builder.length() > 0) {
+                    builder.append(CONTEXT_DELIMITER);
+                }
+                if (host != null) {
+                    builder.append(host).append(HOST_CONTEXT_DELIMITER);
+                }
+                builder.append(path.isEmpty() ? ROOT_CONTEXT : path.substring(1));
+            }
+        }
+        return builder.toString();
+    }
+
+    public void setSessionDrainingStrategy(String sessionDrainingStrategy) {
+        if (sessionDrainingStrategy.equalsIgnoreCase("NEVER")) {
+            this.setSessionDrainingStrategy(SessionDrainingStrategyEnum.NEVER);
+        } else if (sessionDrainingStrategy.equalsIgnoreCase("ALWAYS")) {
+            this.setSessionDrainingStrategy(SessionDrainingStrategyEnum.ALWAYS);
+        } else {
+            this.setSessionDrainingStrategy(SessionDrainingStrategyEnum.DEFAULT);
+        }
     }
 }

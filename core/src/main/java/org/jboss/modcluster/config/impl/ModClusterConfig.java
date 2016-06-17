@@ -78,35 +78,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseSocketAddress = address;
     }
 
-    @Deprecated
-    public void setAdvertiseGroupAddress(InetAddress advertiseGroupAddress) {
-        this.advertiseSocketAddress = new InetSocketAddress(advertiseGroupAddress, this.advertiseSocketAddress.getPort());
-    }
-
-    /* Used by Tomcat modeler and server.xml */
-    public String getAdvertiseGroupAddress() {
-        return this.advertiseSocketAddress.getHostName();
-    }
-
-    /* Used by Tomcat modeler and server.xml */
-    public void setAdvertiseGroupAddress(String advertiseGroupAddress) {
-        try {
-            this.setAdvertiseGroupAddress(InetAddress.getByName(advertiseGroupAddress));
-        } catch (UnknownHostException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
-
-    /* Used by Tomcat modeler and server.xml */
-    public int getAdvertisePort() {
-        return this.advertiseSocketAddress.getPort();
-    }
-
-    /* Used by Tomcat modeler and server.xml */
-    public void setAdvertisePort(int advertisePort) {
-        this.advertiseSocketAddress = new InetSocketAddress(this.advertiseSocketAddress.getAddress(), advertisePort);
-    }
-
     private InetAddress advertiseInterface = null;
 
     @Override
@@ -116,15 +87,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     public void setAdvertiseInterface(InetAddress advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
-    }
-
-    @Deprecated
-    public void setAdvertiseInterface(String advertiseInterface) {
-        try {
-            this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
-        } catch (UnknownHostException e) {
-            throw new IllegalArgumentException(e);
-        }
     }
 
     private String advertiseSecurityKey = null;
@@ -151,23 +113,19 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     private Collection<ProxyConfiguration> proxyConfigurations = Collections.emptySet();
 
+    @Override
     public Collection<ProxyConfiguration> getProxyConfigurations() {
         return this.proxyConfigurations;
     }
 
-    /**
-     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
-     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
-     *
-     * @param proxyConfigurations a collection of {@link ProxyConfiguration}s
-     */
     public void setProxyConfigurations(Collection<ProxyConfiguration> proxyConfigurations) {
         this.proxyConfigurations = proxyConfigurations;
     }
 
+    @Deprecated
     @Override
     public Collection<InetSocketAddress> getProxies() {
-        Set<InetSocketAddress> proxies = new HashSet<InetSocketAddress>();
+        Set<InetSocketAddress> proxies = new HashSet<>();
         for (ProxyConfiguration proxy : proxyConfigurations) {
             proxies.add(proxy.getRemoteAddress());
         }
@@ -175,15 +133,11 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     }
 
     /**
-     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
-     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
-     *
-     * @param proxies a collection of {@link InetSocketAddress} of remote proxy addresses
-     * @deprecated as of 1.3.1 use {@link MCMPHandlerConfiguration#getProxyConfigurations()} to also specify local addresses to bind to
+     * @deprecated Since 1.3.1.Final use {@link ModClusterConfig#setProxyConfigurations(java.util.Collection)} instead.
      */
     @Deprecated
     public void setProxies(Collection<InetSocketAddress> proxies) {
-        Collection<ProxyConfiguration> proxyConfigs = new HashSet<ProxyConfiguration>();
+        Collection<ProxyConfiguration> proxyConfigs = new HashSet<>();
         for (final InetSocketAddress destination : proxies) {
             proxyConfigs.add(new ProxyConfiguration() {
                 @Override
@@ -198,70 +152,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
             });
         }
         this.proxyConfigurations = proxyConfigs;
-    }
-
-    /**
-     * Sets proxies to connect to overriding configuration done by any of the prior {@link #setProxyList(String)},
-     * {@link #setProxies(java.util.Collection)} or {@link #setProxyConfigurations(java.util.Collection)} calls.
-     *
-     * @param addresses comma separated host:port couples
-     * @deprecated as of 1.3.1 use {@link MCMPHandlerConfiguration#getProxyConfigurations()} to also specify local addresses to bind to
-     */
-    @Deprecated
-    public void setProxyList(String addresses) {
-        if ((addresses == null) || (addresses.length() == 0)) {
-            this.proxyConfigurations = Collections.emptySet();
-        } else {
-            String[] tokens = addresses.split(",");
-            this.proxyConfigurations = new ArrayList<ProxyConfiguration>(tokens.length);
-
-            for (String token: tokens) {
-                try {
-                    final InetSocketAddress remoteAddress = Utils.parseSocketAddress(token.trim(), ModClusterService.DEFAULT_PORT);
-                    this.proxyConfigurations.add(new ProxyConfiguration() {
-                        @Override
-                        public InetSocketAddress getRemoteAddress() {
-                            return remoteAddress;
-                        }
-
-                        @Override
-                        public InetSocketAddress getLocalAddress() {
-                            return null;
-                        }
-                    });
-                } catch (UnknownHostException e) {
-                    throw new IllegalArgumentException(e);
-                }
-            }
-        }
-    }
-
-    @Deprecated
-    public String getProxyList() {
-        if (this.proxyConfigurations.isEmpty()) {
-            return null;
-        }
-
-        StringBuilder builder = new StringBuilder();
-        for (ProxyConfiguration proxy : this.proxyConfigurations) {
-            InetSocketAddress socketAddress = proxy.getRemoteAddress();
-            if (builder.length() > 0) {
-                builder.append(",");
-            }
-            InetAddress address = socketAddress.getAddress();
-            String host = address.toString();
-            int index = host.indexOf("/");
-            // Prefer host name, but perform reverse DNS lookup to find it
-            host = (index > 0) ? host.substring(0, index) : host.substring(1);
-            if (host.contains(":")) {
-                // Escape IPv6
-                builder.append('[').append(host).append(']');
-            } else {
-                builder.append(host);
-            }
-            builder.append(':').append(socketAddress.getPort());
-        }
-        return builder.toString();
     }
 
     private String proxyURL = null;
@@ -306,72 +196,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     public void setExcludedContextsPerHost(Map<String, Set<String>> excludedContexts) {
         this.excludedContextsPerHost = excludedContexts;
-    }
-
-    private static final String ROOT_CONTEXT = "ROOT";
-    private static final String CONTEXT_DELIMITER = ",";
-    private static final String HOST_CONTEXT_DELIMITER = ":";
-
-    @Deprecated
-    public void setExcludedContexts(String contexts) {
-        if (contexts == null) {
-            this.excludedContextsPerHost = Collections.emptyMap();
-        } else {
-            String trimmedContexts = contexts.trim();
-    
-            if (trimmedContexts.isEmpty()) {
-                this.setExcludedContextsPerHost(Collections.<String, Set<String>>emptyMap());
-            } else {
-                this.excludedContextsPerHost = new HashMap<String, Set<String>>();
-
-                for (String context : trimmedContexts.split(CONTEXT_DELIMITER)) {
-                    String[] parts = context.trim().split(HOST_CONTEXT_DELIMITER);
-
-                    if (parts.length > 2) {
-                        throw new IllegalArgumentException(trimmedContexts + " is not a valid value for excludedContexts");
-                    }
-
-                    String host = null;
-                    String trimmedContext = parts[0].trim();
-
-                    if (parts.length == 2) {
-                        host = trimmedContext;
-                        trimmedContext = parts[1].trim();
-                    }
-
-                    String path = trimmedContext.equals(ROOT_CONTEXT) ? "" : "/" + trimmedContext;
-
-                    Set<String> paths = this.excludedContextsPerHost.get(host);
-
-                    if (paths == null) {
-                        paths = new HashSet<String>();
-                        this.excludedContextsPerHost.put(host, paths);
-                    }
-
-                    paths.add(path);
-                }
-            }
-        }
-    }
-
-    @Deprecated
-    public String getExcludedContexts() {
-        if (this.excludedContextsPerHost == null) return null;
-
-        StringBuilder builder = new StringBuilder();
-        for (Map.Entry<String, Set<String>> entry: this.excludedContextsPerHost.entrySet()) {
-            String host = entry.getKey();
-            for (String path: entry.getValue()) {
-                if (builder.length() > 0) {
-                    builder.append(CONTEXT_DELIMITER);
-                }
-                if (host != null) {
-                    builder.append(host).append(HOST_CONTEXT_DELIMITER);
-                }
-                builder.append(path.isEmpty() ? ROOT_CONTEXT : path.substring(1));
-            }
-        }
-        return builder.toString();
     }
 
     private boolean autoEnableContexts = true;
@@ -427,14 +251,6 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     public void setSessionDrainingStrategy(SessionDrainingStrategy sessionDrainingStrategy) {
         this.sessionDrainingStrategy = sessionDrainingStrategy;
-    }
-    public void setSessionDrainingStrategy(String sessionDrainingStrategy) {
-        if (sessionDrainingStrategy.equalsIgnoreCase("NEVER"))
-           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.NEVER;
-        else if (sessionDrainingStrategy.equalsIgnoreCase("ALWAYS"))
-           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.ALWAYS;
-        else
-           this.sessionDrainingStrategy = SessionDrainingStrategyEnum.DEFAULT;
     }
 
     // ----------------------------------------------------- SSLConfiguration
