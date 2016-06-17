@@ -183,7 +183,6 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
                 <module>demo</module>
@@ -195,7 +194,6 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
             </modules>
@@ -206,7 +204,6 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
             </modules>
@@ -217,7 +214,6 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
            </modules>
@@ -228,7 +224,6 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
             </modules>
@@ -239,7 +234,6 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
-                <module>container-spi</module>
                 <module>core</module>
                 <module>container</module>
                 <module>demo</module>

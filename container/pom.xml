@@ -38,6 +38,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <modules>
+                <module>spi</module>
                 <module>tomcat</module>
                 <module>tomcat8</module>
                 <module>tomcat85</module>
@@ -49,6 +50,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>spi</module>
                 <module>tomcat</module>
                 <module>tomcat85</module>
             </modules>
@@ -59,6 +61,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>spi</module>
                 <module>tomcat</module>
                 <module>tomcat85</module>
             </modules>
@@ -69,6 +72,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>spi</module>
                 <module>tomcat</module>
                 <module>tomcat8</module>
             </modules>
@@ -79,6 +83,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
+                <module>spi</module>
                 <module>tomcat</module>
             </modules>
         </profile>
