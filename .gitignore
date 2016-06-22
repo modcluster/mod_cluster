@@ -20,4 +20,4 @@ native/*/autom4te.cache/
 native/*/config.status
 native/*/configure
 
-native/CMakeLists.txt
+native/build
