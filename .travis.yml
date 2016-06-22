@@ -1,0 +1,18 @@
+language: java
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+script: mvn verify
+matrix:
+  include:
+  - jdk: oraclejdk8
+    script: mvn verify -PTC9
+notifications:
+  email: false
+# Workaround openjdk7 crashes in container-based environments failing with:
+# *** buffer overflow detected ***: /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java terminated
+# /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libnet.so(Java_java_net_Inet4AddressImpl_getLocalHostName+0x190)[0x7fde947f34a0]
+sudo: required
+addons:
+  hostname: localhost
