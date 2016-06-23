@@ -3190,18 +3190,19 @@ static int proxy_cluster_canon(request_rec *r, char *url)
         proxy_server_conf *conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
 
         proxy_vhost_table *vhost_table = (proxy_vhost_table *) apr_table_get(r->notes, "vhost-table");
+        proxy_context_table *context_table  = (proxy_context_table *) apr_table_get(r->notes, "context-table");
+        proxy_balancer_table *balancer_table  = (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
+        proxy_node_table *node_table  = (proxy_node_table *) apr_table_get(r->notes, "node-table");
+
         if (!vhost_table)
             vhost_table = read_vhost_table(r);
 
-        proxy_context_table *context_table  = (proxy_context_table *) apr_table_get(r->notes, "context-table");
         if (!context_table)
             context_table = read_context_table(r);
 
-        proxy_balancer_table *balancer_table  = (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
         if (!balancer_table)
             balancer_table = read_balancer_table(r);
 
-        proxy_node_table *node_table  = (proxy_node_table *) apr_table_get(r->notes, "node-table");
         if (!node_table)
             node_table = read_node_table(r);
 
