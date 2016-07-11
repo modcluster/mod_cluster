@@ -3159,6 +3159,7 @@ static int proxy_cluster_canon(request_rec *r, char *url)
     char *search = NULL;
     const char *err;
     apr_port_t port = 0;
+    const char *route;
 
     if (strncasecmp(url, "balancer:", 9) == 0) {
         url += 9;
@@ -3203,7 +3204,6 @@ static int proxy_cluster_canon(request_rec *r, char *url)
     /*
      * Check sticky sessions again in case of ProxyPass
      */
-    const char *route;
     route = apr_table_get(r->notes, "session-route");
     if (!route) {
         void *sconf = r->server->module_config;
@@ -3211,18 +3211,19 @@ static int proxy_cluster_canon(request_rec *r, char *url)
             ap_get_module_config(sconf, &proxy_module);
 
         proxy_vhost_table *vhost_table = (proxy_vhost_table *) apr_table_get(r->notes, "vhost-table");
+        proxy_context_table *context_table  = (proxy_context_table *) apr_table_get(r->notes, "context-table");
+        proxy_balancer_table *balancer_table  = (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
+        proxy_node_table *node_table  = (proxy_node_table *) apr_table_get(r->notes, "node-table");
+
         if (!vhost_table)
             vhost_table = read_vhost_table(r);
 
-        proxy_context_table *context_table  = (proxy_context_table *) apr_table_get(r->notes, "context-table");
         if (!context_table)
             context_table = read_context_table(r);
 
-        proxy_balancer_table *balancer_table  = (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
         if (!balancer_table)
             balancer_table = read_balancer_table(r);
 
-        proxy_node_table *node_table  = (proxy_node_table *) apr_table_get(r->notes, "node-table");
         if (!node_table)
             node_table = read_node_table(r);
 
