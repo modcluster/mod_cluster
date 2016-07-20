@@ -1006,8 +1006,10 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* Here that is tricky the worker needs shared memory but we don't and CONFIG will reset it */
         helper->index = 0; /* mark it removed */
-        worker->s = helper->shared;
-        memcpy(worker->s, stat, sizeof(proxy_worker_shared));
+        if (helper->shared) {
+            worker->s = helper->shared;
+            memcpy(worker->s, stat, sizeof(proxy_worker_shared));
+        }
 #else
         worker->id = 0; /* mark it removed */
 #endif
