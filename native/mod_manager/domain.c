@@ -191,8 +191,10 @@ apr_status_t find_domain(mem_t *s, domaininfo_t **domain, const char *route, con
     domaininfo_t ou;
     apr_status_t rv;
 
-    strcpy(ou.JVMRoute, route);
-    strcpy(ou.balancer, balancer);
+    strncpy(ou.JVMRoute, route, sizeof(ou.JVMRoute));
+    ou.JVMRoute[sizeof(ou.JVMRoute) - 1] = '\0';
+    strncpy(ou.balancer, balancer, sizeof(ou.balancer));
+    ou.balancer[sizeof(ou.balancer) - 1] = '\0';
     *domain = &ou;
     rv = s->storage->ap_slotmem_do(s->slotmem, loc_read_domain, domain, 0, s->p);
     return rv;
