@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Non-clustered mod_cluster lifecycle listener for use in JBoss Web standalone and Tomcat.
+ * Mod_cluster lifecycle listener for use in Tomcat.
  * 
  * @author Paul Ferraro
  */
@@ -129,7 +129,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
                 try {
                     ObjectName name = this.getObjectName(server);
 
-                    Registry.getRegistry(null, null).registerComponent(this, name, null);
+                    Registry.getRegistry(null, null).registerComponent(this, name, ModClusterListener.class.getName());
                 } catch (Exception e) {
                     log.error(e.getLocalizedMessage(), e);
                 }

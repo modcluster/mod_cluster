@@ -5,7 +5,7 @@
          description="Lifecycle listener for mod_cluster"
          domain="Catalina"
          group="Listener"
-         type="org.jboss.modcluster.tomcat.ModClusterListener">
+         type="org.jboss.modcluster.container.tomcat.ModClusterListener">
 
     <attribute name="className"
                description="Fully qualified class name of the managed object"
@@ -25,7 +25,7 @@
                description="Get information about what is registered with each mod_cluster, per proxy"
                type="java.util.Map"
                writeable="false"/>
-    
+
     <attribute name="proxyList"
                description="Comma delimited list of proxy servers"
                type="java.lang.String"/>
@@ -98,17 +98,17 @@
                description="Refresh configuration"
                impact="ACTION"
                returnType="void"/>
- 
+
     <operation name="reset"
                description="Move the node out of an error state"
                impact="ACTION"
                returnType="void"/>
- 
+
     <operation name="disable"
                description="Disable all webapps for all engines"
                impact="ACTION"
                returnType="boolean"/>
-    
+
     <operation name="disableContext"
                description="Disable a single webapp"
                impact="ACTION"
@@ -120,12 +120,12 @@
                  description="Context path of the webapp"
                  type="java.lang.String"/>
     </operation>
-    
+
     <operation name="enable"
                description="Enable all webapps for all engines"
                impact="ACTION"
                returnType="boolean"/>
- 
+
     <operation name="enableContext"
                description="Enable a single webapp"
                impact="ACTION"
@@ -149,7 +149,7 @@
                  description="Time unit of the timeout parameter"
                  type="java.util.concurrent.TimeUnit"/>
     </operation>
-    
+
     <operation name="stopContext"
                description="Gracefully stops a single webapp"
                impact="ACTION"
@@ -167,7 +167,7 @@
                  description="Time unit of the timeout parameter"
                  type="java.util.concurrent.TimeUnit"/>
     </operation>
-    
+
     <operation name="addProxy"
                description="Add a proxy"
                impact="ACTION"
