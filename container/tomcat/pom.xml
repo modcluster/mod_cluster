@@ -113,6 +113,7 @@
                 </dependency>
             </dependencies>
         </profile>
+        -->
         <profile>
             <id>TC8</id>
             <activation>
@@ -145,7 +146,6 @@
                 </dependency>
             </dependencies>
         </profile>
-        -->
         <profile>
             <id>TC7</id>
             <activation>
