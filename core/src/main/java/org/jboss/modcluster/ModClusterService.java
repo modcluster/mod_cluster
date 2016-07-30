@@ -83,7 +83,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     private final AdvertiseListenerFactory listenerFactory;
     private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
 
-    private final Map<Host, Set<String>> excludedContexts = new HashMap<Host, Set<String>>();
+    private final Map<Host, Set<String>> excludedContexts = new HashMap<>();
+    private final Map<Host, Set<String>> disabledContexts = new HashMap<>();
     private final ConcurrentMap<Context, EnablableRequestListener> requestListeners = new ConcurrentHashMap<Context, EnablableRequestListener>();
 
     private volatile boolean established = false;
@@ -143,27 +144,14 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         this.autoEnableContexts = this.mcmpConfig.isAutoEnableContexts();
         this.excludedContexts.clear();
+        this.disabledContexts.clear();
 
         Map<String, Set<String>> excludedContextPaths = this.mcmpConfig.getExcludedContextsPerHost();
+        excludedContexts.putAll(mapContextsToHosts(excludedContextPaths));
 
-        if (!excludedContextPaths.isEmpty()) {
-            for (Engine engine : server.getEngines()) {
-                for (Host host : engine.getHosts()) {
-                    Set<String> excluded = new HashSet<String>();
-                    Set<String> paths = excludedContextPaths.get(host.getName());
-                    if (paths != null) {
-                        excluded.addAll(paths);
-                    }
-                    paths = excludedContextPaths.get(null);
-                    if (paths != null) {
-                        excluded.addAll(paths);
-                    }
-                    if (!excluded.isEmpty()) {
-                        this.excludedContexts.put(host, Collections.unmodifiableSet(excluded));
-                    }
-                }
-            }
-        }
+        Map<String, Set<String>> disabledContextPaths = this.mcmpConfig.getDisabledContextsPerHost();
+        disabledContexts.putAll(mapContextsToHosts(disabledContextPaths));
+
 
         this.resetRequestSource.init(server, this);
 
@@ -182,6 +170,29 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
+    private Map<Host, Set<String>> mapContextsToHosts(Map<String, Set<String>> contextPaths) {
+        Map<Host, Set<String>> mapped = new HashMap<>();
+        if (!contextPaths.isEmpty()) {
+            for (Engine engine : server.getEngines()) {
+                for (Host host : engine.getHosts()) {
+                    Set<String> contexts = new HashSet<>();
+                    Set<String> paths = contextPaths.get(host.getName());
+                    if (paths != null) {
+                        contexts.addAll(paths);
+                    }
+                    paths = contextPaths.get(null);
+                    if (paths != null) {
+                        contexts.addAll(paths);
+                    }
+                    if (!contexts.isEmpty()) {
+                        mapped.put(host, Collections.unmodifiableSet(contexts));
+                    }
+                }
+            }
+        }
+        return mapped;
+    }
+
     /**
      * {@inheritDoc}
      * 
@@ -190,6 +201,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     @Override
     public Map<Host, Set<String>> getExcludedContexts() {
         return Collections.unmodifiableMap(this.excludedContexts);
+    }
+
+    @Override
+    public Map<Host, Set<String>> getDisabledContexts() {
+        return Collections.unmodifiableMap(this.disabledContexts);
     }
 
     /**

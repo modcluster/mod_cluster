@@ -81,6 +81,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
             return requests;
 
         Map<Host, Set<String>> excludedContexts = this.contextFilter.getExcludedContexts();
+        Map<Host, Set<String>> disabledContexts = this.contextFilter.getDisabledContexts();
         boolean contextAutoEnableAllowed = this.contextFilter.isAutoEnableContexts();
 
         List<MCMPRequest> engineRequests = new LinkedList<MCMPRequest>();
@@ -121,6 +122,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
 
                 Set<String> obsoleteContexts = new HashSet<String>(responseContexts.keySet());
                 Set<String> excludedHostContexts = excludedContexts.get(host);
+                Set<String> disabledHostContexts = disabledContexts.get(host);
 
                 for (Context context : host.getContexts()) {
                     String contextPath = context.getPath();
@@ -134,7 +136,7 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
 
                         if (context.isStarted()) {
                             if (status != ResetRequestSource.Status.ENABLED) {
-                                engineRequests.add(contextAutoEnableAllowed ? this.requestFactory.createEnableRequest(context)
+                                engineRequests.add((contextAutoEnableAllowed && (disabledHostContexts == null || !disabledHostContexts.contains(path))) ? this.requestFactory.createEnableRequest(context)
                                         : this.requestFactory.createDisableRequest(context));
                             }
                         } else {

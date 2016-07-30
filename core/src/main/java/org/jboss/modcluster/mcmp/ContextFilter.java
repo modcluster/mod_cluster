@@ -33,9 +33,16 @@ public interface ContextFilter {
     /**
      * Returns the contexts that will *not* be registered in any proxy.
      * 
-     * @return a set of context paths per host
+     * @return a map of context paths per host
      */
     Map<Host, Set<String>> getExcludedContexts();
+
+    /**
+     * Returns the contexts that will be registered as disabled in every proxy.
+     *
+     * @return a map of disabled context paths per host
+     */
+    Map<Host, Set<String>> getDisabledContexts();
 
     /**
      * Indicates when contexts should auto-enable by default. If auto-enable is off, then contexts are disabled by default and

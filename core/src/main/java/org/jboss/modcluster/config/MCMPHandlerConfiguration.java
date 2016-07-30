@@ -68,11 +68,18 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
     boolean isSsl();
 
     /**
-     * Returns a list of contexts that should never be enabled in mod_cluster. Contexts may be
+     * Returns a list of contexts that should never be enabled in mod_cluster.
      *
-     * @return a comma delimited list of contexts of the form "[host:]context"
+     * @return map of excluded contexts per host
      */
     Map<String, Set<String>> getExcludedContextsPerHost();
+
+    /**
+     * Returns a map of contexts that are disabled by default when registered with mod_cluster.
+     *
+     * @return map of disabled contexts per host
+     */
+    Map<String, Set<String>> getDisabledContextsPerHost();
 
     /**
      * Receive advertisements from httpd proxies (default is to use advertisements if the proxyList is not set).

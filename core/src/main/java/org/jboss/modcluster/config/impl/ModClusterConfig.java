@@ -374,6 +374,17 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         return builder.toString();
     }
 
+    private Map<String, Set<String>> disabledContextsPerHost = Collections.emptyMap();
+
+    @Override
+    public Map<String, Set<String>> getDisabledContextsPerHost() {
+        return this.disabledContextsPerHost;
+    }
+
+    public void setDisabledContextsPerHost(Map<String, Set<String>> disabledContexts) {
+        this.disabledContextsPerHost = disabledContexts;
+    }
+
     private boolean autoEnableContexts = true;
 
     @Override
