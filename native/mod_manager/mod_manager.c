@@ -60,6 +60,9 @@
 #define DEFMAXJGROUPSID  0
 #define MAXMESSSIZE     1024
 
+/* Warning messages */
+#define SBALBAD "Balancer name contained an upper case character. We will use \"%s\" instead."
+
 /* Error messages */
 #define TYPESYNTAX 1
 #define SMESPAR "SYNTAX: Can't parse MCMP message. It might have contained illegal symbols or unknown elements."
@@ -490,7 +493,7 @@ void normalize_balancer_name(char* balancer_name, server_rec *s)
     }
     balancer_name = balancer_name_start;
     if(upper_case_char_found) {
-        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, s, "Balancer name contained an upper case character. We will use %s instead.", balancer_name);
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_WARNING, 0, s, SBALBAD, balancer_name);
     }
 }
 
@@ -852,6 +855,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
                 *errtype = TYPESYNTAX;
                 return SBALBIG;
             }
+            normalize_balancer_name(ptr[i+1], r->server);
             strncpy(nodeinfo.mess.balancer, ptr[i+1], sizeof(nodeinfo.mess.balancer));
             nodeinfo.mess.balancer[sizeof(nodeinfo.mess.balancer) - 1] = '\0';
             strncpy(balancerinfo.balancer, ptr[i+1], sizeof(balancerinfo.balancer));
