@@ -222,7 +222,7 @@ static apr_status_t conn_pool_cleanup(void *theworker)
 #endif
 #endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
 
-/* XXX: Should use the proxy_util one. */
+/* It is NOT the proxy_util one. */
 static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
 {
     apr_pool_t *pool;
@@ -240,9 +240,7 @@ static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
      * Alloc from the same pool as worker.
      * proxy_conn_pool is permanently attached to the worker.
      */
-    cp = (proxy_conn_pool *)apr_pcalloc(p, sizeof(proxy_conn_pool));
-    cp->pool = pool;
-    worker->cp = cp;
+    worker->cp->pool = pool;
 }
 
 /**
@@ -268,14 +266,29 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     proxy_worker *worker;
     proxy_worker_shared *shared;
     proxy_cluster_helper *helper;
+    apr_uri_t uri;
 
     /* build the name (scheme and port) when needed */
     url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
+    if (apr_uri_parse(pool, url, &uri) != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
+                     "Created: worker for %s failed: Unable to parse URL", url);
+        return APR_EGENERAL;
+    }
+    if (!uri.scheme) {
+        ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
+                     "Created: worker for %s failed: URL must be absolute!", url);
+        return APR_EGENERAL;
+    }
+    if (uri.port && uri.port == ap_proxy_port_of_scheme(uri.scheme)) {
+        uri.port = 0;
+    }
+    ptr = apr_uri_unparse(pool, &uri, APR_URI_UNP_REVEALPASSWORD);
 
-    worker = ap_proxy_get_worker(conf->pool, balancer, conf, url);
+    worker = ap_proxy_get_worker(pool, balancer, conf, ptr);
     if (worker == NULL) {
 
-        /* creates it */ 
+        /* creates it note the ap_proxy_get_worker and ap_proxy_define_worker aren't symetrical, and this leaks via the conf->pool */ 
         const char *err = ap_proxy_define_worker(conf->pool, &worker, balancer, conf, url, 0);
         if (err) {
             ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
@@ -307,9 +320,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             /* We are going to reuse a removed one */
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
                          "Created: reusing removed worker for %s", url);
-            if (worker->cp->pool == NULL) {
-                init_conn_pool(conf->pool, worker);
-            }
         } else {
             /* Check if the shared memory goes to the right place */
             char *pptr = (char *) node;
@@ -327,9 +337,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
                     worker->s->lbstatus = 0;
                     worker->s->lbfactor = -1; /* prevent using the node using status message */
                 }
-                if (worker->cp->pool == NULL) {
-                     init_conn_pool(conf->pool, worker);
-                }
                 return APR_SUCCESS; /* Done Already existing */
             } else {
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
@@ -345,9 +352,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
                     ap_log_error(APLOG_MARK, APLOG_ERR, rv, server,
                                  "ap_proxy_initialize_worker failed %d for %s", rv, url);
                     return rv;
-                }
-                if (worker->cp->pool == NULL) {
-                    init_conn_pool(conf->pool, worker);
                 }
                 return APR_SUCCESS;
             }
@@ -994,14 +998,6 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
             }
         }
 #endif
-
-        /* Clear the connection pool (close the sockets) */
-        if (worker->cp->pool) {
-            apr_pool_destroy(worker->cp->pool);
-            worker->cp->pool = NULL;
-        }
-
-        /* XXX: Shouldnn't we remove the mutex too (worker->mutex) */
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* Here that is tricky the worker needs shared memory but we don't and CONFIG will reset it */
