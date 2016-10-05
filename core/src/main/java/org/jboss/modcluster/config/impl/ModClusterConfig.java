@@ -118,7 +118,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseInterface = advertiseInterface;
     }
 
-    @Deprecated
+    /* Used by Tomcat modeler and server.xml */
     public void setAdvertiseInterface(String advertiseInterface) {
         try {
             this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
