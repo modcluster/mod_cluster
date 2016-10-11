@@ -209,7 +209,7 @@
                             <!-- Fork is needed so compiler args can be used -->
                             <fork>true</fork>
                             <compilerArgs>
-                                <arg>-J-addmods</arg>
+                                <arg>-J--add-modules</arg>
                                 <arg>-Jjava.annotations.common</arg>
                             </compilerArgs>
                         </configuration>
