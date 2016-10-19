@@ -145,10 +145,8 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     // ---------------------------------------------- LifecycleListener Methods
 
     /**
-     * {@inhericDoc} Acknowledge the occurrence of the specified event. Note: Will never be called when the listener is
+     * Acknowledge the occurrence of the specified event. Note: Will never be called when the listener is
      * associated to a Server, since it is not a Container.
-     * 
-     * @see org.apache.catalina.ContainerListener#containerEvent(org.apache.catalina.ContainerEvent)
      */
     @Override
     public void containerEvent(ContainerEvent event) {
@@ -194,9 +192,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     /**
-     * {@inhericDoc} Primary entry point for startup and shutdown events.
-     * 
-     * @see org.apache.catalina.LifecycleListener#lifecycleEvent(org.apache.catalina.LifecycleEvent)
+     * Primary entry point for startup and shutdown events.
      */
     @Override
     public void lifecycleEvent(LifecycleEvent event) {

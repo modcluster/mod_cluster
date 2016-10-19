@@ -129,10 +129,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.listenerFactory = listenerFactory;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ContainerEventHandler#init(java.lang.Object)
-     */
     @Override
     public synchronized void init(Server server) {
         ModClusterLogger.LOGGER.init(Version.INSTANCE.toString());
@@ -182,30 +178,16 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.ContextFilter#getExcludedContexts()
-     */
     @Override
     public Map<Host, Set<String>> getExcludedContexts() {
         return Collections.unmodifiableMap(this.excludedContexts);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.ContextFilter#isAutoEnableContexts()
-     */
     @Override
     public boolean isAutoEnableContexts() {
         return this.autoEnableContexts;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ContainerEventHandler#shutdown()
-     */
     @Override
     public synchronized void shutdown() {
         ModClusterLogger.LOGGER.shutdown();
@@ -221,10 +203,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.mcmpHandler.shutdown();
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ContainerEventHandler#start(java.lang.Object)
-     */
     @Override
     public void start(Server server) {
         ModClusterLogger.LOGGER.startServer();
@@ -242,11 +220,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Server)
-     */
     @Override
     public void stop(Server server) {
         ModClusterLogger.LOGGER.stopServer();
@@ -270,8 +243,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
     /**
      * Configures the specified engine. Sends CONFIG request.
-     * 
-     * @param engine
      */
     protected void config(Engine engine) {
         ModClusterLogger.LOGGER.sendEngineCommand(MCMPRequestType.CONFIG, engine);
@@ -285,21 +256,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#isEstablished()
-     */
     @Override
     public boolean isEstablished() {
         return this.established;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPConnectionListener#connectionEstablished(java.net.InetAddress)
-     */
     @Override
     public void connectionEstablished(InetAddress localAddress) {
         for (Engine engine : this.server.getEngines()) {
@@ -330,11 +291,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#add(org.jboss.modcluster.Context)
-     */
     @Override
     public void add(Context context) {
         ModClusterLogger.LOGGER.addContext(context.getHost(), context);
@@ -347,11 +303,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#start(org.jboss.modcluster.Context)
-     */
     @Override
     public void start(Context context) {
         ModClusterLogger.LOGGER.startContext(context.getHost(), context);
@@ -381,11 +332,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(context));
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#stop(org.jboss.modcluster.Context)
-     */
     @Override
     public void stop(Context context) {
         ModClusterLogger.LOGGER.stopContext(context.getHost(), context);
@@ -408,11 +354,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#remove(org.jboss.modcluster.Context)
-     */
     @Override
     public void remove(Context context) {
         ModClusterLogger.LOGGER.removeContext(context.getHost(), context);
@@ -434,8 +375,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
     /**
      * Sends REMOVE-APP *, if engine was initialized
-     * 
-     * @param engine
      */
     protected void removeAll(Engine engine) {
         ModClusterLogger.LOGGER.sendEngineCommand(MCMPRequestType.REMOVE_APP, engine);
@@ -444,11 +383,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.mcmpHandler.sendRequest(this.requestFactory.createRemoveRequest(engine));
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ContainerEventHandler#status(org.jboss.modcluster.Engine)
-     */
     @Override
     public void status(Engine engine) {
         this.mcmpHandler.status();
@@ -471,29 +405,16 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return (excludedPaths == null) || !excludedPaths.contains(context.getPath());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
-     */
     @Override
     public int getLoadBalanceFactor(Engine engine) {
         return this.loadBalanceFactorProvider.getLoadBalanceFactor(engine);
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#addProxy(java.lang.String, int)
-     */
     @Override
     public void addProxy(String host, int port) {
         this.mcmpHandler.addProxy(this.createSocketAddress(host, port));
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#removeProxy(java.lang.String, int)
-     */
     @Override
     public void removeProxy(String host, int port) {
         this.mcmpHandler.removeProxy(this.createSocketAddress(host, port));
@@ -507,55 +428,30 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyConfiguration()
-     */
     @Override
     public Map<InetSocketAddress, String> getProxyConfiguration() {
         // Send DUMP * request
         return this.getProxyResults(this.requestFactory.createDumpRequest());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#getProxyInfo()
-     */
     @Override
     public Map<InetSocketAddress, String> getProxyInfo() {
         // Send INFO * request
         return this.getProxyResults(this.requestFactory.createInfoRequest());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#ping()
-     */
     @Override
     public Map<InetSocketAddress, String> ping() {
         MCMPRequest request = this.requestFactory.createPingRequest();
         return this.getProxyResults(request);
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String)
-     */
     @Override
     public Map<InetSocketAddress, String> ping(String jvmRoute) {
         MCMPRequest request = this.requestFactory.createPingRequest(jvmRoute);
         return this.getProxyResults(request);
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#ping(java.lang.String, java.lang.String, int)
-     */
     @Override
     public Map<InetSocketAddress, String> ping(String scheme, String host, int port) {
         MCMPRequest request = this.requestFactory.createPingRequest(scheme, host, port);
@@ -582,11 +478,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return results;
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#reset()
-     */
     @Override
     public void reset() {
         if (this.established) {
@@ -594,10 +485,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#refresh()
-     */
     @Override
     public void refresh() {
         if (this.established) {
@@ -606,10 +493,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#disable()
-     */
     @Override
     public boolean disable() {
         if (!this.established)
@@ -623,10 +506,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return this.mcmpHandler.isProxyHealthOK();
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#enable()
-     */
     @Override
     public boolean enable() {
         if (!this.established)
@@ -642,10 +521,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return this.mcmpHandler.isProxyHealthOK();
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#disable(java.lang.String, java.lang.String)
-     */
     @Override
     public boolean disableContext(String host, String path) {
         if (!this.established)
@@ -659,10 +534,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return this.mcmpHandler.isProxyHealthOK();
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.ModClusterServiceMBean#enable(java.lang.String, java.lang.String)
-     */
     @Override
     public boolean enableContext(String host, String path) {
         if (!this.established)
@@ -676,11 +547,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return this.mcmpHandler.isProxyHealthOK();
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#stop(long, java.util.concurrent.TimeUnit)
-     */
     @Override
     public boolean stop(long timeout, TimeUnit unit) {
         if (!this.established)
@@ -712,12 +578,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return true;
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.ModClusterServiceMBean#stopContext(java.lang.String, java.lang.String, long,
-     *      java.util.concurrent.TimeUnit)
-     */
     @Override
     public boolean stopContext(String host, String path, long timeout, TimeUnit unit) {
         if (!this.established)
@@ -742,7 +602,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return success;
     }
 
-    /*
+    /**
      * Sends STOP-APP requests for the specified context until there are no more pending requests, or until the specified
      * timeout is met. Returns true, if there are no more pending requests, false otherwise.
      */
@@ -799,7 +659,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    /*
+    /**
      * Sends the specified stop request, parses and totals the responses.
      */
     private int stop(MCMPRequest request) {
@@ -814,7 +674,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return requests;
     }
 
-    /*
+    /**
      * Returns true, when the active session count reaches 0; or false, after timeout.
      */
     private boolean drainSessions(Context context, long start, long end) {
@@ -903,41 +763,21 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     static class NotifyOnDestroyRequestListener implements EnablableRequestListener {
         private volatile boolean enabled = false;
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.jboss.modcluster.ModClusterService.Controllable#start()
-         */
         @Override
         public boolean isEnabled() {
             return this.enabled;
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see org.jboss.modcluster.ModClusterService.Controllable#stop()
-         */
         @Override
         public void setEnabled(boolean enabled) {
             this.enabled = enabled;
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see javax.servlet.ServletRequestListener#requestInitialized(javax.servlet.ServletRequestEvent)
-         */
         @Override
         public void requestInitialized(ServletRequestEvent event) {
             // Do nothing
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see javax.servlet.ServletRequestListener#requestDestroyed(javax.servlet.ServletRequestEvent)
-         */
         @Override
         public void requestDestroyed(ServletRequestEvent event) {
             if (this.enabled) {
@@ -947,29 +787,20 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
                 }
             }
         }
-    };
+    }
 
     static class NotifyOnDestroySessionListener implements HttpSessionListener {
-        /**
-         * {@inheritDoc}
-         * 
-         * @see javax.servlet.http.HttpSessionListener#sessionCreated(javax.servlet.http.HttpSessionEvent)
-         */
+
         @Override
         public void sessionCreated(HttpSessionEvent event) {
             // Do nothing
         }
 
-        /**
-         * {@inheritDoc}
-         * 
-         * @see javax.servlet.http.HttpSessionListener#sessionDestroyed(javax.servlet.http.HttpSessionEvent)
-         */
         @Override
         public void sessionDestroyed(HttpSessionEvent event) {
             synchronized (this) {
                 this.notify();
             }
         }
-    };
+    }
 }

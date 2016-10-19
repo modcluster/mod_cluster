@@ -29,8 +29,8 @@ import org.jboss.modcluster.container.Engine;
  * @author Paul Ferraro
  */
 public interface LoadMetric extends LoadMetricMBean {
-    public static final double DEFAULT_CAPACITY = 1;
-    public static final int DEFAULT_WEIGHT = 1;
+    double DEFAULT_CAPACITY = 1;
+    int DEFAULT_WEIGHT = 1;
 
     /**
      * Returns the current load of this metric as a percent of the metric's capacity.

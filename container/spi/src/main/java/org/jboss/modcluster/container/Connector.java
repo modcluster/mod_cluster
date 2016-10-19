@@ -51,9 +51,7 @@ public interface Connector {
         }
 
         /**
-         * {@inhericDoc}
-         * 
-         * @see java.lang.Enum#toString()
+         * Returns lower case name of this enum constant.
          */
         @Override
         public String toString() {
@@ -84,7 +82,7 @@ public interface Connector {
     InetAddress getAddress();
 
     /**
-     * Sets the address on which this connector operates. Used to set an explicit connector address if it undefined or defined
+     * Sets the address on which this connector operates. Used to set an explicit connector address if undefined or defined
      * as any address.
      * 
      * @param address a network interface address
