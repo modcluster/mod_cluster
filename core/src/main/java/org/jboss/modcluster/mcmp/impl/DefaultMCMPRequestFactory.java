@@ -51,12 +51,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
     private final MCMPRequest dumpRequest = new DefaultMCMPRequest(MCMPRequestType.DUMP, true, null,
             Collections.<String, String> emptyMap());
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createConfigRequest(org.jboss.modcluster.Engine,
-     *      org.jboss.modcluster.config.NodeConfiguration, org.jboss.modcluster.config.BalancerConfiguration)
-     */
     @Override
     public MCMPRequest createConfigRequest(Engine engine, NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig) {
         Connector connector = engine.getProxyConnector();
@@ -155,139 +149,72 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
         return new DefaultMCMPRequest(MCMPRequestType.CONFIG, false, engine.getJvmRoute(), parameters);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.jboss.modcluster.Context)
-     */
     @Override
     public MCMPRequest createDisableRequest(Context context) {
         return this.createRequest(MCMPRequestType.DISABLE_APP, context);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDisableRequest(org.jboss.modcluster.Engine)
-     */
     @Override
     public MCMPRequest createDisableRequest(Engine engine) {
         return this.createRequest(MCMPRequestType.DISABLE_APP, engine);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.jboss.modcluster.Context)
-     */
     @Override
     public MCMPRequest createEnableRequest(Context context) {
         return this.createRequest(MCMPRequestType.ENABLE_APP, context);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createEnableRequest(org.jboss.modcluster.Engine)
-     */
     @Override
     public MCMPRequest createEnableRequest(Engine engine) {
         return this.createRequest(MCMPRequestType.ENABLE_APP, engine);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.jboss.modcluster.Engine)
-     */
     @Override
     public MCMPRequest createRemoveRequest(Engine engine) {
         return this.createRequest(MCMPRequestType.REMOVE_APP, engine);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveRequest(org.jboss.modcluster.Context)
-     */
     @Override
     public MCMPRequest createRemoveRequest(Context context) {
         return this.createRequest(MCMPRequestType.REMOVE_APP, context);
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStatusRequest(java.lang.String, int)
-     */
     @Override
     public MCMPRequest createStatusRequest(String jvmRoute, int lbf) {
         return new DefaultMCMPRequest(MCMPRequestType.STATUS, false, jvmRoute, Collections.singletonMap("Load",
                 String.valueOf(lbf)));
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.jboss.modcluster.Engine)
-     */
     @Override
     public MCMPRequest createStopRequest(Engine engine) {
         return this.createRequest(MCMPRequestType.STOP_APP, engine);
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createStopRequest(org.jboss.modcluster.Context)
-     */
     @Override
     public MCMPRequest createStopRequest(Context context) {
         return this.createRequest(MCMPRequestType.STOP_APP, context);
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createDumpRequest()
-     */
     @Override
     public MCMPRequest createDumpRequest() {
         return this.dumpRequest;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createInfoRequest()
-     */
     @Override
     public MCMPRequest createInfoRequest() {
         return this.infoRequest;
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest()
-     */
     @Override
     public MCMPRequest createPingRequest() {
         return new DefaultMCMPRequest(MCMPRequestType.PING, false, null, Collections.<String, String> emptyMap());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.lang.String)
-     */
     @Override
     public MCMPRequest createPingRequest(String jvmRoute) {
         return new DefaultMCMPRequest(MCMPRequestType.PING, false, jvmRoute, Collections.<String, String> emptyMap());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createPingRequest(java.lang.String, java.lang.String, int)
-     */
     @Override
     public MCMPRequest createPingRequest(String scheme, String host, int port) {
         Map<String, String> parameters = new TreeMap<String, String>();
@@ -304,11 +231,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
         return this.createContextRequest(type, host.getEngine().getJvmRoute(), host.getAliases(), context.getPath());
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveContextRequest(java.lang.String, java.util.Set,
-     *      java.lang.String)
-     */
     @Override
     public MCMPRequest createRemoveContextRequest(String jvmRoute, Set<String> aliases, String path) {
         return this.createContextRequest(MCMPRequestType.REMOVE_APP, jvmRoute, aliases, path);
@@ -331,11 +253,6 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
         return new DefaultMCMPRequest(type, true, jvmRoute, Collections.<String, String> emptyMap());
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPRequestFactory#createRemoveEngineRequest(java.lang.String)
-     */
     @Override
     public MCMPRequest createRemoveEngineRequest(String jvmRoute) {
         return this.createEngineRequest(MCMPRequestType.REMOVE_APP, jvmRoute);

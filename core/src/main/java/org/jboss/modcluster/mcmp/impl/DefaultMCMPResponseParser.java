@@ -42,11 +42,6 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser {
 
     private static final Logger log = Logger.getLogger(DefaultMCMPResponseParser.class);
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parseInfoResponse(java.lang.String)
-     */
     @Override
     public Map<String, Set<VirtualHost>> parseInfoResponse(String response) {
         if (response == null)
@@ -199,11 +194,6 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser {
         return (ids.length() > 2) ? ids.split(":") : new String[] { ids };
     }
 
-    /**
-     * {@inhericDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parsePingResponse(java.lang.String)
-     */
     @Override
     public boolean parsePingResponse(String response) {
         log.trace(response);
@@ -213,11 +203,6 @@ public class DefaultMCMPResponseParser implements MCMPResponseParser {
         return (value != null) ? value.equals("OK") : false;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.mcmp.MCMPResponseParser#parseStopResponse(java.lang.String)
-     */
     @Override
     public int parseStopAppResponse(String response) {
         log.trace(response);

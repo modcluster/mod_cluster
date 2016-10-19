@@ -34,7 +34,7 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
- * {@link LoadBalanceFactorProvider} implementation that periodically aggregates load from a set of {@link LoadMetricSource}s.
+ * {@link LoadBalanceFactorProvider} implementation that periodically aggregates load from a set of {@link LoadMetric}s.
  * 
  * @author Paul Ferraro
  */
@@ -55,10 +55,6 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean#getMetrics()
-     */
     @Override
     public synchronized Map<String, Double> getMetrics() {
         Map<String, Double> metrics = new TreeMap<String, Double>();
@@ -69,10 +65,6 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
         return metrics;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
-     */
     @Override
     public synchronized int getLoadBalanceFactor(Engine engine) {
         int totalWeight = 0;
@@ -120,9 +112,6 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
 
     /**
      * Compute historical average using time decay function
-     * 
-     * @param queue
-     * @return
      */
     private double average(List<Double> queue) {
         assert !queue.isEmpty();
@@ -142,37 +131,21 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
         return totalLoad / totalDecay;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean#getDecayFactor()
-     */
     @Override
     public int getDecayFactor() {
         return this.decayFactor;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean#setDecayFactor(int)
-     */
     @Override
     public void setDecayFactor(int decayFactor) {
         this.decayFactor = Math.max(1, decayFactor);
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean#getHistory()
-     */
     @Override
     public int getHistory() {
         return this.history;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProviderMBean#setHistory(int)
-     */
     @Override
     public void setHistory(int history) {
         this.history = Math.max(0, history);
