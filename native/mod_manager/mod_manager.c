@@ -629,17 +629,34 @@ static int manager_init(apr_pool_t *p, apr_pool_t *plog,
     return OK;
 }
 static apr_status_t decodeenc(char **ptr);
+
+/* We process stuff like: 'JVMRoute=jvmroutevalue&Host=hostvalue ... */
 static char **process_buff(request_rec *r, char *buff)
 {
     int i = 0;
+    int isequal = 0;
+    int numb = 0;
     char *s = buff;
     char **ptr = NULL;
+
+    /* count the number of key=value */
+            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                         "process_buff: %s", buff);
     for (; *s != '\0'; s++) {
-        if (*s == '&' || *s == '=') {
+        if (*s == '&') {
             i++;
         }
+        if (*s == '=') {
+            isequal = 1;
+        }
     }
-    ptr = apr_palloc(r->pool, sizeof(char *) * (i + 2));
+    if (!isequal)
+        return NULL; /* at least key=value is a valid message */
+            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                         "process_buff: %d", i);
+
+    numb = (i+1) * 2;
+    ptr = apr_palloc(r->pool, sizeof(char *) * numb);
     if (ptr == NULL)
         return NULL;
 
@@ -647,14 +664,32 @@ static char **process_buff(request_rec *r, char *buff)
     ptr[0] = s;
     ptr[i+1] = NULL;
     i = 1;
+    isequal = 0;
     for (; *s != '\0'; s++) {
-        /* our separators */
-        if (*s == '&' || *s == '=') {
+        /* got a '=' and look for next '&' */
+        if (*s == '&' && isequal) {
             *s = '\0';
             ptr[i] = s + 1;
+            isequal = 0;
+            i++;
+        }
+        /* got a '&' and look for next '=' */
+        if (*s == '=' && !isequal) {
+            *s = '\0';
+            ptr[i] = s + 1;
+            isequal = 1;
             i++;
         }
     }
+            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                         "process_buff: %d %d %d", i, isequal, numb);
+    /* check the last key=value */
+    if (!isequal)
+        return NULL;
+    if  (numb != i)
+        return NULL;
+    if (ptr[i-2][0] == '\0' || ptr[i-1][0] == '\0')
+        return NULL;
 
     if (decodeenc(ptr) != APR_SUCCESS) {
         return NULL;
