@@ -640,8 +640,6 @@ static char **process_buff(request_rec *r, char *buff)
     char **ptr = NULL;
 
     /* count the number of key=value */
-            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-                         "process_buff: %s", buff);
     for (; *s != '\0'; s++) {
         if (*s == '&') {
             i++;
@@ -652,11 +650,9 @@ static char **process_buff(request_rec *r, char *buff)
     }
     if (!isequal)
         return NULL; /* at least key=value is a valid message */
-            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-                         "process_buff: %d", i);
 
     numb = (i+1) * 2;
-    ptr = apr_palloc(r->pool, sizeof(char *) * numb);
+    ptr = apr_pcalloc(r->pool, sizeof(char *) * (numb + 1));
     if (ptr == NULL)
         return NULL;
 
@@ -681,8 +677,6 @@ static char **process_buff(request_rec *r, char *buff)
             i++;
         }
     }
-            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-                         "process_buff: %d %d %d", i, isequal, numb);
     /* check the last key=value */
     if (!isequal)
         return NULL;
@@ -2103,27 +2097,30 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
 
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "Processing PING");
     nodeinfo.mess.id = -1;
-    while (ptr[i] && ptr[i][0] != '\0') {
-        if (strcasecmp(ptr[i], "JVMRoute") == 0) {
-            if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.JVMRoute)) {
-                *errtype = TYPESYNTAX;
-                return SROUBIG;
+    if (ptr != NULL) {
+        /* we have parameters */
+        while (ptr[i] && ptr[i][0] != '\0') {
+            if (strcasecmp(ptr[i], "JVMRoute") == 0) {
+                if (strlen(ptr[i+1])>=sizeof(nodeinfo.mess.JVMRoute)) {
+                    *errtype = TYPESYNTAX;
+                    return SROUBIG;
+                }
+                strcpy(nodeinfo.mess.JVMRoute, ptr[i+1]);
+                nodeinfo.mess.id = 0;
             }
-            strcpy(nodeinfo.mess.JVMRoute, ptr[i+1]);
-            nodeinfo.mess.id = 0;
+            else if (strcasecmp(ptr[i], "Scheme") == 0)
+                scheme = apr_pstrdup(r->pool, ptr[i+1]);
+            else if (strcasecmp(ptr[i], "Host") == 0)
+                host = apr_pstrdup(r->pool, ptr[i+1]);
+            else if (strcasecmp(ptr[i], "Port") == 0)
+                port = apr_pstrdup(r->pool, ptr[i+1]);
+            else {
+                *errtype = TYPESYNTAX;
+                return apr_psprintf(r->pool, SBADFLD, ptr[i]);
+            }
+            i++;
+            i++;
         }
-        else if (strcasecmp(ptr[i], "Scheme") == 0)
-            scheme = apr_pstrdup(r->pool, ptr[i+1]);
-        else if (strcasecmp(ptr[i], "Host") == 0)
-            host = apr_pstrdup(r->pool, ptr[i+1]);
-        else if (strcasecmp(ptr[i], "Port") == 0)
-            port = apr_pstrdup(r->pool, ptr[i+1]);
-        else {
-            *errtype = TYPESYNTAX;
-            return apr_psprintf(r->pool, SBADFLD, ptr[i]);
-        }
-        i++;
-        i++;
     }
     if (nodeinfo.mess.id == -1) {
         /* PING scheme, host, port or just httpd */
@@ -3057,43 +3054,43 @@ static int manager_handler(request_rec *r)
                 "manager_handler %s (%s) processing: \"%s\"", r->method, r->filename, buff);
 
     ptr = process_buff(r, buff);
-    if (ptr == NULL) {
-        process_error(r, SMESPAR, TYPESYNTAX);
-        return 500;
-    }
+
     if (strstr(r->filename, NODE_COMMAND))
         global = 1;
 
-    if (strcasecmp(r->method, "CONFIG") == 0)
+    if (strcasecmp(r->method, "CONFIG") == 0 && ptr != NULL)
         errstring = process_config(r, ptr, &errtype);
     /* Application handling */
-    else if (strcasecmp(r->method, "ENABLE-APP") == 0)
+    else if (strcasecmp(r->method, "ENABLE-APP") == 0 && ptr != NULL)
         errstring = process_enable(r, ptr, &errtype, global);
-    else if (strcasecmp(r->method, "DISABLE-APP") == 0)
+    else if (strcasecmp(r->method, "DISABLE-APP") == 0 && ptr != NULL)
         errstring = process_disable(r, ptr, &errtype, global);
-    else if (strcasecmp(r->method, "STOP-APP") == 0)
+    else if (strcasecmp(r->method, "STOP-APP") == 0 && ptr != NULL)
         errstring = process_stop(r, ptr, &errtype, global, 1);
-    else if (strcasecmp(r->method, "REMOVE-APP") == 0)
+    else if (strcasecmp(r->method, "REMOVE-APP") == 0 && ptr != NULL)
         errstring = process_remove(r, ptr, &errtype, global);
     /* Status handling */
-    else if (strcasecmp(r->method, "STATUS") == 0)
+    else if (strcasecmp(r->method, "STATUS") == 0 && ptr != NULL)
         errstring = process_status(r, ptr, &errtype);
     else if (strcasecmp(r->method, "DUMP") == 0)
         errstring = process_dump(r, &errtype);
     else if (strcasecmp(r->method, "INFO") == 0)
         errstring = process_info(r, &errtype);
     else if (strcasecmp(r->method, "PING") == 0)
-        errstring = process_ping(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "ADDID") == 0)
+        errstring = process_ping(r, ptr, &errtype); /* ptr could be NULL */
+    else if (strcasecmp(r->method, "ADDID") == 0 && ptr != NULL)
         errstring = process_addid(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "REMOVEID") == 0)
+    else if (strcasecmp(r->method, "REMOVEID") == 0 && ptr != NULL)
         errstring = process_removeid(r, ptr, &errtype);
-    else if (strcasecmp(r->method, "QUERY") == 0)
+    else if (strcasecmp(r->method, "QUERY") == 0 && ptr != NULL)
         errstring = process_query(r, ptr, &errtype);
     else if (strcasecmp(r->method, "VERSION") == 0)
-        errstring = process_version(r, ptr, &errtype);
+        errstring = process_version(r, ptr, &errtype); /* ptr isn't used */
     else {
-        errstring = SCMDUNS;
+        if (ptr == NULL)
+            errstring = SMESPAR;
+        else
+            errstring = SCMDUNS;
         errtype = TYPESYNTAX;
     }
 
