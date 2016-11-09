@@ -91,6 +91,7 @@ static server_rec *main_server = NULL;
 static int creat_bal = CREAT_ROOT;
 
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
+static int deterministic_failover = 0;
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
@@ -3449,9 +3450,13 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
         return NULL;
     }
 
-    /* XXX: candidate = (*balancer->lbmethod->finder)(balancer, r); */
-    candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain,
-    		vhost_table, context_table, node_table);
+    if (deterministic_failover) {
+        candidate = NULL;
+    } else {
+        /* XXX: candidate = (*balancer->lbmethod->finder)(balancer, r); */
+        candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain,
+                                                  vhost_table, context_table, node_table);
+    }
 
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
@@ -4204,6 +4209,13 @@ static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy, 
     return NULL;
 }
 
+static const char *cmd_proxy_cluster_deterministic_failover(cmd_parms *parms, void *mconfig, int on)
+{
+    deterministic_failover = on;
+
+    return NULL;
+}
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -4241,6 +4253,12 @@ static const command_rec  proxy_cluster_cmds[] =
          NULL,
          OR_ALL,
          "EnableOptions - Use OPTIONS with HTTP/HTTPS for CPING/CPONG. On: Use OPTIONS, Off: Do not use OPTIONS (Default: On)"
+    ),
+    AP_INIT_FLAG("DeterministicFailover",
+                 cmd_proxy_cluster_deterministic_failover,
+                 NULL,
+                 OR_ALL,
+                 "DeterministicFailover - controls whether a node upon failover is chosen deterministically (Default: Off)"
     ),
     {NULL}
 };
