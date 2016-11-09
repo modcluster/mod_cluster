@@ -245,6 +245,35 @@
             </modules>
         </profile>
         <profile>
+            <id>jdk9</id>
+            <activation>
+                <jdk>9</jdk>
+            </activation>
+            <modules>
+                <module>container-spi</module>
+                <module>core</module>
+                <module>container</module>
+                <module>demo</module>
+            </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-compiler-plugin</artifactId>
+                        <version>${version.compiler.plugin}</version>
+                        <configuration>
+                            <!-- Fork is needed so compiler args can be used -->
+                            <fork>true</fork>
+                            <compilerArgs>
+                                <arg>-J--add-modules</arg>
+                                <arg>-Jjava.annotations.common</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>AS7</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
