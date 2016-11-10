@@ -91,6 +91,7 @@ static server_rec *main_server = NULL;
 static int creat_bal = CREAT_ROOT;
 
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
+static int deterministic_failover = 0;
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
@@ -145,6 +146,13 @@ struct node_context
         int context;
 };
 typedef struct node_context node_context;
+
+static int proxy_worker_cmp(const void *a, const void *b)
+{
+    const char *route1 = (*(proxy_worker **) a)->s->route;
+    const char *route2 = (*(proxy_worker **) b)->s->route;
+    return strcmp(route1, route2);
+}
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 static int (*ap_proxy_retry_worker_fn)(const char *proxy_function,
@@ -2184,13 +2192,19 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                                          proxy_vhost_table *vhost_table,
                                          proxy_context_table *context_table, proxy_node_table *node_table)
 {
-    int i;
+    int i, hash = 0;
     proxy_worker *mycandidate = NULL;
     node_context *mynodecontext = NULL;
     proxy_worker *worker;
     int checking_standby = 0;
     int checked_standby = 0;
     int checked_domain = 1;
+    // Create a separate array of available workers, to be sorted later
+    proxy_worker *workers[balancer->workers->nelts];
+    int workers_length = 0;
+    const char *session_id_with_route;
+    char *tokenizer;
+    const char *session_id;
 
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -2275,6 +2289,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         continue;
                     }
                 }
+                workers[workers_length++] = worker;
                 if (worker->s->lbfactor == 0 && checking_standby) {
                     mycandidate = worker;
                     mynodecontext = nodecontext;
@@ -2304,6 +2319,21 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                     }
                 }
             }
+        }
+        session_id_with_route = apr_table_get(r->notes, "session-id");
+        session_id = session_id_with_route ? apr_strtok(strdup(session_id_with_route), ".", &tokenizer) : NULL;
+        // Determine deterministic route, if session is associated with a route, but that route wasn't used
+        if (deterministic_failover && session_id && strchr(session_id_with_route, '.') && workers_length > 0) {
+            // Deterministic selection of target route
+            if (workers_length > 1) {
+	            qsort(workers, workers_length, sizeof(*workers), &proxy_worker_cmp);
+	        }
+            // Compute consistent int from session id
+            for (i = 0; session_id[i] != 0; ++i) {
+                hash += session_id[i];
+            }
+            mycandidate = workers[hash % workers_length];
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "Using deterministic failover target: %s", mycandidate->s->route);
         }
         if (mycandidate)
             break;
@@ -2336,6 +2366,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     }
     return mycandidate;
 }
+
 /*
  * Wrapper to mod_balancer "standard" interface.
  */
@@ -2894,6 +2925,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                          balancer->name,
 #endif
                          sessionid, sticky);
+            apr_table_setn(r->notes, "session-id", sessionid);
             if ((route = strchr(sessionid, '.')) != NULL )
                 route++;
             if (route && *route) {
@@ -2925,8 +2957,6 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
 #endif
                     /* here we have the route and domain for find_session_route ... */
                     apr_table_setn(r->notes, "session-sticky", sticky_used);
-                    if (sessionid_storage)
-                        apr_table_setn(r->notes, "session-id", sessionid);
                     apr_table_setn(r->notes, "session-route", route);
 
                     apr_table_setn(r->subprocess_env, "BALANCER_SESSION_ROUTE", route);
@@ -3449,9 +3479,7 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
         return NULL;
     }
 
-    /* XXX: candidate = (*balancer->lbmethod->finder)(balancer, r); */
-    candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain,
-    		vhost_table, context_table, node_table);
+    candidate = internal_find_best_byrequests(balancer, conf, r, domain, failoverdomain, vhost_table, context_table, node_table);
 
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
@@ -4204,6 +4232,13 @@ static const char*cmd_proxy_cluster_enable_options(cmd_parms *cmd, void *dummy, 
     return NULL;
 }
 
+static const char *cmd_proxy_cluster_deterministic_failover(cmd_parms *parms, void *mconfig, int on)
+{
+    deterministic_failover = on;
+
+    return NULL;
+}
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -4241,6 +4276,13 @@ static const command_rec  proxy_cluster_cmds[] =
          NULL,
          OR_ALL,
          "EnableOptions - Use OPTIONS with HTTP/HTTPS for CPING/CPONG. On: Use OPTIONS, Off: Do not use OPTIONS (Default: On)"
+    ),
+    AP_INIT_FLAG(
+        "DeterministicFailover",
+        cmd_proxy_cluster_deterministic_failover,
+        NULL,
+        OR_ALL,
+        "DeterministicFailover - controls whether a node upon failover is chosen deterministically (Default: Off)"
     ),
     {NULL}
 };
