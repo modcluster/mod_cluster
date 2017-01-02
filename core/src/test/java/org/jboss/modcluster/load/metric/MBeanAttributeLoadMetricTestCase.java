@@ -22,8 +22,8 @@
 package org.jboss.modcluster.load.metric;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
