@@ -80,6 +80,7 @@ import org.jboss.modcluster.config.SSLConfiguration;
  * @author EKR -- renamed to JSSESocketFactory
  * @author Jan Luehe
  * @author Bill Barker
+ * @author Radoslav Husar
  */
 public class JSSESocketFactory extends SocketFactory {
     static Logger log = Logger.getLogger(JSSESocketFactory.class);
@@ -92,21 +93,30 @@ public class JSSESocketFactory extends SocketFactory {
         this.config = config;
 
         try {
-            // Create and init SSLContext
-            SSLContext context = SSLContext.getInstance(this.config.getSslProtocol());
+            SSLContext context;
+            if (config.getSslContext() != null) {
+                // Use the context provided by integration code (e.g. WildFly Elytron)
+                context = config.getSslContext();
 
-            KeyManager[] keyManagers = this.getKeyManagers();
-            TrustManager[] trustManagers = this.getTrustManagers();
+                this.socketFactory = context.getSocketFactory();
+                this.enabledCiphers = this.socketFactory.getSupportedCipherSuites();
+            } else {
+                // Create and init SSLContext
+                context = SSLContext.getInstance(this.config.getSslProtocol());
 
-            context.init(keyManagers, trustManagers, new SecureRandom());
+                KeyManager[] keyManagers = this.getKeyManagers();
+                TrustManager[] trustManagers = this.getTrustManagers();
 
-            // create proxy
-            this.socketFactory = context.getSocketFactory();
+                context.init(keyManagers, trustManagers, new SecureRandom());
 
-            String ciphers = this.config.getSslCiphers();
+                // create proxy
+                this.socketFactory = context.getSocketFactory();
 
-            this.enabledCiphers = (ciphers != null) ? getEnabled(ciphers, this.socketFactory.getSupportedCipherSuites())
-                    : this.socketFactory.getDefaultCipherSuites();
+                String ciphers = this.config.getSslCiphers();
+
+                this.enabledCiphers = (ciphers != null) ? getEnabled(ciphers, this.socketFactory.getSupportedCipherSuites())
+                        : this.socketFactory.getDefaultCipherSuites();
+            }
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException(e);
         } catch (IOException e) {

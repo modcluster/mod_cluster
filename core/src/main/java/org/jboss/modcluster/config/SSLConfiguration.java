@@ -21,85 +21,109 @@
  */
 package org.jboss.modcluster.config;
 
+import javax.net.ssl.SSLContext;
+
 /**
  * A SSLConfiguration.
- * 
+ *
  * @author Brian Stansberry
- * @version $Revision$
+ * @author Radoslav Husar
  */
 public interface SSLConfiguration {
+
+    /**
+     * Configured {@link SSLContext} instance to use ignoring all other configuration options.
+     * @return SSLContext configured context instance
+     */
+    SSLContext getSslContext();
+
     /**
      * SSL ciphers.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslCiphers();
 
     /**
      * SSL protocol.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslProtocol();
 
     /**
      * Certificate encoding algorithm.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslCertificateEncodingAlgorithm();
 
     /**
      * SSL keystore.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslKeyStore();
 
     /**
      * SSL keystore password.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslKeyStorePassword();
 
     /**
      * Keystore type.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslKeyStoreType();
 
     /**
      * Keystore provider.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslKeyStoreProvider();
 
     /**
      * Truststore algorithm.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslTrustAlgorithm();
 
     /**
      * Key alias.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslKeyAlias();
 
     /**
      * Certificate revocation list.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslCrlFile();
 
     /**
      * Trust max certificate length.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     int getSslTrustMaxCertLength();
 
     /**
      * Trust store file.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslTrustStore();
 
     /**
      * Trust store password.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslTrustStorePassword();
 
     /**
      * Trust store type.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslTrustStoreType();
 
     /**
      * Trust store provider.
+     * Ignored if {@link SSLContext} is provided directly via {@link SSLConfiguration#getSslContext()}.
      */
     String getSslTrustStoreProvider();
 }
