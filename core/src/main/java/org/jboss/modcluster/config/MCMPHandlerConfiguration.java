@@ -47,7 +47,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
      * Gets list of proxies as a collection of {@link InetSocketAddress}es.
      *
      * @return list of proxies as a collection of {@link InetSocketAddress}es
-     * @deprecated as of 1.3.1 use {@link #getProxyConfigurations()} to also specify local addresses to bind to
+     * @deprecated As of 1.3.1.Final use {@link #getProxyConfigurations()} to also specify local addresses to bind to
      */
     @Deprecated
     Collection<InetSocketAddress> getProxies();
