@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.jboss.modcluster.ModClusterService;
@@ -254,6 +255,17 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     }
 
     // ----------------------------------------------------- SSLConfiguration
+
+    private SSLContext sslContext = null;
+
+    @Override
+    public SSLContext getSslContext() {
+        return sslContext;
+    }
+
+    public void setSslContext(SSLContext sslContext) {
+        this.sslContext = sslContext;
+    }
 
     private String sslCiphers = null;
 
