@@ -114,10 +114,6 @@ public class JSSESocketFactory extends SocketFactory {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket()
-     */
     @Override
     public Socket createSocket() throws IOException {
         Socket socket = this.socketFactory.createSocket();
@@ -125,10 +121,6 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.impl.SocketFactory#createSocket(java.net.InetAddress, int)
-     */
     @Override
     public Socket createSocket(InetAddress host, int port) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port);
@@ -136,10 +128,6 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.net.InetAddress, int, java.net.InetAddress, int)
-     */
     @Override
     public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
         Socket socket = this.socketFactory.createSocket(address, port, localAddress, localPort);
@@ -147,35 +135,18 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.lang.String, int, java.net.InetAddress, int)
-     */
     @Override
-    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException,
-            UnknownHostException {
+    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port, localAddress, localPort);
         this.initSocket(socket);
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.lang.String, int)
-     */
     @Override
-    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+    public Socket createSocket(String host, int port) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port);
         this.initSocket(socket);
         return socket;
-    }
-
-    public void handshake(Socket socket) throws IOException {
-        if (!(socket instanceof SSLSocket)) {
-            throw new IllegalArgumentException();
-        }
-
-        ((SSLSocket) socket).startHandshake();
     }
 
     private static String[] getEnabled(String requested, String[] supported) {
@@ -200,7 +171,7 @@ public class JSSESocketFactory extends SocketFactory {
         return !enabled.isEmpty() ? enabled.toArray(new String[enabled.size()]) : null;
     }
 
-    /*
+    /**
      * Gets the SSL server's keystore.
      */
     private KeyStore getKeystore() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
@@ -209,7 +180,7 @@ public class JSSESocketFactory extends SocketFactory {
                 this.config.getSslKeyStore(), this.config.getSslKeyStorePassword());
     }
 
-    /*
+    /**
      * Gets the SSL server's truststore.
      */
     protected KeyStore getTrustStore() throws IOException, KeyStoreException, NoSuchProviderException,
@@ -237,7 +208,7 @@ public class JSSESocketFactory extends SocketFactory {
         return this.getStore(truststoreType, truststoreProvider, trustStore, truststorePassword);
     }
 
-    /*
+    /**
      * Gets the key- or truststore with the specified type, path, and password.
      */
     private KeyStore getStore(String type, String provider, String path, String password) throws IOException,
@@ -297,7 +268,7 @@ public class JSSESocketFactory extends SocketFactory {
     }
 
     /**
-     * Gets the intialized trust managers.
+     * Gets the initialized trust managers.
      * 
      * @throws GeneralSecurityException
      * @throws IOException
