@@ -58,11 +58,6 @@ public class SystemPropertyJvmRouteFactory implements JvmRouteFactory {
         this.property = property;
     }
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.JvmRouteFactory#createJvmRoute(org.jboss.modcluster.Engine)
-     */
     @Override
     public String createJvmRoute(Engine engine) {
         final String defaultJvmRoute = this.factory.createJvmRoute(engine);
