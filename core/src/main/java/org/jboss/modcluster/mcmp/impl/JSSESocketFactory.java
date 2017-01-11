@@ -80,6 +80,7 @@ import org.jboss.modcluster.config.SSLConfiguration;
  * @author EKR -- renamed to JSSESocketFactory
  * @author Jan Luehe
  * @author Bill Barker
+ * @author Radoslav Husar
  */
 public class JSSESocketFactory extends SocketFactory {
     static Logger log = Logger.getLogger(JSSESocketFactory.class);
@@ -92,21 +93,30 @@ public class JSSESocketFactory extends SocketFactory {
         this.config = config;
 
         try {
-            // Create and init SSLContext
-            SSLContext context = SSLContext.getInstance(this.config.getSslProtocol());
+            SSLContext context;
+            if (config.getSslContext() != null) {
+                // Use the context provided by integration code (e.g. WildFly Elytron)
+                context = config.getSslContext();
 
-            KeyManager[] keyManagers = this.getKeyManagers();
-            TrustManager[] trustManagers = this.getTrustManagers();
+                this.socketFactory = context.getSocketFactory();
+                this.enabledCiphers = this.socketFactory.getSupportedCipherSuites();
+            } else {
+                // Create and init SSLContext
+                context = SSLContext.getInstance(this.config.getSslProtocol());
 
-            context.init(keyManagers, trustManagers, new SecureRandom());
+                KeyManager[] keyManagers = this.getKeyManagers();
+                TrustManager[] trustManagers = this.getTrustManagers();
 
-            // create proxy
-            this.socketFactory = context.getSocketFactory();
+                context.init(keyManagers, trustManagers, new SecureRandom());
 
-            String ciphers = this.config.getSslCiphers();
+                // create proxy
+                this.socketFactory = context.getSocketFactory();
 
-            this.enabledCiphers = (ciphers != null) ? getEnabled(ciphers, this.socketFactory.getSupportedCipherSuites())
-                    : this.socketFactory.getDefaultCipherSuites();
+                String ciphers = this.config.getSslCiphers();
+
+                this.enabledCiphers = (ciphers != null) ? getEnabled(ciphers, this.socketFactory.getSupportedCipherSuites())
+                        : this.socketFactory.getDefaultCipherSuites();
+            }
         } catch (GeneralSecurityException e) {
             throw new IllegalStateException(e);
         } catch (IOException e) {
@@ -114,10 +124,6 @@ public class JSSESocketFactory extends SocketFactory {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket()
-     */
     @Override
     public Socket createSocket() throws IOException {
         Socket socket = this.socketFactory.createSocket();
@@ -125,10 +131,6 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.impl.SocketFactory#createSocket(java.net.InetAddress, int)
-     */
     @Override
     public Socket createSocket(InetAddress host, int port) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port);
@@ -136,10 +138,6 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.net.InetAddress, int, java.net.InetAddress, int)
-     */
     @Override
     public Socket createSocket(InetAddress address, int port, InetAddress localAddress, int localPort) throws IOException {
         Socket socket = this.socketFactory.createSocket(address, port, localAddress, localPort);
@@ -147,35 +145,18 @@ public class JSSESocketFactory extends SocketFactory {
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.lang.String, int, java.net.InetAddress, int)
-     */
     @Override
-    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException,
-            UnknownHostException {
+    public Socket createSocket(String host, int port, InetAddress localAddress, int localPort) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port, localAddress, localPort);
         this.initSocket(socket);
         return socket;
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.net.SocketFactory#createSocket(java.lang.String, int)
-     */
     @Override
-    public Socket createSocket(String host, int port) throws IOException, UnknownHostException {
+    public Socket createSocket(String host, int port) throws IOException {
         Socket socket = this.socketFactory.createSocket(host, port);
         this.initSocket(socket);
         return socket;
-    }
-
-    public void handshake(Socket socket) throws IOException {
-        if (!(socket instanceof SSLSocket)) {
-            throw new IllegalArgumentException();
-        }
-
-        ((SSLSocket) socket).startHandshake();
     }
 
     private static String[] getEnabled(String requested, String[] supported) {
@@ -200,7 +181,7 @@ public class JSSESocketFactory extends SocketFactory {
         return !enabled.isEmpty() ? enabled.toArray(new String[enabled.size()]) : null;
     }
 
-    /*
+    /**
      * Gets the SSL server's keystore.
      */
     private KeyStore getKeystore() throws IOException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
@@ -209,7 +190,7 @@ public class JSSESocketFactory extends SocketFactory {
                 this.config.getSslKeyStore(), this.config.getSslKeyStorePassword());
     }
 
-    /*
+    /**
      * Gets the SSL server's truststore.
      */
     protected KeyStore getTrustStore() throws IOException, KeyStoreException, NoSuchProviderException,
@@ -237,7 +218,7 @@ public class JSSESocketFactory extends SocketFactory {
         return this.getStore(truststoreType, truststoreProvider, trustStore, truststorePassword);
     }
 
-    /*
+    /**
      * Gets the key- or truststore with the specified type, path, and password.
      */
     private KeyStore getStore(String type, String provider, String path, String password) throws IOException,
@@ -297,7 +278,7 @@ public class JSSESocketFactory extends SocketFactory {
     }
 
     /**
-     * Gets the intialized trust managers.
+     * Gets the initialized trust managers.
      * 
      * @throws GeneralSecurityException
      * @throws IOException
