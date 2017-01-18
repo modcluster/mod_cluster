@@ -778,16 +778,13 @@ public class DefaultMCMPHandler implements MCMPHandler {
         private transient volatile BufferedWriter writer = null;
 
         Proxy(InetSocketAddress socketAddress, MCMPHandlerConfiguration config) {
-            this.socketAddress = socketAddress;
-            this.sourceAddress = null;
-            this.socketFactory = config.isSsl() ? new JSSESocketFactory(config) : SocketFactory.getDefault();
-            this.socketTimeout = config.getSocketTimeout();
+            this(socketAddress, null, config);
         }
 
         Proxy(InetSocketAddress socketAddress, InetSocketAddress sourceAddress, MCMPHandlerConfiguration config) {
             this.socketAddress = socketAddress;
             this.sourceAddress = sourceAddress;
-            this.socketFactory = config.isSsl() ? new JSSESocketFactory(config) : SocketFactory.getDefault();
+            this.socketFactory = config.getSocketFactory();
             this.socketTimeout = config.getSocketTimeout();
         }
 

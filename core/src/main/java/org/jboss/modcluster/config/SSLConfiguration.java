@@ -25,7 +25,6 @@ package org.jboss.modcluster.config;
  * A SSLConfiguration.
  * 
  * @author Brian Stansberry
- * @version $Revision$
  */
 public interface SSLConfiguration {
     /**

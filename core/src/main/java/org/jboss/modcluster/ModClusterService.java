@@ -42,8 +42,10 @@ import javax.servlet.http.HttpSessionListener;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerFactoryImpl;
+import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
+import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.container.Connector;
@@ -76,6 +78,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     private final NodeConfiguration nodeConfig;
     private final BalancerConfiguration balancerConfig;
     private final MCMPHandlerConfiguration mcmpConfig;
+    private final AdvertiseConfiguration advertiseConfig;
     private final MCMPHandler mcmpHandler;
     private final ResetRequestSource resetRequestSource;
     private final MCMPRequestFactory requestFactory;
@@ -93,34 +96,41 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     private volatile LoadBalanceFactorProvider loadBalanceFactorProvider;
     private volatile AdvertiseListener advertiseListener;
 
+    public ModClusterService(ModClusterConfiguration config, LoadBalanceFactorProvider loadBalanceFactorProvider) {
+        this(config.getNodeConfiguration(), config.getBalancerConfiguration(), config.getMCMPHandlerConfiguration(), config.getAdvertiseConfiguration(), new SimpleLoadBalanceFactorProviderFactory(loadBalanceFactorProvider));
+    }
+
     public ModClusterService(ModClusterConfig config, LoadBalanceFactorProvider loadBalanceFactorProvider) {
         this(config, new SimpleLoadBalanceFactorProviderFactory(loadBalanceFactorProvider));
     }
 
     public ModClusterService(ModClusterConfig config, LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory) {
-        this(config, loadBalanceFactorProviderFactory, new DefaultMCMPRequestFactory());
+        this(config, config, config, config, loadBalanceFactorProviderFactory);
     }
 
-    private ModClusterService(ModClusterConfig config, LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory,
-            MCMPRequestFactory requestFactory) {
-        this(config, loadBalanceFactorProviderFactory, requestFactory, new DefaultMCMPResponseParser(),
-                new ResetRequestSourceImpl(config, config, requestFactory));
+    private ModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, AdvertiseConfiguration advertiseConfig,
+                              LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory) {
+        this(nodeConfig, balancerConfig, mcmpConfig, advertiseConfig, loadBalanceFactorProviderFactory, new DefaultMCMPRequestFactory());
     }
 
-    private ModClusterService(ModClusterConfig config, LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory,
-            MCMPRequestFactory requestFactory, MCMPResponseParser responseParser, ResetRequestSource resetRequestSource) {
-        this(config, config, config, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource,
-                new DefaultMCMPHandler(config, resetRequestSource, requestFactory, responseParser),
-                new AdvertiseListenerFactoryImpl());
+    private ModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, AdvertiseConfiguration advertiseConfig,
+                              LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, MCMPRequestFactory requestFactory) {
+        this(nodeConfig, balancerConfig, mcmpConfig, advertiseConfig, loadBalanceFactorProviderFactory, requestFactory,
+                new DefaultMCMPResponseParser(), new ResetRequestSourceImpl(nodeConfig, balancerConfig, requestFactory));
     }
 
-    protected ModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig,
-            MCMPHandlerConfiguration mcmpConfig, LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory,
-            MCMPRequestFactory requestFactory, MCMPResponseParser responseParser, ResetRequestSource resetRequestSource,
-            MCMPHandler mcmpHandler, AdvertiseListenerFactory listenerFactory) {
+    private ModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, AdvertiseConfiguration advertiseConfig,
+                              LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser, ResetRequestSource resetRequestSource) {
+        this(nodeConfig, balancerConfig, mcmpConfig, advertiseConfig, loadBalanceFactorProviderFactory, requestFactory, responseParser, resetRequestSource,
+                new DefaultMCMPHandler(mcmpConfig, resetRequestSource, requestFactory, responseParser), new AdvertiseListenerFactoryImpl());
+    }
+
+    protected ModClusterService(NodeConfiguration nodeConfig, BalancerConfiguration balancerConfig, MCMPHandlerConfiguration mcmpConfig, AdvertiseConfiguration advertiseConfig,
+                                LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory, MCMPRequestFactory requestFactory, MCMPResponseParser responseParser, ResetRequestSource resetRequestSource, MCMPHandler mcmpHandler, AdvertiseListenerFactory listenerFactory) {
         this.nodeConfig = nodeConfig;
         this.balancerConfig = balancerConfig;
         this.mcmpConfig = mcmpConfig;
+        this.advertiseConfig = advertiseConfig;
         this.mcmpHandler = mcmpHandler;
         this.resetRequestSource = resetRequestSource;
         this.requestFactory = requestFactory;
@@ -167,9 +177,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         Boolean advertise = this.mcmpConfig.getAdvertise();
 
-        if (Boolean.TRUE.equals(advertise) || (advertise == null && this.mcmpConfig.getProxies().isEmpty())) {
+        if (Boolean.TRUE.equals(advertise) || (advertise == null && this.mcmpConfig.getProxyConfigurations().isEmpty())) {
             try {
-                this.advertiseListener = this.listenerFactory.createListener(this.mcmpHandler, this.mcmpConfig);
+                this.advertiseListener = this.listenerFactory.createListener(this.mcmpHandler, this.advertiseConfig);
 
                 this.advertiseListener.start();
             } catch (IOException e) {
