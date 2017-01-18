@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Remove aclocal.m4 as it'll break some builds...
 rm -rf aclocal.m4 autom4te*.cache
 
