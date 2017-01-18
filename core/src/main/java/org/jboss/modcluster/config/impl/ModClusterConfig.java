@@ -29,17 +29,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.SocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.jboss.modcluster.ModClusterService;
 import org.jboss.modcluster.Utils;
+import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.JvmRouteFactory;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
@@ -47,13 +51,15 @@ import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.SSLConfiguration;
 import org.jboss.modcluster.config.SessionDrainingStrategy;
+import org.jboss.modcluster.mcmp.impl.JSSESocketFactory;
 
 /**
  * Java bean implementing the various configuration interfaces.
  * 
  * @author Brian Stansberry
+ * @author Radoslav Husar
  */
-public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfiguration, NodeConfiguration, SSLConfiguration {
+public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfiguration, NodeConfiguration, SSLConfiguration, AdvertiseConfiguration {
     // ----------------------------------------------- MCMPHandlerConfiguration
 
     private Boolean advertise;
@@ -166,8 +172,9 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
     }
 
     @Override
+    @Deprecated
     public Collection<InetSocketAddress> getProxies() {
-        Set<InetSocketAddress> proxies = new HashSet<InetSocketAddress>();
+        List<InetSocketAddress> proxies = new LinkedList<InetSocketAddress>();
         for (ProxyConfiguration proxy : proxyConfigurations) {
             proxies.add(proxy.getRemoteAddress());
         }
@@ -288,6 +295,7 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     private boolean ssl = false;
 
+    @Deprecated
     @Override
     public boolean isSsl() {
         return this.ssl;
@@ -295,6 +303,15 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
 
     public void setSsl(boolean ssl) {
         this.ssl = ssl;
+    }
+
+    @Override
+    public SocketFactory getSocketFactory() {
+        if (ssl) {
+            return new JSSESocketFactory(this);
+        } else {
+            return SocketFactory.getDefault();
+        }
     }
 
     private Map<String, Set<String>> excludedContextsPerHost = Collections.emptyMap();
