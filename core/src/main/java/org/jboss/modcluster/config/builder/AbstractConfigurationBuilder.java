@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.config;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.concurrent.ThreadFactory;
+package org.jboss.modcluster.config.builder;
+
+import org.jboss.modcluster.config.ModClusterConfiguration;
 
 /**
- * @author Paul Ferraro
+ * @author Radoslav Husar
+ * @since 1.3.6.Final
  */
-public interface AdvertiseConfiguration {
-    InetSocketAddress DEFAULT_SOCKET_ADDRESS = new InetSocketAddress("224.0.1.105", 23364);
+class AbstractConfigurationBuilder implements ConfigurationBuilder {
 
-    InetSocketAddress getAdvertiseSocketAddress();
+    private final ConfigurationBuilder parent;
 
-    InetAddress getAdvertiseInterface();
+    AbstractConfigurationBuilder(ConfigurationBuilder parent) {
+        this.parent = parent;
+    }
 
-    /**
-     * Advertise security key.
-     */
-    String getAdvertiseSecurityKey();
+    @Override
+    public AdvertiseConfigurationBuilder advertise() {
+        return parent.advertise();
+    }
 
-    ThreadFactory getAdvertiseThreadFactory();
+    @Override
+    public BalancerConfigurationBuilder balancer() {
+        return parent.balancer();
+    }
+
+    @Override
+    public NodeConfigurationBuilder node() {
+        return parent.node();
+    }
+
+    @Override
+    public MCMPHandlerConfigurationBuilder mcmp() {
+        return parent.mcmp();
+    }
+
+    @Override
+    public ModClusterConfiguration build() {
+        return parent.build();
+    }
 }

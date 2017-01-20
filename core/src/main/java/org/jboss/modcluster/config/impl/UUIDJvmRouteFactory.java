@@ -36,11 +36,6 @@ import org.jboss.modcluster.container.Engine;
 public class UUIDJvmRouteFactory implements JvmRouteFactory {
     private static final int INT_SIZE = Integer.SIZE / Byte.SIZE;
 
-    /**
-     * {@inheritDoc}
-     * 
-     * @see org.jboss.modcluster.JvmRouteFactory#createJvmRoute(java.net.InetAddress, org.jboss.modcluster.Engine)
-     */
     @Override
     public String createJvmRoute(Engine engine) {
         Connector connector = engine.getProxyConnector();

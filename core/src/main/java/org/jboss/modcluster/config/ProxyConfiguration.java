@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -27,8 +27,7 @@ import java.net.InetSocketAddress;
  * Proxy configuration with destination address and optional local address to bind to.
  *
  * @author Radoslav Husar
- * @version July 2014
- * @since 1.3.1
+ * @since 1.3.1.Final
  */
 public interface ProxyConfiguration {
 
