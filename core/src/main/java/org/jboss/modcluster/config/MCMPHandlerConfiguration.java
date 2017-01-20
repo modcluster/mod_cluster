@@ -27,14 +27,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.SocketFactory;
+
 import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * Configuration object for an {@link MCMPHandler}.
  *
  * @author Brian Stansberry
+ * @author Radoslav Husar
  */
-public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseConfiguration {
+public interface MCMPHandlerConfiguration {
 
     /**
      * Gets list of proxies as a collection of {@link ProxyConfiguration}s.
@@ -47,7 +50,7 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
      * Gets list of proxies as a collection of {@link InetSocketAddress}es.
      *
      * @return list of proxies as a collection of {@link InetSocketAddress}es
-     * @deprecated as of 1.3.1 use {@link #getProxyConfigurations()} to also specify local addresses to bind to
+     * @deprecated As of 1.3.1.Final use {@link #getProxyConfigurations()} to also specify local bind address.
      */
     @Deprecated
     Collection<InetSocketAddress> getProxies();
@@ -64,8 +67,16 @@ public interface MCMPHandlerConfiguration extends SSLConfiguration, AdvertiseCon
 
     /**
      * SSL client cert usage to connect to the proxy.
+     *
+     * @deprecated Use {@link MCMPHandlerConfiguration#getSocketFactory()} instead.
      */
+    @Deprecated
     boolean isSsl();
+
+    /**
+     * Configuration of the socket factory, supply SSL socket factory to use SSL to connect to the proxy.
+     */
+    SocketFactory getSocketFactory();
 
     /**
      * Returns a list of contexts that should never be enabled in mod_cluster. Contexts may be

@@ -23,7 +23,6 @@ package org.jboss.modcluster.config;
 
 /**
  * @author Brian Stansberry
- * 
  */
 public interface BalancerConfiguration {
     /**
