@@ -31,6 +31,8 @@ import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.impl.AdvertiseConfigurationImpl;
 
 /**
+ * Builder for multicast advertise configuration.
+ *
  * @author Radoslav Husar
  * @since 1.3.6.Final
  */
@@ -45,21 +47,33 @@ public class AdvertiseConfigurationBuilder extends AbstractConfigurationBuilder 
         super(parentBuilder);
     }
 
+    /**
+     * Sets the socket factory to use for advertisements.
+     */
     public AdvertiseConfigurationBuilder setAdvertiseSocketAddress(InetSocketAddress advertiseSocketAddress) {
         this.advertiseSocketAddress = advertiseSocketAddress;
         return this;
     }
 
+    /**
+     * Sets the interface to use for advertisements.
+     */
     public AdvertiseConfigurationBuilder setAdvertiseInterface(InetAddress advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
         return this;
     }
 
+    /**
+     * Sets the shared advertise security key.
+     */
     public AdvertiseConfigurationBuilder setAdvertiseSecurityKey(String advertiseSecurityKey) {
         this.advertiseSecurityKey = advertiseSecurityKey;
         return this;
     }
 
+    /**
+     * Sets the tread factory for advertise mechanism.
+     */
     public AdvertiseConfigurationBuilder setAdvertiseThreadFactory(ThreadFactory advertiseThreadFactory) {
         this.advertiseThreadFactory = advertiseThreadFactory;
         return this;
