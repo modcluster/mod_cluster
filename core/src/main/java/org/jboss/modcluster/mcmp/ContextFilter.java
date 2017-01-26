@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.modcluster.container.Host;
@@ -31,16 +30,16 @@ import org.jboss.modcluster.container.Host;
  */
 public interface ContextFilter {
     /**
-     * Returns the contexts that will *not* be registered in any proxy.
-     * 
-     * @return a set of context paths per host
+     * Returns the contexts that will *not* be registered in any proxy for the given host.
+     *
+     * @return a set of context paths excluded for the given host
      */
-    Map<Host, Set<String>> getExcludedContexts();
+    Set<String> getExcludedContexts(Host host);
 
     /**
      * Indicates when contexts should auto-enable by default. If auto-enable is off, then contexts are disabled by default and
      * must be enabled manually.
-     * 
+     *
      * @return true, contexts should be auto-enabled, false otherwise.
      */
     boolean isAutoEnableContexts();
