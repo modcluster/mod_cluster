@@ -78,8 +78,7 @@ public class ResetRequestSourceTestCase {
         MCMPRequest configRequest = mock(MCMPRequest.class);
         MCMPRequest contextRequest = mock(MCMPRequest.class);
 
-        when(contextFilter.getExcludedContexts())
-                .thenReturn(Collections.singletonMap(host, Collections.singleton("/excluded")));
+        when(contextFilter.getExcludedContexts(host)).thenReturn(Collections.singleton("/excluded"));
         when(contextFilter.isAutoEnableContexts()).thenReturn(true);
 
         when(server.getEngines()).thenReturn(Collections.singleton(engine));
@@ -124,8 +123,7 @@ public class ResetRequestSourceTestCase {
         MCMPRequest configRequest = mock(MCMPRequest.class);
         MCMPRequest contextRequest = mock(MCMPRequest.class);
 
-        when(contextFilter.getExcludedContexts())
-                .thenReturn(Collections.singletonMap(host, Collections.singleton("/excluded")));
+        when(contextFilter.getExcludedContexts(host)).thenReturn(Collections.singleton("/excluded"));
         when(contextFilter.isAutoEnableContexts()).thenReturn(false);
 
         when(server.getEngines()).thenReturn(Collections.singleton(engine));
