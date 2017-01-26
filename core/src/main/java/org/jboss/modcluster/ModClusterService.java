@@ -86,7 +86,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     private final AdvertiseListenerFactory listenerFactory;
     private final LoadBalanceFactorProviderFactory loadBalanceFactorProviderFactory;
 
-    private final Map<Host, Set<String>> excludedContexts = new HashMap<Host, Set<String>>();
+    private final Map<String, Set<String>> excludedContexts = new HashMap<String, Set<String>>();
     private final ConcurrentMap<Context, EnablableRequestListener> requestListeners = new ConcurrentHashMap<Context, EnablableRequestListener>();
 
     private volatile boolean established = false;
@@ -152,28 +152,9 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.mcmpHandler.init(this.mcmpConfig.getProxyConfigurations(), this);
 
         this.autoEnableContexts = this.mcmpConfig.isAutoEnableContexts();
+
         this.excludedContexts.clear();
-
-        Map<String, Set<String>> excludedContextPaths = this.mcmpConfig.getExcludedContextsPerHost();
-
-        if (!excludedContextPaths.isEmpty()) {
-            for (Engine engine : server.getEngines()) {
-                for (Host host : engine.getHosts()) {
-                    Set<String> excluded = new HashSet<String>();
-                    Set<String> paths = excludedContextPaths.get(host.getName());
-                    if (paths != null) {
-                        excluded.addAll(paths);
-                    }
-                    paths = excludedContextPaths.get(null);
-                    if (paths != null) {
-                        excluded.addAll(paths);
-                    }
-                    if (!excluded.isEmpty()) {
-                        this.excludedContexts.put(host, Collections.unmodifiableSet(excluded));
-                    }
-                }
-            }
-        }
+        this.excludedContexts.putAll(this.mcmpConfig.getExcludedContextsPerHost());
 
         this.resetRequestSource.init(server, this);
 
@@ -198,8 +179,17 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
      * @see org.jboss.modcluster.mcmp.ContextFilter#getExcludedContexts()
      */
     @Override
-    public Map<Host, Set<String>> getExcludedContexts() {
-        return Collections.unmodifiableMap(this.excludedContexts);
+    public Set<String> getExcludedContexts(Host host) {
+        Set<String> excluded = new HashSet<String>();
+        Set<String> paths = this.excludedContexts.get(null);
+        if (paths != null) {
+            excluded.addAll(paths);
+        }
+        paths = this.excludedContexts.get(host.getName());
+        if (paths != null) {
+            excluded.addAll(paths);
+        }
+        return Collections.unmodifiableSet(excluded);
     }
 
     /**
@@ -476,9 +466,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     }
 
     private boolean include(Context context) {
-        Set<String> excludedPaths = this.excludedContexts.get(context.getHost());
-
-        return (excludedPaths == null) || !excludedPaths.contains(context.getPath());
+        return !this.getExcludedContexts(context.getHost()).contains(context.getPath());
     }
 
     /**
