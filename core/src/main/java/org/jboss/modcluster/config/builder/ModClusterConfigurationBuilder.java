@@ -26,6 +26,8 @@ import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.config.impl.ModClusterConfigurationImpl;
 
 /**
+ * Builder for the main mod_cluster configuration object.
+ *
  * @author Radoslav Husar
  * @since 1.3.6.Final
  */
