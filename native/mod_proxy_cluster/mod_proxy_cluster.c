@@ -157,6 +157,17 @@ static int proxy_worker_cmp(const void *a, const void *b)
     return strcmp(route1, route2);
 }
 
+static char * normalize_hostname(apr_pool_t *p, char *hostname)
+{
+    char *ret = apr_palloc(p, strlen(hostname) + 1);
+    char *ptr = ret;
+    strcpy(ptr, hostname);
+    for (;*ptr; ++ptr) {
+       *ptr = apr_tolower(*ptr);
+    }
+    return ret;
+}
+
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 static int (*ap_proxy_retry_worker_fn)(const char *proxy_function,
         proxy_worker *worker, server_rec *s) = NULL;
@@ -284,7 +295,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     proxy_cluster_helper *helper;
 
     /* build the name (scheme and port) when needed */
-    url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
+    url = apr_pstrcat(pool, node->mess.Type, "://", normalize_hostname(pool,node->mess.Host), ":", node->mess.Port, NULL);
 
     worker = ap_proxy_get_worker(conf->pool, balancer, conf, url);
     if (worker == NULL) {
@@ -443,7 +454,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     int sizew = conf->workers->elt_size;
     proxy_worker *worker;
     /* build the name (scheme and port) when needed */
-    url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
+    url = apr_pstrcat(pool, node->mess.Type, "://", normalize_hostname(pool, node->mess.Host), ":", node->mess.Port, NULL);
 
     worker = ap_proxy_get_worker(pool, conf, url);
     if (worker == NULL) {
@@ -898,7 +909,7 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
                 char sport[7];
                 apr_snprintf(sport, sizeof(sport), "%d", worker->port);
                 if (strcmp(worker->s->scheme, node->mess.Type) ||
-                    strcmp(worker->s->hostname, node->mess.Host) ||
+                    strcasecmp(worker->s->hostname, node->mess.Host) ||
                     strcmp(sport, node->mess.Port)) {
                     worker->s->index = 0;
                     ap_my_generation--; /* mark old generation that will recreate the process */
@@ -926,7 +937,7 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
                 char sport[7];
                 apr_snprintf(sport, sizeof(sport), "%d", worker->port);
                 if (strcmp(worker->scheme, node->mess.Type) ||
-                    strcmp(worker->hostname, node->mess.Host) ||
+                    strcasecmp(worker->hostname, node->mess.Host) ||
                     strcmp(sport, node->mess.Port)) {
                     worker->id = 0;
                     ap_my_generation--; /* mark old generation that will recreate the process */
@@ -951,7 +962,7 @@ static apr_status_t read_node_worker(int id, nodeinfo_t **node, proxy_worker *wo
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     apr_snprintf(sport, sizeof(sport), "%d", worker->s->port);
     if (strcmp(worker->s->scheme, (* node)->mess.Type) ||
-        strcmp(worker->-s->hostname, (* node)->mess.Host) ||
+        strcasecmp(worker->-s->hostname, (* node)->mess.Host) ||
         strcmp(sport, (* node)->mess.Port)) {
         /* for some reasons it is not the right node */
         return APR_NOTFOUND;
@@ -959,7 +970,7 @@ static apr_status_t read_node_worker(int id, nodeinfo_t **node, proxy_worker *wo
 #else
     apr_snprintf(sport, sizeof(sport), "%d", worker->port);
     if (strcmp(worker->scheme, (* node)->mess.Type) ||
-        strcmp(worker->hostname, (* node)->mess.Host) ||
+        strcasecmp(worker->hostname, (* node)->mess.Host) ||
         strcmp(sport, (* node)->mess.Port)) {
         /* for some reasons it is not the right node */
         return APR_NOTFOUND;
@@ -1549,7 +1560,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 apr_snprintf(sport, sizeof(sport), "%d", worker->s->port);
                 if (strcmp(worker->s->scheme, ou->mess.Type) ||
-                    strcmp(worker->s->hostname, ou->mess.Host) ||
+                    strcasecmp(worker->s->hostname, ou->mess.Host) ||
                     strcmp(sport, ou->mess.Port)) {
                     /* the worker doesn't correspond to the node */
                     worker->s->index = 0;
@@ -1563,7 +1574,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
 #else
                 apr_snprintf(sport, sizeof(sport), "%d", worker->port);
                 if (strcmp(worker->scheme, ou->mess.Type) ||
-                    strcmp(worker->hostname, ou->mess.Host) ||
+                    strcasecmp(worker->hostname, ou->mess.Host) ||
                     strcmp(sport, ou->mess.Port)) {
                     /* the worker doesn't correspond to the node */
                     worker->id = 0;
