@@ -27,6 +27,7 @@
 
 #include "apr_strings.h"
 #include "apr_version.h"
+#include "apr_thread_cond.h"
 
 #include "httpd.h"
 #include "http_config.h"
@@ -80,6 +81,11 @@ static struct sessionid_storage_method *sessionid_storage = NULL;
 static struct domain_storage_method *domain_storage = NULL; 
 
 static apr_thread_mutex_t *lock = NULL;
+
+static apr_thread_t *watchdog_thread = NULL;
+static apr_thread_cond_t *exit_cond = NULL;
+static int watchdog_must_terminate = 0;
+
 
 static server_rec *main_server = NULL;
 #define CREAT_ALL  0 /* create balancers/workers in all VirtualHost */
@@ -2239,7 +2245,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     int checking_standby = 0;
     int checked_standby = 0;
     int checked_domain = 1;
-    // Create a separate array of available workers, to be sorted later
+    /* Create a separate array of available workers, to be sorted later */
     proxy_worker *workers[balancer->workers->nelts];
     int workers_length = 0;
     const char *session_id_with_route;
@@ -2362,13 +2368,13 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
         }
         session_id_with_route = apr_table_get(r->notes, "session-id");
         session_id = session_id_with_route ? apr_strtok(strdup(session_id_with_route), ".", &tokenizer) : NULL;
-        // Determine deterministic route, if session is associated with a route, but that route wasn't used
+        /* Determine deterministic route, if session is associated with a route, but that route wasn't used */
         if (deterministic_failover && session_id && strchr(session_id_with_route, '.') && workers_length > 0) {
-            // Deterministic selection of target route
+            /* Deterministic selection of target route */
             if (workers_length > 1) {
 	            qsort(workers, workers_length, sizeof(*workers), &proxy_worker_cmp);
 	        }
-            // Compute consistent int from session id
+            /* Compute consistent int from session id */
             for (i = 0; session_id[i] != 0; ++i) {
                 hash += session_id[i];
             }
@@ -2659,6 +2665,7 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
 }
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
+    apr_status_t rv;
     apr_pool_t *pool;
     apr_sleep(apr_time_make(1, 0)); /* wait before starting */
     for (;;) {
@@ -2670,7 +2677,20 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
 
         if (!conf)
            break;
-        apr_sleep(apr_time_make(1, 0));
+
+        apr_thread_mutex_lock(lock);
+        if (watchdog_must_terminate) {
+            apr_thread_mutex_unlock(lock);
+            break;
+        }
+        rv = apr_thread_cond_timedwait(exit_cond, lock, apr_time_make(1, 0));
+        apr_thread_mutex_unlock(lock);
+        if (rv == APR_SUCCESS)
+            break; /* If condition variable was signaled, terminate. */
+        if (rv != APR_TIMEUP) {
+            ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server, "cluster: apr_thread_cond_timedwait() failed");
+        }
+
         apr_pool_create(&pool, conf->pool);
         last = node_storage->worker_nodes_need_update(main_server, pool);
         while (s) {
@@ -2701,13 +2721,42 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
 }
 
 /*
+ * Tell the watchdog thread to exit and wait for it to
+ * complete.
+ */
+static int terminate_watchdog(void *data)
+{
+    apr_status_t rv, trv;
+
+    if (watchdog_thread == NULL)
+        return APR_SUCCESS;
+
+    apr_thread_mutex_lock(lock);
+    watchdog_must_terminate = 1;
+    rv = apr_thread_cond_signal(exit_cond);
+    apr_thread_mutex_unlock(lock);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
+                    "terminate_watchdog: apr_thread_cond_signal failed");
+        return APR_SUCCESS; /* There isn't a lot we can do about this. */
+    }
+
+    rv = apr_thread_join(&trv, watchdog_thread);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, rv, main_server,
+                    "terminate_watchdog: apr_thread_join failed");
+    }
+
+    return APR_SUCCESS;
+}
+
+/*
  * Create a thread per process to make maintenance task.
  * and the mutex of the node creation.
  */
 static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
 {
     apr_status_t rv;
-    apr_thread_t *wdt;
     server_rec *s2;
     void *sconf;
     proxy_server_conf *conf;
@@ -2717,6 +2766,12 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
                     "proxy_cluster_child_init: apr_thread_mutex_create failed");
+    }
+
+    rv = apr_thread_cond_create(&exit_cond, p);
+    if (rv != APR_SUCCESS) {
+        ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
+                    "proxy_cluster_child_init: apr_thread_cond_create failed");
     }
 
     s2 = main_server;
@@ -2737,11 +2792,13 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
         apr_pool_destroy(pool);
     }
 
-    rv = apr_thread_create(&wdt, NULL, proxy_cluster_watchdog_func, s, p);
+    rv = apr_thread_create(&watchdog_thread, NULL, proxy_cluster_watchdog_func, s, p);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, s,
                     "proxy_cluster_child_init: apr_thread_create failed");
     }
+
+    apr_pool_pre_cleanup_register(p, NULL, terminate_watchdog);
 
 }
 
