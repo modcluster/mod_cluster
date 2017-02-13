@@ -86,6 +86,7 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
                     totalWeightedLoad += this.average(metricLoadHistory) * weight;
                 } catch (Exception e) {
                     this.log.error(e.getLocalizedMessage(), e);
+                    return -1;
                 }
             }
         }
