@@ -25,6 +25,7 @@ import java.net.Inet6Address;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -69,7 +70,7 @@ public class DefaultMCMPRequestFactory implements MCMPRequestFactory {
         // If address was specified as a host name, we would prefer it
         // toString() will not perform reverse dns lookup
         // so send host name portion, if it exists
-        String address = connector.getAddress().toString();
+        String address = connector.getAddress().toString().toLowerCase(Locale.ROOT);
         int index = address.indexOf("/");
         if (connector.getAddress() instanceof Inet6Address) {
             // IPv6 address require a []
