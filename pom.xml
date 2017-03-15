@@ -210,7 +210,7 @@
                             <fork>true</fork>
                             <compilerArgs>
                                 <arg>-J--add-modules</arg>
-                                <arg>-Jjava.annotations.common</arg>
+                                <arg>-Jjava.xml.ws.annotation</arg>
                             </compilerArgs>
                         </configuration>
                     </plugin>
