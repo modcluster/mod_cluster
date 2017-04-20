@@ -1,5 +1,11 @@
 language: java
+
+# temporarily required for oraclejdk9 support in travis
+dist: trusty
+group: edge
+
 jdk:
+  - oraclejdk9
   - oraclejdk8
   - oraclejdk7
   - openjdk7
@@ -7,6 +13,8 @@ script: mvn verify
 matrix:
   include:
   - jdk: oraclejdk8
+    script: mvn verify -PTC9
+  - jdk: oraclejdk9
     script: mvn verify -PTC9
 notifications:
   email: false
