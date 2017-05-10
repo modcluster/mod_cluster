@@ -695,6 +695,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
                 long current = System.currentTimeMillis();
                 long timeout = end - current;
+                long pollInterval = TimeUnit.SECONDS.toMillis(1);
 
                 remainingSessions = context.getActiveSessionCount();
 
@@ -703,7 +704,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
                     // Poll active sessions every second since since right after the notify, the session manager implementation
                     // will still account for that last session.
-                    listener.wait(noTimeout ? 0 : Math.min(timeout, 1000));
+                    listener.wait(noTimeout ? pollInterval : Math.min(timeout, pollInterval));
 
                     current = System.currentTimeMillis();
                     timeout = end - current;
