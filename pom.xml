@@ -61,10 +61,10 @@
         <!-- Dependency versions -->
         <version.jboss-logging>3.3.0.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.0.1.Final</version.jboss-logging-processor>
-        <version.tomcat7>7.0.77</version.tomcat7>
-        <version.tomcat8>8.0.43</version.tomcat8>
-        <version.tomcat85>8.5.13</version.tomcat85>
-        <version.tomcat9>9.0.0.M19</version.tomcat9>
+        <version.tomcat7>7.0.78</version.tomcat7>
+        <version.tomcat8>8.0.44</version.tomcat8>
+        <version.tomcat85>8.5.15</version.tomcat85>
+        <version.tomcat9>9.0.0.M21</version.tomcat9>
         <version.http-client>4.2.3</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
