@@ -194,6 +194,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
                 <module>demo</module>
             </modules>
         </profile>
@@ -205,6 +206,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
                 <module>demo</module>
             </modules>
             <build>
@@ -233,6 +235,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
             </modules>
         </profile>
         <profile>
@@ -243,6 +246,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
             </modules>
         </profile>
         <profile>
@@ -253,6 +257,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
             </modules>
         </profile>
         <profile>
@@ -263,6 +268,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
             </modules>
         </profile>
         <profile>
@@ -273,6 +279,7 @@
             <modules>
                 <module>core</module>
                 <module>container</module>
+                <module>load-spi</module>
                 <module>demo</module>
                 <module>docs</module>
             </modules>
