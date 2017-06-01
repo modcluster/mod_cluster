@@ -32,6 +32,7 @@ import org.jboss.logging.Logger;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
+import org.jboss.modcluster.load.metric.NodeUnavailableException;
 
 /**
  * {@link LoadBalanceFactorProvider} implementation that periodically aggregates load from a set of {@link LoadMetric}s.
@@ -67,6 +68,7 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
 
     @Override
     public synchronized int getLoadBalanceFactor(Engine engine) {
+        boolean nodeUnavailable = false;
         int totalWeight = 0;
         double totalWeightedLoad = 0;
 
@@ -84,10 +86,18 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
 
                     totalWeight += weight;
                     totalWeightedLoad += this.average(metricLoadHistory) * weight;
+                } catch (NodeUnavailableException e) {
+                    // The metric requested to put the node into error state
+                    // Call LoadMetric#getLoad on remaining metrics so that historical values are populated
+                    nodeUnavailable = true;
                 } catch (Exception e) {
                     this.log.error(e.getLocalizedMessage(), e);
                 }
             }
+        }
+
+        if (nodeUnavailable) {
+            return -1;
         }
 
         // Convert load ratio to integer percentage
@@ -107,7 +117,7 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
         }
 
         // Add new load to the head
-        queue.add(0, new Double(load));
+        queue.add(0, load);
     }
 
     /**
@@ -125,7 +135,7 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
             double decay = 1 / Math.pow(decayFactor, i);
 
             totalDecay += decay;
-            totalLoad += queue.get(i).doubleValue() * decay;
+            totalLoad += queue.get(i) * decay;
         }
 
         return totalLoad / totalDecay;
