@@ -19,7 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.load;
+package org.jboss.modcluster.load.impl;
+
+import org.jboss.modcluster.load.LoadBalanceFactorProvider;
+import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 
 public class SimpleLoadBalanceFactorProviderFactory implements LoadBalanceFactorProviderFactory {
     private final LoadBalanceFactorProvider provider;
