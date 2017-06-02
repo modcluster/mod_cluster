@@ -23,7 +23,6 @@ package org.jboss.modcluster.load;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface LoadBalanceFactorProviderFactory {
     LoadBalanceFactorProvider createLoadBalanceFactorProvider();

@@ -25,9 +25,8 @@ import org.jboss.modcluster.container.Engine;
 
 /**
  * Provides the load balance factor for a node.
- * 
+ *
  * @author Brian Stansberry
- * @version $Revision$
  */
 public interface LoadBalanceFactorProvider {
     int getLoadBalanceFactor(Engine engine);

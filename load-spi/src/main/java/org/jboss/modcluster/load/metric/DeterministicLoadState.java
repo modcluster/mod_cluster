@@ -23,7 +23,6 @@ package org.jboss.modcluster.load.metric;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface DeterministicLoadState {
     double delta(double currentLoad);

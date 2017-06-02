@@ -23,31 +23,22 @@ package org.jboss.modcluster.load.metric;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface LoadMetricMBean {
     /**
      * Returns the "weight" of this metric, i.e. significance of this load metric compared to the other metrics.
-     * 
+     *
      * @return the weight of the metric
      */
     int getWeight();
 
     /**
-     * Returns the load capacity of this metric. Used to normalize the value returned by {@link #getLoad()} expressed as a
-     * percentage of the capacity, such that: 0 <= ({@link #getLoad()} / {@link #getCapacity()}) < 1
-     * 
+     * Returns the load capacity of this metric. Used to normalize the value returned by {@link LoadMetric#getLoad} expressed as a
+     * percentage of the capacity, such that: 0 <= ({@link LoadMetric#getLoad} / {@link #getCapacity()}) < 1
+     *
      * @return the estimated capacity of this metric.
      */
     double getCapacity();
-
-    /**
-     * Returns the current load of this metric as a percent of the metric's capacity.
-     * 
-     * @return raw load / capacity.
-     * @throws Exception if the load could not be determined.
-     */
-    // double getLoad() throws Exception;
 
     void setWeight(int weight);
 
