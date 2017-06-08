@@ -40,7 +40,17 @@ public interface LoadMetricMBean {
      */
     double getCapacity();
 
+    /**
+     * Sets the weight of the metric relative to the other metrics. Defaults to 1.
+     *
+     * @param weight weight of the metric.
+     */
     void setWeight(int weight);
 
+    /**
+     * Sets the maximum capacity of this metric. Used for metrics that do not have an implicit capacity and need to be configured. Defaults to 1.
+     *
+     * @param capacity non-negative capacity of the metric.
+     */
     void setCapacity(double capacity);
 }
