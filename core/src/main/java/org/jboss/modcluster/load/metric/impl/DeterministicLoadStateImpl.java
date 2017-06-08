@@ -24,8 +24,6 @@ package org.jboss.modcluster.load.metric.impl;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.modcluster.load.metric.DeterministicLoadState;
-
 /**
  * Computes incremental load change per second from record of previous load.
  * 
@@ -35,10 +33,6 @@ public class DeterministicLoadStateImpl implements DeterministicLoadState {
     private final AtomicReference<Double> previousLoad = new AtomicReference<Double>(new Double(0));
     private final AtomicLong previousTime = new AtomicLong(System.currentTimeMillis());
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.metric.DeterministicLoadState#delta(double)
-     */
     @Override
     public double delta(double currentLoad) {
         long currentTime = System.currentTimeMillis();

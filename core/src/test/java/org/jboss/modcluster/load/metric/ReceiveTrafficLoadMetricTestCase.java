@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
+import org.jboss.modcluster.load.metric.impl.DeterministicLoadState;
 import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.junit.Test;
 
