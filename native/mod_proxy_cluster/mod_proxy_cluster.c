@@ -2202,7 +2202,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     int checked_standby = 0;
     int checked_domain = 1;
     // Create a separate array of available workers, to be sorted later
-    proxy_worker *workers[balancer->workers->nelts];
+    proxy_worker *workers = apr_pcalloc(balancer->workers->pool, sizeof(proxy_worker) * balancer->workers->nelts);
     int workers_length = 0;
     const char *session_id_with_route;
     char *tokenizer;
@@ -2291,7 +2291,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         continue;
                     }
                 }
-                workers[workers_length++] = worker;
+                workers[workers_length++] = *worker;
                 if (worker->s->lbfactor == 0 && checking_standby) {
                     mycandidate = worker;
                     mynodecontext = nodecontext;
@@ -2334,7 +2334,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             for (i = 0; session_id[i] != 0; ++i) {
                 hash += session_id[i];
             }
-            mycandidate = workers[hash % workers_length];
+            mycandidate = &workers[hash % workers_length];
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "Using deterministic failover target: %s", mycandidate->s->route);
         }
         if (mycandidate)
