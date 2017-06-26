@@ -604,7 +604,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
      * Sends STOP-APP requests for the specified context until there are no more pending requests, or until the specified
      * timeout is met. Returns true, if there are no more pending requests, false otherwise.
      */
-    private <M> boolean drainRequests(Context context, long start, long end) {
+    private boolean drainRequests(Context context, long start, long end) {
         EnablableRequestListener listener = this.requestListeners.get(context);
 
         boolean noTimeout = (start >= end);
