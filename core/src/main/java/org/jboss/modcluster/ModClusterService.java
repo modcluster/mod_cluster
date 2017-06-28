@@ -557,12 +557,13 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
         long start = System.currentTimeMillis();
         long end = start + unit.toMillis(timeout);
+        boolean success = true;
 
         for (Engine engine : this.server.getEngines()) {
             for (Host host : engine.getHosts()) {
                 for (Context context : host.getContexts()) {
                     if (this.mcmpConfig.getSessionDrainingStrategy().isEnabled(context) && !this.drainSessions(context, start, end)) {
-                        return false;
+                        success = false;
                     }
                 }
             }
@@ -573,7 +574,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(engine));
         }
 
-        return true;
+        return success;
     }
 
     @Override
@@ -593,9 +594,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             success = this.drainSessions(context, start, start + unit.toMillis(timeout));
         }
 
-        if (success) {
-            this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
-        }
+        this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
 
         return success;
     }
@@ -604,7 +603,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
      * Sends STOP-APP requests for the specified context until there are no more pending requests, or until the specified
      * timeout is met. Returns true, if there are no more pending requests, false otherwise.
      */
-    private <M> boolean drainRequests(Context context, long start, long end) {
+    private boolean drainRequests(Context context, long start, long end) {
         EnablableRequestListener listener = this.requestListeners.get(context);
 
         boolean noTimeout = (start >= end);
