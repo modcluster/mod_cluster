@@ -3,11 +3,11 @@ jdk:
   - oraclejdk8
   - oraclejdk7
   - openjdk7
-script: mvn verify
+script: mvn verify -Pdist
 matrix:
   include:
   - jdk: openjdk6
-    script: mvn verify -pl !container/tomcat8
+    script: mvn verify -Pdist -pl !container/tomcat8
 notifications:
   email: false
 # Workaround openjdk6/7 crashes in container-based environments failing with:
