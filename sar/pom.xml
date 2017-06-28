@@ -53,7 +53,7 @@
                     <execution>
                         <id>sar</id>
                         <goals>
-                            <goal>directory-inline</goal>
+                            <goal>single</goal>
                         </goals>
                         <phase>package</phase>
                         <configuration>
