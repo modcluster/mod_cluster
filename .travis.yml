@@ -3,11 +3,11 @@ jdk:
   - oraclejdk8
   - oraclejdk7
   - openjdk7
-script: mvn verify
+script: mvn verify -Pdist
 matrix:
   include:
   - jdk: oraclejdk8
-    script: mvn verify -PTC9
+    script: mvn verify -PTC9 -Pdist
 notifications:
   email: false
 # Workaround openjdk7 crashes in container-based environments failing with:
