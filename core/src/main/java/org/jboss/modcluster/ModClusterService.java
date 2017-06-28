@@ -56,7 +56,7 @@ import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
-import org.jboss.modcluster.load.SimpleLoadBalanceFactorProviderFactory;
+import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPConnectionListener;
 import org.jboss.modcluster.mcmp.MCMPHandler;

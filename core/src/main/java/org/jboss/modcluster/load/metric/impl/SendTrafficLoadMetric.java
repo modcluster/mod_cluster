@@ -23,7 +23,6 @@ package org.jboss.modcluster.load.metric.impl;
 
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
-import org.jboss.modcluster.load.metric.DeterministicLoadState;
 import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**

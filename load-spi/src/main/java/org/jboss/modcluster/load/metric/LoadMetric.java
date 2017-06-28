@@ -19,16 +19,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.load;
+package org.jboss.modcluster.load.metric;
 
 import org.jboss.modcluster.container.Engine;
 
 /**
- * Provides the load balance factor for a node.
- * 
- * @author Brian Stansberry
- * @version $Revision$
+ * Represents a specific load metric.
+ *
+ * @author Paul Ferraro
  */
-public interface LoadBalanceFactorProvider {
-    int getLoadBalanceFactor(Engine engine);
+public interface LoadMetric extends LoadMetricMBean {
+    double DEFAULT_CAPACITY = 1;
+    int DEFAULT_WEIGHT = 1;
+
+    /**
+     * Returns the current load of this metric as a percent of the metric's capacity.
+     *
+     * @return raw load / capacity.
+     * @throws NodeUnavailableException if the node should be put into the error state.
+     * @throws Exception                if the load could not be determined.
+     */
+    double getLoad(Engine engine) throws Exception;
 }

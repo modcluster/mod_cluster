@@ -21,10 +21,13 @@
  */
 package org.jboss.modcluster.load;
 
+import org.jboss.modcluster.container.Engine;
+
 /**
- * @author Paul Ferraro
- * 
+ * Provides the load balance factor for a node.
+ *
+ * @author Brian Stansberry
  */
-public interface LoadBalanceFactorProviderFactory {
-    LoadBalanceFactorProvider createLoadBalanceFactorProvider();
+public interface LoadBalanceFactorProvider {
+    int getLoadBalanceFactor(Engine engine);
 }

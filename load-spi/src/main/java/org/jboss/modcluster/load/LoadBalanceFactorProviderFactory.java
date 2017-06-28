@@ -21,15 +21,9 @@
  */
 package org.jboss.modcluster.load;
 
-public class SimpleLoadBalanceFactorProviderFactory implements LoadBalanceFactorProviderFactory {
-    private final LoadBalanceFactorProvider provider;
-
-    public SimpleLoadBalanceFactorProviderFactory(LoadBalanceFactorProvider provider) {
-        this.provider = provider;
-    }
-
-    @Override
-    public LoadBalanceFactorProvider createLoadBalanceFactorProvider() {
-        return this.provider;
-    }
+/**
+ * @author Paul Ferraro
+ */
+public interface LoadBalanceFactorProviderFactory {
+    LoadBalanceFactorProvider createLoadBalanceFactorProvider();
 }
