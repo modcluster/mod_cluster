@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>16</version>
+        <version>24</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -72,9 +72,6 @@
         <version.junit>4.10</version.junit>
         <version.mockito>2.5.2</version.mockito>
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
-
-        <!-- Override version 2.4 managed by org.jboss:jboss-parent:16 which works with JDK9 -->
-        <version.war.plugin>3.1.0</version.war.plugin>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -192,11 +189,6 @@
             </resource>
         </resources>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <version>${version.war.plugin}</version>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
