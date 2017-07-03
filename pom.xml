@@ -60,7 +60,7 @@
 
         <!-- Dependency versions -->
         <version.jboss-logging>3.3.1.Final</version.jboss-logging>
-        <version.jboss-logging-processor>2.0.1.Final</version.jboss-logging-processor>
+        <version.jboss-logging-processor>2.0.2.Final</version.jboss-logging-processor>
         <version.tomcat7>7.0.78</version.tomcat7>
         <version.tomcat8>8.0.44</version.tomcat8>
         <version.tomcat85>8.5.15</version.tomcat85>
