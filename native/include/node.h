@@ -88,7 +88,7 @@ struct nodeinfo {
     nodemess_t mess;
     /* filled by httpd */
     apr_time_t updatetime;   /* time of last received message */
-    int offset;              /* offset to the proxy_worker_stat structure */
+    unsigned long offset;    /* offset to the proxy_worker_stat structure */
     char stat[SIZEOFSCORE];  /* to store the status */ 
 };
 typedef struct nodeinfo nodeinfo_t; 
