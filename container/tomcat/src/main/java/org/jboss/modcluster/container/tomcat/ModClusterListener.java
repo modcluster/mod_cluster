@@ -474,7 +474,19 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
                         trimmedContext = parts[1].trim();
                     }
 
-                    String path = trimmedContext.equals(ROOT_CONTEXT) ? "" : "/" + trimmedContext;
+                    String path;
+                    switch (trimmedContext) {
+                        case "ROOT":
+                            log.warn("Value 'ROOT' for excludedContexts is deprecated, to exclude the root context use '/' instead.");
+                        case "/":
+                            path = "";
+                            break;
+                        default:
+                            // normalize the context by pre-pending or removing trailing slash
+                            trimmedContext = trimmedContext.startsWith("/") ? trimmedContext : ("/" + trimmedContext);
+                            path = trimmedContext.endsWith("/") ? trimmedContext.substring(0, trimmedContext.length() - 1) : trimmedContext;
+                            break;
+                    }
 
                     Set<String> paths = excludedContextsPerHost.get(host);
 
