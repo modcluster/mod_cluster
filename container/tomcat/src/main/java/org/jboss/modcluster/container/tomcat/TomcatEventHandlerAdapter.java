@@ -61,7 +61,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
 
     /**
      * Constructs a new CatalinaEventHandlerAdapter using the specified event handler.
-     * 
+     *
      * @param eventHandler an event handler
      */
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler) {
@@ -94,12 +94,10 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     public void start() {
         Server server = this.serverProvider.getServer();
 
-        if (!(server instanceof Lifecycle)) throw new IllegalStateException();
+        if (server == null) throw new IllegalStateException();
 
-        Lifecycle lifecycle = (Lifecycle) server;
-
-        if (!this.containsListener(lifecycle)) {
-            lifecycle.addLifecycleListener(this);
+        if (!this.containsListener(server)) {
+            server.addLifecycleListener(this);
         }
 
         if (this.init.compareAndSet(false, true)) {
@@ -115,11 +113,9 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     public void stop() {
         Server server = this.serverProvider.getServer();
 
-        if (!(server instanceof Lifecycle)) throw new IllegalStateException();
+        if (server == null) throw new IllegalStateException();
 
-        Lifecycle lifecycle = (Lifecycle) server;
-
-        lifecycle.removeLifecycleListener(this);
+        server.removeLifecycleListener(this);
 
         if (this.init.get() && this.start.compareAndSet(true, false)) {
             this.eventHandler.stop(this.factory.createServer(server));
@@ -281,13 +277,13 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
             engine.addContainerListener(this);
-            ((Lifecycle) engine).addLifecycleListener(this);
+            engine.addLifecycleListener(this);
 
             for (Container host : engine.findChildren()) {
                 host.addContainerListener(this);
 
                 for (Container context : host.findChildren()) {
-                    ((Lifecycle) context).addLifecycleListener(this);
+                    context.addLifecycleListener(this);
                     context.addPropertyChangeListener(this);
                 }
             }
@@ -299,13 +295,13 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
             engine.removeContainerListener(this);
-            ((Lifecycle) engine).removeLifecycleListener(this);
+            engine.removeLifecycleListener(this);
 
             for (Container host : engine.findChildren()) {
                 host.removeContainerListener(this);
 
                 for (Container context : host.findChildren()) {
-                    ((Lifecycle) context).removeLifecycleListener(this);
+                    context.removeLifecycleListener(this);
                     context.removePropertyChangeListener(this);
                 }
             }

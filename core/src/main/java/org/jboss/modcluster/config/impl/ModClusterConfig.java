@@ -33,10 +33,8 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 import javax.net.SocketFactory;
 import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.jboss.modcluster.config.AdvertiseConfiguration;

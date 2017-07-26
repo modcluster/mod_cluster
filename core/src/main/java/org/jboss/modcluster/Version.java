@@ -36,7 +36,7 @@ public enum Version {
     private static final ResourceBundle resource = ResourceBundle.getBundle(Version.class.getName());
     private final String key;
 
-    private Version(String key) {
+    Version(String key) {
         this.key = key;
     }
 
