@@ -70,7 +70,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
     private final LifecycleListener listener;
 
     Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
-    private int decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
+    private float decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
 
@@ -199,7 +199,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
      *
      * @return the configured load decay factor
      */
-    public int getLoadDecayFactor() {
+    public float getLoadDecayFactor() {
         return this.decayFactor;
     }
 
@@ -209,7 +209,7 @@ public class ModClusterListener extends ModClusterConfig implements LifecycleLis
      *
      * @param decayFactor a positive number
      */
-    public void setLoadDecayFactor(int decayFactor) {
+    public void setLoadDecayFactor(float decayFactor) {
         this.decayFactor = decayFactor;
     }
 
