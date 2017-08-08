@@ -24,16 +24,15 @@ package org.jboss.modcluster.container.tomcat85;
 import org.apache.catalina.LifecycleListener;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.tomcat.LifecycleListenerFactory;
+import org.jboss.modcluster.container.tomcat.TomcatConnectorConfiguration;
 
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version Mar 2016
  */
 public class TomcatLifecycleListenerFactory implements LifecycleListenerFactory {
-
     @Override
-    public LifecycleListener createListener(ContainerEventHandler handler) {
-        return new TomcatEventHandlerAdapter(handler);
+    public LifecycleListener createListener(ContainerEventHandler handler, TomcatConnectorConfiguration connectorConfiguration) {
+        return new TomcatEventHandlerAdapter(handler, connectorConfiguration);
     }
 }

@@ -26,17 +26,17 @@ import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.tomcat.ServerProvider;
+import org.jboss.modcluster.container.tomcat.TomcatConnectorConfiguration;
 import org.jboss.modcluster.container.tomcat.TomcatFactory;
 
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version Mar 2016
  */
 public class TomcatEventHandlerAdapter extends org.jboss.modcluster.container.tomcat.TomcatEventHandlerAdapter {
 
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler) {
-        super(eventHandler);
+    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, TomcatConnectorConfiguration connectorConfiguration) {
+        super(eventHandler, connectorConfiguration);
     }
 
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, TomcatFactory factory) {

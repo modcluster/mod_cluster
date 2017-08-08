@@ -177,4 +177,13 @@ public interface ModClusterLogger {
     @LogMessage(level = INFO)
     @Message(id = 46, value = "Starting to drain %d active sessions from %s:%s in %d seconds.")
     void startSessionDraining(int sessions, Host host, Context context, long timeout);
+
+    @Message(id = 47, value = "No configured connector matches specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
+    RuntimeException connectorNoMatch(String connector);
+
+    @Message(id = 48, value = "Multiple connectors match specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
+    RuntimeException connectorMatchesMultiple(String connector);
+
+    @Message(id = 49, value = "Could not resolve configured connector address (%d)!")
+    RuntimeException connectorAddressUnknownHost(String connectorAddress);
 }

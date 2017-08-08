@@ -28,5 +28,5 @@ import org.jboss.modcluster.container.ContainerEventHandler;
  * @author Paul Ferraro
  */
 public interface LifecycleListenerFactory {
-    LifecycleListener createListener(ContainerEventHandler handler);
+    LifecycleListener createListener(ContainerEventHandler handler, TomcatConnectorConfiguration connectorConfiguration);
 }

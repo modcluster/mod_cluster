@@ -23,6 +23,7 @@ package org.jboss.modcluster.container.tomcat;
 
 import java.beans.PropertyChangeEvent;
 import java.lang.management.ManagementFactory;
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.MBeanServer;
@@ -66,6 +67,10 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
      */
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler) {
         this(eventHandler, ManagementFactory.getPlatformMBeanServer());
+    }
+
+    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, TomcatConnectorConfiguration connectorConfiguration) {
+        this(eventHandler, new JMXServerProvider(ManagementFactory.getPlatformMBeanServer(), toObjectName("Catalina:type=Server")), new ConfigurableProxyConnectorProvider(connectorConfiguration));
     }
 
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, MBeanServer mbeanServer) {

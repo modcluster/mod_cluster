@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,15 +21,25 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.apache.catalina.LifecycleListener;
-import org.jboss.modcluster.container.ContainerEventHandler;
-
 /**
+ * Tomcat-specific configuration for selecting a connector to register with the proxy.
+ *
  * @author Radoslav Husar
  */
-public class TomcatEventHandlerAdapterFactory implements LifecycleListenerFactory {
-    @Override
-    public LifecycleListener createListener(ContainerEventHandler handler, TomcatConnectorConfiguration connectorConfiguration) {
-        return new TomcatEventHandlerAdapter(handler, connectorConfiguration);
-    }
+public interface TomcatConnectorConfiguration {
+
+    /**
+     * Returns optional connector address.
+     *
+     * @return connector address
+     */
+    String getConnectorAddress();
+
+    /**
+     * Returns optional connector port.
+     *
+     * @return connector port
+     */
+    Integer getConnectorPort();
+
 }
