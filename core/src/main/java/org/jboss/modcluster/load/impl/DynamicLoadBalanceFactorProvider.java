@@ -40,14 +40,14 @@ import org.jboss.modcluster.load.metric.NodeUnavailableException;
  * @author Paul Ferraro
  */
 public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvider, DynamicLoadBalanceFactorProviderMBean {
-    public static final int DEFAULT_DECAY_FACTOR = 2;
+    public static final float DEFAULT_DECAY_FACTOR = 2;
     public static final int DEFAULT_HISTORY = 9;
 
     private final Logger log = Logger.getLogger(this.getClass());
 
     private final Map<LoadMetric, List<Double>> loadHistory = new LinkedHashMap<LoadMetric, List<Double>>();
 
-    private volatile int decayFactor = 2;
+    private volatile float decayFactor = 2;
     private volatile int history = 9;
 
     public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics) {
@@ -142,12 +142,12 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
     }
 
     @Override
-    public int getDecayFactor() {
+    public float getDecayFactor() {
         return this.decayFactor;
     }
 
     @Override
-    public void setDecayFactor(int decayFactor) {
+    public void setDecayFactor(float decayFactor) {
         this.decayFactor = Math.max(1, decayFactor);
     }
 
