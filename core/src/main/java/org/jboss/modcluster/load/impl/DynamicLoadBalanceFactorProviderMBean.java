@@ -39,7 +39,7 @@ public interface DynamicLoadBalanceFactorProviderMBean {
      *
      * @return a positive integer
      */
-    int getDecayFactor();
+    float getDecayFactor();
 
     /**
      * Sets the number of historical load values to consider when calculating the load balance factor.
@@ -53,7 +53,7 @@ public interface DynamicLoadBalanceFactorProviderMBean {
      *
      * @param decayFactor the new decay factor
      */
-    void setDecayFactor(int decayFactor);
+    void setDecayFactor(float decayFactor);
 
     /**
      * Returns the load metrics registered with this provider
