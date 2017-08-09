@@ -19,14 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.catalina;
+package org.jboss.modcluster.container.tomcat;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.tomcat.util.IntrospectionUtils;
 import org.jboss.modcluster.container.Connector;
-import org.jboss.modcluster.container.tomcat.TomcatConnector;
 import org.junit.Assert;
 import org.junit.Test;
 

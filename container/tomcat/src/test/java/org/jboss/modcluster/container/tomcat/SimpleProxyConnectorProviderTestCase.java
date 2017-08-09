@@ -19,45 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.catalina;
+package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import org.apache.catalina.Engine;
-import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Connector;
-import org.jboss.modcluster.container.tomcat.ConfigurableProxyConnectorProvider;
-import org.jboss.modcluster.container.tomcat.ConnectorFactory;
-import org.jboss.modcluster.container.tomcat.TomcatConnectorConfiguration;
 import org.junit.Test;
 
-/**
- * @author Radoslav Husar
- */
-public class ConfigurableProxyConnectorProviderTestCase {
-
+public class SimpleProxyConnectorProviderTestCase {
     @Test
     public void createProxyConnector() throws Exception {
         ConnectorFactory factory = mock(ConnectorFactory.class);
         Engine engine = mock(Engine.class);
-        Service service = mock(Service.class);
         Connector expected = mock(Connector.class);
-
+        
         org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
-        connector.setPort(8009);
-
-        when(engine.getService()).thenReturn(service);
-        when(service.findConnectors()).thenReturn(new org.apache.catalina.connector.Connector[] { connector });
+        
         when(factory.createConnector(same(connector))).thenReturn(expected);
-
-        TomcatConnectorConfiguration config = mock(TomcatConnectorConfiguration.class);
-        when(config.getConnectorAddress()).thenReturn(null);
-        when(config.getConnectorPort()).thenReturn(8009);
-
-        Connector result = new ConfigurableProxyConnectorProvider(config).createProxyConnector(factory, engine);
+        
+        Connector result = new SimpleProxyConnectorProvider(connector).createProxyConnector(factory, engine);
 
         assertSame(expected, result);
     }

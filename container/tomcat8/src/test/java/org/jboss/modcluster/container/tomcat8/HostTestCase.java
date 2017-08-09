@@ -24,5 +24,5 @@ package org.jboss.modcluster.container.tomcat8;
 /**
  * @author Paul Ferraro
  */
-public class HostTestCase extends org.jboss.modcluster.container.catalina.HostTestCase {
+public class HostTestCase extends org.jboss.modcluster.container.tomcat.HostTestCase {
 }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.catalina;
+package org.jboss.modcluster.container.tomcat;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -31,14 +31,10 @@ import org.apache.catalina.Container;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
-import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
-import org.jboss.modcluster.container.tomcat.TomcatHost;
-import org.jboss.modcluster.container.tomcat.ContextFactory;
 import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class HostTestCase {
     protected final TomcatFactoryRegistry registry = mock(TomcatFactoryRegistry.class);

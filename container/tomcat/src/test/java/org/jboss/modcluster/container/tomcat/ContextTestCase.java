@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.catalina;
+package org.jboss.modcluster.container.tomcat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,21 +30,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequestListener;
+import javax.servlet.http.HttpSessionListener;
+
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
-import org.jboss.modcluster.container.tomcat.TomcatContext;
-import org.jboss.modcluster.container.tomcat.RequestListenerValveFactory;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
-import java.io.IOException;
 
 /**
  * @author Paul Ferraro
