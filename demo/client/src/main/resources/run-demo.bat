@@ -5,7 +5,8 @@ set CP=
 
 for %%i in (lib\*.jar) do call :concatsep %%i
 
-set "OPTS=-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=31"
+REM Uncomment the following line for enabling JVM performance options
+REM set "OPTS=-Xmn200M -Xmx300M -Xms300M -Xss8K -XX:ThreadStackSize=8k -XX:CompileThreshold=100 -XX:SurvivorRatio=8 -XX:TargetSurvivorRatio=90 -XX:MaxTenuringThreshold=15"
 
 REM Tell the HttpURLConnection pool to maintain 400 connections max
 set "OPTS=%OPTS% -Dhttp.maxConnections=400"

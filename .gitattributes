@@ -1,1 +1,8 @@
+# Default behavior for all files
 * text=auto
+
+# Set text and script files which are bundled as part of the distribution to use CRLF line endings
+# so that they are human readable on Microsoft Windows-based systems
+README.md       text eol=crlf
+LICENSE.txt     text eol=crlf
+*.bat           text eol=crlf

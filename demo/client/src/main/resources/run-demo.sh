@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CP=./classes
+CP=
 
 for i in lib/*.jar
 do
