@@ -43,7 +43,7 @@ import static org.mockito.Mockito.when;
  * @author Radoslav Husar
  * @version May 2016
  */
-public class ServerTestCase extends org.jboss.modcluster.container.catalina.ServerTestCase {
+public class ServerTestCase extends org.jboss.modcluster.container.tomcat.ServerTestCase {
 
     @Override
     protected Server createServer(org.apache.catalina.Server server) {

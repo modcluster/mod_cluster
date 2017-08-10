@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.catalina;
+package org.jboss.modcluster.container.tomcat;
 
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -40,10 +40,6 @@ import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
-import org.jboss.modcluster.container.tomcat.TomcatEventHandler;
-import org.jboss.modcluster.container.tomcat.TomcatEventHandlerAdapter;
-import org.jboss.modcluster.container.tomcat.TomcatFactory;
-import org.jboss.modcluster.container.tomcat.ServerProvider;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;

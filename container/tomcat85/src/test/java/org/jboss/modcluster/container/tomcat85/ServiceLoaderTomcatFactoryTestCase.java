@@ -34,7 +34,7 @@ import org.jboss.modcluster.container.tomcat.TomcatHostFactory;
  * @author Radoslav Husar
  * @version May 2016
  */
-public class ServiceLoaderTomcatFactoryTestCase extends org.jboss.modcluster.container.catalina.ServiceLoaderTomcatFactoryTestCase {
+public class ServiceLoaderTomcatFactoryTestCase extends org.jboss.modcluster.container.tomcat.ServiceLoaderTomcatFactoryTestCase {
     @Override
     protected void verifyCatalinaFactoryTypes(TomcatFactoryRegistry registry) {
         assertSame(registry.getServerFactory().getClass(), TomcatServerFactory.class);

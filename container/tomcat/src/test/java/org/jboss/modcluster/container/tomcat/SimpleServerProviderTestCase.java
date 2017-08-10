@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,10 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.tomcat8;
+package org.jboss.modcluster.container.tomcat;
 
-/**
- * @author Paul Ferraro
- */
-public class ConnectorTestCase extends org.jboss.modcluster.container.tomcat.ConnectorTestCase {
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
+import org.apache.catalina.Server;
+import org.junit.Test;
+
+public class SimpleServerProviderTestCase {
+    @Test
+    public void test() {
+        Server server = mock(Server.class);
+        ServerProvider provider = new SimpleServerProvider(server);
+        assertSame(server, provider.getServer());
+    }
 }

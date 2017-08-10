@@ -16,6 +16,14 @@
                description="Object name of the container"
                type="javax.management.ObjectName"/>
 
+    <attribute name="connectorAddress"
+               description="Address of a defined Tomcat connector to register with the proxy."
+               type="java.lang.String"/>
+
+    <attribute name="connectorPort"
+               description="Port of a defined Tomcat connector to register with the proxy."
+               type="int"/>
+
     <attribute name="proxyConfiguration"
                description="Get the mod_cluster configuration, per proxy"
                type="java.util.Map"

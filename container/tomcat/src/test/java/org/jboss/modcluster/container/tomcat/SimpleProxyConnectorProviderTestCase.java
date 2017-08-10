@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,15 +21,27 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import org.apache.catalina.LifecycleListener;
-import org.jboss.modcluster.container.ContainerEventHandler;
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.*;
 
-/**
- * @author Radoslav Husar
- */
-public class TomcatEventHandlerAdapterFactory implements LifecycleListenerFactory {
-    @Override
-    public LifecycleListener createListener(ContainerEventHandler handler, TomcatConnectorConfiguration connectorConfiguration) {
-        return new TomcatEventHandlerAdapter(handler, connectorConfiguration);
+import org.apache.catalina.Engine;
+import org.jboss.modcluster.container.Connector;
+import org.junit.Test;
+
+public class SimpleProxyConnectorProviderTestCase {
+    @Test
+    public void createProxyConnector() throws Exception {
+        ConnectorFactory factory = mock(ConnectorFactory.class);
+        Engine engine = mock(Engine.class);
+        Connector expected = mock(Connector.class);
+        
+        org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
+        
+        when(factory.createConnector(same(connector))).thenReturn(expected);
+        
+        Connector result = new SimpleProxyConnectorProvider(connector).createProxyConnector(factory, engine);
+
+        assertSame(expected, result);
     }
 }

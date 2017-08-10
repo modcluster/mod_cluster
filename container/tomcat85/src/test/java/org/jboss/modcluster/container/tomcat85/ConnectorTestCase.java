@@ -24,5 +24,5 @@ package org.jboss.modcluster.container.tomcat85;
 /**
  * @author Paul Ferraro
  */
-public class ConnectorTestCase extends org.jboss.modcluster.container.catalina.ConnectorTestCase {
+public class ConnectorTestCase extends org.jboss.modcluster.container.tomcat.ConnectorTestCase {
 }

@@ -38,7 +38,7 @@ import java.io.IOException;
  * @author Radoslav Husar
  * @version May 2016
  */
-public class ContextTestCase extends org.jboss.modcluster.container.catalina.ContextTestCase {
+public class ContextTestCase extends org.jboss.modcluster.container.tomcat.ContextTestCase {
 
     @Override
     protected Context createContext(org.apache.catalina.Context context, Host host) {

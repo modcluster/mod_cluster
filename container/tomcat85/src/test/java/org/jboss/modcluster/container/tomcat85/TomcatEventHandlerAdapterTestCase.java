@@ -27,7 +27,7 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.Server;
-import org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase;
+import org.jboss.modcluster.container.tomcat.ContainerEventHandlerAdapterTestCase;
 import org.jboss.modcluster.container.tomcat.ServerProvider;
 import org.jboss.modcluster.container.tomcat.TomcatEventHandler;
 import org.jboss.modcluster.container.tomcat.TomcatFactory;

@@ -25,5 +25,5 @@ package org.jboss.modcluster.container.tomcat8;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class ContextTestCase extends org.jboss.modcluster.container.catalina.ContextTestCase {
+public class ContextTestCase extends org.jboss.modcluster.container.tomcat.ContextTestCase {
 }

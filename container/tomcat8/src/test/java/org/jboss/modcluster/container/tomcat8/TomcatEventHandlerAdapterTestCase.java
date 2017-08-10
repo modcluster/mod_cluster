@@ -21,7 +21,7 @@
  */
 package org.jboss.modcluster.container.tomcat8;
 
-import org.jboss.modcluster.container.catalina.ContainerEventHandlerAdapterTestCase;
+import org.jboss.modcluster.container.tomcat.ContainerEventHandlerAdapterTestCase;
 
 /**
  * @author Paul Ferraro
