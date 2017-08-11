@@ -22,37 +22,56 @@
 
 package org.jboss.modcluster.load.impl;
 
-import org.jboss.modcluster.container.Engine;
-import org.jboss.modcluster.load.metric.LoadMetric;
-import org.jboss.modcluster.load.metric.NodeUnavailableException;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.jboss.modcluster.container.Engine;
+import org.jboss.modcluster.load.metric.LoadMetric;
+import org.jboss.modcluster.load.metric.NodeUnavailableException;
+import org.junit.Test;
 
 /**
  * @author Radoslav Husar
  */
 public class DynamicLoadBalanceFactorProviderTest {
 
-    @Test
-    public void getLoadBalanceFactor() throws Exception {
-        Engine engine = mock(Engine.class);
+  @Test
+  public void getLoadBalanceFactor() throws Exception {
+    Engine engine = mock(Engine.class);
 
-        Set<LoadMetric> metrics = new HashSet<>();
-        LoadMetric metric = mock(LoadMetric.class);
-        when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
-        when(metric.getLoad(engine)).thenThrow(new NodeUnavailableException());
-        metrics.add(metric);
+    Set<LoadMetric> metrics = new HashSet<>();
+    LoadMetric metric = mock(LoadMetric.class);
+    when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+    when(metric.getLoad(engine)).thenThrow(new NodeUnavailableException());
+    metrics.add(metric);
 
-        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
+    DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
 
-        int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
-        assertEquals(-1, loadBalanceFactor);
-    }
+    int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+    assertEquals(-1, loadBalanceFactor);
+  }
 
+  @Test
+  public void getLoadBalanceFactorWithFloatDecayFactor() throws Exception {
+    Engine engine = mock(Engine.class);
+
+    Set<LoadMetric> metrics = new HashSet<>();
+    LoadMetric metric = mock(LoadMetric.class);
+    when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+    when(metric.getCapacity()).thenReturn(LoadMetric.DEFAULT_CAPACITY);
+    when(metric.getLoad(engine)).thenReturn(0.3, 0.4, 0.5);
+    metrics.add(metric);
+
+    DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
+    provider.setDecayFactor(1.5f);
+
+    int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+    loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+    loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+    assertEquals(57, loadBalanceFactor);
+  }
 }
