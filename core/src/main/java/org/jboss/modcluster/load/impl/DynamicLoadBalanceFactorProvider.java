@@ -47,8 +47,8 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
 
     private final Map<LoadMetric, List<Double>> loadHistory = new LinkedHashMap<LoadMetric, List<Double>>();
 
-    private volatile float decayFactor = 2;
-    private volatile int history = 9;
+    private volatile float decayFactor = DEFAULT_DECAY_FACTOR;
+    private volatile int history = DEFAULT_HISTORY;
 
     public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics) {
         for (LoadMetric metric : metrics) {
