@@ -22,17 +22,17 @@
 
 package org.jboss.modcluster.load.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.HashSet;
-import java.util.Set;
-
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.NodeUnavailableException;
 import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Radoslav Husar
@@ -41,18 +41,18 @@ public class DynamicLoadBalanceFactorProviderTest {
 
     @Test
     public void getLoadBalanceFactor() throws Exception {
-	Engine engine = mock(Engine.class);
+        Engine engine = mock(Engine.class);
 
-	Set<LoadMetric> metrics = new HashSet<>();
-	LoadMetric metric = mock(LoadMetric.class);
-	when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
-	when(metric.getLoad(engine)).thenThrow(new NodeUnavailableException());
-	metrics.add(metric);
+        Set<LoadMetric> metrics = new HashSet<>();
+        LoadMetric metric = mock(LoadMetric.class);
+        when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+        when(metric.getLoad(engine)).thenThrow(new NodeUnavailableException());
+        metrics.add(metric);
 
-	DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
 
-	int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
-	assertEquals(-1, loadBalanceFactor);
+        int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+        assertEquals(-1, loadBalanceFactor);
     }
 
     @Test
