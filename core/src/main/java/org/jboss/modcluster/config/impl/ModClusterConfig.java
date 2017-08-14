@@ -49,7 +49,7 @@ import org.jboss.modcluster.mcmp.impl.JSSESocketFactory;
 
 /**
  * Java bean implementing the various configuration interfaces.
- * 
+ *
  * @author Brian Stansberry
  * @author Radoslav Husar
  */

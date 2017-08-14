@@ -42,7 +42,6 @@ import org.jboss.modcluster.mcmp.ResetRequestSource;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class ResetRequestSourceImpl implements ResetRequestSource {
     private final NodeConfiguration nodeConfig;

@@ -29,7 +29,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * Generic {@link LoadMetric} whose load is the aggregated value of an mbean attribute.
- * 
+ *
  * @author Paul Ferraro
  */
 public class MBeanAttributeLoadMetric extends AbstractMBeanLoadMetric {

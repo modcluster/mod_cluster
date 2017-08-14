@@ -23,9 +23,8 @@ package org.jboss.modcluster.mcmp;
 
 /**
  * Valid types of MCMP requests.
- * 
+ *
  * @author Brian Stansberry
- * @version $Revision$
  */
 public enum MCMPRequestType {
     CONFIG("CONFIG", true),
@@ -41,7 +40,7 @@ public enum MCMPRequestType {
     private final String command;
     private final boolean establishesServer;
 
-    private MCMPRequestType(String command, boolean establishesServer) {
+    MCMPRequestType(String command, boolean establishesServer) {
         this.command = command;
         this.establishesServer = establishesServer;
     }

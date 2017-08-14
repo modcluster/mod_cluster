@@ -27,7 +27,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * {@link LoadMetric} implementation that returns the outgoing bandwidth in KB.
- * 
+ *
  * @author Paul Ferraro
  */
 public class SendTrafficLoadMetric extends AbstractLoadMetric {

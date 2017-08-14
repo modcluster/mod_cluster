@@ -36,7 +36,7 @@ import org.jboss.modcluster.load.metric.NodeUnavailableException;
 
 /**
  * {@link LoadBalanceFactorProvider} implementation that periodically aggregates load from a set of {@link LoadMetric}s.
- * 
+ *
  * @author Paul Ferraro
  */
 public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvider, DynamicLoadBalanceFactorProviderMBean {

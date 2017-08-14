@@ -28,7 +28,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * {@link LoadMetric} implementation that returns the total number of active web sessions.
- * 
+ *
  * @author Paul Ferraro
  */
 public class ActiveSessionsLoadMetric extends AbstractLoadMetric {

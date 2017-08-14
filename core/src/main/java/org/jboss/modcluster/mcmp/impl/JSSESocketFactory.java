@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -73,7 +72,7 @@ import org.jboss.modcluster.config.SSLConfiguration;
 
 /**
  * SSL server socket factory. It _requires_ a valid RSA key and JSSE.
- * 
+ *
  * @author Harish Prabandham
  * @author Costin Manolache
  * @author Stefan Freyr Stefansson
@@ -243,7 +242,7 @@ public class JSSESocketFactory extends SocketFactory {
 
     /**
      * Gets the initialized key managers.
-     * 
+     *
      * @throws GeneralSecurityException
      * @throws IOException
      */
@@ -269,7 +268,7 @@ public class JSSESocketFactory extends SocketFactory {
 
     /**
      * Gets the initialized trust managers.
-     * 
+     *
      * @throws GeneralSecurityException
      * @throws IOException
      */
@@ -296,7 +295,7 @@ public class JSSESocketFactory extends SocketFactory {
 
     /**
      * Return the initialization parameters for the TrustManager. Currently, only the default <code>PKIX</code> is supported.
-     * 
+     *
      * @param algorithm The algorithm to get parameters for.
      * @param crlf The path to the CRL file.
      * @param trustStore The configured TrustStore.
@@ -322,7 +321,7 @@ public class JSSESocketFactory extends SocketFactory {
 
     /**
      * Load the collection of CRLs.
-     * 
+     *
      * @throws FileNotFoundException
      * @throws GeneralSecurityException
      */

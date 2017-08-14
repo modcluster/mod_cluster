@@ -34,7 +34,6 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class BusyConnectorsLoadMetricTestCase {
     @Test

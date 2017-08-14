@@ -26,7 +26,7 @@ import java.util.HashMap;
 
 /**
  * Advertised server instance
- * 
+ *
  * @author Mladen Turk
  */
 public class AdvertisedServer {

@@ -41,7 +41,7 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
+ *
  */
 public class ResetRequestSourceTestCase {
     private final NodeConfiguration nodeConfig = mock(NodeConfiguration.class);

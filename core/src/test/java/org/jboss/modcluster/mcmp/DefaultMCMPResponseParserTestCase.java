@@ -21,14 +21,12 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import junit.framework.Assert;
-
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class DefaultMCMPResponseParserTestCase {
     private final MCMPResponseParser parser = new DefaultMCMPResponseParser();

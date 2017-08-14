@@ -25,8 +25,7 @@ import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface SimpleLoadBalanceFactorProviderMBean extends LoadBalanceFactorProvider {
-    public void setLoadBalanceFactor(int loadBalanceFactor);
+    void setLoadBalanceFactor(int loadBalanceFactor);
 }

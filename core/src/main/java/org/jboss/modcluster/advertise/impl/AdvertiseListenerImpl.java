@@ -51,7 +51,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * Listens for Advertise messages from mod_cluster
- * 
+ *
  * @author Mladen Turk
  */
 public class AdvertiseListenerImpl implements AdvertiseListener {
@@ -93,9 +93,9 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
     /**
      * Constructors a new AdvertiseListenerImpl
-     * 
-     * @param eventHandler The event handler that will be used for status and new server notifications.
-     * @param config our configuration
+     *
+     * @param commHandler   The event handler that will be used for status and new server notifications.
+     * @param config        our configuration
      * @param socketFactory a multicast socket factory
      */
     public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, MulticastSocketFactory socketFactory) throws IOException {
@@ -122,7 +122,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
     /**
      * Get AdvertiseServer server.
-     * 
+     *
      * @param name Server name to get.
      */
     public AdvertisedServer getServer(String name) {
@@ -131,7 +131,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
 
     /**
      * Remove the AdvertisedServer from the collection.
-     * 
+     *
      * @param server Server to remove.
      */
     // TODO why is this here? it is never used.
@@ -448,16 +448,16 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                     AdvertiseListenerImpl.this.listening = true;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                } catch(InterruptedIOException e) {
-                	Thread.currentThread().interrupt();
+                } catch (InterruptedIOException e) {
+                    Thread.currentThread().interrupt();
                 } catch (IOException e) {
                     AdvertiseListenerImpl.this.listening = false;
                     if (this.socket == null || this.socket.isClosed())
-                    	Thread.currentThread().interrupt();
+                        Thread.currentThread().interrupt();
                     else {
 
-                    	// Do not blow the CPU in case of communication error
-                    	Thread.yield();
+                        // Do not blow the CPU in case of communication error
+                        Thread.yield();
                     }
                 }
             }

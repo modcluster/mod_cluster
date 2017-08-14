@@ -27,7 +27,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * {@link LoadMetric} implementation that returns the total number of busy connector threads.
- * 
+ *
  * @author Paul Ferraro
  */
 public class BusyConnectorsLoadMetric extends AbstractLoadMetric {

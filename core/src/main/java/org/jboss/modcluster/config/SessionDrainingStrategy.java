@@ -25,13 +25,13 @@ import org.jboss.modcluster.container.Context;
 
 /**
  * Defines the strategy for draining sessions from a context
- * 
+ *
  * @author Paul Ferraro
  */
 public interface SessionDrainingStrategy {
     /**
      * Indicates whether or not to drain sessions prior to stopping the specified context.
-     * 
+     *
      * @param context a web application context
      * @return true, if sessions draining is enabled, false otherwise
      */

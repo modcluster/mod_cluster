@@ -40,7 +40,6 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class MBeanAttributeRatioLoadMetricTestCase {
     @Test

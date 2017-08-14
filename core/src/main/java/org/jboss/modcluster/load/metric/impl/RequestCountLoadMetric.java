@@ -27,7 +27,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * {@link LoadMetric} implementation that returns the number of web requests.
- * 
+ *
  * @author Paul Ferraro
  */
 public class RequestCountLoadMetric extends AbstractLoadMetric {

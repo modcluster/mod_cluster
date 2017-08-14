@@ -33,7 +33,6 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class HeapMemoryUsageLoadMetricTestCase {
     private MemoryMXBean bean = mock(MemoryMXBean.class);

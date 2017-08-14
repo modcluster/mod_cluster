@@ -26,7 +26,7 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 
 /**
  * Abstract {@link LoadMetric} implementation with basic mutators/accessors.
- * 
+ *
  * @author Paul Ferraro
  */
 public abstract class AbstractLoadMetric implements LoadMetric {

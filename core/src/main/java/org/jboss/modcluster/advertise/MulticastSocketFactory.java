@@ -27,7 +27,7 @@ import java.net.MulticastSocket;
 
 /**
  * Factory for creating multicast sockets.
- * 
+ *
  * @author Paul Ferraro
  */
 public interface MulticastSocketFactory {

@@ -25,7 +25,6 @@ import java.io.IOException;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public interface AdvertiseListener {
     /**

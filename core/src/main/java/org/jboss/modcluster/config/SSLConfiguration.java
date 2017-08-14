@@ -23,7 +23,7 @@ package org.jboss.modcluster.config;
 
 /**
  * A SSLConfiguration.
- * 
+ *
  * @author Brian Stansberry
  */
 public interface SSLConfiguration {

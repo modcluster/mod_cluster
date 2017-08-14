@@ -30,7 +30,6 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class AdvertiseListenerFactoryImpl implements AdvertiseListenerFactory {
     /**
