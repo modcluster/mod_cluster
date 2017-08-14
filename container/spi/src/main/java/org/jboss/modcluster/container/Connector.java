@@ -25,7 +25,7 @@ import java.net.InetAddress;
 
 /**
  * SPI for a connector, defined as a communication end-point for a client or proxy.
- * 
+ *
  * @author Paul Ferraro
  */
 public interface Connector {
@@ -43,7 +43,7 @@ public interface Connector {
 
         /**
          * Indicates the default port for this type of connector
-         * 
+         *
          * @return a valid port number
          */
         public int getDefaultPort() {
@@ -62,21 +62,21 @@ public interface Connector {
     /**
      * Indicates whether the endpoint of this connector uses a reverse connection to httpd. A reverse connection uses a normal
      * socket connection, instead of the traditional server socket.
-     * 
+     *
      * @return true, if the endpoint uses a reverse connection, false otherwise
      */
     boolean isReverse();
 
     /**
      * Indicates the type of this connector
-     * 
+     *
      * @return a connector type
      */
     Type getType();
 
     /**
      * Returns the address on which this connector operates
-     * 
+     *
      * @return an address
      */
     InetAddress getAddress();
@@ -84,14 +84,14 @@ public interface Connector {
     /**
      * Sets the address on which this connector operates. Used to set an explicit connector address if undefined or defined
      * as any address.
-     * 
+     *
      * @param address a network interface address
      */
     void setAddress(InetAddress address);
 
     /**
      * Returns the port on which this connector operates
-     * 
+     *
      * @return a port number
      */
     int getPort();

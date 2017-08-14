@@ -30,7 +30,7 @@ import org.jboss.modcluster.container.Server;
 
 /**
  * {@link Server} implementation that wraps a {@link org.apache.catalina.Server}.
- * 
+ *
  * @author Paul Ferraro
  */
 public class TomcatServer implements Server {
@@ -39,7 +39,7 @@ public class TomcatServer implements Server {
 
     /**
      * Constructs a new CatalinaServer wrapping the specified catalina server.
-     * 
+     *
      * @param host a catalina server
      */
     public TomcatServer(TomcatFactoryRegistry registry, org.apache.catalina.Server server) {

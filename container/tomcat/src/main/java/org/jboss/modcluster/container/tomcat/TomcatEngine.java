@@ -33,7 +33,7 @@ import org.jboss.modcluster.container.Server;
 
 /**
  * {@link Engine} implementation that wraps a {@link org.apache.catalina.Context}.
- * 
+ *
  * @author Paul Ferraro
  */
 public class TomcatEngine implements Engine {
@@ -43,7 +43,7 @@ public class TomcatEngine implements Engine {
 
     /**
      * Constructs a new CatalinaEngine that wraps the specified catalina engine
-     * 
+     *
      * @param engine a catalina engine
      */
     public TomcatEngine(TomcatFactoryRegistry registry, org.apache.catalina.Engine engine, Server server) {

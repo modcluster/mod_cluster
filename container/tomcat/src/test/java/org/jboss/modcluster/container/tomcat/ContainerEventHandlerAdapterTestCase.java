@@ -61,7 +61,7 @@ public class ContainerEventHandlerAdapterTestCase {
     public void init() {
         Mockito.reset(this.eventHandler, this.server, this.factory, this.provider);
     }
-    
+
     @Test
     public void start() {
         Service service = mock(Service.class);
@@ -70,7 +70,7 @@ public class ContainerEventHandlerAdapterTestCase {
         Container container = mock(Container.class);
         LifecycleContainer childContainer = mock(LifecycleContainer.class);
         Server server = mock(Server.class);
-        
+
         TomcatEventHandler handler = this.createEventHandler(this.eventHandler, this.provider, this.factory);
 
         when(this.provider.getServer()).thenReturn(this.server);
@@ -80,7 +80,7 @@ public class ContainerEventHandlerAdapterTestCase {
         when(engine.findChildren()).thenReturn(new Container[] { container });
         when(container.findChildren()).thenReturn(new Container[] { childContainer });
         when(this.factory.createServer(same(this.server))).thenReturn(server);
-        
+
         handler.start();
 
         verify(this.server).addLifecycleListener(same(handler));
@@ -112,7 +112,7 @@ public class ContainerEventHandlerAdapterTestCase {
         when(engine.findChildren()).thenReturn(new Container[] { container });
         when(container.findChildren()).thenReturn(new Container[] { childContainer });
         when(this.factory.createServer(this.server)).thenReturn(server);
-        
+
         handler.stop();
 
         verify(this.server).removeLifecycleListener(same(handler));
@@ -160,7 +160,7 @@ public class ContainerEventHandlerAdapterTestCase {
         when(engine.getService()).thenReturn(service);
         when(service.getServer()).thenReturn(server);
         when(this.factory.createContext(context)).thenReturn(catalinaContext);
-        
+
         handler.containerEvent(event);
 
         verify(context).addLifecycleListener(handler);
@@ -218,7 +218,7 @@ public class ContainerEventHandlerAdapterTestCase {
         when(engine.getService()).thenReturn(service);
         when(service.getServer()).thenReturn(server);
         when(this.factory.createContext(context)).thenReturn(catalinaContext);
-        
+
         handler.containerEvent(event);
 
         verify(context).removeLifecycleListener(handler);
@@ -282,7 +282,7 @@ public class ContainerEventHandlerAdapterTestCase {
         this.initServer(handler, server);
 
         handler.lifecycleEvent(this.createAfterInitEvent(server));
-        
+
         verifyZeroInteractions(this.eventHandler);
     }
 
@@ -292,13 +292,13 @@ public class ContainerEventHandlerAdapterTestCase {
         Container container = mock(Container.class);
         LifecycleContainer childContainer = mock(LifecycleContainer.class);
         Server catalinaServer = mock(Server.class);
-        
+
         when(server.findServices()).thenReturn(new Service[] { service });
         when(service.getContainer()).thenReturn(engine);
         when(engine.findChildren()).thenReturn(new Container[] { container });
         when(container.findChildren()).thenReturn(new Container[] { childContainer });
         when(this.factory.createServer(server)).thenReturn(catalinaServer);
-        
+
         handler.lifecycleEvent(this.createAfterInitEvent(server));
 
         verify(this.eventHandler).init(same(catalinaServer));
@@ -306,7 +306,7 @@ public class ContainerEventHandlerAdapterTestCase {
         verify(engine).addLifecycleListener(handler);
         verify(container).addContainerListener(handler);
         verify(childContainer).addLifecycleListener(handler);
-        
+
         reset(this.eventHandler);
     }
 
@@ -328,15 +328,15 @@ public class ContainerEventHandlerAdapterTestCase {
         this.startServer(handler, server);
 
         handler.lifecycleEvent(new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT, null));
-        
+
         Mockito.verifyZeroInteractions(this.eventHandler);
     }
 
     protected void startServer(TomcatEventHandler handler, LifecycleServer server) {
         Server catalinaServer = mock(Server.class);
-        
+
         when(this.factory.createServer(same(server))).thenReturn(catalinaServer);
-        
+
         handler.lifecycleEvent(new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT, null));
 
         verify(this.eventHandler).start(same(catalinaServer));
@@ -365,13 +365,13 @@ public class ContainerEventHandlerAdapterTestCase {
         org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
         Service service = mock(Service.class);
         Context catalinaContext = mock(Context.class);
-        
+
         when(context.getParent()).thenReturn(host);
         when(host.getParent()).thenReturn(engine);
         when(engine.getService()).thenReturn(service);
         when(service.getServer()).thenReturn(server);
         when(this.factory.createContext(same(context))).thenReturn(catalinaContext);
-        
+
         handler.lifecycleEvent(event);
 
         verify(this.eventHandler).stop(same(catalinaContext));
@@ -387,26 +387,26 @@ public class ContainerEventHandlerAdapterTestCase {
         handler.lifecycleEvent(event);
 
         Mockito.verifyZeroInteractions(this.eventHandler);
-        
+
         this.initServer(handler, server);
 
         handler.lifecycleEvent(event);
 
         Mockito.verifyZeroInteractions(this.eventHandler);
-        
+
         this.startServer(handler, server);
 
         Server catalinaServer = mock(Server.class);
-        
+
         when(this.factory.createServer(same(server))).thenReturn(catalinaServer);
-        
+
         handler.lifecycleEvent(event);
 
         verify(this.eventHandler).stop(same(catalinaServer));
         reset(this.eventHandler);
-        
+
         handler.lifecycleEvent(event);
-        
+
         Mockito.verifyZeroInteractions(this.eventHandler);
     }
 
@@ -441,9 +441,9 @@ public class ContainerEventHandlerAdapterTestCase {
         verify(childContainer).removeLifecycleListener(handler);
         verify(this.eventHandler).shutdown();
         reset(this.eventHandler);
-        
+
         handler.lifecycleEvent(event);
-        
+
         Mockito.verifyZeroInteractions(this.eventHandler);
     }
 
@@ -458,7 +458,7 @@ public class ContainerEventHandlerAdapterTestCase {
         handler.lifecycleEvent(event);
 
         Mockito.verifyZeroInteractions(this.eventHandler);
-        
+
         LifecycleServer server = mock(LifecycleServer.class);
 
         this.initServer(handler, server);
@@ -466,16 +466,16 @@ public class ContainerEventHandlerAdapterTestCase {
         handler.lifecycleEvent(event);
 
         Mockito.verifyZeroInteractions(this.eventHandler);
-        
+
         this.startServer(handler, server);
 
         Service service = mock(Service.class);
         Engine catalinaEngine = mock(Engine.class);
-        
+
         when(engine.getService()).thenReturn(service);
         when(service.getServer()).thenReturn(server);
         when(this.factory.createEngine(same(engine))).thenReturn(catalinaEngine);
-        
+
         handler.lifecycleEvent(event);
 
         verify(this.eventHandler).status(same(catalinaEngine));

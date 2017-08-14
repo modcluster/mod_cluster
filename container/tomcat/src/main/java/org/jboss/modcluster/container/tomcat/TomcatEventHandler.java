@@ -32,6 +32,6 @@ import org.apache.catalina.LifecycleListener;
 public interface TomcatEventHandler extends LifecycleListener, ContainerListener, PropertyChangeListener {
 
     void start();
-    
+
     void stop();
 }

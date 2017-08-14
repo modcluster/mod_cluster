@@ -332,7 +332,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
         Map<InetSocketAddress, String> map = this.service.getProxyConfiguration();
         if (map.isEmpty())
             return null;
-        Object results[] = map.values().toArray();
+        Object[] results = map.values().toArray();
         result = (String) results[0];
         return result;
     }
@@ -343,7 +343,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
         Map<InetSocketAddress, String> map = this.service.getProxyInfo();
         if (map.isEmpty())
             return null;
-        Object results[] = map.values().toArray();
+        Object[] results = map.values().toArray();
         result = (String) results[0];
         return result;
     }

@@ -34,7 +34,7 @@ import org.jboss.modcluster.container.Host;
 
 /**
  * {@link Host} implementation that wraps a {@link org.apache.catalina.Host}.
- * 
+ *
  * @author Paul Ferraro
  */
 public class TomcatHost implements Host {
@@ -44,7 +44,7 @@ public class TomcatHost implements Host {
 
     /**
      * Constructs a new CatalinaHost wrapping the specified catalina host.
-     * 
+     *
      * @param host a catalina host
      * @param engine the parent container
      */

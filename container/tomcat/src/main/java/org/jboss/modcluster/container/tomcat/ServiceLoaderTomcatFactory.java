@@ -75,22 +75,22 @@ public class ServiceLoaderTomcatFactory implements TomcatFactory, TomcatFactoryR
         this.connectorFactory = connectorFactory;
         this.provider = provider;
     }
-    
+
     @Override
     public Server createServer(org.apache.catalina.Server server) {
         return this.serverFactory.createServer(this, server);
     }
-    
+
     @Override
     public Engine createEngine(org.apache.catalina.Engine engine) {
         return this.engineFactory.createEngine(this, engine, this.createServer(engine.getService().getServer()));
     }
-    
+
     @Override
     public Host createHost(org.apache.catalina.Host host) {
         return this.hostFactory.createHost(this, host, this.createEngine((org.apache.catalina.Engine) host.getParent()));
     }
-    
+
     @Override
     public Context createContext(org.apache.catalina.Context context) {
         return this.contextFactory.createContext(context, this.createHost((org.apache.catalina.Host) context.getParent()));
