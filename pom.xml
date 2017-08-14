@@ -73,6 +73,7 @@
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
 
         <!-- Plugin versions -->
+        <version.checkstyle>6.19</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
     </properties>
 
@@ -223,6 +224,17 @@
                         <useFile/>
                     </configuration>
                     <dependencies>
+                        <dependency>
+                            <groupId>com.puppycrawl.tools</groupId>
+                            <artifactId>checkstyle</artifactId>
+                            <version>${version.checkstyle}</version>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>com.sun</groupId>
+                                    <artifactId>tools</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
                         <dependency>
                             <groupId>org.wildfly.checkstyle</groupId>
                             <artifactId>wildfly-checkstyle-config</artifactId>
