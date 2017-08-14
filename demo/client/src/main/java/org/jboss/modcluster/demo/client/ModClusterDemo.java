@@ -45,9 +45,8 @@ import org.jfree.chart.ChartPanel;
 
 /**
  * Client application for demonstrating load balancing with mod_cluster.
- * 
+ *
  * @author Brian Stansberry
- * 
  */
 public class ModClusterDemo {
     private static final String DEFAULT_HOST_NAME = System.getProperty("mod_cluster.proxy.host", "localhost");
@@ -94,10 +93,10 @@ public class ModClusterDemo {
 
     /**
      * Launch the application
-     * 
+     *
      * @param args
      */
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
@@ -871,7 +870,6 @@ public class ModClusterDemo {
                     conn = (HttpURLConnection) requestURL.openConnection(); // not yet connected
                     input = conn.getInputStream(); // NOW it is connected
                     while (input.read(buffer) > 0) {
-                        ;
                     }
                     input.close(); // discard data
                 } catch (IOException e) {

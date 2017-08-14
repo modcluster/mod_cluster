@@ -35,7 +35,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class RequestCountLoadServlet extends LoadServlet {
     /** The serialVersionUID */
@@ -56,7 +55,7 @@ public class RequestCountLoadServlet extends LoadServlet {
             this.log("Sending request count request to: " + uri);
 
             HttpClient client = new DefaultHttpClient();
-            
+
             try {
                 HttpClientUtils.closeQuietly(client.execute(new HttpGet(uri)));
             } finally {

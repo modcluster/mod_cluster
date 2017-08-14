@@ -34,7 +34,6 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  * @author Brian Stansberry
- * 
  */
 public class ChartManager {
     private final Map<String, AtomicInteger> requestCounts;
@@ -83,7 +82,7 @@ public class ChartManager {
         Integer xValue = new Integer(++seriesCount);
 
         long now = System.currentTimeMillis();
-        long elapsed = (now - lastUpdateTime) / 1000l;
+        long elapsed = (now - lastUpdateTime) / 1000L;
         // I once saw a DivideByZeroException below
         if (elapsed == 0) {
             seriesCount--;

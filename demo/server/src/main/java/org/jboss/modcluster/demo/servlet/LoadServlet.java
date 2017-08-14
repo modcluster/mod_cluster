@@ -39,7 +39,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class LoadServlet extends HttpServlet {
     /** The serialVersionUID */
@@ -50,13 +49,13 @@ public class LoadServlet extends HttpServlet {
     protected static final String COUNT = "count";
 
     public static final String JVM_ROUTE_SYSTEM_PROPERTY = "jboss.mod_cluster.jvmRoute";
-    
+
     private String jvmRoute;
 
     @Override
     public void init() throws ServletException {
         this.jvmRoute = System.getProperty(JVM_ROUTE_SYSTEM_PROPERTY);
-        
+
         if (this.jvmRoute == null) {
             try {
                 MBeanServer server = ManagementFactory.getPlatformMBeanServer();
