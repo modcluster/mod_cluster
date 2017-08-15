@@ -82,11 +82,6 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-load-spi</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -99,6 +94,26 @@
                 <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-container-tomcat</artifactId>
                 <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-load-spi</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-demo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-demo-client</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-demo-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -215,6 +230,7 @@
                 <module>container</module>
                 <module>load-spi</module>
                 <module>demo</module>
+                <module>dist</module>
             </modules>
         </profile>
         <profile>
@@ -227,6 +243,7 @@
                 <module>container</module>
                 <module>load-spi</module>
                 <module>demo</module>
+                <module>dist</module>
             </modules>
             <build>
                 <plugins>
@@ -247,108 +264,51 @@
             </build>
         </profile>
         <profile>
-            <id>TC9</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
+            <id>TC7</id>
             <modules>
                 <module>core</module>
                 <module>container</module>
                 <module>load-spi</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
+                <module>dist</module>
             </modules>
         </profile>
         <profile>
             <id>TC8</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <modules>
                 <module>core</module>
                 <module>container</module>
                 <module>load-spi</module>
+                <module>dist</module>
             </modules>
         </profile>
         <profile>
-            <id>TC7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
+            <id>TC85</id>
             <modules>
                 <module>core</module>
                 <module>container</module>
                 <module>load-spi</module>
+                <module>dist</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC9</id>
+            <modules>
+                <module>core</module>
+                <module>container</module>
+                <module>load-spi</module>
+                <module>dist</module>
             </modules>
         </profile>
         <profile>
             <id>dist</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
             <modules>
                 <module>core</module>
                 <module>container</module>
                 <module>load-spi</module>
                 <module>demo</module>
+                <module>dist</module>
                 <module>docs</module>
             </modules>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-dependency-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>copy-core-dependencies</id>
-                                <phase>process-resources</phase>
-                                <goals>
-                                    <goal>copy-dependencies</goal>
-                                </goals>
-                                <configuration>
-                                    <artifactItems>
-                                        <artifactItem>
-                                            <groupId>org.jboss.mod_cluster</groupId>
-                                            <artifactId>mod_cluster-parent</artifactId>
-                                        </artifactItem>
-                                    </artifactItems>
-                                    <outputDirectory>${project.build.directory}/dependencies/lib</outputDirectory>
-                                    <overWriteIfNewer>true</overWriteIfNewer>
-                                    <stripVersion>true</stripVersion>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>bin</id>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <phase>package</phase>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/bin.xml</descriptor>
-                                    </descriptors>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
         </profile>
     </profiles>
 </project>
