@@ -214,6 +214,15 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
     }
 
     /**
+     * String-based variant of {@link ModClusterListener#setLoadDecayFactor(float)} to set float decay factor used by Tomcat modeler.
+     *
+     * @param decayFactor a positive number
+     */
+    public void setLoadDecayFactor(String decayFactor) {
+        this.decayFactor = Float.parseFloat(decayFactor);
+    }
+
+    /**
      * Returns the number of historic load values used when calculating the load factor.
      *
      * @return the configured load history
