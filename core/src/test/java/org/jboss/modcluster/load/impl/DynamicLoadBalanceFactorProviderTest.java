@@ -35,6 +35,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests {@link DynamicLoadBalanceFactorProvider}.
+ *
  * @author Radoslav Husar
  */
 public class DynamicLoadBalanceFactorProviderTest {
@@ -55,4 +57,22 @@ public class DynamicLoadBalanceFactorProviderTest {
         assertEquals(-1, loadBalanceFactor);
     }
 
+    @Test
+    public void getLoadBalanceFactorWithFloatDecayFactor() throws Exception {
+        Engine engine = mock(Engine.class);
+
+        Set<LoadMetric> metrics = new HashSet<>();
+        LoadMetric metric = mock(LoadMetric.class);
+        when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+        when(metric.getCapacity()).thenReturn(LoadMetric.DEFAULT_CAPACITY);
+        when(metric.getLoad(engine)).thenReturn(0.3, 0.4, 0.5);
+        metrics.add(metric);
+
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
+        provider.setDecayFactor(1.5f);
+
+        assertEquals(70, provider.getLoadBalanceFactor(engine)); // 100-(0.3*100)/(100)*100 = 70
+        assertEquals(64, provider.getLoadBalanceFactor(engine)); // 100-(0.3*100/1.5+0.4*100)/(100/1.5+100)*100 = 64
+        assertEquals(57, provider.getLoadBalanceFactor(engine)); // 100-(0.3*100/(1.5^2)+0.4*100/1.5+0.5*100)/(100/(1.5^2)+100/1.5+100)*100 = 57.3684
+    }
 }
