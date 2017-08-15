@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class HeapMemoryLoadServlet extends LoadServlet {
     /** The serialVersionUID */

@@ -25,13 +25,13 @@ import org.jboss.modcluster.container.Engine;
 
 /**
  * Factory for creating a unique jvm route for an engine.
- * 
+ *
  * @author Paul Ferraro
  */
 public interface JvmRouteFactory {
     /**
      * Creates a unique jvm route for the specified engine.
-     * 
+     *
      * @param engine an engine
      * @return a jvm route
      */

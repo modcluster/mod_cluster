@@ -42,7 +42,6 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class DefaultMCMPRequestFactoryTestCase {
     private MCMPRequestFactory factory = new DefaultMCMPRequestFactory();

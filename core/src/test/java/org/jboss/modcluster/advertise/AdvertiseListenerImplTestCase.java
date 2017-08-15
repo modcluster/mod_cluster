@@ -121,7 +121,7 @@ public class AdvertiseListenerImplTestCase {
                 InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
                 this.socket.setInterface(socketInterface);
             } catch (Exception ex) {
-                ; // Ignore it
+                // Ignore it
             }
         }
 

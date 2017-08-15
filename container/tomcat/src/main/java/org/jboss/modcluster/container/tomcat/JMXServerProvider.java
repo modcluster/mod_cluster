@@ -36,7 +36,7 @@ public class JMXServerProvider implements ServerProvider {
     private final ObjectName name;
     private final MBeanServer mbeanServer;
     private volatile Server server;
-    
+
     public JMXServerProvider(MBeanServer mbeanServer, ObjectName name) {
         this.mbeanServer = mbeanServer;
         this.name = name;
@@ -47,10 +47,10 @@ public class JMXServerProvider implements ServerProvider {
         if (this.server != null) return this.server;
 
         this.server = this.findServer();
-        
+
         return this.server;
     }
-    
+
     private Server findServer() {
         try {
             Service[] services = (Service[]) this.mbeanServer.invoke(this.name, "findServices", null, null);

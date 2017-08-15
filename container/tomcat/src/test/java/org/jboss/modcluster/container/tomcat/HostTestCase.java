@@ -46,17 +46,17 @@ public class HostTestCase {
     protected Host createHost() {
         return new TomcatHost(this.registry, this.host, this.engine);
     }
-    
+
     @Test
     public void findContext() {
         org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
         Context expected = mock(Context.class);
         ContextFactory contextFactory = mock(ContextFactory.class);
-        
+
         when(this.host.findChild("path")).thenReturn(context);
         when(this.registry.getContextFactory()).thenReturn(contextFactory);
         when(contextFactory.createContext(same(context), same(this.catalinaHost))).thenReturn(expected);
-        
+
         Context result = this.catalinaHost.findContext("path");
 
         assertSame(expected, result);

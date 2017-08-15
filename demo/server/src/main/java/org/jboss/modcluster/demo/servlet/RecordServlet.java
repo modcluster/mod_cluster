@@ -30,7 +30,6 @@ import javax.servlet.http.HttpSession;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class RecordServlet extends LoadServlet {
     /** The serialVersionUID */

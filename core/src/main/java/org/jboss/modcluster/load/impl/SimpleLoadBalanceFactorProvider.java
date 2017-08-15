@@ -25,9 +25,8 @@ import org.jboss.modcluster.container.Engine;
 
 /**
  * A {@link LoadManagerImpl} that returns a static value.
- * 
+ *
  * @author Brian Stansberry
- * @version $Revision$
  */
 public class SimpleLoadBalanceFactorProvider implements SimpleLoadBalanceFactorProviderMBean {
     private int loadBalanceFactor = 1;

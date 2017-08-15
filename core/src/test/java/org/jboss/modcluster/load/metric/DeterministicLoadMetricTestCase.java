@@ -27,7 +27,6 @@ import org.junit.Test;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class DeterministicLoadMetricTestCase {
     private DeterministicLoadStateImpl state = new DeterministicLoadStateImpl();

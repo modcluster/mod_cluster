@@ -31,7 +31,7 @@ import org.jboss.modcluster.mcmp.MCMPRequestType;
 
 /**
  * Encapsulates the parameters for a request over MCMP.
- * 
+ *
  * @author Brian Stansberry
  * @author Paul Ferraro
  */

@@ -36,7 +36,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class ReceiveTrafficLoadServlet extends LoadServlet {
     /** The serialVersionUID */
@@ -57,21 +56,21 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
         HttpClient client = new DefaultHttpClient();
         try {
             HttpEntity entity = new ByteArrayEntity(new byte[size]);
-    
+
             URI uri = this.createLocalURI(request, null);
-    
+
             for (int i = 0; i < duration; ++i) {
                 long start = System.currentTimeMillis();
-    
+
                 this.log("Sending " + (size / 1024) + "KB packet to: " + uri);
-    
+
                 HttpPut put = new HttpPut(uri);
                 put.setEntity(entity);
-                
+
                 HttpClientUtils.closeQuietly(client.execute(put));
 
                 long ms = 1000 - (System.currentTimeMillis() - start);
-    
+
                 if (ms > 0) {
                     try {
                         Thread.sleep(ms);
@@ -83,7 +82,7 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-        
+
         this.writeLocalName(request, response);
     }
 }

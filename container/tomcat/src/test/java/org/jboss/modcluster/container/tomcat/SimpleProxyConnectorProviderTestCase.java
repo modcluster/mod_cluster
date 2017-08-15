@@ -35,11 +35,11 @@ public class SimpleProxyConnectorProviderTestCase {
         ConnectorFactory factory = mock(ConnectorFactory.class);
         Engine engine = mock(Engine.class);
         Connector expected = mock(Connector.class);
-        
+
         org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
-        
+
         when(factory.createConnector(same(connector))).thenReturn(expected);
-        
+
         Connector result = new SimpleProxyConnectorProvider(connector).createProxyConnector(factory, engine);
 
         assertSame(expected, result);

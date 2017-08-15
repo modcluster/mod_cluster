@@ -35,7 +35,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
- * 
+ *
  */
 public class ActiveSessionsLoadServlet extends LoadServlet {
     /** The serialVersionUID */
@@ -72,7 +72,7 @@ public class ActiveSessionsLoadServlet extends LoadServlet {
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-        
+
         this.writeLocalName(request, response);
     }
 }

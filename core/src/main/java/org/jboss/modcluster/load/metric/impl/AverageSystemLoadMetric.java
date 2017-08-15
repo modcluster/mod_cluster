@@ -29,7 +29,7 @@ import org.jboss.modcluster.container.Engine;
 
 /**
  * Uses {@link OperatingSystemMXBean#getSystemLoadAverage} to calculate average system load.
- * 
+ *
  * @author Paul Ferraro
  */
 public class AverageSystemLoadMetric extends AbstractLoadMetric {

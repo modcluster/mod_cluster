@@ -34,7 +34,6 @@ import java.util.Set;
  * Handles communication via MCMP with the httpd side.
  *
  * @author Brian Stansberry
- * @version $Revision$
  */
 public interface MCMPHandler {
 

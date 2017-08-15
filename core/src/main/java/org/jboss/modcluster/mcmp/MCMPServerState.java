@@ -23,7 +23,7 @@ package org.jboss.modcluster.mcmp;
 
 /**
  * Extends {@link MCMPServer} to provide information about the current state of communications with that server.
- * 
+ *
  * @author Brian Stansberry
  */
 public interface MCMPServerState extends MCMPServer {

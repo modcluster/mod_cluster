@@ -226,7 +226,6 @@ public class RequestDriver {
 
                 input = conn.getInputStream(); // NOW it is connected
                 while (input.read(buffer) > 0) {
-                    ;
                 }
                 input.close(); // discard data
 

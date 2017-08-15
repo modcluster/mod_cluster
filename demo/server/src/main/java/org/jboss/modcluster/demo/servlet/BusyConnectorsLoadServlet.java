@@ -38,7 +38,7 @@ import org.apache.http.params.HttpParams;
 
 /**
  * @author Paul Ferraro
- * 
+ *
  */
 public class BusyConnectorsLoadServlet extends LoadServlet {
     /** The serialVersionUID */
@@ -120,7 +120,7 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
                     HttpResponse response = client.execute(head);
                     try {
                         int code = response.getStatusLine().getStatusCode();
-                        
+
                         uri = (code == HttpServletResponse.SC_TEMPORARY_REDIRECT) ? URI.create(response.getFirstHeader("location").getValue()) : null;
                     } finally {
                         HttpClientUtils.closeQuietly(response);

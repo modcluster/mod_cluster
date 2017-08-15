@@ -26,9 +26,8 @@ import java.util.Map;
 
 /**
  * Encapsulates the parameters for a request over MCMP.
- * 
+ *
  * @author Brian Stansberry
- * @version $Revision$
  */
 public interface MCMPRequest extends Serializable {
     MCMPRequestType getRequestType();

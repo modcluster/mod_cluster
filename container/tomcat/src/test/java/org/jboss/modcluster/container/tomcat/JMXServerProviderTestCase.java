@@ -43,23 +43,23 @@ public class JMXServerProviderTestCase {
         ObjectName name = ObjectName.getInstance("Catalina:type=Server");
         Server expected = mock(Server.class);
         Service service = mock(Service.class);
-        
+
         when(mbeanServer.invoke(same(name), eq("findServices"), (Object[]) isNull(), (String[]) isNull())).thenReturn(new Service[] { service });
         when(service.getServer()).thenReturn(expected);
-        
+
         ServerProvider provider = new JMXServerProvider(mbeanServer, name);
         Server result = provider.getServer();
-        
+
         assertSame(expected, result);
     }
-    
+
     @Test
     public void testNotFound() throws Exception {
         MBeanServer mbeanServer = mock(MBeanServer.class);
         ObjectName name = ObjectName.getInstance("Catalina:type=Server");
-        
+
         when(mbeanServer.invoke(same(name), eq("findServices"), (Object[]) isNull(), (String[]) isNull())).thenThrow(new InstanceNotFoundException());
-        
+
         ServerProvider provider = new JMXServerProvider(mbeanServer, name);
         RuntimeException exception = null;
         try {

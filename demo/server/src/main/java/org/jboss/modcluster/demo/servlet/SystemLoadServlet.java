@@ -28,7 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class SystemLoadServlet extends LoadServlet {
     /** The serialVersionUID */

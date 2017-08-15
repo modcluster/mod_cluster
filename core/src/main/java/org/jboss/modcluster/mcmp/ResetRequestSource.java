@@ -31,9 +31,8 @@ import org.jboss.modcluster.container.Server;
 /**
  * Source for a list of requests that should be sent to an httpd-side mod_cluster instance when an {@link MCMPHandler}
  * determines that the httpd-side state needs to be reset.
- * 
+ *
  * @author Brian Stansberry
- * 
  */
 public interface ResetRequestSource {
     enum Status {
@@ -51,7 +50,7 @@ public interface ResetRequestSource {
     /**
      * Gets a list of requests that should be sent to an httpd-side mod_cluster instance when an {@link MCMPHandler} determines
      * that its state needs to be reset.
-     * 
+     *
      * @param response a parsed INFO-RSP, expressed as a map of virtual hosts per jvmRoute
      * @return a list of requests. Will not return <code>null</code>.
      */

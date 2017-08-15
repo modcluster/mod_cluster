@@ -32,10 +32,10 @@ import org.jboss.modcluster.container.Server;
  */
 public interface TomcatFactory {
     Server createServer(org.apache.catalina.Server server);
-    
+
     Engine createEngine(org.apache.catalina.Engine engine);
-    
+
     Host createHost(org.apache.catalina.Host host);
-    
+
     Context createContext(org.apache.catalina.Context context);
 }

@@ -29,7 +29,7 @@ import org.jboss.modcluster.container.Engine;
 
 /**
  * Decorates an existing jvm route factory, allowing system property override if defined.
- * 
+ *
  * @author Paul Ferraro
  */
 public class SystemPropertyJvmRouteFactory implements JvmRouteFactory {
@@ -40,7 +40,7 @@ public class SystemPropertyJvmRouteFactory implements JvmRouteFactory {
 
     /**
      * Creates a new SystemPropertyJvmRouteFactory using the default system {@link #PROPERTY}.
-     * 
+     *
      * @param factory the factory from which to generate a jvm route if the default system property is not defined.
      */
     public SystemPropertyJvmRouteFactory(JvmRouteFactory factory) {
@@ -49,7 +49,7 @@ public class SystemPropertyJvmRouteFactory implements JvmRouteFactory {
 
     /**
      * Creates a new SystemPropertyJvmRouteFactory
-     * 
+     *
      * @param property the system property that defines this node's jvm route
      * @param factory the factory from which to generate a jvm route if the specified system property is not defined.
      */

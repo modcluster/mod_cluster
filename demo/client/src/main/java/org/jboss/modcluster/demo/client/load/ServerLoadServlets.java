@@ -74,7 +74,7 @@ public enum ServerLoadServlets {
     private final String servletPath;
     private final List<ServerLoadParam> params;
 
-    private ServerLoadServlets(String label, String description, String servletPath, ServerLoadParam... params) {
+    ServerLoadServlets(String label, String description, String servletPath, ServerLoadParam... params) {
         this.label = label;
         this.description = description;
         this.servletPath = servletPath;

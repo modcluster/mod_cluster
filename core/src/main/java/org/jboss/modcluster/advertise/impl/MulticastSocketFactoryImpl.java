@@ -36,7 +36,7 @@ import org.jboss.modcluster.advertise.MulticastSocketFactory;
 /**
  * On Linux, we attempt to avoid cross-talk problem by binding the MulticastSocket to the multicast address, if possible. See
  * {@linkplain https://jira.jboss.org/jira/browse/JGRP-777}
- * 
+ *
  * @author Paul Ferraro
  */
 public class MulticastSocketFactoryImpl implements MulticastSocketFactory {

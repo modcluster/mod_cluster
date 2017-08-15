@@ -1,4 +1,4 @@
-/**
+/*
  * JBoss, Home of Professional Open Source.
  * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
@@ -34,7 +34,6 @@ import javax.xml.bind.DatatypeConverter;
  * Utility class to be used in tests.
  *
  * @author Radoslav Husar
- * @since 1.3.0
  */
 public class TestUtils {
 
@@ -82,8 +81,7 @@ public class TestUtils {
         data.append(serverAddress);
         data.append("\r\n");
 
-        byte[] buf = data.toString().getBytes();
-        return buf;
+        return data.toString().getBytes();
     }
 
     /**

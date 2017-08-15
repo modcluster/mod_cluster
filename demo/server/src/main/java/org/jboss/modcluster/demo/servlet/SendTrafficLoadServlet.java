@@ -36,7 +36,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
- * 
  */
 public class SendTrafficLoadServlet extends LoadServlet {
     /** The serialVersionUID */
@@ -71,16 +70,16 @@ public class SendTrafficLoadServlet extends LoadServlet {
 
         HttpClient client = new DefaultHttpClient();
         try {
-            
+
             for (int i = 0; i < duration; ++i) {
                 this.log("Sending send traffic load request to: " + uri);
-                
+
                 long start = System.currentTimeMillis();
-                
+
                 HttpClientUtils.closeQuietly(client.execute(new HttpPost(uri)));
-                
+
                 long ms = 1000 - (System.currentTimeMillis() - start);
-                
+
                 if (ms > 0) {
                     try {
                         Thread.sleep(ms);
@@ -92,7 +91,7 @@ public class SendTrafficLoadServlet extends LoadServlet {
         } finally {
             HttpClientUtils.closeQuietly(client);
         }
-        
+
         this.writeLocalName(request, response);
     }
 }

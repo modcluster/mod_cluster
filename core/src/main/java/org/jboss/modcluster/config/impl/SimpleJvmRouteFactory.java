@@ -30,7 +30,7 @@ import org.jboss.modcluster.container.Engine;
 /**
  * Generate a jvm route of the form:<br/>
  * <em>connector-bind-address</em>:<em>connector-port</em>:<em>engine-name</em>
- * 
+ *
  * @author Paul Ferraro
  */
 public class SimpleJvmRouteFactory implements JvmRouteFactory {
@@ -46,7 +46,7 @@ public class SimpleJvmRouteFactory implements JvmRouteFactory {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.JvmRouteFactory#createJvmRoute(java.net.InetAddress, org.jboss.modcluster.Engine)
      */
     @Override

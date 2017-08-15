@@ -89,7 +89,7 @@ public class MulticastSocketFactoryImplTestCase {
                     InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
                     sendSocket.setInterface(socketInterface);
                 } catch (Exception ex) {
-                    ; // Ignore it
+                    // Ignore it
                 }
             }
 

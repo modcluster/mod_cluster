@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Computes incremental load change per second from record of previous load.
- * 
+ *
  * @author Paul Ferraro
  */
 public class DeterministicLoadStateImpl implements DeterministicLoadState {

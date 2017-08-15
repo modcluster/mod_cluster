@@ -29,7 +29,7 @@ public class Utils {
     /**
      * Analyzes the type of the given Throwable, handing it back if it is a RuntimeException, wrapping it in a RuntimeException
      * if it is a checked exception, or throwing it if it is an Error
-     * 
+     *
      * @param t the throwable
      * @return a RuntimeException based on t
      * @throws Error if t is an Error

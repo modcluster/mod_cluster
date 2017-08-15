@@ -73,7 +73,7 @@ import org.jboss.modcluster.mcmp.ResetRequestSource;
 
 /**
  * Default implementation of {@link MCMPHandler}.
- * 
+ *
  * @author Jean-Frederic Clere
  * @author Brian Stansberry
  * @author Paul Ferraro
@@ -127,7 +127,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
      */
     @Override
@@ -154,7 +154,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#shutdown()
      */
     @Override
@@ -175,7 +175,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress)
      */
     @Override
@@ -231,7 +231,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress, boolean)
      */
     @Override
@@ -246,7 +246,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#removeProxy(java.net.InetSocketAddress)
      */
     @Override
@@ -264,7 +264,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#getProxyStates()
      */
     @Override
@@ -290,7 +290,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#isProxyHealthOK()
      */
     @Override
@@ -312,7 +312,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#markProxiesInError()
      */
     @Override
@@ -333,7 +333,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#reset()
      */
     @Override
@@ -354,7 +354,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#status()
      */
     @Override
@@ -368,7 +368,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * Send a periodic status request.
-     * 
+     *
      * @param sendResetRequests if enabled, when in error state, the listener will attempt to refresh the configuration on the
      *        front end server
      */
@@ -414,7 +414,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequest(org.jboss.modcluster.mcmp.MCMPRequest)
      */
     @Override
@@ -437,7 +437,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     /**
      * {@inheritDoc}
-     * 
+     *
      * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequests(java.util.List)
      */
     @Override
@@ -764,8 +764,8 @@ public class DefaultMCMPHandler implements MCMPHandler {
         private volatile State state = State.OK;
         private volatile boolean established = false;
 
-        private transient final int socketTimeout;
-        private transient final SocketFactory socketFactory;
+        private final transient int socketTimeout;
+        private final transient SocketFactory socketFactory;
 
         private transient volatile boolean ioExceptionLogged = false;
         private transient volatile InetAddress localAddress = null;
@@ -930,7 +930,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    static class VirtualHostImpl implements ResetRequestSource.VirtualHost, Externalizable {
+    public static class VirtualHostImpl implements ResetRequestSource.VirtualHost, Externalizable {
         private final Set<String> aliases = new LinkedHashSet<String>();
         private final Map<String, ResetRequestSource.Status> contexts = new HashMap<String, ResetRequestSource.Status>();
 

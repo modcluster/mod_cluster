@@ -27,7 +27,7 @@ public abstract class AbstractMBeanLoadMetric extends AbstractLoadMetric {
     public void setMBeanServer(MBeanServer server) {
         this.server = server;
     }
-    
+
     protected <T> List<T> getAttributes(String attribute, Class<T> targetClass) throws JMException {
         Set<ObjectName> names = this.server.queryNames(this.pattern, null);
         List<T> list = new ArrayList<T>(names.size());
@@ -36,11 +36,11 @@ public abstract class AbstractMBeanLoadMetric extends AbstractLoadMetric {
         }
         return list;
     }
-    
+
     @Override
     public double getLoad(Engine engine) throws JMException {
         return (this.pattern != null) ? this.getLoad() : 0;
     }
-    
+
     protected abstract double getLoad() throws JMException;
 }
