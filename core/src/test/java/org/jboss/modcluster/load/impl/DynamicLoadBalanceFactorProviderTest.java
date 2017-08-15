@@ -55,4 +55,23 @@ public class DynamicLoadBalanceFactorProviderTest {
         assertEquals(-1, loadBalanceFactor);
     }
 
+    @Test
+    public void getLoadBalanceFactorWithFloatDecayFactor() throws Exception {
+	Engine engine = mock(Engine.class);
+
+	Set<LoadMetric> metrics = new HashSet<>();
+	LoadMetric metric = mock(LoadMetric.class);
+	when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+	when(metric.getCapacity()).thenReturn(LoadMetric.DEFAULT_CAPACITY);
+	when(metric.getLoad(engine)).thenReturn(0.3, 0.4, 0.5);
+	metrics.add(metric);
+
+	DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics);
+	provider.setDecayFactor(1.5f);
+
+	int loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+	loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+	loadBalanceFactor = provider.getLoadBalanceFactor(engine);
+	assertEquals(57, loadBalanceFactor);
+    }
 }
