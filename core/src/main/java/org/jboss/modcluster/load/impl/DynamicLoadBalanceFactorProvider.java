@@ -51,8 +51,19 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
     private volatile int history = DEFAULT_HISTORY;
 
     public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics) {
+        this(metrics, false);
+    }
+
+    public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics, boolean rampUp) {
         for (LoadMetric metric : metrics) {
-            this.loadHistory.put(metric, new ArrayList<Double>(this.history + 1));
+            ArrayList<Double> history = new ArrayList<>(this.history + 1);
+            if (rampUp) {
+                // If ramping up is enabled pre-populate the list with *full* load
+                for (int i = 0; i < this.history; i++) {
+                    history.add(0d);
+                }
+            }
+            this.loadHistory.put(metric, history);
         }
     }
 
