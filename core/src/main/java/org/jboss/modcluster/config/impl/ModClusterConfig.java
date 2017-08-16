@@ -23,6 +23,8 @@ package org.jboss.modcluster.config.impl;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -78,15 +80,23 @@ public class ModClusterConfig implements BalancerConfiguration, MCMPHandlerConfi
         this.advertiseSocketAddress = address;
     }
 
-    private InetAddress advertiseInterface = null;
+    private NetworkInterface advertiseInterface = null;
 
     @Override
-    public InetAddress getAdvertiseInterface() {
+    public NetworkInterface getAdvertiseInterface() {
         return this.advertiseInterface;
     }
 
-    public void setAdvertiseInterface(InetAddress advertiseInterface) {
+    public void setAdvertiseInterface(NetworkInterface advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
+    }
+
+    public void setAdvertiseInterface(InetAddress advertiseInterfaceAddress) {
+        try {
+            this.setAdvertiseInterface(NetworkInterface.getByInetAddress(advertiseInterfaceAddress));
+        } catch (SocketException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     private String advertiseSecurityKey = null;

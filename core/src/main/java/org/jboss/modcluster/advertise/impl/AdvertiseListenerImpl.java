@@ -22,60 +22,55 @@
 package org.jboss.modcluster.advertise.impl;
 
 import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.StandardSocketOptions;
+import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.DatagramChannel;
 import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import net.jcip.annotations.GuardedBy;
-
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.advertise.AdvertiseListener;
-import org.jboss.modcluster.advertise.MulticastSocketFactory;
+import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
- * Listens for Advertise messages from mod_cluster
+ * Listens for advertise messages sent by mod_cluster reverse proxy.
  *
  * @author Mladen Turk
+ * @author Radoslav Husar
  */
 public class AdvertiseListenerImpl implements AdvertiseListener {
     public static final String DEFAULT_ENCODING = "8859_1";
     public static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
+    private DateFormat dateFormat = new SimpleDateFormat(RFC_822_FMT, Locale.US);
 
-    static final Logger log = Logger.getLogger(AdvertiseListenerImpl.class);
+    private static final Logger log = Logger.getLogger(AdvertiseListenerImpl.class);
 
-    volatile boolean listening = false;
+    private volatile boolean listening = false;
 
     private final AdvertiseConfiguration config;
-    private final MulticastSocketFactory socketFactory;
+    private final DatagramChannelFactory channelFactory;
 
-    final MessageDigest md;
+    private final MessageDigest md;
 
-    final Map<String, AdvertisedServer> servers = new ConcurrentHashMap<String, AdvertisedServer>();
-    final MCMPHandler handler;
+    private final Map<String, AdvertisedServer> servers = new ConcurrentHashMap<>();
+    private final MCMPHandler handler;
 
-    @GuardedBy("this")
-    private MulticastSocket socket;
-    @GuardedBy("this")
-    private AdvertiseListenerWorker worker;
-    @GuardedBy("this")
-    private Thread thread;
+    private DatagramChannel channel;
 
     private static void digestString(MessageDigest md, String s) {
         int len = s.length();
@@ -94,15 +89,17 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     /**
      * Constructors a new AdvertiseListenerImpl
      *
-     * @param commHandler   The event handler that will be used for status and new server notifications.
-     * @param config        our configuration
-     * @param socketFactory a multicast socket factory
+     * @param commHandler    event handler that will be used for status and new server notifications
+     * @param config         advertise configuration
+     * @param channelFactory a multicast channel factory
      */
-    public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, MulticastSocketFactory socketFactory) throws IOException {
+    public AdvertiseListenerImpl(MCMPHandler commHandler, AdvertiseConfiguration config, DatagramChannelFactory channelFactory) throws IOException {
         this.handler = commHandler;
-        this.socketFactory = socketFactory;
+        this.channelFactory = channelFactory;
         this.config = config;
         this.md = this.getMessageDigest();
+
+        this.start();
     }
 
     private MessageDigest getMessageDigest() throws IOException {
@@ -114,13 +111,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     }
 
     /**
-     * Get Collection of all AdvertisedServer instances.
-     */
-    public Collection<AdvertisedServer> getServers() {
-        return this.servers.values();
-    }
-
-    /**
      * Get AdvertiseServer server.
      *
      * @param name Server name to get.
@@ -129,115 +119,50 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         return this.servers.get(name);
     }
 
+    private synchronized void initializeDatagramChannel() throws IOException {
+        InetSocketAddress advertiseSocketAddress = this.config.getAdvertiseSocketAddress();
+        DatagramChannel channel = channelFactory.createDatagramChannel(advertiseSocketAddress);
+
+        InetAddress group = this.config.getAdvertiseSocketAddress().getAddress();
+
+        NetworkInterface advertiseInterface = this.config.getAdvertiseInterface();
+        if (advertiseInterface != null) {
+            channel.setOption(StandardSocketOptions.IP_MULTICAST_IF, advertiseInterface);
+            channel.join(group, advertiseInterface);
+        } else {
+            throw ModClusterLogger.LOGGER.noValidAdvertiseInterfaceConfigured();
+        }
+
+        this.channel = channel;
+    }
+
+    private synchronized void start() throws IOException {
+        this.initializeDatagramChannel();
+
+        final AdvertiseListenerWorker worker = new AdvertiseListenerWorker(this.channel);
+        final Thread thread = this.config.getAdvertiseThreadFactory().newThread(worker);
+        thread.start();
+
+        this.listening = true;
+
+        ModClusterLogger.LOGGER.startAdvertise(this.config.getAdvertiseSocketAddress());
+    }
+
     /**
-     * Remove the AdvertisedServer from the collection.
+     * Stops the advertise listener.
      *
-     * @param server Server to remove.
+     * @see java.nio.channels.MulticastChannel#close()
      */
-    // TODO why is this here? it is never used.
-    public void removeServer(AdvertisedServer server) {
-        this.servers.values().remove(server);
-    }
-
-    private synchronized void init() throws IOException {
-        if (this.socket == null) {
-            InetSocketAddress socketAddress = this.config.getAdvertiseSocketAddress();
-            MulticastSocket socket = this.socketFactory.createMulticastSocket(socketAddress.getAddress(), socketAddress.getPort());
-
-            // Limit socket send to localhost
-            socket.setTimeToLive(0);
-            InetAddress socketInterface = this.config.getAdvertiseInterface();
-            if (socketInterface != null) {
-                socket.setInterface(socketInterface);
-            }
-            socket.joinGroup(socketAddress.getAddress());
-
-            this.socket = socket;
-        }
-    }
-
     @Override
-    public synchronized void start() throws IOException {
-        this.init();
+    public void close() throws IOException {
+        this.listening = false;
 
-        if (this.worker == null) {
-            this.worker = new AdvertiseListenerWorker(this.socket);
-            this.thread = this.config.getAdvertiseThreadFactory().newThread(this.worker);
-            this.thread.start();
-
-            this.listening = true;
-
-            ModClusterLogger.LOGGER.startAdvertise(this.config.getAdvertiseSocketAddress());
-        }
-    }
-
-    @Override
-    public synchronized void pause() {
-        if (this.worker != null) {
-            this.worker.suspendWorker();
-            this.interruptDatagramReader();
-        }
-    }
-
-    @Override
-    public synchronized void resume() {
-        if (this.worker != null) {
-            this.worker.resumeWorker();
-        }
-    }
-
-    public synchronized void interruptDatagramReader() {
-        if (this.socket == null)
-            return;
-
-        InetSocketAddress socketAddress = this.config.getAdvertiseSocketAddress();
-        DatagramPacket packet = this.worker.createInterruptPacket(socketAddress.getAddress(), socketAddress.getPort());
-
-        try {
-            this.socket.send(packet);
-        } catch (IOException e) {
-            ModClusterLogger.LOGGER.socketInterruptFailed(e);
-        }
-    }
-
-    @Override
-    public synchronized void stop() {
-        // In case worker is paused
-        this.resume();
-
-        if (this.thread != null) {
-            this.thread.interrupt();
-
-            // In case worker is stuck on socket.receive(...)
-            this.interruptDatagramReader();
-
-            this.thread = null;
-            this.worker = null;
-
-            this.listening = false;
-        }
-    }
-
-    @Override
-    public synchronized void destroy() {
-        // In case worker has not been stopped
-        this.stop();
-
-        if (this.socket != null) {
-            try {
-                this.socket.leaveGroup(this.config.getAdvertiseSocketAddress().getAddress());
-            } catch (IOException e) {
-                log.warn(e.getLocalizedMessage(), e);
-            }
-
-            this.socket.close();
-            this.socket = null;
-        }
+        this.channel.close();
     }
 
     // Check the digest, using our key and server + date.
     // digest is a hex string for httpd.
-    boolean verifyDigest(String digest, String server, String date, String sequence) {
+    private boolean verifyDigest(String digest, String server, String date, String sequence) {
         // Neither side is configured to use digest -- pass verification
         if (this.md == null && digest == null) return true;
 
@@ -283,41 +208,17 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         return true;
     }
 
-    /**
-     * True if listener is accepting the advetise messages.<br/>
-     * If false it means that listener is experiencing some network problems if running.
-     */
+    @Override
     public boolean isListening() {
         return this.listening;
     }
 
     // ------------------------------------ AdvertiseListenerWorker Inner Class
-    class AdvertiseListenerWorker implements Runnable {
-        private final MulticastSocket socket;
-        @GuardedBy("this")
-        private boolean paused = false;
-        @GuardedBy("this")
-        private byte[] secure = this.generateSecure();
+    private class AdvertiseListenerWorker implements Runnable {
+        private final DatagramChannel channel;
 
-        AdvertiseListenerWorker(MulticastSocket socket) {
-            this.socket = socket;
-        }
-
-        public synchronized void suspendWorker() {
-            this.paused = true;
-        }
-
-        public synchronized void resumeWorker() {
-            if (this.paused) {
-                this.paused = false;
-                this.secure = this.generateSecure();
-                // Notify run() thread waiting on pause
-                this.notify();
-            }
-        }
-
-        public synchronized DatagramPacket createInterruptPacket(InetAddress address, int port) {
-            return new DatagramPacket(this.secure, this.secure.length, address, port);
+        AdvertiseListenerWorker(DatagramChannel channel) {
+            this.channel = channel;
         }
 
         /**
@@ -326,28 +227,15 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
          */
         @Override
         public void run() {
-            DateFormat dateFormat = new SimpleDateFormat(RFC_822_FMT, Locale.US);
-            byte[] buffer = new byte[512];
+            ByteBuffer buffer = ByteBuffer.allocate(512);
 
-            // Loop until interrupted
-            while (!Thread.currentThread().isInterrupted()) {
+            // Loop until channel is closed
+            while (true) {
                 try {
-                    synchronized (this) {
-                        if (this.paused) {
-                            // Wait for notify in resumeWorker()
-                            this.wait();
-                        }
-                    }
+                    channel.receive(buffer);
+                    buffer.flip();
 
-                    DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-
-                    this.socket.receive(packet);
-
-                    // Skip processing if interrupt packet received
-                    if (this.matchesSecure(packet))
-                        continue;
-
-                    String message = new String(packet.getData(), 0, packet.getLength(), DEFAULT_ENCODING);
+                    String message = new String(buffer.array(), 0, buffer.remaining(), DEFAULT_ENCODING);
 
                     if (!message.startsWith("HTTP/1."))
                         continue;
@@ -410,7 +298,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         log.tracef("Advertise message digest verification passed for server %s", server_name);
 
                         server.setDate(date);
-                        boolean rc = server.setStatus(status, status_desc);
+                        server.setStatus(status, status_desc);
                         if (added) {
                             AdvertiseListenerImpl.this.servers.put(server_name, server);
                             // Call the new server callback
@@ -419,54 +307,28 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                             if (proxy != null) {
                                 AdvertiseListenerImpl.this.handler.addProxy(Utils.parseSocketAddress(proxy, 0));
                             }
-                        } else if (rc) {
-                            // Call the status change callback
-                            // eventHandler.onEvent(AdvertiseEventType.ON_STATUS_CHANGE, server);
                         }
                     }
 
                     AdvertiseListenerImpl.this.listening = true;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } catch (InterruptedIOException e) {
-                    Thread.currentThread().interrupt();
+
+                } catch (ClosedChannelException e) {
+                    // Channel is closed: break the loop, stop the thread
+                    AdvertiseListenerImpl.this.listening = false;
+                    log.trace("DatagramChannel closed");
+                    return;
                 } catch (IOException e) {
                     AdvertiseListenerImpl.this.listening = false;
-                    if (this.socket == null || this.socket.isClosed())
-                        Thread.currentThread().interrupt();
-                    else {
-
-                        // Do not blow the CPU in case of communication error
+                    if (!this.channel.isOpen()) {
+                        return;
+                    } else {
+                        // Do not blow the CPU in case of temporary communication error
                         Thread.yield();
                     }
+                } finally {
+                    buffer.clear();
                 }
             }
-        }
-
-        private byte[] generateSecure() {
-            SecureRandom random = new SecureRandom();
-
-            byte[] secure = new byte[16];
-
-            random.nextBytes(secure);
-            secure[0] = 0; // why exactly?
-
-            return secure;
-        }
-
-        synchronized boolean matchesSecure(DatagramPacket packet) {
-            if (packet.getLength() != this.secure.length)
-                return false;
-
-            byte[] data = packet.getData();
-
-            for (int i = 0; i < this.secure.length; i++) {
-                if (data[i] != this.secure[i]) {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

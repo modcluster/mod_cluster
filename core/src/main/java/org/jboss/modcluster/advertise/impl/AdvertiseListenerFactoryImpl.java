@@ -35,6 +35,6 @@ public class AdvertiseListenerFactoryImpl implements AdvertiseListenerFactory {
 
     @Override
     public AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException {
-        return new AdvertiseListenerImpl(handler, config, new MulticastSocketFactoryImpl());
+        return new AdvertiseListenerImpl(handler, config, new DatagramChannelFactoryImpl());
     }
 }

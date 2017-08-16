@@ -46,6 +46,8 @@ import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -424,6 +426,14 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
         try {
             this.setAdvertiseInterface(InetAddress.getByName(advertiseInterface));
         } catch (UnknownHostException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public void setAdvertiseInterfaceName(String advertiseInterfaceName) {
+        try {
+            this.setAdvertiseInterface(NetworkInterface.getByName(advertiseInterfaceName));
+        } catch (SocketException e) {
             throw new IllegalArgumentException(e);
         }
     }
