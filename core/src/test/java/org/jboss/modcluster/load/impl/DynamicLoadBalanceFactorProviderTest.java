@@ -75,4 +75,27 @@ public class DynamicLoadBalanceFactorProviderTest {
         assertEquals(64, provider.getLoadBalanceFactor(engine)); // 100-(0.3*100/1.5+0.4*100)/(100/1.5+100)*100 = 64
         assertEquals(57, provider.getLoadBalanceFactor(engine)); // 100-(0.3*100/(1.5^2)+0.4*100/1.5+0.5*100)/(100/(1.5^2)+100/1.5+100)*100 = 57.3684
     }
+
+    @Test
+    public void getLoadBalanceFactorRampUpTime() throws Exception {
+        Engine engine = mock(Engine.class);
+
+        Set<LoadMetric> metrics = new HashSet<>();
+        LoadMetric metric = mock(LoadMetric.class);
+        when(metric.getWeight()).thenReturn(LoadMetric.DEFAULT_WEIGHT);
+        when(metric.getCapacity()).thenReturn(LoadMetric.DEFAULT_CAPACITY);
+        when(metric.getLoad(engine)).thenReturn(1d);
+        metrics.add(metric);
+
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(metrics, true);
+        provider.setHistory(3);
+        provider.setDecayFactor(1f);
+
+        assertEquals(75, provider.getLoadBalanceFactor(engine));
+        assertEquals(50, provider.getLoadBalanceFactor(engine));
+        assertEquals(25, provider.getLoadBalanceFactor(engine));
+        assertEquals(1, provider.getLoadBalanceFactor(engine));
+        assertEquals(1, provider.getLoadBalanceFactor(engine));
+    }
+
 }

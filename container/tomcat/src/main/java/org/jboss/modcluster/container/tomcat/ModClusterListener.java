@@ -73,6 +73,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
     private float decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
+    private boolean rampUp = false;
 
     public ModClusterListener() {
         ModClusterService service = new ModClusterService(this, this);
@@ -102,7 +103,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
 
         metric.setCapacity(this.capacity);
 
-        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric));
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric), rampUp);
 
         provider.setDecayFactor(this.decayFactor);
         provider.setHistory(this.history);
@@ -252,6 +253,14 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
      */
     public void setLoadMetricCapacity(String capacity) {
         this.capacity = Double.parseDouble(capacity);
+    }
+
+    public boolean isRampUp() {
+        return rampUp;
+    }
+
+    public void setRampUp(boolean rampUp) {
+        this.rampUp = rampUp;
     }
 
     // ---------------------------------------- ModClusterServiceMBean ----------------------------------------
