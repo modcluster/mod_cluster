@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import org.jboss.logging.Logger;
+import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
@@ -38,8 +39,10 @@ import org.jboss.modcluster.load.metric.NodeUnavailableException;
  * {@link LoadBalanceFactorProvider} implementation that periodically aggregates load from a set of {@link LoadMetric}s.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvider, DynamicLoadBalanceFactorProviderMBean {
+    public static final int DEFAULT_INITIAL_LOAD = 0; // default to pre-populating with full load
     public static final float DEFAULT_DECAY_FACTOR = 2;
     public static final int DEFAULT_HISTORY = 9;
 
@@ -51,14 +54,31 @@ public class DynamicLoadBalanceFactorProvider implements LoadBalanceFactorProvid
     private volatile int history = DEFAULT_HISTORY;
 
     public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics) {
+        this(metrics, DEFAULT_INITIAL_LOAD);
+    }
+
+    public DynamicLoadBalanceFactorProvider(Set<LoadMetric> metrics, int initialLoad) {
         for (LoadMetric metric : metrics) {
-            this.loadHistory.put(metric, new ArrayList<Double>(this.history + 1));
+            ArrayList<Double> history = new ArrayList<>(this.history + 1);
+            if (initialLoad != -1) {
+                if (initialLoad < 0 || initialLoad > 100) {
+                    throw ModClusterLogger.LOGGER.invalidInitialLoad(initialLoad);
+                }
+
+                double transformedLoad = 1d - ((double) initialLoad)/100d;
+
+                // Pre-populate historical values with full load by default to gradually ramp-up
+                for (int i = 0; i < this.history; i++) {
+                    history.add(transformedLoad);
+                }
+            }
+            this.loadHistory.put(metric, history);
         }
     }
 
     @Override
     public synchronized Map<String, Double> getMetrics() {
-        Map<String, Double> metrics = new TreeMap<String, Double>();
+        Map<String, Double> metrics = new TreeMap<>();
         for (Map.Entry<LoadMetric, List<Double>> entry : this.loadHistory.entrySet()) {
             List<Double> history = entry.getValue();
             metrics.put(entry.getKey().getClass().getSimpleName(), history.isEmpty() ? 0 : history.get(0));

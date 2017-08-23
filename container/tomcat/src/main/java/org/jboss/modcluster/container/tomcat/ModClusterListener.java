@@ -70,6 +70,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
     private final LifecycleListener listener;
 
     Class<? extends LoadMetric> loadMetricClass = BusyConnectorsLoadMetric.class;
+    private int initialLoad = DynamicLoadBalanceFactorProvider.DEFAULT_INITIAL_LOAD;
     private float decayFactor = DynamicLoadBalanceFactorProvider.DEFAULT_DECAY_FACTOR;
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
@@ -102,7 +103,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
 
         metric.setCapacity(this.capacity);
 
-        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric));
+        DynamicLoadBalanceFactorProvider provider = new DynamicLoadBalanceFactorProvider(Collections.singleton(metric), initialLoad);
 
         provider.setDecayFactor(this.decayFactor);
         provider.setHistory(this.history);
@@ -252,6 +253,14 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
      */
     public void setLoadMetricCapacity(String capacity) {
         this.capacity = Double.parseDouble(capacity);
+    }
+
+    public int getInitialLoad() {
+        return initialLoad;
+    }
+
+    public void setInitialLoad(int initialLoad) {
+        this.initialLoad = initialLoad;
     }
 
     // ---------------------------------------- ModClusterServiceMBean ----------------------------------------
