@@ -102,6 +102,10 @@
                description="Maximum number of attempts to send the request to the backend server"
                type="int"/>
 
+    <attribute name="initialLoad"
+               description="Initial load to pre-populate to historical load calculation data in order to ramp-up load to the node"
+               type="int"/>
+
     <operation name="refresh"
                description="Refresh configuration"
                impact="ACTION"

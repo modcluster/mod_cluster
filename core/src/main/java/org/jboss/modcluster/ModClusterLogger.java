@@ -186,4 +186,7 @@ public interface ModClusterLogger {
 
     @Message(id = 49, value = "Could not resolve configured connector address (%d)!")
     RuntimeException connectorAddressUnknownHost(String connectorAddress);
+
+    @Message(id = 50, value = "Initial load must be within the range [0..100] or -1 to not prepopulate with initial load, but was: %d")
+    RuntimeException invalidInitialLoad(int initialLoad);
 }
