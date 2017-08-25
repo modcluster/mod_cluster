@@ -26,7 +26,7 @@
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>mod_cluster-parent</artifactId>
-        <version>1.4.0.Alpha1</version>
+        <version>1.4.0.Alpha2-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
