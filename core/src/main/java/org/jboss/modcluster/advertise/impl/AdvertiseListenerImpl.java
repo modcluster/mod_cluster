@@ -156,10 +156,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListener#start()
-     */
     @Override
     public synchronized void start() throws IOException {
         this.init();
@@ -175,10 +171,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListener#pause()
-     */
     @Override
     public synchronized void pause() {
         if (this.worker != null) {
@@ -187,10 +179,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListener#resume()
-     */
     @Override
     public synchronized void resume() {
         if (this.worker != null) {
@@ -212,10 +200,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListener#stop()
-     */
     @Override
     public synchronized void stop() {
         // In case worker is paused
@@ -234,10 +218,6 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
         }
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListener#destroy()
-     */
     @Override
     public synchronized void destroy() {
         // In case worker has not been stopped

@@ -42,11 +42,6 @@ public class HeapMemoryLoadServlet extends LoadServlet {
 
     private static final int MB = 1024 * 1024;
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int duration = Integer.parseInt(this.getParameter(request, DURATION, DEFAULT_DURATION)) * 1000;

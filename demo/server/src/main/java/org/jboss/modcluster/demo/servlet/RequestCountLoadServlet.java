@@ -40,11 +40,6 @@ public class RequestCountLoadServlet extends LoadServlet {
     /** The serialVersionUID */
     private static final long serialVersionUID = -5001091954463802789L;
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int count = Integer.parseInt(this.getParameter(request, COUNT, "50"));

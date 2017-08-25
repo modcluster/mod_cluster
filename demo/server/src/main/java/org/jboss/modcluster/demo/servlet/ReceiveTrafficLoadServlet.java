@@ -42,11 +42,6 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
     private static final long serialVersionUID = 2344830128026153418L;
     private static final String SIZE = "size";
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int duration = Integer.parseInt(this.getParameter(request, DURATION, DEFAULT_DURATION));

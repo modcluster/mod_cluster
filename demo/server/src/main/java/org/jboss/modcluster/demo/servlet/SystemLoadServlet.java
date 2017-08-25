@@ -33,11 +33,6 @@ public class SystemLoadServlet extends LoadServlet {
     /** The serialVersionUID */
     private static final long serialVersionUID = 5665079393261425098L;
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         long start = System.currentTimeMillis();

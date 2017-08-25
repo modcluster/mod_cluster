@@ -150,7 +150,9 @@ public interface MCMPRequestFactory {
      * Creates an PING MCMP request for the node with a connector matching the specified protocol, host, and port. This is used
      * to ping an unconfigured node from a proxy.
      *
-     * @param uri specifies the protocol, host, and port of the connector on the target node
+     * @param scheme specifies the protocol of the connector on the target node
+     * @param host   specifies the host of the connector on the target node
+     * @param port   specifies the port of the connector on the target node
      * @return an MCMP request
      */
     MCMPRequest createPingRequest(String scheme, String host, int port);
