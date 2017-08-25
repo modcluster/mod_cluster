@@ -38,11 +38,6 @@ public class RecordServlet extends LoadServlet {
     private static final String DESTROY = "destroy";
     private static final String TIMEOUT = "timeout";
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpSession session = request.getSession(true);

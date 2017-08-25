@@ -23,7 +23,6 @@ package org.jboss.modcluster.mcmp;
 
 import org.jboss.modcluster.config.ProxyConfiguration;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Handles communication via MCMP with the httpd side.
+ * Handles communication via MCMP with the reverse proxy side.
  *
  * @author Brian Stansberry
  */
@@ -67,7 +66,7 @@ public interface MCMPHandler {
      * Add a proxy to the list of those with which this handler communicates. Communication does not begin until the next call
      * to {@link #status()}.
      * <p>
-     * Same as {@link #addProxy(InetAddress, int, boolean) addProxy(address, port, false}.
+     * Same as {@link #addProxy(InetSocketAddress, boolean) addProxy(address, false}.
      * </p>
      *
      * @param socketAddress InetSocketAddress on which the proxy listens for MCMP requests
@@ -126,31 +125,29 @@ public interface MCMPHandler {
     Set<MCMPServerState> getProxyStates();
 
     /**
-     * Reset any proxies whose status is {@link MCMPServerState#DOWN DOWN} up to {@link MCMPServerState#ERROR ERROR}, where the
+     * Reset any proxies whose status is {@link MCMPServerState.State#DOWN DOWN} up to {@link MCMPServerState.State#ERROR ERROR}, where the
      * configuration will be refreshed.
      */
     void reset();
 
     /**
-     * Reset any proxies whose status is {@link MCMPServerState#OK OK} down to {@link MCMPServerState#ERROR ERROR}, which will
+     * Reset any proxies whose status is {@link MCMPServerState.State#OK OK} down to {@link MCMPServerState.State#ERROR ERROR}, which will
      * trigger a refresh of their configuration.
      */
     void markProxiesInError();
 
     /**
-     * Convenience method that checks whether the status of all proxies is {@link MCMPServerState#OK OK}.
+     * Convenience method that checks whether the status of all proxies is {@link MCMPServerState.State#OK OK}.
      *
-     * @return <code>true</code> if all proxies are {@link MCMPServerState#OK OK}, <code>false</code> otherwise
+     * @return <code>true</code> if all proxies are {@link MCMPServerState.State#OK OK}, <code>false</code> otherwise
      */
     boolean isProxyHealthOK();
 
     /**
      * Perform periodic processing. Update the list of proxies to reflect any calls to <code>addProxy(...)</code> or
      * <code>removeProxy(...)</code>. Attempt to establish communication with any proxies whose state is
-     * {@link MCMPServerState#ERROR ERROR}. If successful and a {@link ResetRequestSource} has been provided, update the proxy
+     * {@link MCMPServerState.State#ERROR ERROR}. If successful and a {@link ResetRequestSource} has been provided, update the proxy
      * with the list of requests provided by the source.
-     *
-     * @return true, if load balance factor calculation should be performed, false if it should be skipped
      */
     void status();
 }

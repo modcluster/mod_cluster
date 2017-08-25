@@ -46,11 +46,6 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
 
     private static final String END = "end";
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String parameter = request.getParameter(END);

@@ -24,26 +24,18 @@ package org.jboss.modcluster.load.impl;
 import org.jboss.modcluster.container.Engine;
 
 /**
- * A {@link LoadManagerImpl} that returns a static value.
+ * A {@link org.jboss.modcluster.load.LoadBalanceFactorProvider} that returns a static value.
  *
  * @author Brian Stansberry
  */
 public class SimpleLoadBalanceFactorProvider implements SimpleLoadBalanceFactorProviderMBean {
     private int loadBalanceFactor = 1;
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.LoadBalanceFactorProvider#getLoadBalanceFactor()
-     */
     @Override
     public int getLoadBalanceFactor(Engine engine) {
         return this.loadBalanceFactor;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProviderMBean#setLoadBalanceFactor(int)
-     */
     @Override
     public void setLoadBalanceFactor(int loadBalanceFactor) {
         this.loadBalanceFactor = loadBalanceFactor;

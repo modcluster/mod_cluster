@@ -40,7 +40,7 @@ public class TomcatServer implements Server {
     /**
      * Constructs a new CatalinaServer wrapping the specified catalina server.
      *
-     * @param host a catalina server
+     * @param server a catalina server
      */
     public TomcatServer(TomcatFactoryRegistry registry, org.apache.catalina.Server server) {
         this.registry = registry;

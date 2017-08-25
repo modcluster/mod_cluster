@@ -58,20 +58,12 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
         this.requestFactory = requestFactory;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.ResetRequestSource#init(java.util.Map)
-     */
     @Override
     public void init(Server server, ContextFilter contextFilter) {
         this.contextFilter = contextFilter;
         this.server = server;
     }
 
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.mcmp.ResetRequestSource#getResetRequests(java.util.Map)
-     */
     @Override
     public List<MCMPRequest> getResetRequests(Map<String, Set<VirtualHost>> response) {
         List<MCMPRequest> requests = new ArrayList<MCMPRequest>();

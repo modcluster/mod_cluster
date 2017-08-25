@@ -42,10 +42,6 @@ public class SendTrafficLoadServlet extends LoadServlet {
     private static final long serialVersionUID = -8586013739155819909L;
     private static final String SIZE = "size";
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#doPost(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int size = Integer.parseInt(request.getParameter(SIZE)) * 1024;
@@ -56,11 +52,6 @@ public class SendTrafficLoadServlet extends LoadServlet {
         response.flushBuffer();
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int duration = Integer.parseInt(this.getParameter(request, DURATION, DEFAULT_DURATION));

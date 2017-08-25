@@ -44,11 +44,6 @@ public class SimpleJvmRouteFactory implements JvmRouteFactory {
         this.pattern = pattern;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.JvmRouteFactory#createJvmRoute(java.net.InetAddress, org.jboss.modcluster.Engine)
-     */
     @Override
     public String createJvmRoute(Engine engine) {
         Connector connector = engine.getProxyConnector();

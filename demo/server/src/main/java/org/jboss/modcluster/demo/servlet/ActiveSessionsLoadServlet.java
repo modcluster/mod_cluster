@@ -35,27 +35,17 @@ import org.apache.http.impl.client.DefaultHttpClient;
 
 /**
  * @author Paul Ferraro
- *
  */
 public class ActiveSessionsLoadServlet extends LoadServlet {
-    /** The serialVersionUID */
+
     private static final long serialVersionUID = -946741803216943778L;
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#doHead(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doHead(HttpServletRequest request, HttpServletResponse response) {
         HttpSession session = request.getSession(true);
         this.log("Handling session load request from: " + request.getRequestURL().toString() + ", using session id: " + session.getId());
     }
 
-    /**
-     * @{inheritDoc
-     * @see javax.servlet.http.HttpServlet#service(javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int count = Integer.parseInt(this.getParameter(request, COUNT, "20"));

@@ -32,10 +32,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
  * @author Paul Ferraro
  */
 public class AdvertiseListenerFactoryImpl implements AdvertiseListenerFactory {
-    /**
-     * @{inheritDoc
-     * @see org.jboss.modcluster.advertise.AdvertiseListenerFactory#createListener(org.jboss.modcluster.mcmp.MCMPHandler)
-     */
+
     @Override
     public AdvertiseListener createListener(MCMPHandler handler, AdvertiseConfiguration config) throws IOException {
         return new AdvertiseListenerImpl(handler, config, new MulticastSocketFactoryImpl());

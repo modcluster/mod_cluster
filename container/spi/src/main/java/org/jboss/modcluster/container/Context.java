@@ -30,9 +30,6 @@ import javax.servlet.http.HttpSessionListener;
  * @author Paul Ferraro
  */
 public interface Context {
-    /**
-     * @return
-     */
     Host getHost();
 
     /**
@@ -42,9 +39,6 @@ public interface Context {
      */
     String getPath();
 
-    /**
-     * @return
-     */
     boolean isStarted();
 
     /**

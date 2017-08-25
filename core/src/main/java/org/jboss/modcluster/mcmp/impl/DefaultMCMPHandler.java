@@ -125,11 +125,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
     // ------------------------------------------------------------ MCMPHandler
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#init(java.util.List)
-     */
     @Override
     public void init(Collection<ProxyConfiguration> proxies, MCMPConnectionListener connectionListener) {
         this.connectionListener = connectionListener;
@@ -152,11 +147,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         this.init = true;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#shutdown()
-     */
     @Override
     public void shutdown() {
         this.init = false;
@@ -173,11 +163,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress)
-     */
     @Override
     public void addProxy(InetSocketAddress socketAddress) {
         this.add(socketAddress);
@@ -229,11 +214,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         return proxy;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#addProxy(java.net.InetSocketAddress, boolean)
-     */
     @Override
     public void addProxy(InetSocketAddress socketAddress, boolean established) {
         this.add(socketAddress).setEstablished(established);
@@ -244,11 +224,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         this.add(proxyConfiguration.getRemoteAddress(), proxyConfiguration.getLocalAddress()).setEstablished(established);
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#removeProxy(java.net.InetSocketAddress)
-     */
     @Override
     public void removeProxy(InetSocketAddress socketAddress) {
         Proxy proxy = new Proxy(socketAddress, this.config);
@@ -262,11 +237,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#getProxyStates()
-     */
     @Override
     public Set<MCMPServerState> getProxyStates() {
         Lock lock = this.proxiesLock.readLock();
@@ -288,11 +258,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#isProxyHealthOK()
-     */
     @Override
     public boolean isProxyHealthOK() {
         Lock lock = this.proxiesLock.readLock();
@@ -310,11 +275,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#markProxiesInError()
-     */
     @Override
     public void markProxiesInError() {
         Lock lock = this.proxiesLock.readLock();
@@ -331,11 +291,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#reset()
-     */
     @Override
     public void reset() {
         Lock lock = this.proxiesLock.readLock();
@@ -352,11 +307,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#status()
-     */
     @Override
     public synchronized void status() {
         if (this.init) {
@@ -412,11 +362,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequest(org.jboss.modcluster.mcmp.MCMPRequest)
-     */
     @Override
     public Map<MCMPServerState, String> sendRequest(MCMPRequest request) {
         Map<MCMPServerState, String> map = new HashMap<MCMPServerState, String>();
@@ -435,11 +380,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
         return map;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @see org.jboss.modcluster.mcmp.MCMPHandler#sendRequests(java.util.List)
-     */
     @Override
     public Map<MCMPServerState, List<String>> sendRequests(List<MCMPRequest> requests) {
         Map<MCMPServerState, List<String>> map = new HashMap<MCMPServerState, List<String>>();
@@ -946,28 +886,16 @@ public class DefaultMCMPHandler implements MCMPHandler {
             // Expose for deserialization
         }
 
-        /**
-         * @{inheritDoc
-         * @see org.jboss.modcluster.mcmp.ResetRequestSource.VirtualHost#getAliases()
-         */
         @Override
         public Set<String> getAliases() {
             return this.aliases;
         }
 
-        /**
-         * @{inheritDoc
-         * @see org.jboss.modcluster.mcmp.ResetRequestSource.VirtualHost#getContexts()
-         */
         @Override
         public Map<String, ResetRequestSource.Status> getContexts() {
             return this.contexts;
         }
 
-        /**
-         * @{inheritDoc
-         * @see java.io.Externalizable#readExternal(java.io.ObjectInput)
-         */
         @Override
         public void readExternal(ObjectInput input) throws IOException {
             int aliases = input.readInt();
@@ -983,10 +911,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
             }
         }
 
-        /**
-         * @{inheritDoc
-         * @see java.io.Externalizable#writeExternal(java.io.ObjectOutput)
-         */
         @Override
         public void writeExternal(ObjectOutput output) throws IOException {
             output.writeInt(this.aliases.size());
