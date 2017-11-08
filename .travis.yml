@@ -1,5 +1,6 @@
 language: java
 jdk:
+  - oraclejdk9
   - oraclejdk8
   - openjdk7
 script: mvn verify -Pdist
@@ -9,6 +10,9 @@ matrix:
   # https://github.com/travis-ci/travis-ci/issues/7884#issuecomment-308451879
   - jdk: oraclejdk7
     dist: precise
+  # Tomcat 9.x targets
+  - jdk: oraclejdk9
+    script: mvn verify -PTC9 -Pdist
   - jdk: oraclejdk8
     script: mvn verify -PTC9 -Pdist
 notifications:
