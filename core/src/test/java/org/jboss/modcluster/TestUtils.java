@@ -22,6 +22,7 @@
 
 package org.jboss.modcluster;
 
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -35,7 +36,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Utility class to be used in tests.
@@ -102,27 +102,10 @@ public class TestUtils {
         digestString(md, String.valueOf(sequence));
         digestString(md, server);
 
-        // Convert to hex
-        String digestHex = DatatypeConverter.printHexBinary(md.digest());
+        String data = String.format("HTTP/1.1 200 OK\r\nDate: %s\r\nSequence: %d\r\nDigest: %x\r\nServer: %s\r\nX-Manager-Address: %s\r\n",
+                rfcDate, sequence, new BigInteger(1, md.digest()), server, serverAddress);
 
-        StringBuilder data = new StringBuilder("HTTP/1.1 200 OK\r\n");
-        data.append("Date: ");
-        data.append(rfcDate);
-        data.append("\r\n");
-        data.append("Sequence: ");
-        data.append(sequence);
-        data.append("\r\n");
-        data.append("Digest: ");
-        data.append(digestHex);
-        data.append("\r\n");
-        data.append("Server: ");
-        data.append(server);
-        data.append("\r\n");
-        data.append("X-Manager-Address: ");
-        data.append(serverAddress);
-        data.append("\r\n");
-
-        return data.toString().getBytes();
+        return data.getBytes();
     }
 
     /**
