@@ -22,6 +22,8 @@
 package org.jboss.modcluster.container.tomcat8;
 
 import org.apache.catalina.Context;
+import org.apache.catalina.Manager;
+import org.apache.catalina.SessionIdGenerator;
 import org.apache.catalina.Valve;
 import org.apache.catalina.comet.CometEvent;
 import org.apache.catalina.connector.Request;
@@ -38,7 +40,6 @@ import java.io.IOException;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version Nov 2014
  */
 public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatContext {
 
@@ -94,6 +95,16 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
             RequestListenerValve valve = (RequestListenerValve) object;
 
             return this.listener == valve.listener;
+        }
+    }
+
+    void setJvmRoute(String jvmRoute) {
+        Manager contextManager = context.getManager();
+        if (contextManager != null) {
+            SessionIdGenerator sessionIdGenerator = contextManager.getSessionIdGenerator();
+            if (sessionIdGenerator != null) {
+                sessionIdGenerator.setJvmRoute(jvmRoute);
+            }
         }
     }
 }

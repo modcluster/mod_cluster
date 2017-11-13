@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.container.tomcat8;
 
-import static org.junit.Assert.assertSame;
-
-import org.jboss.modcluster.container.tomcat.TomcatServerFactory;
-import org.jboss.modcluster.container.tomcat.TomcatConnectorFactory;
+import org.apache.catalina.Engine;
+import org.jboss.modcluster.container.Server;
+import org.jboss.modcluster.container.tomcat.EngineFactory;
 import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
-import org.jboss.modcluster.container.tomcat.TomcatHostFactory;
 
 /**
- * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public class ServiceLoaderTomcatFactoryTestCase extends org.jboss.modcluster.container.tomcat.ServiceLoaderTomcatFactoryTestCase {
+public class TomcatEngineFactory implements EngineFactory {
     @Override
-    protected void verifyCatalinaFactoryTypes(TomcatFactoryRegistry registry) {
-        assertSame(registry.getServerFactory().getClass(), TomcatServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), TomcatEngineFactory.class);
-        assertSame(registry.getHostFactory().getClass(), TomcatHostFactory.class);
-        assertSame(registry.getContextFactory().getClass(), TomcatContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), TomcatConnectorFactory.class);
+    public org.jboss.modcluster.container.Engine createEngine(TomcatFactoryRegistry registry, Engine engine, Server server) {
+        return new TomcatEngine(registry, engine, server);
     }
 }

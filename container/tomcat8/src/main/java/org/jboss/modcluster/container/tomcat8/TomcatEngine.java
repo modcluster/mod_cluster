@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2017, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.modcluster.container.tomcat8;
 
-import static org.junit.Assert.assertSame;
-
-import org.jboss.modcluster.container.tomcat.TomcatServerFactory;
-import org.jboss.modcluster.container.tomcat.TomcatConnectorFactory;
+import org.apache.catalina.Engine;
+import org.jboss.modcluster.container.Context;
+import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
-import org.jboss.modcluster.container.tomcat.TomcatHostFactory;
 
 /**
- * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public class ServiceLoaderTomcatFactoryTestCase extends org.jboss.modcluster.container.tomcat.ServiceLoaderTomcatFactoryTestCase {
+public class TomcatEngine extends org.jboss.modcluster.container.tomcat.TomcatEngine {
+
+    public TomcatEngine(TomcatFactoryRegistry registry, Engine engine, Server server) {
+        super(registry, engine, server);
+    }
+
+    /**
+     * Propagates jvm-route configuration to contexts.
+     *
+     * @see <a href="https://issues.jboss.org/browse/MODCLUSTER-469">MODCLUSTER-469</a>
+     */
     @Override
-    protected void verifyCatalinaFactoryTypes(TomcatFactoryRegistry registry) {
-        assertSame(registry.getServerFactory().getClass(), TomcatServerFactory.class);
-        assertSame(registry.getEngineFactory().getClass(), TomcatEngineFactory.class);
-        assertSame(registry.getHostFactory().getClass(), TomcatHostFactory.class);
-        assertSame(registry.getContextFactory().getClass(), TomcatContextFactory.class);
-        assertSame(registry.getConnectorFactory().getClass(), TomcatConnectorFactory.class);
+    public void setJvmRoute(String jvmRoute) {
+        super.setJvmRoute(jvmRoute);
+
+        for (Host host : this.getHosts()) {
+            for (Context context : host.getContexts()) {
+                ((TomcatContext) context).setJvmRoute(jvmRoute);
+            }
+        }
     }
 }
