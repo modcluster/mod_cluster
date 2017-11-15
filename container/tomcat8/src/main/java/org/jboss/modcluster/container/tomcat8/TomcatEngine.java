@@ -21,9 +21,12 @@
  */
 package org.jboss.modcluster.container.tomcat8;
 
+import org.apache.catalina.Container;
+import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
-import org.jboss.modcluster.container.Context;
-import org.jboss.modcluster.container.Host;
+import org.apache.catalina.Host;
+import org.apache.catalina.Manager;
+import org.apache.catalina.SessionIdGenerator;
 import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
 
@@ -45,9 +48,17 @@ public class TomcatEngine extends org.jboss.modcluster.container.tomcat.TomcatEn
     public void setJvmRoute(String jvmRoute) {
         super.setJvmRoute(jvmRoute);
 
-        for (Host host : this.getHosts()) {
-            for (Context context : host.getContexts()) {
-                ((TomcatContext) context).setJvmRoute(jvmRoute);
+        for (Container hostAsContainer : this.engine.findChildren()) {
+            Host host = (Host) hostAsContainer;
+            for (Container contextAsContainer : host.findChildren()) {
+                Context context = (Context) contextAsContainer;
+                Manager contextManager = context.getManager();
+                if (contextManager != null) {
+                    SessionIdGenerator sessionIdGenerator = contextManager.getSessionIdGenerator();
+                    if (sessionIdGenerator != null) {
+                        sessionIdGenerator.setJvmRoute(jvmRoute);
+                    }
+                }
             }
         }
     }
