@@ -22,6 +22,7 @@
 
 package org.jboss.modcluster.config.builder;
 
+import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class ModClusterConfigurationBuilderTest {
         final ModClusterConfiguration configuration = new ModClusterConfigurationBuilder()
                 .advertise()
                 .setAdvertiseSocketAddress(null)
-                .setAdvertiseInterface(null)
+                .setAdvertiseInterface((NetworkInterface) null)
                 .setAdvertiseThreadFactory(null)
                 .setAdvertiseSecurityKey("key")
 

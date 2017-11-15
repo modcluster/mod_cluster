@@ -161,8 +161,6 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         if (Boolean.TRUE.equals(advertise) || (advertise == null && this.mcmpConfig.getProxyConfigurations().isEmpty())) {
             try {
                 this.advertiseListener = this.listenerFactory.createListener(this.mcmpHandler, this.advertiseConfig);
-
-                this.advertiseListener.start();
             } catch (IOException e) {
                 ModClusterLogger.LOGGER.advertiseStartFailed(e);
             }
@@ -195,7 +193,11 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.server = null;
 
         if (this.advertiseListener != null) {
-            this.advertiseListener.destroy();
+            try {
+                this.advertiseListener.close();
+            } catch (IOException e) {
+                ModClusterLogger.LOGGER.catchingDebug(e);
+            }
 
             this.advertiseListener = null;
         }

@@ -21,10 +21,7 @@
  */
 package org.jboss.modcluster;
 
-import static org.jboss.logging.Logger.Level.DEBUG;
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.INFO;
-import static org.jboss.logging.Logger.Level.WARN;
+import static org.jboss.logging.Logger.Level.*;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -129,21 +126,21 @@ public interface ModClusterLogger {
     @Message(id = 25, value = "Failed to drain %d remaining active sessions from %s:%s within %.1f seconds")
     void sessionDrainTimeout(int sessions, Host host, Context context, float seconds);
 
-    @LogMessage(level = WARN)
-    @Message(id = 30, value = "Attempted to bind multicast socket to a unicast address: %s.  Multicast socket will not be bound to an address.")
-    void createMulticastSocketWithUnicastAddress(InetAddress address);
+//    @LogMessage(level = WARN)
+//    @Message(id = 30, value = "Attempted to bind multicast socket to a unicast address: %s.  Multicast socket will not be bound to an address.")
+//    void createMulticastSocketWithUnicastAddress(InetAddress address);
 
     @LogMessage(level = WARN)
-    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address): %s; make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see http://www.jboss.org/community/docs/DOC-9469 for details).")
+    @Message(id = 31, value = "Could not bind multicast socket to %s (%s address): %s; make sure your multicast address is of the same type as the IP stack (IPv4 or IPv6). Multicast socket will not be bound to an address, but this may lead to cross talking (see https://developer.jboss.org/docs/DOC-9469 for details).")
     void potentialCrossTalking(InetAddress address, String addressType, String message);
 
     @LogMessage(level = INFO)
     @Message(id = 32, value = "Listening to proxy advertisements on %s")
     void startAdvertise(InetSocketAddress address);
 
-    @LogMessage(level = WARN)
-    @Message(id = 33, value = "Failed to interrupt socket reception.")
-    void socketInterruptFailed(@Cause Throwable cause);
+//    @LogMessage(level = WARN)
+//    @Message(id = 33, value = "Failed to interrupt socket reception.")
+//    void socketInterruptFailed(@Cause Throwable cause);
 
     @LogMessage(level = ERROR)
     @Message(id = 34, value = "Failed to start advertise listener")
@@ -165,10 +162,9 @@ public interface ModClusterLogger {
     @Message(id = 43, value = "Failed to send %s command to %s: %s")
     void sendFailed(MCMPRequestType type, InetSocketAddress proxy, String message);
 
-    // Message retired since 1.3.0
-    //@LogMessage(level = WARN)
-    //@Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
-    //void missingOSBean(String classname);
+//    @LogMessage(level = WARN)
+//    @Message(id = 44, value = "%s requires com.sun.management.OperatingSystemMXBean.")
+//    void missingOSBean(String classname);
 
     @LogMessage(level = WARN)
     @Message(id = 45, value = "%s is not supported on this system and will be disabled.")
@@ -189,4 +185,13 @@ public interface ModClusterLogger {
 
     @Message(id = 50, value = "Initial load must be within the range [0..100] or -1 to not prepopulate with initial load, but was: %d")
     RuntimeException invalidInitialLoad(int initialLoad);
+
+    @Message(id = 51, value = "No valid advertise interface configured! Disabling multicast advertise mechanism.")
+    RuntimeException noValidAdvertiseInterfaceConfigured();
+
+    @Message(id = 52, value = "Attempted to create multicast socket without multicast address specified! Disabling multicast advertise mechanism.")
+    RuntimeException createMulticastSocketWithNullMulticastAddress();
+
+    @Message(id = 53, value = "Attempted to create multicast socket with unicast address (%s)! Disabling multicast advertise mechanism.")
+    RuntimeException createMulticastSocketWithUnicastAddress(InetAddress address);
 }

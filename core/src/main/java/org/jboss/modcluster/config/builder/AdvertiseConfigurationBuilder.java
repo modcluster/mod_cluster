@@ -24,6 +24,8 @@ package org.jboss.modcluster.config.builder;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
@@ -39,7 +41,7 @@ import org.jboss.modcluster.config.impl.AdvertiseConfigurationImpl;
 public class AdvertiseConfigurationBuilder extends AbstractConfigurationBuilder implements Creator<AdvertiseConfiguration> {
 
     private InetSocketAddress advertiseSocketAddress = AdvertiseConfiguration.DEFAULT_SOCKET_ADDRESS;
-    private InetAddress advertiseInterface;
+    private NetworkInterface advertiseInterface;
     private String advertiseSecurityKey;
     private ThreadFactory advertiseThreadFactory = Executors.defaultThreadFactory();
 
@@ -58,8 +60,24 @@ public class AdvertiseConfigurationBuilder extends AbstractConfigurationBuilder 
     /**
      * Sets the interface to use for advertisements.
      */
-    public AdvertiseConfigurationBuilder setAdvertiseInterface(InetAddress advertiseInterface) {
+    public AdvertiseConfigurationBuilder setAdvertiseInterface(NetworkInterface advertiseInterface) {
         this.advertiseInterface = advertiseInterface;
+        return this;
+    }
+
+    /**
+     * Sets the interface to use for advertisements.
+     *
+     * @deprecated Use {@link AdvertiseConfigurationBuilder#setAdvertiseInterface(java.net.NetworkInterface)} instead.
+     */
+    @Deprecated
+    public AdvertiseConfigurationBuilder setAdvertiseInterface(InetAddress advertiseInterface) {
+        try {
+            this.advertiseInterface = NetworkInterface.getByInetAddress(advertiseInterface);
+        } catch (SocketException e) {
+            // TODO i18n
+            throw new RuntimeException();
+        }
         return this;
     }
 

@@ -22,13 +22,20 @@
 
 package org.jboss.modcluster;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Locale;
-import javax.xml.bind.DatatypeConverter;
 
 /**
  * Utility class to be used in tests.
@@ -37,19 +44,53 @@ import javax.xml.bind.DatatypeConverter;
  */
 public class TestUtils {
 
+    private static final String ADVERTISE_INTERFACE_ADDRESS = System.getProperty("multicast.interface.address");
+    private static final String ADVERTISE_INTERFACE_NAME = System.getProperty("multicast.interface.name");
+
     public static final String RFC_822_FMT = "EEE, d MMM yyyy HH:mm:ss Z";
     public static final DateFormat df = new SimpleDateFormat(RFC_822_FMT, Locale.US);
     public static final byte[] zeroMd5Sum = new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
     /**
-     * Generates datagram packet content buffer including all fields as sent by native code.
+     * Gets an interface to use for testing. First, attempts to resolve one of {@code multicast.interface.address} or
+     * {@code multicast.interface.name} system properties, if unspecified, returns first multicast-enabled and
+     * preferably non-loopback network interface.
      *
-     * @param date
-     * @param sequence
-     * @param server
-     * @param serverAddress
-     * @return byte buffer
-     * @throws NoSuchAlgorithmException
+     * @return interface to be used for testing
+     */
+    public static NetworkInterface getAdvertiseInterface() throws SocketException, UnknownHostException {
+        // First honor user configuration before picking automatically
+        if (ADVERTISE_INTERFACE_ADDRESS != null && ADVERTISE_INTERFACE_NAME == null) {
+            return NetworkInterface.getByInetAddress(InetAddress.getByName(ADVERTISE_INTERFACE_ADDRESS));
+        } else if (ADVERTISE_INTERFACE_ADDRESS == null && ADVERTISE_INTERFACE_NAME != null) {
+            return NetworkInterface.getByName(ADVERTISE_INTERFACE_NAME);
+        } else if (ADVERTISE_INTERFACE_ADDRESS != null) {
+            throw new IllegalStateException("Both -Dmulticast.interface.address and -Dmulticast.interface.name specified!");
+        }
+
+        // Automatically and deterministically find first multicast-enabled and preferably non-loopback network interface
+        ArrayList<NetworkInterface> ifaces = Collections.list(NetworkInterface.getNetworkInterfaces());
+        Collections.sort(ifaces, new Comparator<NetworkInterface>() {
+            @Override
+            public int compare(NetworkInterface o1, NetworkInterface o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+        NetworkInterface local = null;
+        for (NetworkInterface iface : ifaces) {
+            if (iface.supportsMulticast()) {
+                if (!iface.isLoopback() && iface.isUp()) {
+                    return iface;
+                }
+                local = iface;
+            }
+        }
+        return local;
+    }
+
+    /**
+     * Generates datagram packet content buffer including all fields as sent by native code.
      */
     public static byte[] generateAdvertisePacketData(Date date, int sequence, String server, String serverAddress) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
@@ -61,27 +102,10 @@ public class TestUtils {
         digestString(md, String.valueOf(sequence));
         digestString(md, server);
 
-        // Convert to hex
-        String digestHex = DatatypeConverter.printHexBinary(md.digest());
+        String data = String.format("HTTP/1.1 200 OK\r\nDate: %s\r\nSequence: %d\r\nDigest: %x\r\nServer: %s\r\nX-Manager-Address: %s\r\n",
+                rfcDate, sequence, new BigInteger(1, md.digest()), server, serverAddress);
 
-        StringBuilder data = new StringBuilder("HTTP/1.1 200 OK\r\n");
-        data.append("Date: ");
-        data.append(rfcDate);
-        data.append("\r\n");
-        data.append("Sequence: ");
-        data.append(sequence);
-        data.append("\r\n");
-        data.append("Digest: ");
-        data.append(digestHex);
-        data.append("\r\n");
-        data.append("Server: ");
-        data.append(server);
-        data.append("\r\n");
-        data.append("X-Manager-Address: ");
-        data.append(serverAddress);
-        data.append("\r\n");
-
-        return data.toString().getBytes();
+        return data.getBytes();
     }
 
     /**

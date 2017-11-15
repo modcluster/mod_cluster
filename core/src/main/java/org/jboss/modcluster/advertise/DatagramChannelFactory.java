@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2016, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,14 +22,15 @@
 package org.jboss.modcluster.advertise;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
+import java.net.InetSocketAddress;
+import java.nio.channels.DatagramChannel;
 
 /**
- * Factory for creating multicast sockets.
+ * Factory for creating datagram multicast channels.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public interface MulticastSocketFactory {
-    MulticastSocket createMulticastSocket(InetAddress address, int port) throws IOException;
+public interface DatagramChannelFactory {
+    DatagramChannel createDatagramChannel(InetSocketAddress multicastSocketAddress) throws IOException;
 }

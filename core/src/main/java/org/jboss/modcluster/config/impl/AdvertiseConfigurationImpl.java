@@ -22,8 +22,8 @@
 
 package org.jboss.modcluster.config.impl;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.util.concurrent.ThreadFactory;
 
 import org.jboss.modcluster.config.AdvertiseConfiguration;
@@ -35,11 +35,11 @@ import org.jboss.modcluster.config.AdvertiseConfiguration;
 public class AdvertiseConfigurationImpl implements AdvertiseConfiguration {
 
     private final InetSocketAddress advertiseSocketAddress;
-    private final InetAddress advertiseInterface;
+    private final NetworkInterface advertiseInterface;
     private final String advertiseSecurityKey;
     private final ThreadFactory advertiseThreadFactory;
 
-    public AdvertiseConfigurationImpl(InetSocketAddress advertiseSocketAddress, InetAddress advertiseInterface, String advertiseSecurityKey, ThreadFactory advertiseThreadFactory) {
+    public AdvertiseConfigurationImpl(InetSocketAddress advertiseSocketAddress, NetworkInterface advertiseInterface, String advertiseSecurityKey, ThreadFactory advertiseThreadFactory) {
         this.advertiseSocketAddress = advertiseSocketAddress;
         this.advertiseInterface = advertiseInterface;
         this.advertiseSecurityKey = advertiseSecurityKey;
@@ -52,7 +52,7 @@ public class AdvertiseConfigurationImpl implements AdvertiseConfiguration {
     }
 
     @Override
-    public InetAddress getAdvertiseInterface() {
+    public NetworkInterface getAdvertiseInterface() {
         return advertiseInterface;
     }
 

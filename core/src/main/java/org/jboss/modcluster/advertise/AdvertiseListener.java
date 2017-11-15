@@ -25,30 +25,22 @@ import java.io.IOException;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
-public interface AdvertiseListener {
-    /**
-     * Start the Listener, creating listener thread.
-     */
-    void start() throws IOException;
+public interface AdvertiseListener extends AutoCloseable {
 
     /**
-     * Pause the listener, which will make it stop accepting new advertise messages.
+     * Returns {@code true} if listener is accepting the advertise messages; false if the listener was stopped or is
+     * experiencing network problems.
      */
-    void pause();
+    boolean isListening();
 
     /**
-     * Resume the listener, which will make it start accepting new advertise messages again.
+     * Replaces previous pause/stop/destroy lifecycle methods, terminating the advertise worker and closing the datagram
+     * channel; may throw {@link IOException}.
+     *
+     * @throws IOException If an I/O error occurs while closing the underlying channel.
      */
-    void resume();
-
-    /**
-     * Stop the endpoint. This will cause all processing threads to stop.
-     */
-    void stop();
-
-    /**
-     * Deallocate listener and close sockets.
-     */
-    void destroy();
+    @Override
+    void close() throws IOException;
 }
