@@ -55,6 +55,7 @@ public class AdvertiseListenerImplTestCase {
     private static final int SERVER_PORT = 8989;
     private static final String SERVER1_ADDRESS = String.format("%s:%d", SERVER1, SERVER_PORT);
     private static final String SERVER2_ADDRESS = String.format("%s:%d", SERVER2, SERVER_PORT);
+    private static final int TIMEOUT_MILLIS = 3_000; // time for advertise worker to process messages
 
     private MCMPHandler mcmpHandler = mock(MCMPHandler.class);
     private AdvertiseConfiguration config = mock(AdvertiseConfiguration.class);
@@ -94,77 +95,25 @@ public class AdvertiseListenerImplTestCase {
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS));
             buffer.flip();
 
-// TODO: verify this need not be bound
-//            if (ADVERTISE_INTERFACE != null && !System.getProperty("os.name").startsWith("Windows")) {
-//                try {
-//                    InetAddress socketInterface = InetAddress.getByName(ADVERTISE_INTERFACE);
-//                    this.socket.setInterface(socketInterface);
-//                } catch (Exception ex) {
-//                    // Ignore it
-//                }
-//            }
-
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
             buffer.flip();
 
-            try {
-                // Give time for advertise worker to process message
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            verify(this.mcmpHandler).addProxy(capturedSocketAddress.capture());
+            verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
             InetSocketAddress socketAddress = capturedSocketAddress.getValue();
             assertEquals(SERVER1, socketAddress.getAddress().getHostAddress());
             assertEquals(SERVER_PORT, socketAddress.getPort());
 
-            sendChannel.send(buffer, config.getAdvertiseSocketAddress());
-            buffer.flip();
-
-            try {
-                // Give time for advertise worker to process message
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
             capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
-
+            buffer.clear();
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 1, SERVER2, SERVER2_ADDRESS));
             buffer.flip();
 
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
             buffer.flip();
 
-            try {
-                // Give time for advertise worker to process message
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            buffer.rewind();
-
-            sendChannel.send(buffer, config.getAdvertiseSocketAddress());
-            buffer.flip();
-
-            try {
-                // Give time for advertise worker to process message
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-
-            verify(this.mcmpHandler).addProxy(capturedSocketAddress.capture());
+            verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
             socketAddress = capturedSocketAddress.getValue();
