@@ -102,7 +102,7 @@ public class TestUtils {
         digestString(md, String.valueOf(sequence));
         digestString(md, server);
 
-        String data = String.format("HTTP/1.1 200 OK\r\nDate: %s\r\nSequence: %d\r\nDigest: %x\r\nServer: %s\r\nX-Manager-Address: %s\r\n",
+        String data = String.format("HTTP/1.1 200 OK\r\nDate: %s\r\nSequence: %d\r\nDigest: %032x\r\nServer: %s\r\nX-Manager-Address: %s\r\n",
                 rfcDate, sequence, new BigInteger(1, md.digest()), server, serverAddress);
 
         return data.getBytes();
