@@ -73,9 +73,6 @@
                             <descriptors>
                                 <descriptor>src/assembly/demo.xml</descriptor>
                             </descriptors>
-                            <finalName>mod_cluster-demo-${project.version}</finalName>
-                            <recompressZippedFiles>true</recompressZippedFiles>
-                            <appendAssemblyId>false</appendAssemblyId>
                             <tarLongFileMode>gnu</tarLongFileMode>
                         </configuration>
                     </execution>
@@ -106,9 +103,6 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat7.xml</descriptor>
                                     </descriptors>
-                                    <finalName>mod_cluster-tomcat7-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <recompressZippedFiles>true</recompressZippedFiles>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
@@ -138,9 +132,6 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat8.xml</descriptor>
                                     </descriptors>
-                                    <finalName>mod_cluster-tomcat8-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <recompressZippedFiles>true</recompressZippedFiles>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
@@ -170,9 +161,6 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat85.xml</descriptor>
                                     </descriptors>
-                                    <finalName>mod_cluster-tomcat85-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <recompressZippedFiles>true</recompressZippedFiles>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
@@ -202,9 +190,6 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat9.xml</descriptor>
                                     </descriptors>
-                                    <finalName>mod_cluster-tomcat9-${project.version}</finalName>
-                                    <appendAssemblyId>false</appendAssemblyId>
-                                    <recompressZippedFiles>true</recompressZippedFiles>
                                     <tarLongFileMode>gnu</tarLongFileMode>
                                 </configuration>
                             </execution>
