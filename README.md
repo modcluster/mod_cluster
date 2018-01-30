@@ -6,8 +6,8 @@ proxy server to one of a set of application server nodes. Unlike mod_jk and mod_
 additional connection between the application server nodes and the reverse proxy to transmit server-side load-balance
 factors and lifecycle events back to the proxy. This additional feedback channel allows mod_cluster to offer a level of
 intelligence and granularity not found in other load-balancing solutions. There are currently two reverse proxy
-implementations: a native [https://httpd.apache.org/](Apache HTTP Server) implementation and a pure Java 
-[http://undertow.io/](Undertow)-based implementation.
+implementations: a native [Apache HTTP Server](https://httpd.apache.org/) implementation and a pure Java 
+[Undertow](http://undertow.io/) based implementation.
 
 Project mod_cluster boasts the following advantages over other httpd-based load-balancers:
 
@@ -46,9 +46,9 @@ Distribution archives are provided for each Tomcat version.
 4. Modify `server.xml` within the `conf` directory and add the mod_cluster listener as documented
    [here](http://docs.jboss.org/mod_cluster/1.3.0/). The minimal listener configuration is as follows:
    
-```xml
-<Listener className="org.jboss.modcluster.container.tomcat.ModClusterListener" connectorPort="8009"/>
-```
+    ```xml
+    <Listener className="org.jboss.modcluster.container.tomcat.ModClusterListener" connectorPort="8009"/>
+    ```
 
 
 Project Structure
