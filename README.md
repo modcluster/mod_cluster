@@ -7,7 +7,7 @@ additional connection between the application server nodes and the reverse proxy
 factors and lifecycle events back to the proxy. This additional feedback channel allows mod_cluster to offer a level of
 intelligence and granularity not found in other load-balancing solutions. There are currently two reverse proxy
 implementations: a native [Apache HTTP Server](https://httpd.apache.org/) implementation and a pure Java 
-[Undertow](http://undertow.io/) based implementation.
+[Undertow](http://undertow.io/)-based implementation.
 
 Project mod_cluster boasts the following advantages over other httpd-based load-balancers:
 
@@ -62,7 +62,7 @@ container
   spi (SPI classes for container integrations, has no dependencies on a specific web container)
   tomcat (base for Tomcat container implementations, based on Tomcat 7.0)
   tomcat8 (Tomcat 8.0 container implementation)
-  tomcat85 (Tomcat 8.5 and 9.0 milestone container implementation)
+  tomcat85 (Tomcat 8.5 and 9.0 container implementation)
 load-spi (SPI classes for load metric computation)
 demo
   client
