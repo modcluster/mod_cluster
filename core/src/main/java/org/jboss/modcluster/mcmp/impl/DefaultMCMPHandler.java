@@ -382,11 +382,12 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 if (proxy.getState() == Proxy.State.ERROR) {
 
                     proxy.closeConnection();
-                    proxy.setState(Proxy.State.OK);
+                    proxy.setState(Proxy.State.RESET);
 
                     String response = this.sendRequest(this.requestFactory.createInfoRequest(), proxy);
 
-                    if (proxy.getState() == Proxy.State.OK) {
+                    if (proxy.getState() == Proxy.State.RESET) {
+                        proxy.setState(Proxy.State.OK);
                         // Only notify connection listener once
                         if (this.established.compareAndSet(false, true)) {
                             this.connectionListener.connectionEstablished(proxy.getLocalAddress());
@@ -540,7 +541,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
     private String sendRequest(MCMPRequest request, Proxy proxy) {
         // If there was an error, do nothing until the next periodic event, where the whole configuration
         // will be refreshed
-        if (proxy.getState() != Proxy.State.OK)
+        if (proxy.getState() != Proxy.State.OK && !(proxy.getState() == Proxy.State.RESET && request.getRequestType() == MCMPRequestType.INFO))
             return null;
 
         log.tracef("Sending to %s: %s", proxy, request);

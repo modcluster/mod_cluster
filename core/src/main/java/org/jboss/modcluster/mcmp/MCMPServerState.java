@@ -29,7 +29,7 @@ package org.jboss.modcluster.mcmp;
 public interface MCMPServerState extends MCMPServer {
     /** Possible communication states vis a vis the server */
     enum State {
-        OK, ERROR, DOWN
+        OK, ERROR, DOWN, RESET
     }
 
     State getState();
