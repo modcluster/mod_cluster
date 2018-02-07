@@ -63,6 +63,7 @@
             </activation>
             <modules>
                 <module>catalina</module>
+                <module>catalina-standalone</module>
                 <module>tomcat8</module>
             </modules>
         </profile>
@@ -73,6 +74,7 @@
             </activation>
             <modules>
                 <module>catalina</module>
+                <module>catalina-standalone</module>
                 <module>tomcat7</module>
             </modules>
         </profile>
@@ -83,6 +85,7 @@
             </activation>
             <modules>
                 <module>catalina</module>
+                <module>catalina-standalone</module>
                 <module>tomcat6</module>
             </modules>
         </profile>
