@@ -543,7 +543,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 String host = proxy.getSocketAddress().getHostString();
                 String proxyhead;
 
-                if(host != null && host.contains(":")) {
+                if (host != null && host.contains(":")) {
                     proxyhead = head + "[" + host + "]:" + proxy.getSocketAddress().getPort();
                 } else {
                     proxyhead = head + host + ":" + proxy.getSocketAddress().getPort();
@@ -569,7 +569,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 String errorType = null;
                 int contentLength = 0;
                 boolean close = false;
-                boolean chuncked = false;
+                boolean chunked = false;
                 if (line != null) {
                     try {
                         int spaceIndex = line.indexOf(' ');
@@ -577,8 +577,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
                         /* Ignore everything until we have a HTTP headers */
                         while (spaceIndex == -1) {
                             line = reader.readLine();
-                            if (line == null)
+                            if (line == null) {
                                 return null; // Connection closed...
+                            }
                             spaceIndex = line.indexOf(' ');
                         }
                         String responseStatus = line.substring(spaceIndex + 1, line.indexOf(' ', spaceIndex + 1));
@@ -600,7 +601,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
                                 close = "close".equalsIgnoreCase(headerValue);
                             } else if ("Transfer-Encoding".equalsIgnoreCase(headerName)) {
                                 if ("chunked".equalsIgnoreCase(headerValue))
-                                    chuncked = true;
+                                    chunked = true;
                             }
                             line = reader.readLine();
                         }
@@ -631,7 +632,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
 
                 if (close) {
                     contentLength = Integer.MAX_VALUE;
-                } else if (contentLength == 0 && ! chuncked) {
+                } else if (contentLength == 0 && ! chunked) {
                     return null;
                 }
 
@@ -639,23 +640,25 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 StringBuilder result = new StringBuilder();
                 char[] buffer = new char[512];
 
-                if (chuncked) {
+                if (chunked) {
                     boolean skipcrlf = false;
                     for (;;) {
-                         if (skipcrlf)
+                        if (skipcrlf) {
                             reader.readLine(); // Skip CRLF
-                         else
-                             skipcrlf = true;
+                        } else {
+                            skipcrlf = true;
+                        }
                         line = reader.readLine();
                         contentLength = Integer.parseInt(line, 16);
                         if (contentLength == 0) {
-                                        reader.readLine(); // Skip last CRLF.
+                            reader.readLine(); // Skip last CRLF.
                             break;
-                                }
+                        }
                         while (contentLength > 0) {
                             int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
-                            if (bytes <= 0)
+                            if (bytes <= 0) {
                                 break;
+                            }
                             result.append(buffer, 0, bytes);
                             contentLength -= bytes;
                         }
@@ -663,10 +666,9 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 } else {
                     while (contentLength > 0) {
                         int bytes = reader.read(buffer, 0, (contentLength > buffer.length) ? buffer.length : contentLength);
-
-                        if (bytes <= 0)
+                        if (bytes <= 0) {
                             break;
-
+                        }
                         result.append(buffer, 0, bytes);
                         contentLength -= bytes;
                     }
