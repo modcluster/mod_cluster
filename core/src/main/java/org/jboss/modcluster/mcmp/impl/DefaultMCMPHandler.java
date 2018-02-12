@@ -332,7 +332,6 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 if (proxy.getState() == Proxy.State.ERROR) {
 
                     proxy.closeConnection();
-                    proxy.setState(Proxy.State.OK);
 
                     String response = this.sendRequest(this.requestFactory.createInfoRequest(), proxy);
 
@@ -478,10 +477,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
     }
 
     private String sendRequest(MCMPRequest request, Proxy proxy) {
-        // If there was an error, do nothing until the next periodic event, where the whole configuration
-        // will be refreshed
-        if (proxy.getState() != Proxy.State.OK)
+        // Never proceed with requests on a proxy in ERROR state unless the request type is INFO to return proxy back to OK state.
+        if (!(proxy.getState() == Proxy.State.OK || request.getRequestType() == MCMPRequestType.INFO)) {
             return null;
+        }
 
         log.tracef("Sending to %s: %s", proxy, request);
 
@@ -613,6 +612,8 @@ public class DefaultMCMPHandler implements MCMPHandler {
                 // Mark as error if the front end server did not return 200; the configuration will
                 // be refreshed during the next periodic event
                 if (status == 200) {
+                    proxy.setState(State.OK);
+
                     if (request.getRequestType().getEstablishesServer()) {
                         // We know the request succeeded, so if appropriate
                         // mark the proxy as established before any possible
