@@ -72,6 +72,9 @@
         <version.junit>4.10</version.junit>
         <version.mockito>2.5.2</version.mockito>
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
+
+        <!-- Downgrade surefire plugin from 2.20.1 to 2.19.1 which works with JDK10 -->
+        <version.surefire.plugin>2.19.1</version.surefire.plugin>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -247,7 +250,7 @@
         <profile>
             <id>jdk9</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <modules>
                 <module>container-spi</module>
