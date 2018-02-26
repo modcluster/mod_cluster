@@ -75,6 +75,8 @@
         <!-- Plugin versions -->
         <version.checkstyle>6.19</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
+        <!-- Downgrade surefire plugin from 2.20.1 to 2.19.1 which works with JDK10 -->
+        <version.surefire.plugin>2.19.1</version.surefire.plugin>
     </properties>
 
     <dependencyManagement>
@@ -288,7 +290,7 @@
         <profile>
             <id>jdk9</id>
             <activation>
-                <jdk>9</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <modules>
                 <module>core</module>
