@@ -22,7 +22,7 @@
 package org.jboss.modcluster.container;
 
 /**
- * SPI for an engine, defined as collection of one or more hosts associated with a collection of Connectors. The only Connector
+ * SPI for an engine, defined as collection of one or more hosts associated with a collection of {@link Connector}s. The only Connector
  * of significance is the one used to communicate with a proxy.
  *
  * @author Paul Ferraro
@@ -38,28 +38,28 @@ public interface Engine {
     /**
      * The server to which this engine is associated.
      *
-     * @return a server.
+     * @return a server
      */
     Server getServer();
 
     /**
      * The hosts associated with this engine.
      *
-     * @return the engine's hosts.
+     * @return the engine's hosts
      */
     Iterable<Host> getHosts();
 
     /**
-     * The connector to which this engine uses to communicate with its proxies.
+     * The connector which this engine uses to communicate with its proxies.
      *
      * @return the connector used by mod_cluster
      */
     Connector getProxyConnector();
 
     /**
-     * The connector to which this engine uses to communicate with its proxies.
+     * Iteration of all connectors associated with this engine that can be used to communicate with its proxies.
      *
-     * @return the connector used by mod_cluster
+     * @return iteration of all connectors associated with this engine
      */
     Iterable<Connector> getConnectors();
 
@@ -73,7 +73,7 @@ public interface Engine {
     /**
      * Set this jvm route for this servlet engine. Used to create a reasonable default value, if no explicit route is defined.
      *
-     * @param jvmRoute a unique jvm route.
+     * @param jvmRoute a unique jvm route
      */
     void setJvmRoute(String jvmRoute);
 
