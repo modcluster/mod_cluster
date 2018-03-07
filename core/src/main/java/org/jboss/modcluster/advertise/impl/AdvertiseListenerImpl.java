@@ -45,6 +45,7 @@ import org.jboss.modcluster.Utils;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
+import org.jboss.modcluster.config.impl.ProxyConfigurationImpl;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 
 /**
@@ -305,7 +306,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                             // eventHandler.onEvent(AdvertiseEventType.ON_NEW_SERVER, server);
                             String proxy = server.getParameter(AdvertisedServer.MANAGER_ADDRESS);
                             if (proxy != null) {
-                                AdvertiseListenerImpl.this.handler.addProxy(Utils.parseSocketAddress(proxy, 0));
+                                InetSocketAddress proxyAddress = Utils.parseSocketAddress(proxy, 0);
+                                AdvertiseListenerImpl.this.handler.addProxy(new ProxyConfigurationImpl(proxyAddress));
                             }
                         }
                     }

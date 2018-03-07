@@ -35,6 +35,7 @@ import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
+import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,7 +90,7 @@ public class AdvertiseListenerImplTestCase {
             assertTrue(this.channel.isOpen());
             assertTrue(sendChannel.isOpen());
 
-            ArgumentCaptor<InetSocketAddress> capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
+            ArgumentCaptor<ProxyConfiguration> capturedSocketAddress = ArgumentCaptor.forClass(ProxyConfiguration.class);
 
             ByteBuffer buffer = ByteBuffer.allocate(512);
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS));
@@ -101,11 +102,11 @@ public class AdvertiseListenerImplTestCase {
             verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
-            InetSocketAddress socketAddress = capturedSocketAddress.getValue();
+            InetSocketAddress socketAddress = capturedSocketAddress.getValue().getRemoteAddress();
             assertEquals(SERVER1, socketAddress.getAddress().getHostAddress());
             assertEquals(SERVER_PORT, socketAddress.getPort());
 
-            capturedSocketAddress = ArgumentCaptor.forClass(InetSocketAddress.class);
+            capturedSocketAddress = ArgumentCaptor.forClass(ProxyConfiguration.class);
             buffer.clear();
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 1, SERVER2, SERVER2_ADDRESS));
             buffer.flip();
@@ -116,7 +117,7 @@ public class AdvertiseListenerImplTestCase {
             verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
-            socketAddress = capturedSocketAddress.getValue();
+            socketAddress = capturedSocketAddress.getValue().getRemoteAddress();
             assertEquals(SERVER2, socketAddress.getAddress().getHostAddress());
             assertEquals(SERVER_PORT, socketAddress.getPort());
 

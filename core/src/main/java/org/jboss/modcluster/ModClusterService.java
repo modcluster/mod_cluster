@@ -47,6 +47,7 @@ import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.config.ModClusterConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
+import org.jboss.modcluster.config.impl.ProxyConfigurationImpl;
 import org.jboss.modcluster.config.impl.ModClusterConfig;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -412,7 +413,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
     @Override
     public void addProxy(String host, int port) {
-        this.mcmpHandler.addProxy(this.createSocketAddress(host, port));
+        this.mcmpHandler.addProxy(new ProxyConfigurationImpl(this.createSocketAddress(host, port)));
     }
 
     @Override
