@@ -68,14 +68,14 @@ public interface Connector {
     boolean isReverse();
 
     /**
-     * Indicates the type of this connector
+     * Indicates the type of this connector.
      *
      * @return a connector type
      */
     Type getType();
 
     /**
-     * Returns the address on which this connector operates
+     * Returns the address on which this connector operates.
      *
      * @return an address
      */
@@ -90,14 +90,16 @@ public interface Connector {
     void setAddress(InetAddress address);
 
     /**
-     * Returns the port on which this connector operates
+     * Returns the port on which this connector operates.
      *
      * @return a port number
      */
     int getPort();
 
     /**
-     * Is this connector available for processing requests?
+     * Returns whether this connector available for processing requests.
+     *
+     * @return whether this connector available for processing requests
      */
     boolean isAvailable();
 

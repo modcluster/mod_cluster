@@ -44,14 +44,14 @@ public interface Host {
     Engine getEngine();
 
     /**
-     * Returns the contexts associated with this host.
+     * Returns all contexts associated with this host.
      *
      * @return this host's contexts
      */
     Iterable<Context> getContexts();
 
     /**
-     * Returns the aliases of this host, including the actual host name
+     * Returns the aliases of this host, including the actual host name.
      *
      * @return a set of aliases
      */

@@ -30,6 +30,11 @@ import javax.servlet.http.HttpSessionListener;
  * @author Paul Ferraro
  */
 public interface Context {
+    /**
+     * Returns host associated with this context.
+     *
+     * @return host associated with this context
+     */
     Host getHost();
 
     /**
@@ -39,15 +44,24 @@ public interface Context {
      */
     String getPath();
 
+    /**
+     * Returns whether this context is started and ready to accept requests.
+     *
+     * @return whether this context is started and ready to accept requests
+     */
     boolean isStarted();
 
     /**
-     * @param listener
+     * Registers the specified request listener with this context. Used for request draining.
+     *
+     * @param listener listener to register
      */
     void addRequestListener(ServletRequestListener listener);
 
     /**
-     * @param listener
+     * Removes the specified previously registered request listener.
+     *
+     * @param listener listener to remove
      */
     void removeRequestListener(ServletRequestListener listener);
 
