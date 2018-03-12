@@ -5,8 +5,9 @@ script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
 matrix:
   include:
     # JDK 7
-    - env: JDK_LABEL='OracleJDK 7'
+    - env: JDK_RELEASE='OracleJDK 7'
       jdk: oraclejdk7
+      dist: precise
       script: mvn verify -Pdist
     - env: JDK_RELEASE='OpenJDK 7'
       jdk: openjdk7
