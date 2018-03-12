@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>25</version>
+        <version>26</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -84,8 +84,6 @@
         <!-- Plugin versions -->
         <version.checkstyle>6.19</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
-        <!-- Downgrade surefire plugin from 2.20.1 to 2.19.1 which works with JDK10 -->
-        <version.surefire.plugin>2.19.1</version.surefire.plugin>
     </properties>
 
     <dependencyManagement>
