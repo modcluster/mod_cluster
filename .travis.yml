@@ -1,9 +1,16 @@
 sudo: false
 dist: trusty
 language: java
-script: mvn verify -Pdist
+script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
 matrix:
   include:
+    # JDK 7
+    - env: JDK_RELEASE='OracleJDK 8'
+      jdk: oraclejdk7
+      script: mvn verify -Pdist
+    - env: JDK_RELEASE='OracleJDK 8'
+      jdk: openjdk7
+      script: mvn verify -Pdist
     # JDK 8
     - env: JDK_RELEASE='OracleJDK 8'
       jdk: oraclejdk8
@@ -18,4 +25,9 @@ matrix:
     - env: JDK_RELEASE='OracleJDK 10'
       install: . ./install-jdk.sh -F 10 -L BCL
     - env: JDK_RELEASE='OpenJDK 10'
+      install: . ./install-jdk.sh -F 10 -L GPL
+    # JDK 11-ea
+    - env: JDK_RELEASE='OracleJDK 11'
+      install: . ./install-jdk.sh -F 10 -L BCL
+    - env: JDK_RELEASE='OpenJDK 11'
       install: . ./install-jdk.sh -F 10 -L GPL
