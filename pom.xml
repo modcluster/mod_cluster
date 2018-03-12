@@ -67,7 +67,7 @@
         <maven.compiler.source>1.7</maven.compiler.source>
 
         <!-- Dependency versions -->
-        <version.jboss-logging>3.3.1.Final</version.jboss-logging>
+        <version.jboss-logging>3.3.2.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.1.0.Final</version.jboss-logging-processor>
         <version.jboss-logging-processor.jdk7>2.0.2.Final</version.jboss-logging-processor.jdk7>
         <version.tomcat7>7.0.84</version.tomcat7>
