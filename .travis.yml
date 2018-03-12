@@ -5,10 +5,10 @@ script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
 matrix:
   include:
     # JDK 7
-    - env: JDK_RELEASE='OracleJDK 8'
+    - env: JDK_RELEASE='OracleJDK 7'
       jdk: oraclejdk7
       script: mvn verify -Pdist
-    - env: JDK_RELEASE='OracleJDK 8'
+    - env: JDK_RELEASE='OpenJDK 7'
       jdk: openjdk7
       script: mvn verify -Pdist
     # JDK 8
@@ -28,6 +28,6 @@ matrix:
       install: . ./install-jdk.sh -F 10 -L GPL
     # JDK 11-ea
     - env: JDK_RELEASE='OracleJDK 11'
-      install: . ./install-jdk.sh -F 10 -L BCL
+      install: . ./install-jdk.sh -F 11 -L BCL
     - env: JDK_RELEASE='OpenJDK 11'
-      install: . ./install-jdk.sh -F 10 -L GPL
+      install: . ./install-jdk.sh -F 11 -L GPL
