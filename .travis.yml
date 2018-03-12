@@ -1,25 +1,34 @@
+sudo: false
+dist: trusty
 language: java
-jdk:
-  - oraclejdk9
-  - oraclejdk8
-  - openjdk7
-script: mvn verify -Pdist
+script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
 matrix:
   include:
-  # Workaround travis dropping oraclejdk7 on stable/trusty
-  # https://github.com/travis-ci/travis-ci/issues/7884#issuecomment-308451879
-  - jdk: oraclejdk7
-    dist: precise
-  # Tomcat 9.x targets
-  - jdk: oraclejdk9
-    script: mvn verify -PTC9 -Pdist
-  - jdk: oraclejdk8
-    script: mvn verify -PTC9 -Pdist
-notifications:
-  email: false
-# Workaround openjdk7 crashes in container-based environments failing with:
-# *** buffer overflow detected ***: /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java terminated
-# /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libnet.so(Java_java_net_Inet4AddressImpl_getLocalHostName+0x190)[0x7fde947f34a0]
-sudo: required
-addons:
-  hostname: localhost
+    # JDK 7
+    - env: JDK_RELEASE='OracleJDK 7'
+      jdk: oraclejdk7
+      dist: precise
+      script: mvn verify -Pdist
+    - env: JDK_RELEASE='OpenJDK 7'
+      jdk: openjdk7
+      script: mvn verify -Pdist
+    # JDK 8
+    - env: JDK_RELEASE='OracleJDK 8'
+      jdk: oraclejdk8
+    - env: JDK_RELEASE='OpenJDK 8'
+      jdk: openjdk8
+    # JDK 9
+    - env: JDK_RELEASE='OracleJDK 9'
+      jdk: oraclejdk9
+    - env: JDK_RELEASE='OpenJDK 9'
+      install: . ./install-jdk.sh -F 9
+    # JDK 10-ea
+    - env: JDK_RELEASE='OracleJDK 10'
+      install: . ./install-jdk.sh -F 10 -L BCL
+    - env: JDK_RELEASE='OpenJDK 10'
+      install: . ./install-jdk.sh -F 10 -L GPL
+    # JDK 11-ea
+    - env: JDK_RELEASE='OracleJDK 11'
+      install: . ./install-jdk.sh -F 11 -L BCL
+    - env: JDK_RELEASE='OpenJDK 11'
+      install: . ./install-jdk.sh -F 11 -L GPL
