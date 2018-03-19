@@ -164,6 +164,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
     }
 
     @Override
+    @Deprecated
     public void addProxy(InetSocketAddress socketAddress) {
         this.add(socketAddress);
     }
@@ -215,6 +216,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
     }
 
     @Override
+    @Deprecated
     public void addProxy(InetSocketAddress socketAddress, boolean established) {
         this.add(socketAddress).setEstablished(established);
     }
