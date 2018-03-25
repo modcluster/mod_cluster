@@ -1,0 +1,239 @@
+= Quick Start Guide
+
+NOTE: {editurl}quickstart.adoc[{editnote}]
+
+The following are the steps to set up a minimal working installation of
+mod_cluster on a single httpd server and a single back end server,
+either JBoss AS, JBossWeb, Undertow or Tomcat. The steps can be repeated to add as
+many httpd servers or back end servers to your cluster as is desired.
+
+The steps shown here are not intended to demonstrate how to set up a production install of mod_cluster;
+for example link:#UsingSSL[using SSL to secure access] to the httpd-side mod_manager component is not covered. See the
+link:#balancer_config[balancer-side] and
+link:#worker_config[worker-side] configuration documentation for the full set of configuration options.
+
+== Download mod_cluster components
+
+Download the latest httpd and java release bundles.
+If there is no pre-built httpd bundle appropriate for your OS or system architecture,
+you can link:#nativebuilding[build the binary from source].
+
+== Install the httpd binary
+
+=== Install the whole httpd
+
+The httpd-side bundles are zipped and include a full httpd installation. As they contain already an Apache httpd installation
+you do not need to download Apache httpd. Just extract them in root, e.g.
+
+[source,bash]
+----
+cd /
+unzip mod_cluster-1.3.1.Final-linux2-x64-ssl.zip
+----
+
+That will give you a full httpd install in your `/opt/jboss` directory with all mod_cluster modules.
+
+=== Install only the mod_cluster modules
+
+If you already have a working httpd install that you would prefer to
+use, you'll need to download the bundle named mod_cluster httpd dynamic
+libraries corresponding to you plaform, extract the modules and copy
+them directory to your httpd install's module directory.
+
+[source,bash]
+----
+cd /tmp
+tar xvf mod_cluster-1.x.y.Final-linux2-x86-so.tar.gz
+----
+
+And then you have to copy the files below to your module directory:
+
+* mod_slotmem.so
+* mod_manager.so
+* mod_proxy_cluster.so
+* mod_advertise.so
+
+*httpd version mismatch:* `[warn] httpd version mismatch detected` Please, beware that one cannot simply load the aforementioned modules into an arbitrary httpd installation.
+These modules were built with a particular minor httpd version and they cannot be used with an older one.
+For instance, mod_cluster modules built with httpd 2.4.x cannot be loaded into httpd 2.2.x.
+Always check the release notes as to which version was used during the build: mod_cluster release.
+
+=== Install in an arbitrary directory
+
+There is a script `opt/jboss/httpd/sbin/installhome.sh` in the httpd bundle distribution that allows reconfiguration of the
+bundle installation so that it can run in user's home directory. To do that, simply extract the bundle in your home directory
+and run the script. Once that done, httpd will run on port 8000 and will accept MCMP messages on localhost:6666 and offer
+`/mod_cluster_manager` on the same host and port.
+
+=== Install in Windows
+
+Unzip the bundle corresponding to your architecture.
+Change to the bin directory of the subfolder `httpd-*` where you unzipped the bundle and run the installconf.bat shell script.
+
+[source]
+----
+cd httpd-2.4\bin
+installconf.bat
+----
+
+You may run httpd directly by using:
+
+[source]
+----
+httpd.exe
+----
+
+or install Apache HTTP Server as a service:
+
+[source]
+----
+httpd.exe -k install -n myApache
+----
+
+and start the service via net start or using httpd.exe:
+
+[source]
+----
+net start myApache
+----
+
+or
+
+[source]
+----
+httpd.exe -k start
+----
+
+Note that on windows bundles have a flat directory structure, so you have _httpd-2.4/modules/_ instead of `opt/jboss/httpd/lib/httpd/modules`.
+
+== Configure httpd
+
+httpd.conf is preconfigured with the Quick Start values. You should adapt the default values to your configuration.]
+There follows an example configuration. If you extracted the download bundle to root as shown above and you are using that
+extract as your httpd install, httpd.conf is located in `/opt/jboss/httpd/httpd/conf`.
+
+[source]
+----
+LoadModule proxy_module /opt/jboss/httpd/lib/httpd/modules/mod_proxy.so
+LoadModule proxy_ajp_module /opt/jboss/httpd/lib/httpd/modules/mod_proxy_ajp.so
+LoadModule cluster_slotmem_module /opt/jboss/httpd/lib/httpd/modules/mod_cluster_slotmem.so
+LoadModule manager_module /opt/jboss/httpd/lib/httpd/modules/mod_manager.so
+LoadModule proxy_cluster_module /opt/jboss/httpd/lib/httpd/modules/mod_proxy_cluster.so
+LoadModule advertise_module /opt/jboss/httpd/lib/httpd/modules/mod_advertise.so
+
+<IfModule manager_module>
+  Listen 127.0.0.1:6666
+  ManagerBalancerName mycluster
+  <VirtualHost 127.0.0.1:6666>
+    <Location />
+     Require ip 127.0.0
+    </Location>
+
+    KeepAliveTimeout 300
+    MaxKeepAliveRequests 0
+    #ServerAdvertise on http://@IP@:6666
+    AdvertiseFrequency 5
+    #AdvertiseSecurityKey secret
+    #AdvertiseGroup @ADVIP@:23364
+    EnableMCPMReceive
+
+    <Location /mod_cluster_manager>
+       SetHandler mod_cluster-manager
+       Require ip 127.0.0
+    </Location>
+
+  </VirtualHost>
+</IfModule>
+----
+
+NOTE: mod_cluster 1.2.x vs mod_cluster 1.3.x: Note that from mod_cluster 1.3.x on, the slotmem module is called
+
+== Install the worker-side binaries
+
+First, extract the java libraries distribution to a temporary directory. One can grab the `mod_cluster-java-libs-*-bin.zip` from
+mod_cluster release. The following text assumes it is extracted to `/tmp/mod-cluster`.
+
+Your next step depends on whether your target server is JBoss AS 5.x, JBoss AS 7.x, JBoss Web/Tomcat 6, 7, 8 or Wildfly (Undertow).
+
+=== Installing in JBoss AS 5.x
+
+Assuming \$JBOSS_HOME indicates the root of your JBoss AS install and
+that you want to use mod_cluster in the AS's all config:
+
+
+[source]
+----
+cp -r /tmp/mod-cluster/mod-cluster.sar $JBOSS_HOME/server/all/deploy
+----
+
+=== Installing in Tomcat
+
+Assuming $CATALINA_HOME indicates the root of your Tomcat install:
+
+[source,bash]
+----
+cp -r /tmp/mod-cluster/JBossWeb-Tomcat/lib/* $CATALINA_HOME/lib/
+----
+
+Note that you should remove in the `$CATALINA_HOME/lib/` directory the
+`mod_cluster-container-tomcat6*` file in Tomcat7 and the
+`mod_cluster-container-tomcat7*` in Tomcat 6.
+
+=== Installing in Wildfly
+
+////
+TODO
+////
+
+== Configuring the server-side
+
+=== Configuring mod_cluster with JBoss AS 5.x+
+
+No post-installation configuration necessary!
+
+=== Configuring mod_cluster with standalone JBoss Web or Tomcat
+
+Edit the `$CATALINA_HOME/conf/server.xml`file, adding the
+following next to the other `&lt;Listener/&gt;` elements:
+
+[source,xml]
+----
+<Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener" advertise="true"/>
+----
+
+=== Start httpd
+
+To start httpd do the following:
+
+[source,bash]
+----
+/opt/jboss/httpd/sbin/apachectl start
+----
+
+=== Start the back-end server
+
+==== Starting JBoss AS
+
+[source,bash]
+----
+cd $JBOSS_HOME/bin
+./run.sh -c all
+----
+
+==== Starting JBossWeb or Tomcat
+
+[source,bash]
+----
+cd $CATALINA_HOME
+./startup.sh
+----
+
+==== Set up more back-end servers
+
+Repeat the back-end server install and configuration steps for each
+server in your cluster.
+
+== Experiment with the Load Balancing Demo Application
+
+See link:#demo[demo].
+

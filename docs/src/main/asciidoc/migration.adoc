@@ -1,0 +1,105 @@
+[[migration]]
+= Migration
+
+NOTE: {editurl}migration.adoc[{editnote}]
+
+[[migration-from-modjk]]
+== Migration from mod_jk
+
+Mod_cluster only support Apache httpd, there are no plan to support IIS
+or IPlanet.
+
+The migration from mod_jk to mod_cluster is not very complex. Only
+very few worker properties can't be mapped to mod_cluster parameters.
+
+Here is the table of worker properties and how to transfer them in the
+ClusterListener parameters.
+
+[options="header"]
+|===
+|mod_jk worker property |ClusterListener parameter |Remarks
+|host | - | It is read from the &lt;Connector/&gt; Address information
+|port | - | It is read from the &lt;Connector/&gt; Port information
+|type | - | It is read from the &lt;Connector/&gt; Protocol information
+|route | - | It is read from the &lt;Engine/&gt; JVMRoute information
+|domain | domain | That is not supported in this version
+|redirect | - | The nodes with loadfactor = 0 are standby nodes they will be used no other nodes are available
+|socket_timeout | nodeTimeout | Default 10 seconds
+|socket_keepalive | - | KEEP_ALIVE os is always on in mod_cluster
+|connection_pool_size | - | The max size is calculated to be AP_MPMQ_MAX_THREADS+1 (max)
+|connection_pool_minsize | smax | The defaut is max
+|connection_pool_timeout | ttl | Time to live when over smax connections. The defaut is 60 seconds
+|- | workerTimeout | Max time to wait for a free worker default 1 second
+|retries | maxAttempts | Max retries before returning an error Default: 3
+|recovery_options | - | mod_cluster behave like mod_jk with value 7
+|fail_on_status | - | Not supported
+|max_packet_size | iobuffersize/receivebuffersize| Not supported in this version. Use ProxyIOBufferSize
+|max_reply_timeouts | - | Not supported
+|recovert_time | - | The ClusterListener will tell (via a STATUS message) mod_cluster that the node is up again
+|activation | - | mod_cluster receives this information via ENABLE/DISABLE/STOP messages
+|distance | - | mod_cluster handles this via the loadfactor logic
+|mount | - | The context "mounted" automaticly via the ENABLE-APP messages. ProxyPass could be used too
+|secret | - | Not supported
+|connect_timeout | - | Not supported. Use ProxyTimeout or server TimeOut (Default 300 seconds)
+|prepost_timeout | ping | Default 10 seconds
+|reply_timeout | - | Not supported. Use ProxyTimeout or server TimeOut? directive (Default 300 seconds)
+|===
+
+[[migration-from-modproxy]]
+== Migration from mod_proxy
+
+As mod_cluster is a sophisticated balancer migration from mod_proxy to
+mod_cluster is strait forward. mod_cluster replaces a reverse proxy
+with loadbalancing. A reversed proxy is configured like:
+
+[source]
+----
+ProxyRequests Off
+<Proxy *>
+Order deny,allow
+Allow from all
+</Proxy>
+ProxyPass /foo http://foo.example.com/bar
+ProxyPassReverse /foo http://foo.example.com/bar
+----
+
+All the general proxy parameters could be used in mod_cluster they work
+like in mod_proxy, only the balancers and the workers definitions are
+slightly different.
+
+=== Workers
+
+[options="header"]
+|===
+|Mod_proxy Parameter |ClusterListener parameter | Remarks
+| min | - | Not supported in this version
+| max | - | mod_cluster uses mod_proxy default value
+| smax | smax | Same as mod_proxy
+| ttl | ttl | Same as mod_proxy
+| acquire | workerTimeout | Same as mod_proxy acquire but in seconds
+| disablereuse | - | mod_cluster will disable the node in case of error and the ClusterListener will for the reuse via the STATUS message
+| flushPackets | flushPackets | Same as mod_proxy
+| flushwait | flushwait | Same as mod_proxy
+| keepalive | - | Always on: OS KEEP_ALIVE is always used. Use connectionTimeout in the &lt;Connector&gt; if needed
+| lbset | - | Not supported
+| ping | ping | Same as mod_proxy Default value 10 seconds
+| lbfactor | - | The load factor is received by mod_cluster from a calculated value in the ClusterListener
+| redirect | - | Not supported lbfactor sent to 0 makes a standby node
+| retry | - | ClusterListener will test when the node is back online
+| route | JVMRoute | In fact JBossWEB via the JVMRoute in the Engine will add it
+| status | - | mod_cluster has a finer status handling: by context via the ENABLE/STOP/DISABLE/REMOVE application messages. hot-standby is done by lbfactor = 0 and Error by lbfactor = 1 both values are sent in STATUS message by the ClusterListener
+| timeout | nodeTimeout | Default wait for ever (http://httpd.apache.org/docs/2.2/mod/mod_proxy.html[http://httpd.apache.org/docs/2.2/mod/mod_proxy.html] is wrong there)
+| ttl | ttl | Default 60 seconds
+|===
+
+=== Balancers
+
+[options="header"]
+|===
+| Mod_proxy Parameter | ClusterListener parameter | Remarks
+| lbmethod | - | There is only one load balancing method in mod_cluster "cluster_byrequests"
+| maxattempts | maxAttempts | Default 1
+| nofailover | stickySessionForce | Same as in mod_proxy
+| stickysession | StickySessionCookie/StickySessionPath | The 2 parameters in the ClusterListener are combined in one that behaves like in mod_proxy
+| timeout | workerTimeout | Default 1 seconds
+|===
