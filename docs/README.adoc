@@ -1,0 +1,120 @@
+= Documentation 2.0
+
+Welcome to new mod_cluster live documentation!
+
+== Contributing
+
+How can I contribute?
+
+* Learn https://asciidoctor.org/docs/asciidoc-writers-guide/[AsciiDoc].
+* Open documentation and locate section you want to contribute to
+* Click 'Help us improve this section on GitHub!' at the top of the section
+* Or using an IDE? Navigate to `docs/src/main/asciidoc/`.
+* Once finished editing, click 'Propose changes' which will open a new pull request
+* Pull request will be quickly reviewed, merged and changes will be live instantly!
+
+== Guidelines
+
+* Documentation changes infrequently.
+To minimize maintenance cost of multiple documentation versions,
+use "Since version 1.3" to describe behavior changes across versions.
+* Commit messages: the downside of having documentation within main repository is the amount of noise in the git commit history.
+To minimize this don't change the commit message from GitHub which will just say "Update page.adoc" or just mention "Documentation" in the commit message.
+* Use shorter lines to make rebasing and editing from web easier.
+* Documentation always resides in `upstream/master` branch.
+
+== Building locally
+
+Just use maven.
+
+[source]
+----
+[rhusar@syrah mod_cluster]$ mci -f docs/pom.xml
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ---------------< org.jboss.mod_cluster:mod_cluster-docs >---------------
+[INFO] Building mod_cluster: Documentation 2.0.0.Alpha1-SNAPSHOT
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:3.0.0:clean (default-clean) @ mod_cluster-docs ---
+[INFO] Deleting /Users/rhusar/git/mod_cluster/docs/target
+[INFO]
+[INFO] --- maven-enforcer-plugin:3.0.0-M1:enforce (enforce-java-version) @ mod_cluster-docs ---
+[INFO]
+[INFO] --- maven-enforcer-plugin:3.0.0-M1:enforce (enforce-maven-version) @ mod_cluster-docs ---
+[INFO]
+[INFO] --- buildnumber-maven-plugin:1.4:create (get-scm-revision) @ mod_cluster-docs ---
+[INFO] Executing: /bin/sh -c cd '/Users/rhusar/git/mod_cluster/docs' && 'git' 'rev-parse' '--verify' 'HEAD'
+[INFO] Working directory: /Users/rhusar/git/mod_cluster/docs
+[INFO] Storing buildNumber: 50b7c24cfe64541c33d2055e4180e110fdd55c1a at timestamp: 1522074303484
+[INFO] Storing buildScmBranch: documentation
+[INFO]
+[INFO] --- asciidoctor-maven-plugin:1.5.6:process-asciidoc (pdf) @ mod_cluster-docs ---
+[INFO] AsciiDoc processing is skipped.
+[INFO]
+[INFO] --- maven-checkstyle-plugin:3.0.0:checkstyle (check-style) @ mod_cluster-docs ---
+[INFO]
+[INFO] --- maven-source-plugin:3.0.1:jar-no-fork (attach-sources) @ mod_cluster-docs ---
+[INFO]
+[INFO] --- asciidoctor-maven-plugin:1.5.6:process-asciidoc (output-html) @ mod_cluster-docs ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 5 resources to images
+[INFO] Rendered /Users/rhusar/git/mod_cluster/docs/src/main/asciidoc/index.adoc
+[INFO]
+[INFO] --- maven-install-plugin:2.5.2:install (default-install) @ mod_cluster-docs ---
+[INFO] Installing /Users/rhusar/git/mod_cluster/docs/pom.xml to /Users/rhusar/.m2/repository/org/jboss/mod_cluster/mod_cluster-docs/2.0.0.Alpha1-SNAPSHOT/mod_cluster-docs-2.0.0.Alpha1-SNAPSHOT.pom
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 5.332 s
+[INFO] Finished at: 2018-03-26T16:25:07+02:00
+[INFO] ---------------------------------------------------------------------------
+----
+
+Resulting files are located in `docs/target/generated-docs/`.
+
+== Inner Workings
+
+==== How does it work?
+
+. Changes are committed by a mod_cluster committer to upstream master branch.
+. CI is notified by GitHub webhooks of new HEAD revision.
+. CI runs the test and builds documentation.
+. One matrix job is elected to https://docs.travis-ci.com/user/deployment/pages/[deploy] documentation.
+. CI is https://docs.travis-ci.com/user/environment-variables#Defining-Variables-in-Repository-Settings[configured] with `$GITHUB_TOKEN` to authenticate as a doc bot with permissions for `modcluster/documentation` repository. Only the changes are committed.
+. GitHub Pages picks up the changes and deploys the website.
+
+NOTE: `CNAME` record is configured on the main mod_cluster website pointing to GitHub Pages
+
+Travis CI configuration uses deploy github extension and is configured as:
+
+[source,yaml]
+----
+deploy:
+  provider: pages
+  skip-cleanup: true
+  repo: modcluster/documentation
+  local-dir: docs/target/generated-docs/
+  target-branch: gh-pages
+  keep-history: true
+  github-token: $GITHUB_TOKEN
+  committer-from-gh: true
+  email: docs-bot@modcluster.io
+  allow-empty-commit: false
+  verbose: true
+  on:
+    branch: master
+----
+
+==== Permissions/Token Setup
+
+. Login as https://github.com/modcluster-docs-bot
+. Go to Settings -> Developer settings -> Personal access tokens
+. Generate new token with `repo` permissions
+. Go to https://github.com/modcluster/documentation -> Settings -> Invite collaborators
+. Accept invitation
+. Add `GITHUB_TOKEN` to https://travis-ci.org/modcluster/mod_cluster/settings
+
+==== Questions?
+
+https://lists.jboss.org/mailman/listinfo/mod_cluster-dev
