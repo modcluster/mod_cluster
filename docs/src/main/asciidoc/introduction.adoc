@@ -30,7 +30,6 @@ platforms:
 * Linux x86, x64, ia64
 * Solaris x86, SPARC
 * Windows x86, x64, ia64
-* HP-UX PA-RISC, ia64
 
 [[advantages]]
 == Advantages
