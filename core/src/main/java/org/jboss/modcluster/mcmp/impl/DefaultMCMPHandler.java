@@ -739,6 +739,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
                     proxy.setIoExceptionLogged(false);
                 }
 
+                if (close) {
+                    proxy.closeConnection();
+                }
+
                 return result.toString();
             } catch (IOException e) {
                 // Most likely this is a connection error with the proxy
