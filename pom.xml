@@ -361,7 +361,6 @@
                 <module>load-spi</module>
                 <module>demo</module>
                 <module>dist</module>
-                <module>docs</module>
             </modules>
         </profile>
     </profiles>
