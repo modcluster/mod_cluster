@@ -23,7 +23,7 @@ set -o errexit
 
 function initialize() {
     readonly script_name="$(basename "${BASH_SOURCE[0]}")"
-    readonly script_version='2018-04-17'
+    readonly script_version='2018-04-30'
 
     dry=false
     silent=false
@@ -139,7 +139,6 @@ function parse_options() {
             -c|-C|--cacerts)
                 cacerts=true
                 verbose "Linking system CA certificates"
-                shift
                 ;;
             *)
                 script_exit "Invalid argument was provided: ${option}" 2
