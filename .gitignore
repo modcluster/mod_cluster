@@ -1,9 +1,15 @@
+# Maven
+target/
+
+# Eclipse IDE
 .settings
 .classpath
 .project
-bin
-target
 
-.idea
+# IntelliJ IDEA IDE
+.idea/
 *.ipr
 *.iml
+
+# macOS
+.DS_Store
