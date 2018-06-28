@@ -24,13 +24,13 @@
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>org.jboss.mod_cluster-docs</artifactId>
-        <version>1.3.10.Final-SNAPSHOT</version>
+        <version>1.3.10.Final</version>
         <relativePath>..</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>User-Guide-${translation}</artifactId>
-    <version>1.3.10.Final-SNAPSHOT</version>
+    <version>1.3.10.Final</version>
     <packaging>jdocbook</packaging>
     <name>mod_cluster: User Guide (${translation})</name>
 
