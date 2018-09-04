@@ -37,6 +37,14 @@
     <description>An httpd-based load balancer</description>
     <url>http://jboss.org/mod_cluster</url>
 
+    <licenses>
+        <license>
+            <name>GNU Lesser General Public License v3.0 or later</name>
+            <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <scm>
         <connection>scm:git:https://github.com/modcluster/mod_cluster.git</connection>
         <developerConnection>scm:git:https://github.com/modcluster/mod_cluster.git</developerConnection>
