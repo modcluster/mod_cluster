@@ -800,7 +800,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
 {
     server_rec *s = main_server;
     char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
-            
+
     while (s) {
         void *sconf = s->module_config;
         proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
@@ -809,6 +809,11 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
 #else
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
 #endif
+
+        if (s!=main_server && creat_bal == CREAT_ROOT) {
+                    s = s->next;
+                    continue;
+        }
 
         if (!balancer && (creat_bal == CREAT_NONE ||
             (creat_bal == CREAT_ROOT && s!=main_server))) {
@@ -887,6 +892,105 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
             create_worker(conf, balancer, s, node, pool);
         s = s->next;
     }
+}
+
+/*
+ * Adds the balancers and the workers to the VirtualHosts corresponding to node only for the given server
+ * Note that the calling routine should lock before calling us.
+ * @param node the node information to add.
+ * @param pool  temporary pool to use for temporary buffer.
+ * @param server the server to use
+ */
+static void add_balancers_workers_for_server(nodeinfo_t *node, apr_pool_t *pool, server_rec *s)
+{
+    char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
+
+        void *sconf = s->module_config;
+        proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+        proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name, 0);
+#else
+        proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
+#endif
+
+        if (s!=main_server && creat_bal == CREAT_ROOT) {
+                    return;
+        }
+
+        if (!balancer && (creat_bal == CREAT_NONE ||
+            (creat_bal == CREAT_ROOT && s!=main_server))) {
+            return;
+        }
+        if (!balancer)
+            balancer = add_balancer_node(node, conf, pool, s);
+        else {
+            /* We "reuse" the balancer */
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+            balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
+            if (balan != NULL) {
+                int changed = 0;
+                if (!balancer->s->sticky_force && balan->StickySessionForce) {
+                    balancer->s->sticky_force = 1;
+                    changed = -1;
+                }
+                if (balancer->s->sticky_force && !balan->StickySessionForce) {
+                    balancer->s->sticky_force = 0;
+                    changed = -1;
+                }
+                if (strcmp(balan->StickySessionCookie, balancer->s->sticky) != 0) {
+                    strncpy(balancer->s->sticky , balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
+                    balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
+                    changed = -1;
+                }
+                if (strcmp(balan->StickySessionPath, balancer->s->sticky_path) != 0) {
+                    strncpy(balancer->s->sticky_path , balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
+                    balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
+                    changed = -1;
+                }
+                balancer->s->timeout =  balan->Timeout;
+                balancer->s->max_attempts = balan->Maxattempts;
+                balancer->s->max_attempts_set = 1;
+                if (changed) {
+                    /* log a warning */
+                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
+                                 "Balancer %s changed" , &balancer->s->name[11]);
+                }
+            }
+#else
+            balancerinfo_t *balan = read_balancer_name(&balancer->name[11], pool);
+            if (balan != NULL) {
+                char *sticky = apr_psprintf(pool, "%s|%s", balan->StickySessionCookie,
+                                                           balan->StickySessionPath);
+                int sticky_force=0;
+                int changed = 0;
+                if (balan->StickySession)
+                    sticky_force += STSESSION;
+                if (balan->StickySessionForce)
+                    sticky_force += STSESSFOR;
+                if (balan->StickySessionRemove)
+                    sticky_force += STSESSREM;
+              
+                if (balancer->sticky_force != sticky_force) {
+                    balancer->sticky_force = sticky_force;
+                    changed = -1;
+                }
+                if (balancer->sticky == NULL || strcmp(sticky, balancer->sticky) != 0) {
+                    balancer->sticky = apr_pstrdup(conf->pool, sticky);
+                    changed = -1;
+                }
+                balancer->timeout =  balan->Timeout;
+                balancer->max_attempts = balan->Maxattempts;
+                balancer->max_attempts_set = 1;
+                if (changed) {
+                    /* log a warning */
+                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
+                                 "Balancer %s changed" , &balancer->name[11]);
+                }
+            }
+#endif
+        }
+        if (balancer)
+            create_worker(conf, balancer, s, node, pool);
 }
 
 /* the worker corresponding to the id, note that we need to compare the shared memory pointer too */
@@ -1064,7 +1168,7 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
             continue;
-        add_balancers_workers(ou, pool);
+        add_balancers_workers_for_server(ou, pool, server);
     } 
 
     apr_thread_mutex_unlock(lock);
