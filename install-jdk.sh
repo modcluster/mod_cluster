@@ -23,7 +23,7 @@ set -o errexit
 
 function initialize() {
     readonly script_name="$(basename "${BASH_SOURCE[0]}")"
-    readonly script_version='2018-07-13'
+    readonly script_version='2018-09-26'
 
     dry=false
     silent=false
@@ -53,7 +53,7 @@ Options:
   -v|--verbose              Displays verbose output
 
   -f|--feature 9|10|...|ea  JDK feature release number, defaults to "ea"
-  -l|--license GPL|BCL      License defaults to "GPL"
+  -l|--license GPL|BCL      License defaults to "GPL", BCL also indicates OTN-LA for Oracle Java SE
   -o|--os linux-x64|osx-x64 Operating system identifier (works best with GPL license)
   -u|--url "https://..."    Use custom JDK archive (provided as .tar.gz file)
   -w|--workspace PATH       Working directory defaults to \${HOME} [${HOME}]
@@ -196,14 +196,20 @@ function determine_url() {
     case "${feature}-${license}" in
         9-GPL) url="${DOWNLOAD}/GA/jdk9/9.0.4/binaries/openjdk-9.0.4_${os}_bin.tar.gz"; return;;
         9-BCL) url="${ORACLE}/9.0.4+11/c2514751926b4512b076cc82f959763f/jdk-9.0.4_${os}_bin.tar.gz"; return;;
-       10-GPL) url="${DOWNLOAD}/GA/jdk10/10.0.1/fb4372174a714e6b8c52526dc134031e/10/openjdk-10.0.1_${os}_bin.tar.gz"; return;;
-       10-BCL) url="${ORACLE}/10.0.1+10/fb4372174a714e6b8c52526dc134031e/jdk-10.0.1_${os}_bin.tar.gz"; return;;
+       10-GPL) url="${DOWNLOAD}/GA/jdk10/10.0.2/19aef61b38124481863b1413dce1855f/13/openjdk-10.0.2_${os}_bin.tar.gz"; return;;
+       10-BCL) url="${ORACLE}/10.0.2+13/19aef61b38124481863b1413dce1855f/jdk-10.0.2_${os}_bin.tar.gz"; return;;
+       11-GPL) url="${DOWNLOAD}/GA/jdk11/28/GPL/openjdk-11+28_${os}_bin.tar.gz"; return;;
+       11-BCL) url="${ORACLE}/11+28/55eed80b163941c8885ad9298e6d786a/jdk-11_${os}_bin.tar.gz"; return;;
     esac
 
     # EA or RC build?
     local JAVA_NET="http://jdk.java.net/${feature}"
     local candidates=$(wget --quiet --output-document - ${JAVA_NET} | grep -Eo 'href[[:space:]]*=[[:space:]]*"[^\"]+"' | grep -Eo '(http|https)://[^"]+')
-    url=$(echo "${candidates}" | grep -Eo "${DOWNLOAD}/.+/jdk${feature}/.+/${license}/.*jdk-${feature}.+${os}_bin.tar.gz$")
+    url=$(echo "${candidates}" | grep -Eo "${DOWNLOAD}/.+/jdk${feature}/.+/${license}/.*jdk-${feature}.+${os}_bin.tar.gz$" || true)
+
+    if [[ -z ${url} ]]; then
+        script_exit "Couldn't determine a download url for ${feature}-${license} on ${os}" 1
+    fi
 }
 
 function prepare_variables() {
@@ -244,7 +250,7 @@ function download_and_extract_and_set_target() {
     local local="--directory-prefix ${workspace}"
     local remote='--timestamping --continue'
     local wget_options="${quiet} ${local} ${remote}"
-    local tar_options="-z --file ${archive}" # "--auto-compress" is not supported on mac osx, using "-z"
+    local tar_options="--file ${archive}"
 
     say "Downloading JDK from ${url}..."
     verbose "Using wget options: ${wget_options}"
