@@ -194,4 +194,8 @@ public interface ModClusterLogger {
 
     @Message(id = 53, value = "Attempted to create multicast socket with unicast address (%s)! Disabling multicast advertise mechanism.")
     RuntimeException createMulticastSocketWithUnicastAddress(InetAddress address);
+
+    @LogMessage(level = INFO)
+    @Message(id = 54, value = "Starting to drain %d active sessions from %s:%s waiting indefinitely until all remaining sessions are drained or expired.")
+    void startSessionDrainingIndefinitely(int sessions, Host host, Context context);
 }
