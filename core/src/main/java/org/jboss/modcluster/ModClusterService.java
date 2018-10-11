@@ -684,10 +684,14 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         if (remainingSessions == 0)
             return true;
 
-        // Notify the user that the server is draining sessions since it might appear stuck since messages while draining are on DEBUG
-        ModClusterLogger.LOGGER.startSessionDraining(remainingSessions, context.getHost(), context, TimeUnit.MILLISECONDS.toSeconds(end - start));
-
         boolean noTimeout = (start >= end);
+
+        // Notify the user that the server is draining sessions since it might appear stuck since messages while draining are on DEBUG
+        if (noTimeout) {
+            ModClusterLogger.LOGGER.startSessionDrainingIndefinitely(remainingSessions, context.getHost(), context);
+        } else {
+            ModClusterLogger.LOGGER.startSessionDraining(remainingSessions, context.getHost(), context, TimeUnit.MILLISECONDS.toSeconds(end - start));
+        }
 
         HttpSessionListener listener = new NotifyOnDestroySessionListener();
 
