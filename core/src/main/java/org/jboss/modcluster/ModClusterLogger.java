@@ -189,4 +189,10 @@ public interface ModClusterLogger {
 
     @Message(id = 50, value = "Initial load must be within the range [0..100] or -1 to not prepopulate with initial load, but was: %d")
     RuntimeException invalidInitialLoad(int initialLoad);
+
+    // Skip IDs 51-53 used in version 2.0
+
+    @LogMessage(level = INFO)
+    @Message(id = 54, value = "Starting to drain %d active sessions from %s:%s waiting indefinitely until all remaining sessions are drained or expired.")
+    void startSessionDrainingIndefinitely(int sessions, Host host, Context context);
 }
