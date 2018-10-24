@@ -92,10 +92,6 @@
         <!-- Plugin versions -->
         <version.checkstyle>6.19</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.6.Final</version.org.wildfly.checkstyle-config>
-
-        <!-- Documentation -->
-        <version.asciidoctor-maven-plugin>1.5.6</version.asciidoctor-maven-plugin>
-        <version.org.asciidoctor.asciidoctorj-pdf>1.5.0-alpha.16</version.org.asciidoctor.asciidoctorj-pdf>
     </properties>
 
     <dependencyManagement>
@@ -337,7 +333,6 @@
                 <module>load-spi</module>
                 <module>demo</module>
                 <module>dist</module>
-                <module>docs</module>
             </modules>
         </profile>
         <profile>
