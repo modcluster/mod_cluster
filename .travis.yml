@@ -16,20 +16,6 @@ matrix:
     # JDK 8
     - env: JDK_RELEASE='OracleJDK 8'
       jdk: oraclejdk8
-      deploy:
-        provider: pages
-        skip-cleanup: true
-        repo: modcluster/documentation
-        local-dir: docs/target/generated-docs/
-        target-branch: gh-pages
-        keep-history: true
-        github-token: $GITHUB_TOKEN
-        committer-from-gh: true
-        email: docs-bot@modcluster.io
-        allow-empty-commit: false
-        verbose: true
-        on:
-          branch: master
     - env: JDK_RELEASE='OpenJDK 8'
       jdk: openjdk8
     # JDK 9
