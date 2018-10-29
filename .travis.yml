@@ -4,15 +4,6 @@ language: java
 script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
 matrix:
   include:
-    # JDK 7
-    - env: JDK_RELEASE='OracleJDK 7'
-      jdk: oraclejdk7
-      dist: precise
-      install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
-      script: mvn verify -Pdist -Dhttps.protocols=TLSv1.2
-    - env: JDK_RELEASE='OpenJDK 7'
-      jdk: openjdk7
-      script: mvn verify -Pdist
     # JDK 8
     - env: JDK_RELEASE='OracleJDK 8'
       jdk: oraclejdk8

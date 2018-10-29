@@ -24,6 +24,7 @@ package org.jboss.modcluster.advertise.impl;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -123,7 +124,17 @@ public class AdvertiseListenerImplTestCase {
 
             assertFalse(this.channel.isConnected());
 
-            listener.close();
+            if (!System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+                listener.close();
+            } else {
+                try {
+                    listener.close();
+                } catch (IOException e) {
+                    // Workaround for https://bugs.openjdk.java.net/browse/JDK-8050499
+                    if (!"Unknown error: 316".equals(e.getMessage()))
+                        throw e;
+                }
+            }
 
             assertFalse(this.channel.isOpen());
         }

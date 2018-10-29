@@ -70,14 +70,9 @@
     </modules>
 
     <properties>
-        <!-- Override default 1.8 target/source in jboss-parent -->
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <maven.compiler.source>1.7</maven.compiler.source>
-
         <!-- Dependency versions -->
         <version.jboss-logging>3.3.2.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.1.0.Final</version.jboss-logging-processor>
-        <version.jboss-logging-processor.jdk7>2.0.2.Final</version.jboss-logging-processor.jdk7>
         <version.tomcat7>7.0.91</version.tomcat7>
         <version.tomcat8>8.0.53</version.tomcat8>
         <version.tomcat85>8.5.34</version.tomcat85>
@@ -85,7 +80,7 @@
         <version.http-client>4.3.6</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
-        <version.junit>4.10</version.junit>
+        <version.junit>4.12</version.junit>
         <version.mockito>2.5.2</version.mockito>
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
 
@@ -334,15 +329,6 @@
                 <module>demo</module>
                 <module>dist</module>
             </modules>
-        </profile>
-        <profile>
-            <id>jdk7</id>
-            <activation>
-                <jdk>1.7</jdk>
-            </activation>
-            <properties>
-                <version.jboss-logging-processor>${version.jboss-logging-processor.jdk7}</version.jboss-logging-processor>
-            </properties>
         </profile>
     </profiles>
 </project>
