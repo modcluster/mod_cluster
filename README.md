@@ -16,7 +16,7 @@ Project mod_cluster boasts the following advantages over other httpd-based load-
 * Fine grained web-app lifecycle control
 * AJP is optional
 
-[http://mod-cluster.jboss.org/](http://mod-cluster.jboss.org/)
+[https://modcluster.io](https://modcluster.io)
 
 
 Installation Instructions
