@@ -2895,6 +2895,12 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
         }
 #endif
     }
+    if (SIZEOFSCORE <= sizeof(proxy_worker_shared)) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                     "SIZEOFSCORE too small for mod_proxy shared stat structure %d <= %d",
+                     SIZEOFSCORE, sizeof(proxy_worker_shared));
+        return HTTP_INTERNAL_SERVER_ERROR;
+    }
 
     /* Check that the mod_proxy_balancer.c is not loaded */
     if (ap_find_linked_module("mod_proxy_balancer.c") != NULL) {
