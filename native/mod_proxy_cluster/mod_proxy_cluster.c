@@ -1168,6 +1168,8 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
             continue;
+        if (ou->mess.remove)
+            continue;
         add_balancers_workers_for_server(ou, pool, server);
     } 
 
@@ -2513,6 +2515,8 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     char *ptr;
 
     if (node_storage->read_node(id, &node) != APR_SUCCESS)
+        return 500;
+    if (node->mess.remove)
         return 500;
 
     /* Calculate the address of our shared memory that corresponds to the stat info of the worker */
