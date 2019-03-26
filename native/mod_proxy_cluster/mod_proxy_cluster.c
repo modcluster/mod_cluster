@@ -3101,12 +3101,9 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
+    /* make sure we have a up to date workers and balancers in our process */
+    update_workers_node(conf, r->pool, r->server, 1);
     balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
-    if (!balancer) {
-        /* May be the balancer has not been created (we use shared memory to find the balancer name) */
-        update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
-    }
     if (!balancer) {
         balancer = get_context_host_balancer(r, vhost_table, context_table, node_table);
     }
