@@ -2340,11 +2340,15 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             nodeinfo_t *node;
             proxy_cluster_helper *helper;
             proxy_worker **run = (proxy_worker **) ptr;
+            char *pptr;
 
             worker = *run;
             helper = (proxy_cluster_helper *) worker->context;
-            if (!worker->s)
+            if (!worker->s || !worker->context) {
+                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "proxy: byrequests balancer skipping BAD worker");
                 continue;
+            }
             if (helper->index == 0)
                 continue; /* marked removed */
             if (helper->index != worker->s->index) {
@@ -2367,7 +2371,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
              *            0 standby.
              *           >0 factor to use.
              */
-            if (worker->s == NULL || worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
+            if (worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
                 continue;
 
             /* If the worker is in error state the STATUS logic will retry it */
@@ -2385,6 +2389,10 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
 #endif
                 continue; /* Can't read node */
+            pptr = (char *) node;
+            pptr = pptr + node->offset;
+            if (worker->s != (proxy_worker_shared *) pptr)
+                continue; /* wrong shared memory address */
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table, node_table)) != NULL) {
