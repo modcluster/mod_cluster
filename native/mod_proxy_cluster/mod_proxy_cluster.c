@@ -2913,7 +2913,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
         proxy_balancer *balancer = (proxy_balancer *) ptr;
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-        if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path == '\0')
+        if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
             continue;
         if (strlen(balancer->s->name)<=11)
             continue;
@@ -3420,7 +3420,7 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "find_session_route: sticky %s sticky_path: %s sticky_force: %d", balancer->s->sticky, balancer->s->sticky_path, balancer->s->sticky_force);
 #endif
-    if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path == '\0')
+    if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
         return NULL;
 #else
 #if HAVE_CLUSTER_EX_DEBUG
