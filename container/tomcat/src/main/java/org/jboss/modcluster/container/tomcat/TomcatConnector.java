@@ -85,7 +85,7 @@ public class TomcatConnector implements Connector {
 
         ProtocolHandler handler = this.connector.getProtocolHandler();
 
-        return Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "secure")) ? Type.HTTPS : Type.HTTP;
+        return Boolean.TRUE.equals(IntrospectionUtils.getProperty(handler, "SSLEnabled")) ? Type.HTTPS : Type.HTTP;
     }
 
     @Override
