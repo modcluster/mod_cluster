@@ -12,7 +12,7 @@
 #   JAVA_HOME is set to the extracted JDK directory
 #   PATH is prepended with ${JAVA_HOME}/bin
 #
-# (C) 2018 Christian Stein
+# (C) 2019 Christian Stein
 #
 # https://github.com/sormuras/bach/blob/master/install-jdk.sh
 #
@@ -23,7 +23,7 @@ set -o errexit
 
 function initialize() {
     readonly script_name="$(basename "${BASH_SOURCE[0]}")"
-    readonly script_version='2019-01-18 II'
+    readonly script_version='2019-03-23'
 
     dry=false
     silent=false
@@ -183,6 +183,9 @@ function perform_sanity_checks() {
     if [[ ${feature} -lt 9 ]] || [[ ${feature} -gt ${latest_jdk} ]]; then
         script_exit "Expected feature release number in range of 9 to ${latest_jdk}, but got: ${feature}" 3
     fi
+    if [[ ${feature} -gt 11 ]] && [[ ${license} == 'BCL' ]]; then
+        script_exit "BCL licensed downloads are only supported up to JDK 11, but got: ${feature}" 3
+    fi
     if [[ -d "$target" ]]; then
         script_exit "Target directory must not exist, but it does: $(du -hs '${target}')" 3
     fi
@@ -204,10 +207,10 @@ function determine_url() {
        11-BCL) url="${ORACLE}/11.0.2+9/f51449fcd52f4d52b93a989c5c56ed3c/jdk-11.0.2_${os}_bin.tar.gz"; return;;
     esac
 
-    # EA or RC build?
+    # EA or RC or GA build?
     local JAVA_NET="http://jdk.java.net/${feature}"
     local candidates=$(wget --quiet --output-document - ${JAVA_NET} | grep -Eo 'href[[:space:]]*=[[:space:]]*"[^\"]+"' | grep -Eo '(http|https)://[^"]+')
-    url=$(echo "${candidates}" | grep -Eo "${DOWNLOAD}/.+/jdk${feature}/.+/${license}/.*jdk-${feature}.+${os}_bin.tar.gz$" || true)
+    url=$(echo "${candidates}" | grep -Eo "${DOWNLOAD}/.+/jdk${feature}/.*${license}/.*jdk-${feature}.+${os}_bin(.tar.gz|.zip)$" || true)
 
     if [[ -z ${url} ]]; then
         script_exit "Couldn't determine a download url for ${feature}-${license} on ${os}" 1
@@ -262,6 +265,10 @@ function download_and_extract_and_set_target() {
         wget ${wget_options} --header "Cookie: oraclelicense=accept-securebackup-cookie" ${url}
     fi
 
+    if [[ ${os} == 'windows-x64' ]]; then
+        script_exit "Extracting archives on Windows isn't supported, yet" 4
+    fi
+
     verbose "Using tar options: ${tar_options}"
     if [[ ${target} == '?' ]]; then
         tar --extract ${tar_options} -C "${workspace}"
@@ -291,7 +298,6 @@ function download_and_extract_and_set_target() {
     # Link to system certificates
     # http://openjdk.java.net/jeps/319
     # https://bugs.openjdk.java.net/browse/JDK-8196141
-    # TODO: Provide support for other distributions than Debian/Ubuntu
     if [[ ${cacerts} == true ]]; then
         mv "${target}/lib/security/cacerts" "${target}/lib/security/cacerts.jdk"
         ln -s /etc/ssl/certs/java/cacerts "${target}/lib/security/cacerts"
@@ -300,9 +306,9 @@ function download_and_extract_and_set_target() {
 
 function main() {
     initialize
-    say "$script_name $script_version"
-
     parse_options "$@"
+
+    say "$script_name $script_version"
     prepare_variables
 
     if [[ ${silent} == false ]]; then print_variables; fi
