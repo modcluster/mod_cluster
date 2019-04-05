@@ -9,8 +9,8 @@ matrix:
   - jdk: openjdk6
     # Workaround https://github.com/travis-ci/travis-ci/issues/8199
     dist: precise
-    install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
-    script: mvn verify -Pdist -pl !container/tomcat8 -Dhttps.protocols=TLSv1.2
+    install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+    script: mvn verify -Pdist -pl !container/tomcat8
   # Workaround travis dropping oraclejdk7 on stable/trusty
   # https://github.com/travis-ci/travis-ci/issues/7884#issuecomment-308451879
   - jdk: oraclejdk7
