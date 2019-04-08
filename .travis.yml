@@ -19,8 +19,18 @@ matrix:
       install: . ./install-jdk.sh -F 10
     - env: JDK_RELEASE='OpenJDK 10'
       install: . ./install-jdk.sh -F 10
-    # JDK 11-ea
+    # JDK 11
     - env: JDK_RELEASE='OracleJDK 11'
       install: . ./install-jdk.sh -F 11 -L BCL
     - env: JDK_RELEASE='OpenJDK 11'
       install: . ./install-jdk.sh -F 11 -L GPL
+    # JDK 12
+    - env: JDK_RELEASE='OracleJDK 12'
+      install: . ./install-jdk.sh -F 12
+    - env: JDK_RELEASE='OpenJDK 12'
+      install: . ./install-jdk.sh -F 12
+    # JDK 13
+    - env: JDK_RELEASE='OracleJDK 13'
+      install: . ./install-jdk.sh -F 13
+    - env: JDK_RELEASE='OpenJDK 13'
+      install: . ./install-jdk.sh -F 13
