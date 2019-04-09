@@ -34,10 +34,10 @@ public class ConnectorTestCase {
     protected final Connector httpConnector = createConnector("HTTP/1.1", Connector.Type.HTTP, false);
     protected final Connector httpsConnector = createConnector("HTTP/1.1", Connector.Type.HTTPS, true);
 
-    protected Connector createConnector(String protocol, Connector.Type type, boolean secure) {
+    protected Connector createConnector(String protocol, Connector.Type type, boolean sslEnabled) {
         org.apache.catalina.connector.Connector connector = this.createConnector(protocol);
         connector.setPort(type.getDefaultPort());
-        this.setSSLEnabled(connector, secure);
+        this.setSSLEnabled(connector, sslEnabled);
         return this.createConnector(connector);
     }
 
@@ -49,8 +49,8 @@ public class ConnectorTestCase {
         }
     }
 
-    protected void setSSLEnabled(org.apache.catalina.connector.Connector connector, boolean secure) {
-        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "SSLEnabled", Boolean.toString(secure));
+    protected void setSSLEnabled(org.apache.catalina.connector.Connector connector, boolean sslEnabled) {
+        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "SSLEnabled", Boolean.toString(sslEnabled));
     }
 
     protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
