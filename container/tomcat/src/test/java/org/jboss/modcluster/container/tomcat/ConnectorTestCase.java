@@ -37,7 +37,7 @@ public class ConnectorTestCase {
     protected Connector createConnector(String protocol, Connector.Type type, boolean secure) {
         org.apache.catalina.connector.Connector connector = this.createConnector(protocol);
         connector.setPort(type.getDefaultPort());
-        this.setSecure(connector, secure);
+        this.setSSLEnabled(connector, secure);
         return this.createConnector(connector);
     }
 
@@ -49,8 +49,8 @@ public class ConnectorTestCase {
         }
     }
 
-    protected void setSecure(org.apache.catalina.connector.Connector connector, boolean secure) {
-        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "secure", Boolean.toString(secure));
+    protected void setSSLEnabled(org.apache.catalina.connector.Connector connector, boolean secure) {
+        IntrospectionUtils.setProperty(connector.getProtocolHandler(), "SSLEnabled", Boolean.toString(secure));
     }
 
     protected Connector createConnector(org.apache.catalina.connector.Connector connector) {
