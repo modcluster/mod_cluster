@@ -1,5 +1,6 @@
 language: java
 jdk:
+  - oraclejdk11
   - oraclejdk9
   - oraclejdk8
   - openjdk7
@@ -14,6 +15,8 @@ matrix:
     install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
     script: mvn verify -Pdist -Dhttps.protocols=TLSv1.2
   # Tomcat 9.x targets
+  - jdk: oraclejdk11
+    script: mvn verify -PTC9 -Pdist
   - jdk: oraclejdk9
     script: mvn verify -PTC9 -Pdist
   - jdk: oraclejdk8
