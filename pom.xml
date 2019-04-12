@@ -40,7 +40,7 @@
     <licenses>
         <license>
             <name>GNU Lesser General Public License v3.0 or later</name>
-            <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
+            <url>https://repository.jboss.org/licenses/lgpl-3.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -57,7 +57,7 @@
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 
