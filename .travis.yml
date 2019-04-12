@@ -3,7 +3,8 @@ jdk:
   - oraclejdk9
   - oraclejdk8
   - openjdk7
-script: mvn verify -Pdist
+install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script: mvn -s .travis.maven.settings.xml verify -Pdist
 matrix:
   include:
   # Workaround travis dropping oraclejdk7 on stable/trusty
@@ -11,13 +12,13 @@ matrix:
   - env: JDK_RELEASE='OracleJDK 7'
     jdk: oraclejdk7
     dist: precise
-    install: mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
-    script: mvn verify -Pdist -Dhttps.protocols=TLSv1.2
+    install: mvn install -s .travis.maven.settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
+    script: mvn verify -s .travis.maven.settings.xml -Pdist -Dhttps.protocols=TLSv1.2
   # Tomcat 9.x targets
   - jdk: oraclejdk9
-    script: mvn verify -PTC9 -Pdist
+    script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
   - jdk: oraclejdk8
-    script: mvn verify -PTC9 -Pdist
+    script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
 notifications:
   email: false
 # Workaround openjdk7 crashes in container-based environments failing with:
