@@ -87,6 +87,9 @@
         <!-- Plugin versions -->
         <version.checkstyle>8.18</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
+
+        <!-- Plugin configuration -->
+        <insecure.repositories>ERROR</insecure.repositories>
     </properties>
 
     <dependencyManagement>
@@ -235,6 +238,27 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-https-repositories</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedRepositories>
+                                    <level>${insecure.repositories}</level>
+                                    <bannedRepositories>http://*</bannedRepositories>
+                                    <bannedPluginRepositories>http://*</bannedPluginRepositories>
+                                </bannedRepositories>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
