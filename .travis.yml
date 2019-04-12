@@ -1,7 +1,8 @@
 sudo: false
 dist: trusty
 language: java
-script: mvn verify -Pdist && mvn verify -PTC9 -Pdist
+install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script: mvn -s .travis.maven.settings.xml verify -Pdist && mvn -s .travis.maven.settings.xml verify -PTC9 -Pdist
 matrix:
   include:
     # JDK 8
