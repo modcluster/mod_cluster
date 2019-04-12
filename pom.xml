@@ -83,6 +83,9 @@
 
         <!-- Downgrade surefire plugin from 2.20.1 to 2.19.1 which works with JDK10 -->
         <version.surefire.plugin>2.19.1</version.surefire.plugin>
+
+        <!-- Plugin configuration -->
+        <insecure.repositories>ERROR</insecure.repositories>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -236,6 +239,27 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-https-repositories</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedRepositories>
+                                    <level>${insecure.repositories}</level>
+                                    <bannedRepositories>http://*</bannedRepositories>
+                                    <bannedPluginRepositories>http://*</bannedPluginRepositories>
+                                </bannedRepositories>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
