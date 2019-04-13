@@ -70,10 +70,10 @@ demo
 ```
 
 
-Sources
--------
+Source Code
+-----------
 
-Sources for the mod_cluster project are located on GitHub:
+Source code for the mod_cluster project is located on GitHub:
 
 [https://github.com/modcluster/mod_cluster](https://github.com/modcluster/mod_cluster)
 
