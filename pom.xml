@@ -279,25 +279,6 @@
                 <module>demo</module>
             </modules>
         </profile>
-        <!-- For JDK6 override the central repository with its non-SSL version -->
-        <profile>
-            <id>jdk6</id>
-            <activation>
-                <jdk>1.6</jdk>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>central</id>
-                    <url>http://repo.maven.apache.org/maven2</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <url>http://repo.maven.apache.org/maven2</url>
-                </pluginRepository>
-            </pluginRepositories>
-        </profile>
         <profile>
             <id>jdk9</id>
             <activation>

@@ -23,7 +23,7 @@ junit.jar=${base.path}/junit-${junit.version}/junit-${junit.version}.jar
 base-junit.home=${base.path}/junit-${junit.version}
 
 # Location of jbossweb jar files.
-base-jbossweb.loc=http://repository.jboss.org/nexus/content/groups/public/jboss/web/
+base-jbossweb.loc=https://repository.jboss.org/nexus/content/groups/public/jboss/web/
 jbossweb.version=2.1.13.TEST1
 base-jbossweb.home=${base.path}/${jbossweb.version}/lib
 
@@ -33,7 +33,7 @@ jbossweb.jar=${base.path}/${jbossweb.version}/jbossweb-${jbossweb.version}.jar
 servlet-api.jar.loc=${base-jbossweb.loc}/servlet-api/${jbossweb.version}/servlet-api-${jbossweb.version}.jar 
 servlet-api.jar=${base.path}/${jbossweb.version}/servlet-api-${jbossweb.version}.jar
 
-base-jboss.loc=http://repository.jboss.com/maven2/jboss
+base-jboss.loc=https://repository.jboss.com/maven2/jboss
 
 jboss-logging.version=2.0.3.GA
 base-jboss-logging.home=${base.path}/${jboss-logging.version}/lib

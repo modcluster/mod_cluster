@@ -5,24 +5,5 @@ jdk:
   - openjdk7
 install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script: mvn -s .travis.maven.settings.xml verify -Pdist
-matrix:
-  include:
-  - jdk: openjdk6
-    # Workaround https://github.com/travis-ci/travis-ci/issues/8199
-    dist: precise
-    install: mvn install -s .travis.maven.settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-    script: mvn verify -s .travis.maven.settings.xml -Pdist -pl !container/tomcat8
-  # Workaround travis dropping oraclejdk7 on stable/trusty
-  # https://github.com/travis-ci/travis-ci/issues/7884#issuecomment-308451879
-  - jdk: oraclejdk7
-    dist: precise
-    install: mvn install -s .travis.maven.settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
-    script: mvn verify -s .travis.maven.settings.xml -Pdist -Dhttps.protocols=TLSv1.2
 notifications:
   email: false
-# Workaround openjdk6/7 crashes in container-based environments failing with:
-# *** buffer overflow detected ***: /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java terminated
-# /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libnet.so(Java_java_net_Inet4AddressImpl_getLocalHostName+0x190)[0x7fde947f34a0]
-sudo: required
-addons:
-  hostname: localhost
