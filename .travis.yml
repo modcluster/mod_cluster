@@ -7,13 +7,6 @@ install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.java
 script: mvn -s .travis.maven.settings.xml verify -Pdist
 matrix:
   include:
-  # Workaround travis dropping oraclejdk7 on stable/trusty
-  # https://github.com/travis-ci/travis-ci/issues/7884#issuecomment-308451879
-  - env: JDK_RELEASE='OracleJDK 7'
-    jdk: oraclejdk7
-    dist: precise
-    install: mvn install -s .travis.maven.settings.xml -DskipTests=true -Dmaven.javadoc.skip=true -B -V -Dhttps.protocols=TLSv1.2
-    script: mvn verify -s .travis.maven.settings.xml -Pdist -Dhttps.protocols=TLSv1.2
   # Tomcat 9.x targets
   - jdk: oraclejdk9
     script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
@@ -21,9 +14,3 @@ matrix:
     script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
 notifications:
   email: false
-# Workaround openjdk7 crashes in container-based environments failing with:
-# *** buffer overflow detected ***: /usr/lib/jvm/java-7-openjdk-amd64/jre/bin/java terminated
-# /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64/libnet.so(Java_java_net_Inet4AddressImpl_getLocalHostName+0x190)[0x7fde947f34a0]
-sudo: required
-addons:
-  hostname: localhost
