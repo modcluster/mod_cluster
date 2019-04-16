@@ -1168,6 +1168,8 @@ static void update_workers_node(proxy_server_conf *conf, apr_pool_t *pool, serve
         nodeinfo_t *ou;
         if (node_storage->read_node(id[i], &ou) != APR_SUCCESS)
             continue;
+        if (ou->mess.remove)
+            continue;
         add_balancers_workers_for_server(ou, pool, server);
     } 
 
@@ -2338,11 +2340,15 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             nodeinfo_t *node;
             proxy_cluster_helper *helper;
             proxy_worker **run = (proxy_worker **) ptr;
+            char *pptr;
 
             worker = *run;
             helper = (proxy_cluster_helper *) worker->context;
-            if (!worker->s)
+            if (!worker->s || !worker->context) {
+                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "proxy: byrequests balancer skipping BAD worker");
                 continue;
+            }
             if (helper->index == 0)
                 continue; /* marked removed */
             if (helper->index != worker->s->index) {
@@ -2365,7 +2371,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
              *            0 standby.
              *           >0 factor to use.
              */
-            if (worker->s == NULL || worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
+            if (worker->s->lbfactor < 0 || (worker->s->lbfactor == 0 && !checking_standby))
                 continue;
 
             /* If the worker is in error state the STATUS logic will retry it */
@@ -2383,6 +2389,10 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
 #endif
                 continue; /* Can't read node */
+            pptr = (char *) node;
+            pptr = pptr + node->offset;
+            if (worker->s != (proxy_worker_shared *) pptr)
+                continue; /* wrong shared memory address */
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table, node_table)) != NULL) {
@@ -2513,6 +2523,8 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     char *ptr;
 
     if (node_storage->read_node(id, &node) != APR_SUCCESS)
+        return 500;
+    if (node->mess.remove)
         return 500;
 
     /* Calculate the address of our shared memory that corresponds to the stat info of the worker */
@@ -3005,7 +3017,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
         proxy_balancer *balancer = (proxy_balancer *) ptr;
 
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-        if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path == '\0')
+        if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
             continue;
         if (strlen(balancer->s->name)<=11)
             continue;
@@ -3205,12 +3217,9 @@ static int proxy_cluster_trans(request_rec *r)
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
 #endif
 
+    /* make sure we have a up to date workers and balancers in our process */
+    update_workers_node(conf, r->pool, r->server, 1);
     balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
-    if (!balancer) {
-        /* May be the balancer has not been created (we use shared memory to find the balancer name) */
-        update_workers_node(conf, r->pool, r->server, 1);
-        balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
-    }
     if (!balancer) {
         balancer = get_context_host_balancer(r, vhost_table, context_table, node_table);
     }
@@ -3515,7 +3524,7 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "find_session_route: sticky %s sticky_path: %s sticky_force: %d", balancer->s->sticky, balancer->s->sticky_path, balancer->s->sticky_force);
 #endif
-    if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path == '\0')
+    if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
         return NULL;
 #else
 #if HAVE_CLUSTER_EX_DEBUG
