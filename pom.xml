@@ -40,7 +40,7 @@
     <licenses>
         <license>
             <name>GNU Lesser General Public License v3.0 or later</name>
-            <url>http://repository.jboss.org/licenses/lgpl-3.0.txt</url>
+            <url>https://repository.jboss.org/licenses/lgpl-3.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -57,7 +57,7 @@
         <repository>
             <id>jboss-public-repository-group</id>
             <name>JBoss Public Repository Group</name>
-            <url>http://repository.jboss.org/nexus/content/groups/public/</url>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 
@@ -83,6 +83,9 @@
 
         <!-- Downgrade surefire plugin from 2.20.1 to 2.19.1 which works with JDK10 -->
         <version.surefire.plugin>2.19.1</version.surefire.plugin>
+
+        <!-- Plugin configuration -->
+        <insecure.repositories>ERROR</insecure.repositories>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -239,6 +242,27 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-https-repositories</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedRepositories>
+                                    <level>${insecure.repositories}</level>
+                                    <bannedRepositories>http://*</bannedRepositories>
+                                    <bannedPluginRepositories>http://*</bannedPluginRepositories>
+                                </bannedRepositories>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -254,25 +278,6 @@
                 <module>container</module>
                 <module>demo</module>
             </modules>
-        </profile>
-        <!-- For JDK6 override the central repository with its non-SSL version -->
-        <profile>
-            <id>jdk6</id>
-            <activation>
-                <jdk>1.6</jdk>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>central</id>
-                    <url>http://repo.maven.apache.org/maven2</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <id>central</id>
-                    <url>http://repo.maven.apache.org/maven2</url>
-                </pluginRepository>
-            </pluginRepositories>
         </profile>
         <profile>
             <id>jdk9</id>
