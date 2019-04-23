@@ -62,8 +62,8 @@
 
     <properties>
         <!-- Dependency versions -->
-        <version.jboss-logging>3.3.2.Final</version.jboss-logging>
-        <version.jboss-logging-processor>2.1.0.Final</version.jboss-logging-processor>
+        <version.jboss-logging>3.4.0.Final</version.jboss-logging>
+        <version.jboss-logging-processor>2.2.0.Final</version.jboss-logging-processor>
         <version.tomcat7>7.0.93</version.tomcat7>
         <version.tomcat8>8.0.53</version.tomcat8>
         <version.tomcat85>8.5.39</version.tomcat85>
