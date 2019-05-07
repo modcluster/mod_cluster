@@ -1645,6 +1645,7 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
 #if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 rnew->connection->log_id = "-";
                 rnew->log_id = "-";
+                rnew->connection->conn_config = ap_create_conn_config(rrp);
                 rnew->useragent_addr = apr_pcalloc(rrp, sizeof(apr_sockaddr_t));
 #endif
                 rnew->per_dir_config = server->lookup_defaults;
@@ -2894,6 +2895,12 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
             return HTTP_INTERNAL_SERVER_ERROR;
         }
 #endif
+    }
+    if (SIZEOFSCORE <= sizeof(proxy_worker_shared)) {
+        ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
+                     "SIZEOFSCORE too small for mod_proxy shared stat structure %d <= %d",
+                     SIZEOFSCORE, sizeof(proxy_worker_shared));
+        return HTTP_INTERNAL_SERVER_ERROR;
     }
 
     /* Check that the mod_proxy_balancer.c is not loaded */
