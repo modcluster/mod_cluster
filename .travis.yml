@@ -2,7 +2,6 @@ language: java
 jdk:
   - oraclejdk9
   - oraclejdk8
-  - openjdk7
 install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script: mvn -s .travis.maven.settings.xml verify -Pdist
 matrix:
