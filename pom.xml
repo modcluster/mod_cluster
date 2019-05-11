@@ -46,8 +46,8 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:https://github.com/modcluster/mod_cluster.git</connection>
-        <developerConnection>scm:git:https://github.com/modcluster/mod_cluster.git</developerConnection>
+        <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
+        <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
         <url>https://github.com/modcluster/mod_cluster</url>
         <tag>HEAD</tag>
     </scm>
