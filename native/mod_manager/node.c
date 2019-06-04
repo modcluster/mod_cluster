@@ -189,8 +189,9 @@ nodeinfo_t * read_node(mem_t *s, nodeinfo_t *node)
  */
 apr_status_t get_node(mem_t *s, nodeinfo_t **node, int ids)
 {
+  apr_status_t status;
   s->storage->ap_slotmem_lock(s->slotmem);
-  apr_status_t status = s->storage->ap_slotmem_mem(s->slotmem, ids, (void **) node);
+  status = s->storage->ap_slotmem_mem(s->slotmem, ids, (void **) node);
   s->storage->ap_slotmem_unlock(s->slotmem);
   return(status);
 }
