@@ -6,3 +6,4 @@
 README.md       text eol=crlf
 LICENSE.txt     text eol=crlf
 *.bat           text eol=crlf
+mvnw.cmd        text eol=crlf
