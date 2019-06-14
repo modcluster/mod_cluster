@@ -1,8 +1,8 @@
 sudo: false
 dist: trusty
 language: java
-install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script: mvn -s .travis.maven.settings.xml verify -Pdist && mvn -s .travis.maven.settings.xml verify -PTC9 -Pdist
+install: true
+script: rm $HOME/.m2/settings.xml && ./mvnw verify -B && ./mvnw verify -PTC9 -B
 matrix:
   include:
     # JDK 8
@@ -35,3 +35,5 @@ matrix:
       install: . ./install-jdk.sh -F 13
     - env: JDK_RELEASE='OpenJDK 13'
       install: . ./install-jdk.sh -F 13
+notifications:
+  email: false
