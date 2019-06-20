@@ -73,7 +73,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/demo.xml</descriptor>
                             </descriptors>
-                            <tarLongFileMode>gnu</tarLongFileMode>
+                            <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
                     </execution>
                 </executions>
@@ -103,7 +103,7 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat7.xml</descriptor>
                                     </descriptors>
-                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                    <tarLongFileMode>posix</tarLongFileMode>
                                 </configuration>
                             </execution>
                         </executions>
@@ -132,7 +132,7 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat8.xml</descriptor>
                                     </descriptors>
-                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                    <tarLongFileMode>posix</tarLongFileMode>
                                 </configuration>
                             </execution>
                         </executions>
@@ -161,7 +161,7 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat85.xml</descriptor>
                                     </descriptors>
-                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                    <tarLongFileMode>posix</tarLongFileMode>
                                 </configuration>
                             </execution>
                         </executions>
@@ -190,7 +190,7 @@
                                     <descriptors>
                                         <descriptor>src/assembly/tomcat9.xml</descriptor>
                                     </descriptors>
-                                    <tarLongFileMode>gnu</tarLongFileMode>
+                                    <tarLongFileMode>posix</tarLongFileMode>
                                 </configuration>
                             </execution>
                         </executions>
