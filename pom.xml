@@ -35,7 +35,7 @@
 
     <name>mod_cluster (parent)</name>
     <description>An httpd-based load balancer</description>
-    <url>http://jboss.org/mod_cluster</url>
+    <url>https://modcluster.io</url>
 
     <licenses>
         <license>
