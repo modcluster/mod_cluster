@@ -1,15 +1,15 @@
 language: java
 jdk:
-  - oraclejdk9
-  - oraclejdk8
+  - openjdk10
+  - openjdk8
 install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script: mvn -s .travis.maven.settings.xml verify -Pdist
 matrix:
   include:
   # Tomcat 9.x targets
-  - jdk: oraclejdk9
+  - jdk: openjdk10
     script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
-  - jdk: oraclejdk8
+  - jdk: openjdk8
     script: mvn verify -s .travis.maven.settings.xml -PTC9 -Pdist
 notifications:
   email: false
