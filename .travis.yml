@@ -1,9 +1,7 @@
 language: java
 jdk:
-  - oraclejdk9
-  - oraclejdk8
-  - openjdk7
-install: mvn -s .travis.maven.settings.xml install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-script: mvn -s .travis.maven.settings.xml verify -Pdist
+  - openjdk10
+  - openjdk8
+script: rm $HOME/.m2/settings.xml && mvn verify -Pdist
 notifications:
   email: false
