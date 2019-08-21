@@ -44,7 +44,7 @@ Distribution archives are provided for each Tomcat version.
 3. Copy the `lib/` directory to the Tomcat installation directory adding jars to its `lib/` directory. If upgrading from
    a different version, it is necessary to remove all jars copied previously.
 4. Modify `server.xml` within the `conf` directory and add the mod_cluster listener as documented
-   [here](http://docs.modcluster.io/). The minimal listener configuration is as follows:
+   [here](https://docs.modcluster.io/). The minimal listener configuration is as follows:
    
     ```xml
     <Listener className="org.jboss.modcluster.container.tomcat.ModClusterListener" connectorPort="8009"/>
