@@ -87,7 +87,7 @@ When building from source, first ensure that Maven version 3.2.5 or newer (run `
 (run `java -version`) are installed. The following command builds modules for all containers:
 
 ```
-mvn install -Pdist
+mvn install -P dist
 ```
 
 Distribution files for Tomcat and a demo application will be built in the `dist/target/` directory.
