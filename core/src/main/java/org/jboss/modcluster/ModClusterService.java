@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 
 import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
@@ -332,11 +333,24 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         this.mcmpHandler.sendRequest(this.requestFactory.createDisableRequest(context));
     }
 
+    private boolean hasContextMultipleReferences(Context context) {
+        int counter = 0;
+        Iterator<Context> iterator = context.getHost().getContexts().iterator();
+
+        while (counter <= 1 && iterator.hasNext()) {
+            if (context.getPath().equals(iterator.next().getPath())) {
+                ++counter;
+            }
+        }
+
+        return counter > 1;
+    }
+
     @Override
     public void stop(Context context) {
         ModClusterLogger.LOGGER.stopContext(context.getHost(), context);
 
-        if (this.established && this.include(context)) {
+        if (this.established && this.include(context) && !hasContextMultipleReferences(context)) {
             this.disable(context);
 
             long start = System.currentTimeMillis();
@@ -358,7 +372,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     public void remove(Context context) {
         ModClusterLogger.LOGGER.removeContext(context.getHost(), context);
 
-        if (this.include(context)) {
+        if (this.include(context) && !hasContextMultipleReferences(context)) {
             if (this.established) {
                 ModClusterLogger.LOGGER.sendContextCommand(MCMPRequestType.REMOVE_APP, context.getHost(), context);
 
