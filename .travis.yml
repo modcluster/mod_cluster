@@ -1,7 +1,7 @@
 sudo: false
 dist: trusty
 language: java
-install: true
+before_install: wget https://raw.githubusercontent.com/sormuras/bach/master/install-jdk.sh
 script: rm $HOME/.m2/settings.xml && ./mvnw verify -B && ./mvnw verify -PTC9 -B
 matrix:
   include:
