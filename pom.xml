@@ -77,7 +77,7 @@
 
         <!-- Plugin versions -->
         <version.checkstyle>8.18</version.checkstyle>
-        <version.org.wildfly.checkstyle-config>1.0.7.Final</version.org.wildfly.checkstyle-config>
+        <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
     </properties>
 
     <dependencyManagement>
