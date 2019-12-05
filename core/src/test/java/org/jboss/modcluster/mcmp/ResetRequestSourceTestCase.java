@@ -60,7 +60,7 @@ public class ResetRequestSourceTestCase {
 
         assertTrue(requests.isEmpty());
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ResetRequestSourceTestCase {
 
         this.source.init(server, contextFilter);
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
 
         Engine engine = mock(Engine.class);
         Host host = mock(Host.class);
@@ -116,7 +116,7 @@ public class ResetRequestSourceTestCase {
 
         this.source.init(server, contextFilter);
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
 
         Engine engine = mock(Engine.class);
         Host host = mock(Host.class);

@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.beans.PropertyChangeEvent;
@@ -283,7 +283,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(this.createAfterInitEvent(server));
 
-        verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
     }
 
     protected void initServer(TomcatEventHandler handler, LifecycleServer server) {
@@ -329,7 +329,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT, null));
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
     }
 
     protected void startServer(TomcatEventHandler handler, LifecycleServer server) {
@@ -386,13 +386,13 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         this.initServer(handler, server);
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         this.startServer(handler, server);
 
@@ -407,7 +407,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
     }
 
     @Test
@@ -419,7 +419,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         this.initServer(handler, server);
 
@@ -444,7 +444,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
     }
 
     @Test
@@ -457,7 +457,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         LifecycleServer server = mock(LifecycleServer.class);
 
@@ -465,7 +465,7 @@ public class ContainerEventHandlerAdapterTestCase {
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         this.startServer(handler, server);
 
