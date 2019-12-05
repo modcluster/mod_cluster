@@ -21,27 +21,25 @@
  */
 package org.jboss.modcluster.demo.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * @author Paul Ferraro
  *
  */
 public class BusyConnectorsLoadServlet extends LoadServlet {
-    /** The serialVersionUID */
+
     private static final long serialVersionUID = -946741803216943778L;
 
     private static final String END = "end";
@@ -103,14 +101,13 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
         public void run() {
             URI uri = this.uri;
 
-            HttpClient client = new DefaultHttpClient();
-            try {
+            try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 while (uri != null) {
-                    HttpHead head = new HttpHead(uri);
-                    HttpParams params = head.getParams();
                     // Disable auto redirect following, to allow circular redirect
-                    params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
-                    head.setParams(params);
+                    RequestConfig requestConfig = RequestConfig.custom().setCircularRedirectsAllowed(true).build();
+
+                    HttpHead head = new HttpHead(uri);
+                    head.setConfig(requestConfig);
 
                     HttpResponse response = client.execute(head);
                     try {
@@ -123,8 +120,6 @@ public class BusyConnectorsLoadServlet extends LoadServlet {
                 }
             } catch (IOException e) {
                 BusyConnectorsLoadServlet.this.log(e.getLocalizedMessage(), e);
-            } finally {
-                HttpClientUtils.closeQuietly(client);
             }
         }
     }

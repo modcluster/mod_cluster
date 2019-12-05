@@ -21,24 +21,23 @@
  */
 package org.jboss.modcluster.demo.servlet;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * @author Paul Ferraro
  */
 public class SendTrafficLoadServlet extends LoadServlet {
-    /** The serialVersionUID */
+
     private static final long serialVersionUID = -8586013739155819909L;
     private static final String SIZE = "size";
 
@@ -59,9 +58,7 @@ public class SendTrafficLoadServlet extends LoadServlet {
         String size = this.getParameter(request, SIZE, "100");
         URI uri = this.createLocalURI(request, Collections.singletonMap(SIZE, size));
 
-        HttpClient client = new DefaultHttpClient();
-        try {
-
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             for (int i = 0; i < duration; ++i) {
                 this.log("Sending send traffic load request to: " + uri);
 
@@ -79,8 +76,6 @@ public class SendTrafficLoadServlet extends LoadServlet {
                     }
                 }
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
 
         this.writeLocalName(request, response);
