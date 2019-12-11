@@ -21,6 +21,13 @@
  */
 package org.jboss.modcluster.container.tomcat85;
 
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -31,18 +38,10 @@ import org.jboss.modcluster.container.tomcat.ContainerEventHandlerAdapterTestCas
 import org.jboss.modcluster.container.tomcat.ServerProvider;
 import org.jboss.modcluster.container.tomcat.TomcatEventHandler;
 import org.jboss.modcluster.container.tomcat.TomcatFactory;
-import org.mockito.Mockito;
-
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class TomcatEventHandlerAdapterTestCase extends ContainerEventHandlerAdapterTestCase {
 
@@ -149,7 +148,7 @@ public class TomcatEventHandlerAdapterTestCase extends ContainerEventHandlerAdap
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
 
         this.initServer(handler, server);
 
@@ -174,6 +173,6 @@ public class TomcatEventHandlerAdapterTestCase extends ContainerEventHandlerAdap
 
         handler.lifecycleEvent(event);
 
-        Mockito.verifyZeroInteractions(this.eventHandler);
+        verifyNoInteractions(this.eventHandler);
     }
 }

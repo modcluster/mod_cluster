@@ -54,12 +54,11 @@ public class ResetRequestSourceTestCase {
     public void getResetRequestsNoServer() {
         Server server = mock(Server.class);
 
-        List<MCMPRequest> requests = this.source.getResetRequests(Collections
-                .<String, Set<ResetRequestSource.VirtualHost>> emptyMap());
+        List<MCMPRequest> requests = this.source.getResetRequests(Collections.emptyMap());
 
         assertTrue(requests.isEmpty());
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
     }
 
     @Test
@@ -69,7 +68,7 @@ public class ResetRequestSourceTestCase {
 
         this.source.init(server, contextFilter);
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
 
         Engine engine = mock(Engine.class);
         Host host = mock(Host.class);
@@ -114,7 +113,7 @@ public class ResetRequestSourceTestCase {
 
         this.source.init(server, contextFilter);
 
-        verifyZeroInteractions(server);
+        verifyNoInteractions(server);
 
         Engine engine = mock(Engine.class);
         Host host = mock(Host.class);

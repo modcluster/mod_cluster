@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.Executors;
 
@@ -57,7 +58,7 @@ public class AdvertiseListenerImplTestCase {
     private static final int SERVER_PORT = 8989;
     private static final String SERVER1_ADDRESS = String.format("%s:%d", SERVER1, SERVER_PORT);
     private static final String SERVER2_ADDRESS = String.format("%s:%d", SERVER2, SERVER_PORT);
-    private static final int TIMEOUT_MILLIS = 3_000; // time for advertise worker to process messages
+    private static final Duration TIMEOUT = Duration.ofMillis(3_000); // time for advertise worker to process messages
 
     private MCMPHandler mcmpHandler = mock(MCMPHandler.class);
     private AdvertiseConfiguration config = mock(AdvertiseConfiguration.class);
@@ -100,7 +101,7 @@ public class AdvertiseListenerImplTestCase {
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
             buffer.flip();
 
-            verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
+            verify(this.mcmpHandler, timeout(TIMEOUT)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
             InetSocketAddress socketAddress = capturedSocketAddress.getValue().getRemoteAddress();
@@ -115,7 +116,7 @@ public class AdvertiseListenerImplTestCase {
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
             buffer.flip();
 
-            verify(this.mcmpHandler, timeout(TIMEOUT_MILLIS)).addProxy(capturedSocketAddress.capture());
+            verify(this.mcmpHandler, timeout(TIMEOUT)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
 
             socketAddress = capturedSocketAddress.getValue().getRemoteAddress();
