@@ -21,23 +21,22 @@
  */
 package org.jboss.modcluster.demo.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * @author Paul Ferraro
  */
 public class RequestCountLoadServlet extends LoadServlet {
-    /** The serialVersionUID */
+
     private static final long serialVersionUID = -5001091954463802789L;
 
     @Override
@@ -49,12 +48,8 @@ public class RequestCountLoadServlet extends LoadServlet {
 
             this.log("Sending request count request to: " + uri);
 
-            HttpClient client = new DefaultHttpClient();
-
-            try {
+            try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
                 HttpClientUtils.closeQuietly(client.execute(new HttpGet(uri)));
-            } finally {
-                HttpClientUtils.closeQuietly(client);
             }
         }
 

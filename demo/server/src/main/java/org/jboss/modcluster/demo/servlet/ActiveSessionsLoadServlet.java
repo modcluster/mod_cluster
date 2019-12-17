@@ -21,20 +21,20 @@
  */
 package org.jboss.modcluster.demo.servlet;
 
-import java.io.IOException;
-import java.net.URI;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.net.URI;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.utils.HttpClientUtils;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class ActiveSessionsLoadServlet extends LoadServlet {
 
@@ -54,13 +54,10 @@ public class ActiveSessionsLoadServlet extends LoadServlet {
 
         this.log("Sending " + count + " requests to: " + uri);
 
-        HttpClient client = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             for (int i = 0; i < count; ++i) {
                 HttpClientUtils.closeQuietly(client.execute(new HttpHead(uri)));
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
 
         this.writeLocalName(request, response);

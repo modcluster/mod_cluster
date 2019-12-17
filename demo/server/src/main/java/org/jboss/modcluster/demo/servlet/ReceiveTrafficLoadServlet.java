@@ -21,24 +21,23 @@
  */
 package org.jboss.modcluster.demo.servlet;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.http.HttpEntity;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 /**
  * @author Paul Ferraro
  */
 public class ReceiveTrafficLoadServlet extends LoadServlet {
-    /** The serialVersionUID */
+
     private static final long serialVersionUID = 2344830128026153418L;
     private static final String SIZE = "size";
 
@@ -48,8 +47,7 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
 
         int size = Integer.parseInt(this.getParameter(request, SIZE, "100")) * 1024;
 
-        HttpClient client = new DefaultHttpClient();
-        try {
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             HttpEntity entity = new ByteArrayEntity(new byte[size]);
 
             URI uri = this.createLocalURI(request, null);
@@ -74,8 +72,6 @@ public class ReceiveTrafficLoadServlet extends LoadServlet {
                     }
                 }
             }
-        } finally {
-            HttpClientUtils.closeQuietly(client);
         }
 
         this.writeLocalName(request, response);
