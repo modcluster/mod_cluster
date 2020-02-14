@@ -66,8 +66,6 @@
 
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
-    apr_interval_time_t ping_timeout;
-    char ping_timeout_set;
     proxy_worker_shared *shared;
     int index; /* like the worker->id */
 };
@@ -157,27 +155,6 @@ static int proxy_worker_cmp(const void *a, const void *b)
 
 static int (*ap_proxy_retry_worker_fn)(const char *proxy_function,
         proxy_worker *worker, server_rec *s) = NULL;
-
-/* It is NOT the proxy_util one. */
-static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
-{
-    apr_pool_t *pool;
-    proxy_conn_pool *cp;
-
-    /*
-     * Create a connection pool's subpool.
-     * This pool is used for connection recycling.
-     * Once the worker is added it is never removed but
-     * it can be disabled.
-     */
-    apr_pool_create(&pool, p);
-    apr_pool_tag(pool, "proxy_worker_cp");
-    /*
-     * Alloc from the same pool as worker.
-     * proxy_conn_pool is permanently attached to the worker.
-     */
-    worker->cp->pool = pool;
-}
 
 /**
  * Add a node to the worker conf
@@ -2251,7 +2228,7 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
     }
     if (SIZEOFSCORE <= sizeof(proxy_worker_shared)) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
-                     "SIZEOFSCORE too small for mod_proxy shared stat structure %d <= %d",
+                     "SIZEOFSCORE too small for mod_proxy shared stat structure %d <= %ld",
                      SIZEOFSCORE, sizeof(proxy_worker_shared));
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -3400,14 +3377,6 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 
     return OK;
 }
-
-/* the lbmethods (note it the only one in mod_cluster for the moment) */
-static const proxy_balancer_method byrequests = 
-{
-    "byrequests",
-    &find_best_byrequests,
-    NULL
-};
 
 /*
  * Register the hooks on our module.

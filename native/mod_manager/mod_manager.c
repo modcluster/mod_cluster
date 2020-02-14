@@ -1339,11 +1339,7 @@ static char * process_info(request_rec *r, int *errtype)
 
     for (i=0; i<size; i++) {
         nodeinfo_t *ou;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         proxy_worker_shared *proxystat;
-#else
-        proxy_worker_stat *proxystat;
-#endif
         char *flushpackets;
         char *pptr;
         if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
@@ -1419,11 +1415,7 @@ static char * process_info(request_rec *r, int *errtype)
 
         pptr = (char *) ou;
         pptr = pptr + ou->offset;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         proxystat  = (proxy_worker_shared *) pptr;
-#else
-        proxystat  = (proxy_worker_stat *) pptr;
-#endif
 
         switch ( type ) {
             case TEXT_XML:  
@@ -2047,14 +2039,7 @@ static char * process_status(request_rec *r, char **ptr, int *errtype)
         ap_rprintf(r, "&State=NOTOK");
     else
         ap_rprintf(r, "&State=OK");
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
-#else
-    if (ap_my_generation)
-        ap_rprintf(r, "&id=%d", ap_my_generation);
-    else
-        ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
-#endif
 
     ap_rprintf(r, "\n");
     return NULL;
@@ -2161,14 +2146,7 @@ static char * process_ping(request_rec *r, char **ptr, int *errtype)
         else
             ap_rprintf(r, "&State=OK");
     }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
-#else
-    if (ap_my_generation)
-        ap_rprintf(r, "&id=%d", ap_my_generation);
-    else
-        ap_rprintf(r, "&id=%d", (int) ap_scoreboard_image->global->restart_time);
-#endif
 
     ap_rprintf(r, "\n");
     return NULL;
@@ -2676,11 +2654,7 @@ static char *process_domain(request_rec *r, char **ptr, int *errtype, const char
     return errstring;
 }
 /* XXX: move to mod_proxy_cluster as a provider ? */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 static void printproxy_stat(request_rec *r, int reduce_display, proxy_worker_shared *proxystat)
-#else
-static void printproxy_stat(request_rec *r, int reduce_display, proxy_worker_stat *proxystat)
-#endif
 {
     char *status = NULL;
     if (proxystat->status & PROXY_WORKER_NOT_USABLE_BITMAP)
@@ -2927,11 +2901,7 @@ static int manager_info(request_rec *r)
                    (int) sizeof(ou->mess.Port), ou->mess.Port);
         pptr = pptr + ou->offset;
         if (mconf->reduce_display) {
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             printproxy_stat(r, mconf->reduce_display, (proxy_worker_shared *) pptr);
-#else
-            printproxy_stat(r, mconf->reduce_display, (proxy_worker_stat *) pptr);
-#endif
         }
 
         if (mconf->allow_cmd)
@@ -2958,11 +2928,7 @@ static int manager_info(request_rec *r)
         if (mconf->reduce_display)
             ap_rprintf(r, "<br/>\n");
         else {
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             printproxy_stat(r, mconf->reduce_display, (proxy_worker_shared *) pptr);
-#else
-            printproxy_stat(r, mconf->reduce_display, (proxy_worker_stat *) pptr);
-#endif
         }
 
         if (sizesessionid) {
