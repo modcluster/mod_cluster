@@ -58,17 +58,18 @@
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
 #define HAVE_CLUSTER_EX_DEBUG 0
 
+/* prevent old 2.2.x httpd version to compile */
+#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+#else
+#error "httpd 2.2.x NOT SUPPORTED!"
+#endif
+
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-#else
     apr_interval_time_t ping_timeout;
     char ping_timeout_set;
-#endif
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     proxy_worker_shared *shared;
     int index; /* like the worker->id */
-#endif 
 };
 typedef struct  proxy_cluster_helper proxy_cluster_helper;
 
@@ -154,81 +155,8 @@ static int proxy_worker_cmp(const void *a, const void *b)
     return strcmp(route1, route2);
 }
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 static int (*ap_proxy_retry_worker_fn)(const char *proxy_function,
         proxy_worker *worker, server_rec *s) = NULL;
-#else
-
-/* reslist constructor */
-/* XXX: Should use the proxy_util one. */
-static apr_status_t connection_constructor(void **resource, void *params,
-                                           apr_pool_t *pool)
-{
-    apr_pool_t *ctx;
-    apr_pool_t *scpool;
-    proxy_conn_rec *conn;
-    proxy_worker *worker = (proxy_worker *)params;
-
-    /*
-     * Create the subpool for each connection
-     * This keeps the memory consumption constant
-     * when disconnecting from backend.
-     */
-    apr_pool_create(&ctx, pool);
-    conn = apr_pcalloc(pool, sizeof(proxy_conn_rec));
-
-    /*
-     * Create another subpool that manages the data for the
-     * socket and the connection member of the proxy_conn_rec struct as we
-     * destroy this data more frequently than other data in the proxy_conn_rec
-     * struct like hostname and addr (at least in the case where we have
-     * keepalive connections that timed out).
-     */
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,13)
-    apr_pool_create(&scpool, ctx);
-    apr_pool_tag(scpool, "proxy_conn_scpool");
-    conn->scpool = scpool;
-#endif
-
-    conn->pool   = ctx;
-    conn->worker = worker;
-#if APR_HAS_THREADS
-    conn->inreslist = 1;
-#endif
-    *resource = conn;
-
-    return APR_SUCCESS;
-}
-
-#if APR_HAS_THREADS /* only needed when threads are used */
-/* reslist destructor */
-/* XXX: Should use the proxy_util one. */
-static apr_status_t connection_destructor(void *resource, void *params,
-                                          apr_pool_t *pool)
-{
-    proxy_conn_rec *conn = (proxy_conn_rec *)resource;
-
-    /* Destroy the pool only if not called from reslist_destroy */
-    if (conn->worker->cp->pool) {
-        apr_pool_destroy(conn->pool);
-    }
-
-    return APR_SUCCESS;
-}
-#endif
-
-/* XXX: Should use the proxy_util one. */
-#if APR_HAS_THREADS
-static apr_status_t conn_pool_cleanup(void *theworker)
-{
-    proxy_worker *worker = (proxy_worker *)theworker;
-    if (worker->cp->res) {
-        worker->cp->pool = NULL;
-    }
-    return APR_SUCCESS;
-}
-#endif
-#endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
 
 /* It is NOT the proxy_util one. */
 static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
@@ -266,7 +194,6 @@ static void init_conn_pool(apr_pool_t *p, proxy_worker *worker)
 static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balancer,
                           server_rec *server,
                           nodeinfo_t *node, apr_pool_t *pool)
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 {
     char *url;
     char *ptr;
@@ -436,225 +363,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     node_storage->unlock_nodes();
     return rv;
 }
-#else
-{
-    char *url;
-    char *ptr;
-    int reuse = 0;
-    apr_status_t rv = APR_SUCCESS;
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-#else
-    proxy_cluster_helper *helperping;
-#endif
-#if APR_HAS_THREADS
-    int mpm_threads;
-#endif
-    int sizew = conf->workers->elt_size;
-    proxy_worker *worker;
-    /* build the name (scheme and port) when needed */
-    url = apr_pstrcat(pool, node->mess.Type, "://", node->mess.Host, ":", node->mess.Port, NULL);
-
-    worker = ap_proxy_get_worker(pool, conf, url);
-    if (worker == NULL) {
-
-        /* creates it */ 
-        proxy_cluster_helper *helper;
-        const char *err = ap_proxy_add_worker(&worker, conf->pool, conf, url);
-        if (err) {
-            ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
-                         "Created: worker for %s failed: %s", url, err);
-            return APR_EGENERAL;
-        }
-        worker->opaque = (proxy_cluster_helper *) apr_pcalloc(conf->pool,  sizeof(proxy_cluster_helper));
-        if (!worker->opaque)
-            return APR_EGENERAL;
-        helper = (proxy_cluster_helper *) worker->opaque;
-        helper->count_active = 0;
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                     "Created: worker for %s", url);
-    } else  if (worker->id == 0) {
-        /* We are going to reuse a removed one */
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                     "Created: reusing worker for %s", url);
-        if (worker->cp->pool == NULL) {
-            init_conn_pool(conf->pool, worker);
-        }
-        reuse = 1;
-    } else {
-        /* Check if the shared memory goes to the right place */
-        char *pptr = (char *) node;
-        pptr = pptr + node->offset;
-        if (worker->id == node->mess.id && worker->s == (proxy_worker_stat *) pptr) {
-            /* the share memory may have been removed and recreated */
-            if (!worker->s->status) {
-                worker->s->status = PROXY_WORKER_INITIALIZED;
-                strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZ);
-                worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZ] = '\0';
-                /* XXX: We need that information from TC */
-                worker->s->redirect[0] = '\0';
-                worker->s->lbstatus = 0;
-                worker->s->lbfactor = -1; /* prevent using the node using status message */
-            }
-            return APR_SUCCESS; /* Done Already existing */
-        }
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                     "Created: can't reuse worker as it for %s cleaning...", url);
-        if (!worker->opaque)
-            worker->opaque = (proxy_cluster_helper *) apr_pcalloc(conf->pool,  sizeof(proxy_cluster_helper));
-        if (!worker->opaque)
-            return APR_EGENERAL;
-        if (worker->cp->pool) {
-            /* destroy and create a new one */
-            apr_pool_destroy(worker->cp->pool);
-            worker->cp->pool = NULL;
-            init_conn_pool(conf->pool, worker);
-        }
-        reuse = 1;
-    }
-
-    /* Get the shared memory for this worker */
-    ptr = (char *) node;
-    ptr = ptr + node->offset;
-    worker->s = (proxy_worker_stat *) ptr;
-
-    worker->id = node->mess.id;
-    worker->route = apr_pstrdup(conf->pool, node->mess.JVMRoute);
-    worker->redirect = apr_pstrdup(conf->pool, "");
-    worker->smax = node->mess.smax;
-    worker->ttl = node->mess.ttl;
-    if (node->mess.timeout) {
-        worker->timeout_set = 1;
-        worker->timeout = node->mess.timeout;
-    }
-    worker->flush_packets = node->mess.flushpackets;
-    worker->flush_wait = node->mess.flushwait;
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-    worker->ping_timeout = node->mess.ping;
-    worker->ping_timeout_set = 1;
-    worker->acquire_set = 1;
-#else
-    helperping = (proxy_cluster_helper *) worker->opaque;
-    helperping->ping_timeout = node->mess.ping;
-    helperping->ping_timeout_set = 1;
-#endif
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
-    /* For MODCLUSTER-217 */
-    worker->conn_timeout_set = 1;
-    worker->conn_timeout = node->mess.ping;
-#endif
-    worker->keepalive = 1;
-    worker->keepalive_set = 1;
-    worker->is_address_reusable = 1;
-    worker->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
-    worker->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
-
-    /* from ap_proxy_initialize_worker() */
-#if APR_HAS_THREADS
-    ap_mpm_query(AP_MPMQ_MAX_THREADS, &mpm_threads);
-    if (mpm_threads > 1) {
-        /* Set hard max to no more then mpm_threads */
-        if (worker->hmax == 0 || worker->hmax > mpm_threads) {
-            worker->hmax = mpm_threads+1;
-        }
-        if (worker->smax == -1 || worker->smax > worker->hmax) {
-            worker->smax = worker->hmax;
-        }
-        /* Set min to be lower then smax */
-        if (worker->min > worker->smax) {
-            worker->min = worker->smax;
-        }
-    }
-    else {
-        /* This will supress the apr_reslist creation */
-        worker->min = worker->smax = worker->hmax = 0;
-    }
-
-    if (worker->hmax) {
-        rv = apr_reslist_create(&(worker->cp->res),
-                                worker->min, worker->smax,
-                                worker->hmax, worker->ttl,
-                                connection_constructor, connection_destructor,
-                                worker, worker->cp->pool);
-
-        apr_pool_cleanup_register(worker->cp->pool, (void *)worker,
-                                  conn_pool_cleanup,
-                                  apr_pool_cleanup_null);
-
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-            "proxy: initialized worker %d in child %" APR_PID_T_FMT " for (%s) min=%d max=%d smax=%d",
-             worker->id, getpid(), worker->hostname, worker->min,
-             worker->hmax, worker->smax);
-
-#if (APR_MAJOR_VERSION > 0)
-        /* Set the acquire timeout */
-        if (rv == APR_SUCCESS && worker->acquire_set) {
-            apr_reslist_timeout_set(worker->cp->res, worker->acquire);
-        }
-#endif
-    }
-    else
-#endif
-    {
-
-        rv = connection_constructor((void **)&(worker->cp->conn), worker, worker->cp->pool);
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-             "proxy: initialized single connection worker %d in child %" APR_PID_T_FMT " for (%s)",
-             worker->id, getpid(), worker->hostname);
-    }
-    /* end from ap_proxy_initialize_worker() */
-
-    /*
-     * The Shared datastatus may already contains a valid information
-     */
-    if (!worker->s->status) {
-        worker->s->status = PROXY_WORKER_INITIALIZED;
-        strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZ);
-        worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZ] = '\0';
-        /* XXX: We need that information from TC */
-        worker->s->redirect[0] = '\0';
-        worker->s->lbstatus = 0;
-        worker->s->lbfactor = -1; /* prevent using the node using status message */
-    }
-
-    if (!reuse) {
-        /*
-         * Create the corresponding balancer worker information
-         * copying for proxy_util.c ap_proxy_add_worker_to_balancer
-         */
-        proxy_worker *runtime;
-        runtime = apr_array_push(balancer->workers);
-        memcpy(runtime, worker, sizew);
-    } else {
-        /* Update the corresponding balancer worker information */
-        proxy_worker *runtime;
-        int i;
-        int sizew = balancer->workers->elt_size;
-        char *ptr = balancer->workers->elts;
-
-        runtime = (proxy_worker *)balancer->workers->elts;
-        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
-            runtime = (proxy_worker *)ptr;
-            if (runtime->name) {
-                if (strcmp(url, runtime->name) == 0) {
-                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                                 "Created: reuse worker %s of %s", runtime->name, balancer->name);
-                    memcpy(runtime, worker, sizew);
-                    break;
-                }
-            }
-        }
-        if (i ==  balancer->workers->nelts) {
-            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                         "Created: reuse worker %s not yet in balancer %s", url, balancer->name);
-            runtime = apr_array_push(balancer->workers);
-            memcpy(runtime, worker, sizew);
-        }
-    }
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-                 "Created: worker for %s %d (status): %d", url, worker->id, worker->s->status);
-    return rv;
-}
-#endif
 
 static balancerinfo_t *read_balancer_name(const char *name, apr_pool_t *pool)
 {
@@ -693,23 +401,16 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
     proxy_balancer *balancer = NULL;
     char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     balancer = ap_proxy_get_balancer(pool, conf, name, 0);
-#else
-    balancer = ap_proxy_get_balancer(pool, conf, name);
-#endif
     if (!balancer) {
-       int sizeb = conf->balancers->elt_size;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+        int sizeb = conf->balancers->elt_size;
         proxy_balancer_shared *bshared;
-#endif
-       ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
-                    "add_balancer_node: Create balancer %s", name);
+        ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
+                     "add_balancer_node: Create balancer %s", name);
 
-       balancer = apr_array_push(conf->balancers);
-       memset(balancer, 0, sizeb);
+        balancer = apr_array_push(conf->balancers);
+        memset(balancer, 0, sizeb);
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         balancer->gmutex = NULL;
         bshared = apr_palloc(conf->pool, sizeof(proxy_balancer_shared));
         memset(bshared, 0, sizeof(proxy_balancer_shared));
@@ -731,20 +432,6 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         }
         balancer->workers = apr_array_make(conf->pool, 5, sizeof(proxy_worker *));
         strncpy(balancer->s->name, name, PROXY_BALANCER_MAX_NAME_SIZE);
-#else
-        balancer->name = apr_pstrdup(conf->pool, name);
-        /* XXX Is this a right place to create mutex */
-#if APR_HAS_THREADS
-        if (apr_thread_mutex_create(&(balancer->mutex),
-                    APR_THREAD_MUTEX_DEFAULT, conf->pool) != APR_SUCCESS) {
-            /* XXX: Do we need to log something here? */
-            ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, server,
-                          "add_balancer_node: Can't create lock for balancer");
-        }
-#endif
-        int sizew = conf->workers->elt_size;
-        balancer->workers = apr_array_make(conf->pool, 5, sizew);
-#endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
         balancer->lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
     } else {
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
@@ -753,15 +440,10 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
 
     if (balancer && balancer->workers->nelts == 0) {
         /* Logic to copy the shared memory information to the balancer */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
-#else
-        balancerinfo_t *balan = read_balancer_name(&balancer->name[11], pool);
-#endif
         if (balan == NULL)
             return balancer; /* Done broken */
         /* XXX: StickySession, StickySessionRemove not in */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         strncpy(balancer->s->sticky, balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
         balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
         strncpy(balancer->s->sticky_path, balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
@@ -771,21 +453,6 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         balancer->s->timeout = balan->Timeout;
         balancer->s->max_attempts = balan->Maxattempts;
         balancer->s->max_attempts_set = 1;
-#else
-        balancer->sticky  = apr_psprintf(conf->pool, "%s|%s", balan->StickySessionCookie,
-                                         balan->StickySessionPath);
-        balancer->sticky_force = 0;
-        if (balan->StickySession)
-            balancer->sticky_force += STSESSION;
-        if (balan->StickySessionForce)
-            balancer->sticky_force += STSESSFOR;
-        if (balan->StickySessionRemove)
-            balancer->sticky_force += STSESSREM;
-        balancer->timeout = balan->Timeout;
-
-        balancer->max_attempts = balan->Maxattempts;
-        balancer->max_attempts_set = 1;
-#endif
     }
     return balancer;
 }
@@ -804,11 +471,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
     while (s) {
         void *sconf = s->module_config;
         proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name, 0);
-#else
-        proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
-#endif
 
         if (s!=main_server && creat_bal == CREAT_ROOT) {
                     s = s->next;
@@ -824,7 +487,6 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
             balancer = add_balancer_node(node, conf, pool, s);
         else {
             /* We "reuse" the balancer */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
             if (balan != NULL) {
                 int changed = 0;
@@ -855,38 +517,6 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
                                  "Balancer %s changed" , &balancer->s->name[11]);
                 }
             }
-#else
-            balancerinfo_t *balan = read_balancer_name(&balancer->name[11], pool);
-            if (balan != NULL) {
-                char *sticky = apr_psprintf(pool, "%s|%s", balan->StickySessionCookie,
-                                                           balan->StickySessionPath);
-                int sticky_force=0;
-                int changed = 0;
-                if (balan->StickySession)
-                    sticky_force += STSESSION;
-                if (balan->StickySessionForce)
-                    sticky_force += STSESSFOR;
-                if (balan->StickySessionRemove)
-                    sticky_force += STSESSREM;
-              
-                if (balancer->sticky_force != sticky_force) {
-                    balancer->sticky_force = sticky_force;
-                    changed = -1;
-                }
-                if (balancer->sticky == NULL || strcmp(sticky, balancer->sticky) != 0) {
-                    balancer->sticky = apr_pstrdup(conf->pool, sticky);
-                    changed = -1;
-                }
-                balancer->timeout =  balan->Timeout;
-                balancer->max_attempts = balan->Maxattempts;
-                balancer->max_attempts_set = 1;
-                if (changed) {
-                    /* log a warning */
-                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
-                                 "Balancer %s changed" , &balancer->name[11]);
-                }
-            }
-#endif
         }
         if (balancer)
             create_worker(conf, balancer, s, node, pool);
@@ -907,11 +537,7 @@ static void add_balancers_workers_for_server(nodeinfo_t *node, apr_pool_t *pool,
 
         void *sconf = s->module_config;
         proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name, 0);
-#else
-        proxy_balancer *balancer = ap_proxy_get_balancer(pool, conf, name);
-#endif
 
         if (s!=main_server && creat_bal == CREAT_ROOT) {
                     return;
@@ -925,7 +551,6 @@ static void add_balancers_workers_for_server(nodeinfo_t *node, apr_pool_t *pool,
             balancer = add_balancer_node(node, conf, pool, s);
         else {
             /* We "reuse" the balancer */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
             if (balan != NULL) {
                 int changed = 0;
@@ -956,45 +581,12 @@ static void add_balancers_workers_for_server(nodeinfo_t *node, apr_pool_t *pool,
                                  "Balancer %s changed" , &balancer->s->name[11]);
                 }
             }
-#else
-            balancerinfo_t *balan = read_balancer_name(&balancer->name[11], pool);
-            if (balan != NULL) {
-                char *sticky = apr_psprintf(pool, "%s|%s", balan->StickySessionCookie,
-                                                           balan->StickySessionPath);
-                int sticky_force=0;
-                int changed = 0;
-                if (balan->StickySession)
-                    sticky_force += STSESSION;
-                if (balan->StickySessionForce)
-                    sticky_force += STSESSFOR;
-                if (balan->StickySessionRemove)
-                    sticky_force += STSESSREM;
-              
-                if (balancer->sticky_force != sticky_force) {
-                    balancer->sticky_force = sticky_force;
-                    changed = -1;
-                }
-                if (balancer->sticky == NULL || strcmp(sticky, balancer->sticky) != 0) {
-                    balancer->sticky = apr_pstrdup(conf->pool, sticky);
-                    changed = -1;
-                }
-                balancer->timeout =  balan->Timeout;
-                balancer->max_attempts = balan->Maxattempts;
-                balancer->max_attempts_set = 1;
-                if (changed) {
-                    /* log a warning */
-                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
-                                 "Balancer %s changed" , &balancer->name[11]);
-                }
-            }
-#endif
         }
         if (balancer)
             create_worker(conf, balancer, s, node, pool);
 }
 
 /* the worker corresponding to the id, note that we need to compare the shared memory pointer too */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, proxy_worker_shared *stat)
 {
     int i;
@@ -1017,23 +609,6 @@ static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, pr
     }
     return NULL;
 }
-#else
-static proxy_worker *get_worker_from_id_stat(proxy_server_conf *conf, int id, proxy_worker_stat *stat)
-{
-    int i;
-    int sizew = conf->workers->elt_size;
-    char *ptrw = conf->workers->elts;
-
-    for (i = 0; i < conf->workers->nelts; i++, ptrw=ptrw+sizew) {
-        proxy_worker *worker = (proxy_worker *) ptrw;
-        if (worker->id == id && worker->s == stat) {
-            return worker;
-        }
-        worker++;
-    }
-    return NULL;
-}
-#endif
 
 /*
  * Remove a node from the worker conf
@@ -1046,11 +621,7 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     proxy_worker *worker;
     pptr = pptr + node->offset;
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     worker = get_worker_from_id_stat(conf, node->mess.id, (proxy_worker_shared *) pptr);
-#else
-    worker = get_worker_from_id_stat(conf, node->mess.id, (proxy_worker_stat *) pptr);
-#endif
     if (!worker) {
         /* XXX: Another process may use it, can't do: node_storage->remove_node(node); */
         return 0; /* Done */
@@ -1060,67 +631,26 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
     /* prevent other threads using it */
     worker->s->status |= PROXY_WORKER_IN_ERROR;
 
-    /* apr_reslist_acquired_count */
     i = 0;
 
-#if APU_MAJOR_VERSION > 1 || (APU_MAJOR_VERSION == 1 && APU_MINOR_VERSION >= 3)
-    if (worker->cp->res)
-        i = apr_reslist_acquired_count(worker->cp->res);
-    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
-             "remove_workers_node (reslist) apr_reslist_acquired_count: %d JVMRoute: %s", i, node->mess.JVMRoute);
-#else
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     helper = (proxy_cluster_helper *) worker->context;
-#else
-    helper = (proxy_cluster_helper *) worker->opaque;
-#endif
     if (helper) {
         i = helper->count_active;
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, server,
              "remove_workers_node (helper) count_active: %d JVMRoute: %s", i, node->mess.JVMRoute);
-#endif
 
     if (i == 0) {
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* The worker already comes from the apr_array of the balancer */
         proxy_worker_shared *stat = worker->s;
         proxy_cluster_helper *helper = (proxy_cluster_helper *) worker->context;
-#else
-        /* No connection in use: clean the worker */
-        char *name = apr_pstrcat(pool, "balancer://", node->mess.balancer, NULL);
-        char *ptr = conf->balancers->elts;
-        int sizeb = conf->balancers->elt_size;
 
-        /* mark the worker removed in the apr_array of the balancer */
-        for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
-            proxy_balancer *balancer =  (proxy_balancer *) ptr;
-            if (strcmp(balancer->name, name) == 0) {
-                int j;
-                int sizew = balancer->workers->elt_size;
-                char *ptrw = balancer->workers->elts;
-                
-                for (j = 0; j < balancer->workers->nelts; j++, ptrw=ptrw+sizew) {
-                    /* Here we loop through our workers not need to check that the worker->s is OK */
-                    proxy_worker *searched = (proxy_worker *) ptrw;
-                    if (searched->id == worker->id) {
-                        searched->id = 0; /* mark it removed */
-                    }
-                }
-            }
-        }
-#endif
-
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* Here that is tricky the worker needs shared memory but we don't and CONFIG will reset it */
         helper->index = 0; /* mark it removed */
         if (helper->shared) {
             worker->s = helper->shared;
             memcpy(worker->s, stat, sizeof(proxy_worker_shared));
         }
-#else
-        worker->id = 0; /* mark it removed */
-#endif
 
         return (0);
     } else {
@@ -1266,7 +796,6 @@ apr_status_t ap_proxygetline(apr_bucket_brigade *bb, char *s, int n, request_rec
 }
 
 /* In 2.4.x the routine is public any more */
-#if AP_MODULE_MAGIC_AT_LEAST(20111203,0)
 static request_rec *ap_proxy_make_fake_req(conn_rec *c, request_rec *r)
 {
     apr_pool_t *pool;
@@ -1302,7 +831,6 @@ static request_rec *ap_proxy_make_fake_req(conn_rec *c, request_rec *r)
 
     return rp;
 }
-#endif
 /*
  * Do a ping/pong to the node
  */
@@ -1381,24 +909,11 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
 {
     apr_status_t status;
     apr_interval_time_t timeout;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-#else
-    apr_interval_time_t savetimeout;
-    char savetimeout_set;
-#endif
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-#else
-    proxy_cluster_helper *helperping;
-#endif
     proxy_conn_rec *backend = NULL;
     char server_portstr[32];
     char *locurl = url;
     apr_uri_t *uri;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     char *scheme = worker->s->scheme;
-#else
-    const char *scheme = worker->scheme;
-#endif
     int is_ssl = 0;
 
     if ((strcasecmp(scheme, "HTTPS") == 0 ||
@@ -1424,11 +939,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
     status = ap_proxy_acquire_connection(scheme, &backend, worker, r->server);
     if (status != OK) {
         if (backend) {
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             backend->close = 1;
-#else
-            backend->close_on_recycle = 1;
-#endif
             ap_proxy_release_connection(scheme, backend, r->server);
         }
         return status;
@@ -1460,61 +971,12 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
      * Since 20051115.16 (2.2.9) there is a conn_timeout and conn_timeout_set.
      * Changing the worker->timeout is a bad idea (we have to restore the value from the shared memory).
      */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-    /* Do nothing: 2.4.x has the ping_timeout and conn_timeout */
     timeout = worker->s->ping_timeout;
     if (timeout <= 0)
         timeout =  apr_time_from_sec(10); /* 10 seconds */
-#else
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
-    timeout = worker->ping_timeout;
-#else
-    helperping = (proxy_cluster_helper *) worker->opaque;
-    timeout = helperping->ping_timeout;
-#endif
-    if (timeout <= 0)
-        timeout =  apr_time_from_sec(10); /* 10 seconds */
-
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
-    if (!worker->conn_timeout_set) {
-        savetimeout_set = worker->conn_timeout_set;
-        savetimeout = worker->conn_timeout;
-        worker->conn_timeout = timeout;
-        worker->conn_timeout_set = 1;
-    } else {
-        savetimeout_set = 0;
-        savetimeout = 0;
-    }
-#else
-    /* XXX: side effects the worker may be used in another socket */
-    savetimeout_set = worker->timeout_set;
-    savetimeout = worker->timeout;
-    worker->timeout_set = 1;
-    worker->timeout = timeout;
-#endif
-#endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
 
     /* Step Two: Make the Connection */
     status = ap_proxy_connect_backend(scheme, backend, worker, r->server);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-    /* Do nothing: 2.4.x has the ping_timeout and conn_timeout */
-#else
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,16)
-    if (!savetimeout_set) {
-        worker->conn_timeout = savetimeout;
-        worker->conn_timeout_set = savetimeout_set;
-    }
-#else
-    /* Restore the information from the node information */
-    if (workertimeout) {
-        worker->timeout = workertimeout;
-        worker->timeout_set = 1;
-    } else {
-        worker->timeout_set = 0;
-        worker->timeout = 0;
-    }
-#endif
-#endif /* AP_MODULE_MAGIC_AT_LEAST(20101223,1) */
     if (status != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "proxy_cluster_try_pingpong: can't connect to backend");
@@ -1549,11 +1011,7 @@ static apr_status_t proxy_cluster_try_pingpong(request_rec *r, proxy_worker *wor
         }
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                 "proxy_cluster_try_pingpong: trying %s"
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 , backend->connection->client_ip);
-#else
-                , backend->connection->remote_ip);
-#endif
         status = http_handle_cping_cpong(backend, r, timeout);
         if (status != APR_SUCCESS) {
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -1592,18 +1050,10 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
         if (ou->mess.updatetimelb < (now - lbstatus_recalc_time)) {
             /* The lbstatus needs to be updated */
             int elected, oldelected;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             proxy_worker_shared *stat;
-#else
-            proxy_worker_stat *stat;
-#endif
             char *ptr = (char *) ou;
             ptr = ptr + ou->offset;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             stat = (proxy_worker_shared *) ptr;
-#else
-            stat = (proxy_worker_stat *) ptr;
-#endif
             elected = stat->elected;
             oldelected = ou->mess.oldelected;
             ou->mess.updatetimelb = now;
@@ -1621,19 +1071,11 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 proxy_worker *worker = get_worker_from_id_stat(conf, id[i], stat);
                 if (worker == NULL)
                     continue; /* skip it */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 apr_snprintf(sport, sizeof(sport), ":%d", worker->s->port);
                 if (strchr(worker->s->hostname, ':') != NULL)
                     url = apr_pstrcat(pool, worker->s->scheme, "://[", worker->s->hostname, "]", sport, "/", NULL);
                 else
                     url = apr_pstrcat(pool, worker->s->scheme, "://", worker->s->hostname,  sport, "/", NULL);
-#else
-                apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
-                if (strchr(worker->hostname, ':') != NULL)
-                    url = apr_pstrcat(pool, worker->scheme, "://[", worker->hostname, "]", sport, "/", NULL);
-                else
-                    url = apr_pstrcat(pool, worker->scheme, "://", worker->hostname,  sport, "/", NULL);
-#endif
 
                 apr_pool_create(&rrp, pool);
                 apr_pool_tag(rrp, "subrequest");
@@ -1642,12 +1084,10 @@ static void update_workers_lbstatus(proxy_server_conf *conf, apr_pool_t *pool, s
                 /* we need only those ones */
                 rnew->server = server;
                 rnew->connection = apr_pcalloc(rrp, sizeof(conn_rec));
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 rnew->connection->log_id = "-";
                 rnew->log_id = "-";
                 rnew->connection->conn_config = ap_create_conn_config(rrp);
                 rnew->useragent_addr = apr_pcalloc(rrp, sizeof(apr_sockaddr_t));
-#endif
                 rnew->per_dir_config = server->lookup_defaults;
                 rnew->notes = apr_table_make(rnew->pool, 1);
                 rnew->method = "PING";
@@ -1854,11 +1294,7 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
     char *sessionid;
     char *uri;
     char *sticky_used;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     char *sticky;
-#else
-    const char *sticky;
-#endif
     int i;
     proxy_server_conf *conf;
     nodeinfo_t *node;
@@ -1877,11 +1313,7 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
     ptr = conf->balancers->elts;
     for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
         balancer = (proxy_balancer *) ptr;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) == 0)
-#else
-        if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) == 0)
-#endif
             break;
     }
     if (i == conf->balancers->nelts)
@@ -1891,11 +1323,7 @@ static int hassession_byname(request_rec *r, int nodeid, const char *route)
     if (balancer == NULL)
         return 0;
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     sticky = apr_psprintf(r->pool, "%s|%s", balancer->s->sticky, balancer->s->sticky_path);
-#else
-    sticky = balancer->sticky;
-#endif
     if (sticky == NULL)
         return 0;
 
@@ -2129,11 +1557,7 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
             nodeinfo_t *node =  table_get_node(node_table, context->node);
             if (node == NULL)
                 continue;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
-#else
-            if (strlen(balancer->name) > 11 && strcasecmp(&balancer->name[11], node->mess.balancer) != 0)
-#endif
                 continue;
         }
         len = strlen(context->context);
@@ -2213,11 +1637,7 @@ static char *get_context_host_balancer(request_rec *r,
         if (node->mess.balancer) {
             /* Check that it is in our proxy_server_conf */
             char *name = apr_pstrcat(r->pool, "balancer://", node->mess.balancer, NULL);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             proxy_balancer *balancer = ap_proxy_get_balancer(r->pool, conf, name, 0);
-#else
-            proxy_balancer *balancer = ap_proxy_get_balancer(r->pool, conf, name);
-#endif
             if (balancer)
                 return node->mess.balancer;
             else
@@ -2260,11 +1680,7 @@ static int isbalancer_ours(proxy_balancer *balancer, proxy_balancer_table *balan
 {
     int i;
     for (i = 0; i < balancer_table->sizebalancer; i++) {
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
       if (strcasecmp(balancer_table->balancer_info[i].balancer, &balancer->s->name[11]))
-#else
-      if (strcasecmp(balancer_table->balancer_info[i].balancer, &balancer->name[11]))
-#endif
             continue;
         else
             return 1; /* found */
@@ -2319,11 +1735,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                  "proxy: Entering byrequests for CLUSTER (%s) failoverdomain:%d",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                  balancer->s->name,
-#else
-                 balancer->name,
-#endif
                  failoverdomain);
 #endif
 
@@ -2336,7 +1748,6 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     while (!checked_standby) {
         char *ptr = balancer->workers->elts;
         int sizew = balancer->workers->elt_size;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
             node_context *nodecontext;
             nodeinfo_t *node;
@@ -2359,14 +1770,6 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                              "proxy: byrequests balancer skipping BAD worker");
                 continue; /* probably used by different worker */
             }
-#else
-        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
-            node_context *nodecontext;
-            nodeinfo_t *node;
-            worker = (proxy_worker *) ptr;
-            if (worker->id == 0)
-                continue; /* marked removed */
-#endif
 
             /* standby logic
              * lbfactor: -1 broken node.
@@ -2385,22 +1788,14 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
              * not in error state or not disabled.
              * and that can map the context.
              */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (node_storage->read_node(worker->s->index, &node) != APR_SUCCESS)
-#else
-            if (node_storage->read_node(worker->id, &node) != APR_SUCCESS)
-#endif
                 continue; /* Can't read node */
             pptr = (char *) node;
             pptr = pptr + node->offset;
             if (worker->s != (proxy_worker_shared *) pptr)
                 continue; /* wrong shared memory address */
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table, node_table)) != NULL) {
-#else
-            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->id, vhost_table, context_table, node_table)) != NULL) {
-#endif
                 if (!checked_domain) {
                     /* First try only nodes in the domain */
                     if (!isnode_domain_ok(r, node, domain)) {
@@ -2420,11 +1815,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         nodeinfo_t *node1;
                         int lbstatus, lbstatus1;
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                         if (node_storage->read_node(mycandidate->s->index, &node1) != APR_SUCCESS)
-#else
-                        if (node_storage->read_node(mycandidate->id, &node1) != APR_SUCCESS)
-#endif
                             continue;
                         lbstatus1 = ((mycandidate->s->elected - node1->mess.oldelected) * 1000)/mycandidate->s->lbfactor;
                         lbstatus  = ((worker->s->elected - node->mess.oldelected) * 1000)/worker->s->lbfactor;
@@ -2471,11 +1862,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
         apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", (*mynodecontext).context));
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "proxy: byrequests balancer DONE (%s)",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                              mycandidate->s->name
-#else
-                             mycandidate->name
-#endif
                              );
     } else {
         apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", "");
@@ -2517,11 +1904,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     server_rec *s = main_server;
     proxy_server_conf *conf = NULL;
     nodeinfo_t *node;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     proxy_worker_shared *stat;
-#else
-    proxy_worker_stat *stat;
-#endif
     char *ptr;
 
     if (node_storage->read_node(id, &node) != APR_SUCCESS)
@@ -2532,11 +1915,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     /* Calculate the address of our shared memory that corresponds to the stat info of the worker */
     ptr = (char *) node;
     ptr = ptr + node->offset;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     stat = (proxy_worker_shared *) ptr;
-#else
-    stat = (proxy_worker_stat *) ptr;
-#endif
 
     /* create the balancers and workers (that could be the first time) */
     apr_thread_mutex_lock(lock);
@@ -2564,19 +1943,11 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         /* Only try usuable nodes */
         char sport[7];
         char *url;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         apr_snprintf(sport, sizeof(sport), ":%d", worker->s->port);
         if (strchr(worker->s->hostname, ':') != NULL)
             url = apr_pstrcat(r->pool, worker->s->scheme, "://[", worker->s->hostname, "]", sport, "/", NULL);
         else
             url = apr_pstrcat(r->pool, worker->s->scheme, "://", worker->s->hostname,  sport, "/", NULL);
-#else
-        apr_snprintf(sport, sizeof(sport), ":%d", worker->port);
-        if (strchr(worker->hostname, ':') != NULL)
-            url = apr_pstrcat(r->pool, worker->scheme, "://[", worker->hostname, "]", sport, "/", NULL);
-        else
-            url = apr_pstrcat(r->pool, worker->scheme, "://", worker->hostname,  sport, "/", NULL);
-#endif
         worker->s->error_time = 0; /* Force retry now */
         rv = proxy_cluster_try_pingpong(r, worker, url, conf, node->mess.ping, node->mess.timeout);
         if (rv != APR_SUCCESS) {
@@ -2594,25 +1965,14 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         worker->s->lbfactor = -1;
     }
     else if (load == 0) {
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
         worker->s->status |= PROXY_WORKER_HOT_STANDBY;
         worker->s->lbfactor = 0;
-#else
-        /*
-         * XXX: PROXY_WORKER_HOT_STANDBY Doesn't look supported
-         * mark worker in error for the moment
-         */
-        worker->s->status |= PROXY_WORKER_IN_ERROR;
-        worker->s->lbfactor = -1;
-#endif
     }
     else {
         worker->s->status &= ~PROXY_WORKER_IN_ERROR;
         worker->s->status &= ~PROXY_WORKER_STOPPED;
         worker->s->status &= ~PROXY_WORKER_DISABLED;
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,4)
         worker->s->status &= ~PROXY_WORKER_HOT_STANDBY;
-#endif
         worker->s->lbfactor = load;
     }
     return 0;
@@ -2888,14 +2248,6 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                      "httpd version %d.%d.%d doesn't match version %d.%d.%d used by mod_proxy_cluster.c",
                       version.major, version.minor, version.patch,
                       AP_SERVER_MAJORVERSION_NUMBER, AP_SERVER_MINORVERSION_NUMBER, AP_SERVER_PATCHLEVEL_NUMBER);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
-#else
-        if (version.patch < 8) {
-            ap_log_error(APLOG_MARK, APLOG_WARNING, 0, s,
-                         "httpd version %d.%d.%d too old", version.major, version.minor, version.patch);
-            return HTTP_INTERNAL_SERVER_ERROR;
-        }
-#endif
     }
     if (SIZEOFSCORE <= sizeof(proxy_worker_shared)) {
         ap_log_error(APLOG_MARK, APLOG_ERR, 0, s,
@@ -2953,7 +2305,6 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                     "proxy_cluster_post_config: Can't find mod_manager for domains");
         return !OK;
     }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     if (!ap_proxy_retry_worker_fn) {
         ap_proxy_retry_worker_fn =
                 APR_RETRIEVE_OPTIONAL_FN(ap_proxy_retry_worker);
@@ -2963,7 +2314,6 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
             return !OK;
         }
     }
-#endif
 
     /* Add version information */
     ap_add_version_component(p, MOD_CLUSTER_EXPOSED_VERSION);
@@ -3012,11 +2362,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
     char *route = NULL;
     char *sessionid = NULL;
     char *sticky_used;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     char *sticky;
-#else
-    const char *sticky;
-#endif
     int i;
     char *ptr = conf->balancers->elts;
     int sizeb = conf->balancers->elt_size;
@@ -3024,19 +2370,11 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
     for (i = 0; i < conf->balancers->nelts; i++, ptr=ptr+sizeb) {
         proxy_balancer *balancer = (proxy_balancer *) ptr;
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
             continue;
         if (strlen(balancer->s->name)<=11)
             continue;
         sticky = apr_psprintf(r->pool, "%s|%s", balancer->s->sticky, balancer->s->sticky_path);
-#else
-        if (balancer->sticky == NULL)
-            continue;
-        if (strlen(balancer->name)<=11)
-            continue;
-        sticky = balancer->sticky;
-#endif
         if (!isbalancer_ours(balancer, balancer_table))
             continue;
 
@@ -3045,11 +2383,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "cluster: %s Found value %s for "
                          "stickysession %s",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                          balancer->s->name,
-#else
-                         balancer->name,
-#endif
                          sessionid, sticky);
             apr_table_setn(r->notes, "session-id", sessionid);
             if ((route = strchr(sessionid, '.')) != NULL )
@@ -3066,19 +2400,11 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                           "cluster: Found route %s", route);
 #endif
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                 if (find_nodedomain(r, &domain, route, &balancer->s->name[11]) == APR_SUCCESS) {
-#else
-                if (find_nodedomain(r, &domain, route, &balancer->name[11]) == APR_SUCCESS) {
-#endif
 #if HAVE_CLUSTER_EX_DEBUG
                     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                 "cluster: Found balancer %s for %s",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                                  &balancer->s->name[11],
-#else
-                                 &balancer->name[11],
-#endif
                                  route);
 #endif
                     /* here we have the route and domain for find_session_route ... */
@@ -3094,11 +2420,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
 #endif
                         apr_table_setn(r->notes, "CLUSTER_DOMAIN", domain);
                     }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                     return &balancer->s->name[11];
-#else
-                    return &balancer->name[11];
-#endif
                 }
             }
         }
@@ -3403,7 +2725,6 @@ static proxy_worker *find_route_worker(request_rec *r,
     checking_standby = checked_standby = 0;
     while (!checked_standby) {
         char *ptr = balancer->workers->elts;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
             proxy_worker **run = (proxy_worker **) ptr;
             int index = (*run)->s->index;
@@ -3414,12 +2735,6 @@ static proxy_worker *find_route_worker(request_rec *r,
                               "proxy: find_route_worker skipping BAD worker");
                  continue; /* skip it */
             }
-#else
-        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
-            int index;
-            worker = (proxy_worker *) ptr;
-            index = worker->id;
-#endif
             if (index == 0)
                 continue; /* marked removed */
 
@@ -3446,11 +2761,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                      * The worker might still be unusable, but we try
                      * anyway.
                      */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                     ap_proxy_retry_worker_fn("BALANCER", worker, r->server);
-#else
-                    ap_proxy_retry_worker("BALANCER", worker, r->server);
-#endif
                     if (PROXY_WORKER_IS_USABLE(worker)) {
                             /* The context may not be available */
                             nodeinfo_t *node;
@@ -3484,11 +2795,7 @@ static proxy_worker *find_route_worker(request_rec *r,
                                  * The worker might still be unusable, but we try
                                  * anyway.
                                  */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                                 ap_proxy_retry_worker_fn("BALANCER", worker, r->server);
-#else
-                                ap_proxy_retry_worker("BALANCER", rworker, r->server);
-#endif
                             }
                             if (rworker && PROXY_WORKER_IS_USABLE(rworker)) {
                                 /* The context may not be available */
@@ -3527,23 +2834,12 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
 {
     proxy_worker *worker = NULL;
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
 #if HAVE_CLUSTER_EX_DEBUG
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "find_session_route: sticky %s sticky_path: %s sticky_force: %d", balancer->s->sticky, balancer->s->sticky_path, balancer->s->sticky_force);
 #endif
     if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
         return NULL;
-#else
-#if HAVE_CLUSTER_EX_DEBUG
-        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                     "find_session_route: sticky %s sticky_force: %d", balancer->sticky, balancer->sticky_force);
-#endif
-    if (!balancer->sticky)
-        return NULL;
-    if (! (balancer->sticky_force & STSESSION))
-        return NULL;
-#endif
 
     /* We already should have the route in the notes for the trans() */
     *route = apr_table_get(r->notes, "session-route");
@@ -3593,11 +2889,7 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
     if ((rv = PROXY_THREAD_LOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
         "proxy: CLUSTER: (%s). Lock failed for find_best_worker()",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
          balancer->s->name
-#else
-         balancer->name
-#endif
          );
         return NULL;
     }
@@ -3607,11 +2899,7 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
         "proxy: CLUSTER: (%s). Unlock failed for find_best_worker()",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
          balancer->s->name
-#else
-         balancer->name
-#endif
          );
     }
 
@@ -3623,22 +2911,13 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
          * By default the timeout is not set, and the server
          * returns SERVER_BUSY.
          */
-#if APR_HAS_THREADS
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (balancer->s->timeout && recurse) {
-#else
-        if (balancer->timeout && recurse) {
-#endif
             /* XXX: This can perhaps be build using some
              * smarter mechanism, like tread_cond.
              * But since the statuses can came from
              * different childs, use the provided algo.
              */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             apr_interval_time_t timeout = balancer->s->timeout;
-#else
-            apr_interval_time_t timeout = balancer->timeout;
-#endif
             apr_interval_time_t step, tval = 0;
 
             step = timeout / 100;
@@ -3651,7 +2930,6 @@ static proxy_worker *find_best_worker(proxy_balancer *balancer, proxy_server_con
                 tval += step;
             }
         }
-#endif
     }
     return candidate;
 }
@@ -3672,11 +2950,7 @@ static int rewrite_url(request_rec *r, proxy_worker *worker,
                              NULL));
     }
 
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     *url = apr_pstrcat(r->pool, worker->s->name, path, NULL);
-#else
-    *url = apr_pstrcat(r->pool, worker->name, path, NULL);
-#endif
 
     return OK;
 }
@@ -3805,11 +3079,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
      if (*balancer) {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                      "proxy_cluster_pre_request: url %s balancer %s", *url,
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                      (*balancer)->s->name
-#else
-                     (*balancer)->name
-#endif
                      );
      } else {
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
@@ -3828,10 +3098,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
             int i;
             int sizew = (*balancer)->workers->elt_size;
             char *ptr = (*balancer)->workers->elts;
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             int def = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_DEFAULT);
             int fnv = ap_proxy_hashfunc(worker_name, PROXY_HASHFUNC_FNV);
-#endif
 #if HAVE_CLUSTER_EX_DEBUG
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy_cluster_pre_request: worker %s", worker_name);
@@ -3842,7 +3110,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                upd_context_count(context_id, -1, r->server);
             }
             apr_thread_mutex_lock(lock);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
                 proxy_worker **run = (proxy_worker **) ptr;
                 if ((*run)->hash.def == def && (*run)->hash.fnv == fnv) {
@@ -3852,17 +3119,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                     break;
                 }
             }
-#else
-            for (i = 0; i < (*balancer)->workers->nelts; i++, ptr=ptr+sizew) {
-                proxy_worker *run = (proxy_worker *) ptr;
-                if (run->name && strcmp(worker_name, run->name) == 0) {
-                    helper = (proxy_cluster_helper *) (run)->opaque;
-                    if (helper->count_active>0)
-                        helper->count_active--;
-                    break;
-                }
-            }
-#endif
             apr_thread_mutex_unlock(lock);
         }
     }
@@ -3870,20 +3126,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     /* TODO if we don't have a balancer but a route we should use it directly */
     apr_thread_mutex_lock(lock);
     if (!*balancer &&
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         !(*balancer = ap_proxy_get_balancer(r->pool, conf, *url, 0))) {
-#else
-        !(*balancer = ap_proxy_get_balancer(r->pool, conf, *url))) {
-#endif
         apr_thread_mutex_unlock(lock);
         /* May be the node has not been created yet */
         update_workers_node(conf, r->pool, r->server, 1);
         apr_thread_mutex_lock(lock);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (!(*balancer = ap_proxy_get_balancer(r->pool, conf, *url, 0))) {
-#else
-        if (!(*balancer = ap_proxy_get_balancer(r->pool, conf, *url))) {
-#endif
             apr_thread_mutex_unlock(lock);
             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                          "proxy: CLUSTER no balancer for %s", *url);
@@ -3903,11 +3151,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     if ((rv = PROXY_THREAD_LOCK(*balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
                      "proxy: CLUSTER: (%s). Lock failed for pre_request",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                      (*balancer)->s->name
-#else
-                     (*balancer)->name
-#endif
                      );
         return DECLINED;
     }
@@ -3915,11 +3159,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         runtime->s->elected++;
         *worker = runtime;
     }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     else if (route && ((*balancer)->s->sticky_force)) {
-#else
-    else if (route && ((*balancer)->sticky_force & STSESSFOR)) {
-#endif
         if (domain == NULL) {
             /*
              * We have a route provided that doesn't match the
@@ -3928,20 +3168,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
              */
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                          "proxy: CLUSTER: (%s). All workers are in error state for route (%s)",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                          (*balancer)->s->name,
-#else
-                         (*balancer)->name,
-#endif
                          route);
             if ((rv = PROXY_THREAD_UNLOCK(*balancer)) != APR_SUCCESS) {
                 ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
                              "proxy: CLUSTER: (%s). Unlock failed for pre_request",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                              (*balancer)->s->name
-#else
-                             (*balancer)->name
-#endif
                              );
             }
             return HTTP_SERVICE_UNAVAILABLE;
@@ -3958,11 +3190,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     if ((rv = PROXY_THREAD_UNLOCK(*balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
                      "proxy: CLUSTER: (%s). Unlock failed for pre_request",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                      (*balancer)->s->name
-#else
-                     (*balancer)->name
-#endif
                      );
     }
     if (!*worker) {
@@ -3974,20 +3202,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         if (!runtime) {
             ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
                          "proxy: CLUSTER: (%s). All workers are in error state",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                          (*balancer)->s->name
-#else
-                         (*balancer)->name
-#endif
                          );
 
             return HTTP_SERVICE_UNAVAILABLE;
         }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if ((*balancer)->s->sticky && runtime) {
-#else
-        if ((*balancer)->sticky && runtime) {
-#endif
             /*
              * This balancer has sticky sessions and the client either has not
              * supplied any routing information or all workers for this route
@@ -3998,7 +3218,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
              */
             apr_table_setn(r->subprocess_env, "BALANCER_ROUTE_CHANGED", "1");
         }
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         /* we should read Remove sessionid from the proxy_balancer_table */
         if (route) {
             const proxy_balancer_table *balancer_table =  (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
@@ -4013,12 +3232,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
                 } 
             }
         }
-#else
-        /* Remove sessionid fits in sticky_force */
-        if (route && ((*balancer)->sticky_force & STSESSREM)) {
-            remove_sessionid = 1;
-        }
-#endif
         if (remove_sessionid) {
             /*
              * Failover to another domain. Remove sessionid information.
@@ -4043,11 +3256,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
     /* Mark the worker used for the cleanup logic */
     apr_thread_mutex_lock(lock);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     helper = (proxy_cluster_helper *) (*worker)->context;
-#else
-    helper = (proxy_cluster_helper *) (*worker)->opaque;
-#endif
     helper->count_active++;
     apr_thread_mutex_unlock(lock);
 
@@ -4057,13 +3266,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
      * Note that BALANCER_WORKER_NAME would have changed in case of failover.
      */
     /* Add balancer/worker info to env. */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     apr_table_setn(r->subprocess_env, "BALANCER_NAME", (*balancer)->s->name);
     apr_table_setn(r->subprocess_env, "BALANCER_WORKER_NAME", (*worker)->s->name);
-#else
-    apr_table_setn(r->subprocess_env, "BALANCER_NAME", (*balancer)->name);
-    apr_table_setn(r->subprocess_env, "BALANCER_WORKER_NAME", (*worker)->name);
-#endif
     apr_table_setn(r->subprocess_env, "BALANCER_WORKER_ROUTE", (*worker)->s->route);
 
     /* Rewrite the url from 'balancer://url'
@@ -4076,11 +3280,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                  "proxy_cluster_pre_request: balancer (%s) worker (%s) rewritten to %s",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                  (*balancer)->s->name, (*worker)->s->name,
-#else
-                 (*balancer)->name, (*worker)->name,
-#endif
                  *url);
 #endif
 
@@ -4100,9 +3300,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     const char *sticky;
     char *oroute;
     const char *context_id = apr_table_get(r->subprocess_env, "BALANCER_CONTEXT_ID");
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
     apr_status_t rv;
-#endif
 
     /* Ajust the context counter here too */
     if (context_id && *context_id) {
@@ -4111,11 +3309,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 
     /* mark the worker as not in use */
     apr_thread_mutex_lock(lock);
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
     helper = (proxy_cluster_helper *) worker->context;
-#else
-    helper = (proxy_cluster_helper *) worker->opaque;
-#endif
     helper->count_active--;
 
     apr_thread_mutex_unlock(lock);
@@ -4123,11 +3317,7 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                  "proxy_cluster_post_request for (%s) %s",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                   balancer->s->name, balancer->s->sticky
-#else
-                  balancer->name, balancer->sticky
-#endif
                   );
 #endif
 
@@ -4135,20 +3325,9 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 
         /* Add information about sessions corresponding to a node */
         sticky = apr_table_get(r->notes, "session-sticky");
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
         if (sticky == NULL && balancer->s->sticky[0] != '\0') {
             sticky = apr_pstrdup(r->pool, balancer->s->sticky);
         }
-#else
-        if (sticky == NULL && balancer->sticky) {
-            char *path, *stick;
-            stick = apr_pstrdup(r->pool, balancer->sticky);
-            if ((path = strchr(stick, '|'))) {
-                *path++ = '\0';
-            }
-            sticky = (const char *) stick;
-        }
-#endif
         if (sticky != NULL) {
             cookie = get_cookie_param(r, sticky, 0);
             sessionid =  apr_table_get(r->notes, "session-id");
@@ -4180,16 +3359,10 @@ static int proxy_cluster_post_request(proxy_worker *worker,
         }
     }
 
-    /*  20051115.25 (2.2.17) Add errstatuses member to proxy_balancer */
-#if AP_MODULE_MAGIC_AT_LEAST(20051115,25)
     if ((rv = PROXY_THREAD_LOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
             "proxy: BALANCER: (%s). Lock failed for post_request",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             balancer->s->name
-#else
-            balancer->name
-#endif
             );
         return HTTP_INTERNAL_SERVER_ERROR;
     }
@@ -4203,13 +3376,8 @@ static int proxy_cluster_post_request(proxy_worker *worker,
                               "%s: Forcing worker (%s) into error state "
                               "due to status code %d matching 'failonstatus' "
                               "balancer parameter",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                               balancer->s->name,
                               worker->s->name,
-#else
-                              balancer->name,
-                              worker->name,
-#endif
                               val);
                 worker->s->status |= PROXY_WORKER_IN_ERROR;
                 worker->s->error_time = apr_time_now();
@@ -4221,22 +3389,13 @@ static int proxy_cluster_post_request(proxy_worker *worker,
     if ((rv = PROXY_THREAD_UNLOCK(balancer)) != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, rv, r->server,
             "proxy: BALANCER: (%s). Unlock failed for post_request",
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
             balancer->s->name
-#else
-            balancer->name
-#endif
             );
     }
-#endif
 
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                  "proxy_cluster_post_request %d for (%s)", r->status,
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
                  balancer->s->name
-#else
-                 balancer->name
-#endif
                  );
 
     return OK;
@@ -4276,13 +3435,6 @@ static void proxy_cluster_hooks(apr_pool_t *p)
     /* Register a provider for the loadbalancer (for things like ProxyPass /titi balancer://mycluster/myapp) */
     ap_register_provider(p, PROXY_LBMETHOD, "byrequests", "0", &balancerhandler);
 }
-
-/* XXX: not needed
-static void *create_proxy_cluster_dir_config(apr_pool_t *p, char *dir)
-{
-    return NULL;
-}
- */
 
 static void *create_proxy_cluster_server_config(apr_pool_t *p, server_rec *s)
 {
