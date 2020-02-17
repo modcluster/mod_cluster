@@ -76,7 +76,7 @@
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
 
         <!-- Plugin versions -->
-        <version.checkstyle.plugin>3.1.0</version.checkstyle.plugin>
+        <version.checkstyle.plugin>3.1.1</version.checkstyle.plugin>
         <version.checkstyle>8.27</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
     </properties>
