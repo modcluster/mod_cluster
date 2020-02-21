@@ -139,7 +139,7 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
     *id = ident;
     ou->updatetime = now;
 
-    /* set of offset to the proxy_worker_stat */
+    /* set of offset to the proxy_worker_shared */
     ou->offset = sizeof(nodemess_t) + sizeof(apr_time_t) + sizeof(int);
     ou->offset = APR_ALIGN_DEFAULT(ou->offset);
 
