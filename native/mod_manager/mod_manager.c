@@ -172,6 +172,8 @@ typedef struct mod_manager_config
     int enable_mcpm_receive;
     /* Enable WebSocket Proxy */
     int enable_ws_tunnel;
+    /* WebSocket upgrade header */
+    char *ws_upgrade_header;
 
 } mod_manager_config;
 
@@ -849,6 +851,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     strcpy(nodeinfo.mess.Host, "localhost");
     strcpy(nodeinfo.mess.Port, "8009");
     strcpy(nodeinfo.mess.Type, "ajp");
+    nodeinfo.mess.Upgrade[0] = '\0';
     nodeinfo.mess.reversed = 0;
     nodeinfo.mess.remove = 0; /* not marked as removed */
     nodeinfo.mess.flushpackets = flush_off; /* FLUSH_OFF; See enum flush_packets in proxy.h flush_off */
@@ -1044,6 +1047,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             strcpy(nodeinfo.mess.Type, "ws");
         if (!strcmp(nodeinfo.mess.Type, "https"))
             strcpy(nodeinfo.mess.Type, "wss");
+        if (mconf->ws_upgrade_header)
+            strcpy(nodeinfo.mess.Upgrade,mconf->ws_upgrade_header);
     }
     /* Insert or update balancer description */
     if (insert_update_balancer(balancerstatsmem, &balancerinfo) != APR_SUCCESS) {
@@ -3324,6 +3329,26 @@ static const char*cmd_manager_enable_ws_tunnel(cmd_parms *cmd, void *dummy)
     }
 }
 
+static const char*cmd_manager_ws_upgrade_header(cmd_parms *cmd, void *mconfig, const char *word)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+    if (strlen(word) >= PROXY_WORKER_MAX_SCHEME_SIZE) {
+        return apr_psprintf(cmd->temp_pool, "upgrade protocol length must be < %d characters",
+                            PROXY_WORKER_MAX_SCHEME_SIZE);
+    }
+    if (ap_find_linked_module("mod_proxy_wstunnel.c") != NULL) {
+        mconf->enable_ws_tunnel = -1;
+        mconf->ws_upgrade_header = apr_pstrdup(cmd->pool, word);
+        return NULL;
+    } else {
+        return "WSUpgradeHeader requires mod_proxy_wstunnel.c";
+    }
+}
+
 
 static const command_rec  manager_cmds[] =
 {
@@ -3411,7 +3436,7 @@ static const command_rec  manager_cmds[] =
         OR_ALL,
         "ReduceDisplay - Don't contexts in the main mod_cluster-manager page. on | off (Default: off Context displayed)"
     ),
-   AP_INIT_TAKE1(
+    AP_INIT_TAKE1(
         "MaxMCMPMessSize",
         cmd_manager_maxmesssize,
         NULL,
@@ -3431,6 +3456,13 @@ static const command_rec  manager_cmds[] =
          NULL,
          OR_ALL,
          "EnableWsTunnel - Use ws or wss instead http or https when creating nodes (Allow Websockets proxing)."
+    ),
+    AP_INIT_TAKE1(
+        "WSUpgradeHeader",
+         cmd_manager_ws_upgrade_header,
+         NULL,
+         OR_ALL,
+         "WSUpgradeHeader - Accepted upgrade headers, ONE bypass checks, ANY read it from request, other values: header value to check before using the WS tunnel."
     ),
     {NULL}
 };
@@ -3485,6 +3517,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->reduce_display = 0;
     mconf->enable_mcpm_receive = 0;
     mconf->enable_ws_tunnel = 0;
+    mconf->ws_upgrade_header = NULL;
     return mconf;
 }
 
@@ -3579,6 +3612,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->enable_ws_tunnel = mconf2->enable_ws_tunnel;
     else if (mconf1->enable_ws_tunnel != 0)
         mconf->enable_ws_tunnel = mconf1->enable_ws_tunnel;
+
+    if (mconf2->ws_upgrade_header)
+        mconf->ws_upgrade_header = apr_pstrdup(p, mconf2->ws_upgrade_header);
+    else if (mconf1->ws_upgrade_header)
+        mconf->ws_upgrade_header = apr_pstrdup(p, mconf1->ws_upgrade_header);
 
     return mconf;
 }
