@@ -56,6 +56,7 @@ struct nodemess {
     char Host[HOSTNODESZ];
     char Port[PORTNODESZ];
     char Type[SCHEMENDSZ];
+    char Upgrade[SCHEMENDSZ];
     int  reversed; /* 1 : reversed... 0 : normal */
     int  remove;   /* 1 : removed     0 : normal */
 
@@ -211,7 +212,7 @@ int (* get_ids_used_node)(int *ids);
 /**
  * read the max number of nodes in the shared table
  */
-int (*get_max_size_node)();
+int (* get_max_size_node)(void);
 /**
  * check the nodes for modifications.
  * XXX: void *data is server_rec *s in fact.

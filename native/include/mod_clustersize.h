@@ -39,7 +39,7 @@
 #define DOMAINNDSZ 20
 #define HOSTNODESZ 64
 #define PORTNODESZ 7
-#define SCHEMENDSZ 6
+#define SCHEMENDSZ 16
 
 /* For balancer.h */
 #define COOKNAMESZ 30
