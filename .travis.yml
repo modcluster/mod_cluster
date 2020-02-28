@@ -2,6 +2,6 @@ language: java
 jdk:
   - openjdk10
   - openjdk8
-script: rm $HOME/.m2/settings.xml && mvn verify -Pdist
+script: mvn verify -Pdist
 notifications:
   email: false
