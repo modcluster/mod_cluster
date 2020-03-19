@@ -41,7 +41,6 @@ import static org.mockito.Mockito.when;
  *
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class ServerTestCase extends org.jboss.modcluster.container.tomcat.ServerTestCase {
 

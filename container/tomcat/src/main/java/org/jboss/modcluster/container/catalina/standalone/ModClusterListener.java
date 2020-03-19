@@ -26,7 +26,6 @@ package org.jboss.modcluster.container.catalina.standalone;
  * {@code <Listener className="org.jboss.modcluster.container.catalina.standalone.ModClusterListener"/>}.
  *
  * @author Radoslav Husar
- * @version Jun 2016
  */
 @Deprecated
 public class ModClusterListener extends org.jboss.modcluster.container.tomcat.ModClusterListener {

@@ -37,7 +37,6 @@ import java.io.IOException;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version Mar 2016
  */
 public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatContext {
 

@@ -36,7 +36,6 @@ import java.io.IOException;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class ContextTestCase extends org.jboss.modcluster.container.tomcat.ContextTestCase {
 

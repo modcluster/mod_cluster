@@ -28,7 +28,6 @@ import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class TomcatServerFactory implements ServerFactory {
     @Override

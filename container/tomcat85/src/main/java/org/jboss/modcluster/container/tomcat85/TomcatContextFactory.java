@@ -28,7 +28,6 @@ import org.jboss.modcluster.container.tomcat.ContextFactory;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class TomcatContextFactory implements ContextFactory {
     @Override

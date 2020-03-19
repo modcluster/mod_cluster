@@ -33,7 +33,6 @@ import java.util.Iterator;
  *
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class TomcatServer extends org.jboss.modcluster.container.tomcat.TomcatServer {
 
