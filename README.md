@@ -1,15 +1,15 @@
 mod_cluster [![Build Status](https://travis-ci.org/modcluster/mod_cluster.svg?branch=master)](https://travis-ci.org/modcluster/mod_cluster)
 ===========
 
-Project mod_cluster is an intelligent load-balancer. It uses a communication channel to forward requests from a reverse
+Project mod_cluster is an intelligent load balancer. It uses a communication channel to forward requests from a reverse
 proxy server to one of a set of application server nodes. Unlike mod_jk and mod_proxy, mod_cluster leverages an
-additional connection between the application server nodes and the reverse proxy to transmit server-side load-balance
+additional connection between the application server nodes and the reverse proxy to transmit server-side load balance
 factors and lifecycle events back to the proxy. This additional feedback channel allows mod_cluster to offer a level of
-intelligence and granularity not found in other load-balancing solutions. There are currently two reverse proxy
+intelligence and granularity not found in other load balancing solutions. There are currently two reverse proxy
 implementations: a native [Apache HTTP Server](https://httpd.apache.org/) implementation and a pure Java 
 [Undertow](http://undertow.io/)-based implementation.
 
-Project mod_cluster boasts the following advantages over other httpd-based load-balancers:
+Project mod_cluster boasts the following advantages over other httpd-based load balancers:
 
 * Dynamic configuration of httpd workers
 * Server-side load balance factor calculation
