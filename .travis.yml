@@ -38,5 +38,10 @@ jobs:
       install: . ./install-jdk.sh -F 13
     - env: JDK_RELEASE='OpenJDK 13'
       install: . ./install-jdk.sh -F 13
+    # JDK 14
+    - env: JDK_RELEASE='OracleJDK 14'
+      install: . ./install-jdk.sh -F 14
+    - env: JDK_RELEASE='OpenJDK 14'
+      install: . ./install-jdk.sh -F 14
 notifications:
   email: false
