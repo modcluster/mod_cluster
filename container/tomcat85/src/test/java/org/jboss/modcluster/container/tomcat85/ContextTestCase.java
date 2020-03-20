@@ -27,11 +27,8 @@ import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.mockito.ArgumentCaptor;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestListener;
-import java.io.IOException;
 
 /**
  * @author Paul Ferraro
@@ -45,7 +42,7 @@ public class ContextTestCase extends org.jboss.modcluster.container.tomcat.Conte
     }
 
     @Override
-    public void requestListener() throws IOException, ServletException {
+    public void requestListener() throws Exception {
         // Test addRequestListener()
         ServletRequestListener listener = mock(ServletRequestListener.class);
         Pipeline pipeline = mock(Pipeline.class);

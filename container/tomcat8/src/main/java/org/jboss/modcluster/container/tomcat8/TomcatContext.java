@@ -21,6 +21,9 @@
  */
 package org.jboss.modcluster.container.tomcat8;
 
+import javax.servlet.ServletException;
+import java.io.IOException;
+
 import org.apache.catalina.Context;
 import org.apache.catalina.Valve;
 import org.apache.catalina.comet.CometEvent;
@@ -28,12 +31,8 @@ import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.jboss.modcluster.container.tomcat.RequestListenerValveFactory;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import java.io.IOException;
 
 /**
  * @author Paul Ferraro
@@ -64,9 +63,7 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
 
         @Override
         public void event(Request request, Response response, CometEvent event) throws IOException, ServletException {
-            ServletRequestEvent requestEvent = new ServletRequestEvent(request.getContext().getServletContext(), request);
-
-            this.listener.requestInitialized(requestEvent);
+            this.listener.requestInitialized();
 
             Valve valve = this.getNext();
 
@@ -77,7 +74,7 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
                     valve.invoke(request, response);
                 }
             } finally {
-                this.listener.requestDestroyed(requestEvent);
+                this.listener.requestDestroyed();
             }
         }
 
@@ -88,7 +85,7 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
 
         @Override
         public boolean equals(Object object) {
-            if ((object == null) || !(object instanceof RequestListenerValve)) return false;
+            if (!(object instanceof RequestListenerValve)) return false;
 
             RequestListenerValve valve = (RequestListenerValve) object;
 

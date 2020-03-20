@@ -21,13 +21,14 @@
  */
 package org.jboss.modcluster.container;
 
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 
 /**
  * SPI for a web application context.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public interface Context {
     /**
@@ -54,30 +55,30 @@ public interface Context {
     /**
      * Registers the specified request listener with this context. Used for request draining.
      *
-     * @param listener listener to register
+     * @param requestListener request listener to register
      */
-    void addRequestListener(ServletRequestListener listener);
+    void addRequestListener(ServletRequestListener requestListener);
 
     /**
      * Removes the specified previously registered request listener.
      *
-     * @param listener listener to remove
+     * @param requestListener request listener to remove
      */
-    void removeRequestListener(ServletRequestListener listener);
+    void removeRequestListener(ServletRequestListener requestListener);
 
     /**
      * Adds the specified session listener to this context.
      *
-     * @param listener a session listener
+     * @param sessionListener a session listener to register
      */
-    void addSessionListener(HttpSessionListener listener);
+    void addSessionListener(HttpSessionListener sessionListener);
 
     /**
      * Removes the specified session listener to this context.
      *
-     * @param listener a session listener
+     * @param sessionListener a session listener to remove
      */
-    void removeSessionListener(HttpSessionListener listener);
+    void removeSessionListener(HttpSessionListener sessionListener);
 
     /**
      * Returns the number of active sessions for this context.
