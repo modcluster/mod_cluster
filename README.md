@@ -63,6 +63,7 @@ container
   tomcat (base for Tomcat container implementations, based on Tomcat 7.0)
   tomcat8 (Tomcat 8.0 container implementation)
   tomcat85 (Tomcat 8.5 and 9.0 container implementation)
+  tomcat100 (Tomcat 10.0 container implementation)
 load-spi (SPI classes for load metric computation)
 demo
   client
