@@ -54,7 +54,7 @@ public class TestUtils {
     /**
      * Gets an interface to use for testing. First, attempts to resolve one of {@code multicast.interface.address} or
      * {@code multicast.interface.name} system properties, if unspecified, returns first multicast-enabled and
-     * preferably non-loopback network interface.
+     * preferably non-loopback and non-point-to-point network interface.
      *
      * @return interface to be used for testing
      */
@@ -70,23 +70,26 @@ public class TestUtils {
 
         // Automatically and deterministically find first multicast-enabled and preferably non-loopback network interface
         ArrayList<NetworkInterface> ifaces = Collections.list(NetworkInterface.getNetworkInterfaces());
-        Collections.sort(ifaces, new Comparator<NetworkInterface>() {
+        ifaces.sort(new Comparator<NetworkInterface>() {
             @Override
             public int compare(NetworkInterface o1, NetworkInterface o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
 
-        NetworkInterface local = null;
+        NetworkInterface electedIface = ifaces.get(0);
         for (NetworkInterface iface : ifaces) {
             if (iface.supportsMulticast()) {
-                if (!iface.isLoopback() && iface.isUp()) {
-                    return iface;
+                if (!iface.isLoopback() && iface.isUp() && !iface.isPointToPoint()) {
+                    electedIface = iface;
+                    break;
                 }
-                local = iface;
+                electedIface = iface;
             }
         }
-        return local;
+        System.out.println("Automatically using interface for testing: " + electedIface.getDisplayName() + ". To override use -Dmulticast.interface.address or -Dmulticast.interface.name!");
+
+        return electedIface;
     }
 
     /**
