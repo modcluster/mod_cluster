@@ -144,6 +144,6 @@ int (* get_ids_used_host)(int *ids);
 /**
  * read the max number of hosts in the shared table
  */
-int (*get_max_size_host)();
+int (*get_max_size_host)(void);
 };
 #endif /*HOST_H*/

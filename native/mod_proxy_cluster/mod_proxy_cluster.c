@@ -242,9 +242,12 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
                 /* the share memory may have been removed and recreated */
                 if (!worker->s->status) {
                     worker->s->status = PROXY_WORKER_INITIALIZED;
-                    strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZE-1);
-                    worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZE-1] = '\0';
-                    strcpy(worker->s->upgrade, node->mess.Upgrade);
+                    strncpy(worker->s->route, node->mess.JVMRoute, sizeof(worker->s->route));
+                    worker->s->route[sizeof(worker->s->route)-1] = '\0';
+                    strncpy(worker->s->upgrade, node->mess.Upgrade, sizeof(worker->s->upgrade));
+                    worker->s->upgrade[sizeof(worker->s->upgrade)-1] = '\0';
+                    strncpy(worker->s->secret, node->mess.AJPSecret, sizeof(worker->s->secret));
+                    worker->s->secret[sizeof(worker->s->secret)-1] = '\0';
                     /* XXX: We need that information from TC */
                     worker->s->redirect[0] = '\0';
                     worker->s->lbstatus = 0;
@@ -297,9 +300,12 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         worker->s->hmax = shared->hmax;
         if (worker->s->hmax < node->mess.smax)
             worker->s->hmax = node->mess.smax + 1;
-        strncpy(worker->s->route, node->mess.JVMRoute, PROXY_WORKER_MAX_ROUTE_SIZE-1);
-        worker->s->route[PROXY_WORKER_MAX_ROUTE_SIZE-1] = '\0';
-        strcpy(worker->s->upgrade, node->mess.Upgrade);
+        strncpy(worker->s->route, node->mess.JVMRoute, sizeof(worker->s->route));
+        worker->s->route[sizeof(worker->s->route)-1] = '\0';
+        strncpy(worker->s->upgrade, node->mess.Upgrade, sizeof(worker->s->upgrade));
+        worker->s->upgrade[sizeof(worker->s->upgrade)-1] = '\0';
+        strncpy(worker->s->secret, node->mess.AJPSecret, sizeof(worker->s->secret));
+        worker->s->secret[sizeof(worker->s->secret)-1] = '\0';
         worker->s->redirect[0] = '\0';
         worker->s->smax = node->mess.smax;
         worker->s->ttl = node->mess.ttl;
@@ -410,7 +416,7 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
                           "add_balancer_node: Can't create lock for balancer");
         }
         balancer->workers = apr_array_make(conf->pool, 5, sizeof(proxy_worker *));
-        strncpy(balancer->s->name, name, PROXY_BALANCER_MAX_NAME_SIZE);
+        strncpy(balancer->s->name, name, PROXY_BALANCER_MAX_NAME_SIZE-1);
         balancer->lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
     } else {
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
@@ -1811,7 +1817,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
         session_id_with_route = apr_table_get(r->notes, "session-id");
         session_id = session_id_with_route ? apr_strtok(strdup(session_id_with_route), ".", &tokenizer) : NULL;
         /* Determine deterministic route, if session is associated with a route, but that route wasn't used */
-        if (deterministic_failover && session_id && strchr(session_id_with_route, '.') && workers_length > 0) {
+        if (deterministic_failover && session_id && strchr((char *)session_id_with_route, '.') && workers_length > 0) {
             /* Deterministic selection of target route */
             if (workers_length > 1) {
 	            qsort(workers, workers_length, sizeof(*workers), &proxy_worker_cmp);
@@ -1849,22 +1855,6 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                              "proxy: byrequests balancer FAILED");
     }
     return mycandidate;
-}
-
-/*
- * Wrapper to mod_balancer "standard" interface.
- */
-static proxy_worker *find_best_byrequests(proxy_balancer *balancer, request_rec *r)
-{
-    void *sconf = r->server->module_config;
-    proxy_server_conf *conf = (proxy_server_conf *)
-        ap_get_module_config(sconf, &proxy_module);
-
-    proxy_vhost_table *vhost_table = read_vhost_table(r);
-    proxy_context_table *context_table = read_context_table(r);
-    proxy_node_table *node_table = read_node_table(r);
-
-    return internal_find_best_byrequests(balancer, conf, r, NULL, 0, vhost_table, context_table, node_table);
 }
 
 /*
@@ -2937,7 +2927,7 @@ static int rewrite_url(request_rec *r, proxy_worker *worker,
 /*
  * Remove the session information
  */
-void remove_session_route(request_rec *r, const char *name)
+static void remove_session_route(request_rec *r, const char *name)
 {
     char *path = NULL;
     char *url = r->filename;
@@ -3319,7 +3309,8 @@ static int proxy_cluster_post_request(proxy_worker *worker,
                     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                                  "proxy_cluster_post_request sessionid changed (%s to %s)", sessionid, cookie);
 #endif
-                    strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
+                    strncpy(ou.sessionid, sessionid, SESSIONIDSZ-1);
+                    ou.sessionid[SESSIONIDSZ-1] = '\0';
                     ou.id = 0;
                     sessionid_storage->remove_sessionid(&ou);
                 }
@@ -3331,8 +3322,10 @@ static int proxy_cluster_post_request(proxy_worker *worker,
 
             if (sessionid && route) {
                 sessionidinfo_t ou;
-                strncpy(ou.sessionid, sessionid, SESSIONIDSZ);
-                strncpy(ou.JVMRoute, route, JVMROUTESZ);
+                strncpy(ou.sessionid, sessionid, SESSIONIDSZ-1);
+                ou.sessionid[SESSIONIDSZ-1] = '\0';
+                strncpy(ou.JVMRoute, route, JVMROUTESZ-1);
+                ou.sessionid[JVMROUTESZ-1] = '\0';
                 sessionid_storage->insert_update_sessionid(&ou);
             }
         }

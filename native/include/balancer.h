@@ -149,6 +149,6 @@ int (* get_ids_used_balancer)(int *ids);
 /**
  * read the max number of balancers in the shared table
  */
-int (*get_max_size_balancer)();
+int (*get_max_size_balancer)(void);
 };
 #endif /*BALANCER_H*/
