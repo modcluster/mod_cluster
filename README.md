@@ -92,6 +92,11 @@ mvn install -Pdist
 
 Distribution files for Tomcat and a demo application will be built in the `dist/target/` directory.
 
+Native httpd part
+------------------
+
+For the native part use 1.3.x or mod_proxy_cluster.
+
 
 Reporting Issues
 ----------------
