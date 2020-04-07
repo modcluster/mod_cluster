@@ -29,6 +29,10 @@ import org.jboss.modcluster.container.Connector;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @author Radoslav Husar
+ * @author Paul Ferraro
+ */
 public class ConnectorTestCase {
     protected final Connector ajpConnector = createConnector("AJP/1.3", Connector.Type.AJP, false);
     protected final Connector httpConnector = createConnector("HTTP/1.1", Connector.Type.HTTP, false);
@@ -81,7 +85,10 @@ public class ConnectorTestCase {
     @Test
     public void setAddress() throws UnknownHostException {
         String address = "127.0.0.1";
-        Assert.assertNull(this.ajpConnector.getAddress());
+
+        // Since 7.0.100, 8.5.51, 9.0.31, and 10.0.0-M3 the default bind address for the AJP/1.3 connector is the loopback address
+        Assert.assertEquals(InetAddress.getLoopbackAddress(), this.ajpConnector.getAddress());
+
         this.ajpConnector.setAddress(InetAddress.getByName(address));
         Assert.assertEquals(address, this.ajpConnector.getAddress().getHostAddress());
 

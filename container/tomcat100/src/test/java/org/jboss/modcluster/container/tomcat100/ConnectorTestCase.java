@@ -21,20 +21,8 @@
  */
 package org.jboss.modcluster.container.tomcat100;
 
-import java.net.UnknownHostException;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 /**
  * @author Radoslav Husar
  */
 public class ConnectorTestCase extends org.jboss.modcluster.container.tomcat.ConnectorTestCase {
-
-    @Ignore
-    @Override
-    @Test
-    public void setAddress() throws UnknownHostException {
-        super.setAddress();
-    }
 }
