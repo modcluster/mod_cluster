@@ -21,8 +21,35 @@
  */
 package org.jboss.modcluster.container.tomcat8;
 
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class ConnectorTestCase extends org.jboss.modcluster.container.tomcat.ConnectorTestCase {
+
+    @Test
+    public void setAddress() throws UnknownHostException {
+        String address = "127.0.0.1";
+
+        // Since 7.0.100, 8.5.51, 9.0.31, and 10.0.0-M3 the default bind address for the AJP/1.3 connector is the loopback address
+        // -> however 8.0.x has not been updated yet
+        Assert.assertNull(this.ajpConnector.getAddress());
+
+        this.ajpConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.ajpConnector.getAddress().getHostAddress());
+
+        Assert.assertNull(this.httpConnector.getAddress());
+        this.httpConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.httpConnector.getAddress().getHostAddress());
+
+        Assert.assertNull(this.httpsConnector.getAddress());
+        this.httpsConnector.setAddress(InetAddress.getByName(address));
+        Assert.assertEquals(address, this.httpsConnector.getAddress().getHostAddress());
+    }
 }
