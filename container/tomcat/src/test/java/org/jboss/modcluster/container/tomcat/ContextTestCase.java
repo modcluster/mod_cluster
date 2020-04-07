@@ -30,17 +30,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
-
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -89,7 +86,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void requestListener() throws IOException, ServletException {
+    public void requestListener() throws Exception {
         // Test addRequestListener()
         ServletRequestListener listener = mock(ServletRequestListener.class);
         Pipeline pipeline = mock(Pipeline.class);
@@ -138,7 +135,7 @@ public class ContextTestCase {
         Object[] listeners = capturedListeners.getValue();
 
         assertEquals(2, listeners.length);
-        assertSame(listener, listeners[0]);
+        assertEquals(new JavaxHttpSessionListener(listener), listeners[0]);
         assertSame(otherListener, listeners[1]);
     }
 
@@ -148,7 +145,7 @@ public class ContextTestCase {
         ArgumentCaptor<Object[]> capturedListeners = ArgumentCaptor.forClass(Object[].class);
         Object otherListener = new Object();
 
-        when(this.context.getApplicationLifecycleListeners()).thenReturn(new Object[] { otherListener, listener });
+        when(this.context.getApplicationLifecycleListeners()).thenReturn(new Object[] { otherListener, new JavaxHttpSessionListener(listener) });
 
         this.catalinaContext.removeSessionListener(listener);
 

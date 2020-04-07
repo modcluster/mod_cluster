@@ -21,15 +21,11 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionListener;
 
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
@@ -40,13 +36,17 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
 
 /**
  * {@link Context} implementation that wraps a {@link org.apache.catalina.Context}.
  *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class TomcatContext implements Context {
+
     private final RequestListenerValveFactory valveFactory;
     protected final org.apache.catalina.Context context;
     protected final Host host;
@@ -86,9 +86,7 @@ public class TomcatContext implements Context {
 
         @Override
         public void event(Request request, Response response, CometEvent event) throws IOException, ServletException {
-            ServletRequestEvent requestEvent = new ServletRequestEvent(request.getContext().getServletContext(), request);
-
-            this.listener.requestInitialized(requestEvent);
+            this.listener.requestInitialized();
 
             Valve valve = this.getNext();
 
@@ -99,7 +97,7 @@ public class TomcatContext implements Context {
                     valve.invoke(request, response);
                 }
             } finally {
-                this.listener.requestDestroyed(requestEvent);
+                this.listener.requestDestroyed();
             }
         }
 
@@ -110,7 +108,7 @@ public class TomcatContext implements Context {
 
         @Override
         public boolean equals(Object object) {
-            if ((object == null) || !(object instanceof RequestListenerValve)) return false;
+            if (!(object instanceof RequestListenerValve)) return false;
 
             RequestListenerValve valve = (RequestListenerValve) object;
 
@@ -130,21 +128,21 @@ public class TomcatContext implements Context {
 
     @Override
     public boolean isStarted() {
-        return LifecycleState.STARTED.equals(this.context.getState());
+        return LifecycleState.STARTED == this.context.getState();
     }
 
     @Override
-    public void addRequestListener(final ServletRequestListener listener) {
+    public void addRequestListener(ServletRequestListener requestListener) {
         // Add a valve rather than using Context.setApplicationEventListeners(...), since these will be overwritten at the end of Context.start()
         if (this.valveFactory != null) {
-            this.context.getPipeline().addValve(this.valveFactory.createValve(listener));
+            this.context.getPipeline().addValve(this.valveFactory.createValve(requestListener));
         }
     }
 
     @Override
-    public void removeRequestListener(ServletRequestListener listener) {
+    public void removeRequestListener(ServletRequestListener requestListener) {
         if (this.valveFactory != null) {
-            Valve listenerValve = this.valveFactory.createValve(listener);
+            Valve listenerValve = this.valveFactory.createValve(requestListener);
 
             Pipeline pipeline = this.context.getPipeline();
 
@@ -168,17 +166,21 @@ public class TomcatContext implements Context {
     }
 
     @Override
-    public void addSessionListener(HttpSessionListener listener) {
+    public void addSessionListener(HttpSessionListener sessionListener) {
         synchronized (this.context) {
-            this.context.setApplicationLifecycleListeners(this.addListener(listener, this.context.getApplicationLifecycleListeners()));
+            this.context.setApplicationLifecycleListeners(this.addListener(this.adaptSessionListener(sessionListener), this.context.getApplicationLifecycleListeners()));
         }
     }
 
     @Override
-    public void removeSessionListener(HttpSessionListener listener) {
+    public void removeSessionListener(HttpSessionListener sessionListener) {
         synchronized (this.context) {
-            this.context.setApplicationLifecycleListeners(this.removeListener(listener, this.context.getApplicationLifecycleListeners()));
+            this.context.setApplicationLifecycleListeners(this.removeListener(this.adaptSessionListener(sessionListener), this.context.getApplicationLifecycleListeners()));
         }
+    }
+
+    public Object adaptSessionListener(HttpSessionListener sessionListener) {
+        return new JavaxHttpSessionListener(sessionListener);
     }
 
     private Object[] addListener(Object listener, Object[] listeners) {
@@ -208,7 +210,7 @@ public class TomcatContext implements Context {
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof TomcatContext)) return false;
+        if (!(object instanceof TomcatContext)) return false;
 
         TomcatContext context = (TomcatContext) object;
 

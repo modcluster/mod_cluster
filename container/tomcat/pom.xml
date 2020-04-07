@@ -29,7 +29,7 @@
         <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-tomcat</artifactId>
-    <name>mod_cluster: Container - Tomcat</name>
+    <name>mod_cluster: Container - Tomcat 7 (base)</name>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -41,9 +41,36 @@
         </dependency>
     </dependencies>
     <profiles>
+        <profile>
+            <id>TC7</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-catalina</artifactId>
+                    <version>${version.tomcat7}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-coyote</artifactId>
+                    <version>${version.tomcat7}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.tomcat</groupId>
+                    <artifactId>tomcat-servlet-api</artifactId>
+                    <version>${version.tomcat7}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+        <!-- Uncomment the following block to find compilation problems of the base module against a later Tomcat version -->
         <!--
         <profile>
-            <id>TC9</id>
+            <id>TC8</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -51,25 +78,25 @@
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-catalina</artifactId>
-                    <version>${version.tomcat9}</version>
+                    <version>${version.tomcat8}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-coyote</artifactId>
-                    <version>${version.tomcat9}</version>
+                    <version>${version.tomcat8}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-util</artifactId>
-                    <version>${version.tomcat9}</version>
+                    <version>${version.tomcat8}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-servlet-api</artifactId>
-                    <version>${version.tomcat9}</version>
+                    <version>${version.tomcat8}</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
@@ -107,7 +134,7 @@
             </dependencies>
         </profile>
         <profile>
-            <id>TC8</id>
+            <id>TC9</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
@@ -115,56 +142,53 @@
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-catalina</artifactId>
-                    <version>${version.tomcat8}</version>
+                    <version>${version.tomcat9}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-coyote</artifactId>
-                    <version>${version.tomcat8}</version>
+                    <version>${version.tomcat9}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-util</artifactId>
-                    <version>${version.tomcat8}</version>
+                    <version>${version.tomcat9}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-servlet-api</artifactId>
-                    <version>${version.tomcat8}</version>
+                    <version>${version.tomcat9}</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>
-        -->
         <profile>
-            <id>TC7</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>TC10</id>
             <dependencies>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-catalina</artifactId>
-                    <version>${version.tomcat7}</version>
+                    <version>${version.tomcat100}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
                     <artifactId>tomcat-coyote</artifactId>
-                    <version>${version.tomcat7}</version>
+                    <version>${version.tomcat100}</version>
                     <scope>provided</scope>
                 </dependency>
                 <dependency>
                     <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-servlet-api</artifactId>
-                    <version>${version.tomcat7}</version>
+                    <artifactId>tomcat-util</artifactId>
+                    <version>${version.tomcat100}</version>
                     <scope>provided</scope>
                 </dependency>
             </dependencies>
         </profile>
+        -->
     </profiles>
     <build>
         <plugins>

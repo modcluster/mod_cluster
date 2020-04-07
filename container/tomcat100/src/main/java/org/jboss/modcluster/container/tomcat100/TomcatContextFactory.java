@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2020, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,19 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.tomcat85;
+package org.jboss.modcluster.container.tomcat100;
 
-import org.jboss.modcluster.container.Server;
-import org.jboss.modcluster.container.tomcat.ServerFactory;
-import org.jboss.modcluster.container.tomcat.TomcatFactoryRegistry;
+import org.jboss.modcluster.container.Context;
+import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.tomcat.ContextFactory;
 
 /**
- * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class TomcatServerFactory implements ServerFactory {
+public class TomcatContextFactory implements ContextFactory {
     @Override
-    public Server createServer(TomcatFactoryRegistry registry, org.apache.catalina.Server server) {
-        return new TomcatServer(registry, server);
+    public Context createContext(org.apache.catalina.Context context, Host host) {
+        return new TomcatContext(context, host);
     }
 }

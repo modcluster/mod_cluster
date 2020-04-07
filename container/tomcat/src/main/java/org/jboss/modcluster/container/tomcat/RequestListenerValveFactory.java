@@ -21,9 +21,8 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import javax.servlet.ServletRequestListener;
-
 import org.apache.catalina.Valve;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 
 /**
  * @author Paul Ferraro

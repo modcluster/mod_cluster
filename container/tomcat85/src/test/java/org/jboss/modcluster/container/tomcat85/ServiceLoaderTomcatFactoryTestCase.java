@@ -32,7 +32,6 @@ import org.jboss.modcluster.container.tomcat.TomcatHostFactory;
 /**
  * @author Paul Ferraro
  * @author Radoslav Husar
- * @version May 2016
  */
 public class ServiceLoaderTomcatFactoryTestCase extends org.jboss.modcluster.container.tomcat.ServiceLoaderTomcatFactoryTestCase {
     @Override

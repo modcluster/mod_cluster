@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2020, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,23 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.tomcat8;
+package org.jboss.modcluster.container.tomcat100;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 
+import jakarta.servlet.ServletException;
 import org.apache.catalina.Context;
 import org.apache.catalina.Valve;
-import org.apache.catalina.comet.CometEvent;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.jboss.modcluster.container.Host;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
 import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.jboss.modcluster.container.tomcat.RequestListenerValveFactory;
 
 /**
- * @author Paul Ferraro
  * @author Radoslav Husar
  */
 public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatContext {
@@ -58,21 +57,12 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
 
         @Override
         public void invoke(Request request, Response response) throws IOException, ServletException {
-            this.event(request, response, null);
-        }
-
-        @Override
-        public void event(Request request, Response response, CometEvent event) throws IOException, ServletException {
             this.listener.requestInitialized();
 
             Valve valve = this.getNext();
 
             try {
-                if (event != null) {
-                    valve.event(request, response, event);
-                } else {
-                    valve.invoke(request, response);
-                }
+                valve.invoke(request, response);
             } finally {
                 this.listener.requestDestroyed();
             }
@@ -91,5 +81,10 @@ public class TomcatContext extends org.jboss.modcluster.container.tomcat.TomcatC
 
             return this.listener == valve.listener;
         }
+    }
+
+    @Override
+    public Object adaptSessionListener(HttpSessionListener sessionListener) {
+        return new JakartaHttpSessionListener(sessionListener);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2016, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2020, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.modcluster.container.tomcat85;
+package org.jboss.modcluster.container.tomcat100;
 
 
 import org.apache.catalina.Service;
@@ -37,9 +37,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Needs to recompile against Tomcat 8.5/9 Jar due to {@link Service#getContainer()} signature change.
+ * Needs to recompile against Tomcat 8.5/9/10 jars due to {@link Service#getContainer()} signature change.
  *
- * @author Paul Ferraro
  * @author Radoslav Husar
  */
 public class ServerTestCase extends org.jboss.modcluster.container.tomcat.ServerTestCase {

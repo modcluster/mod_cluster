@@ -42,28 +42,17 @@
                 <module>tomcat</module>
                 <module>tomcat8</module>
                 <module>tomcat85</module>
+                <module>tomcat100</module>
             </modules>
         </profile>
         <profile>
-            <id>TC9</id>
+            <id>TC7</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>spi</module>
                 <module>tomcat</module>
-                <module>tomcat85</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat85</module>
             </modules>
         </profile>
         <profile>
@@ -78,13 +67,36 @@
             </modules>
         </profile>
         <profile>
-            <id>TC7</id>
+            <id>TC85</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <modules>
                 <module>spi</module>
                 <module>tomcat</module>
+                <module>tomcat85</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC9</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>spi</module>
+                <module>tomcat</module>
+                <module>tomcat85</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>TC10</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <modules>
+                <module>spi</module>
+                <module>tomcat</module>
+                <module>tomcat100</module>
             </modules>
         </profile>
     </profiles>

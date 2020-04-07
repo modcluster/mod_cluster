@@ -35,11 +35,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Iterator;
 
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
 import org.jboss.modcluster.advertise.AdvertiseListener;
 import org.jboss.modcluster.advertise.AdvertiseListenerFactory;
 import org.jboss.modcluster.advertise.impl.AdvertiseListenerFactoryImpl;
@@ -56,6 +51,8 @@ import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
+import org.jboss.modcluster.container.listeners.HttpSessionListener;
+import org.jboss.modcluster.container.listeners.ServletRequestListener;
 import org.jboss.modcluster.load.LoadBalanceFactorProvider;
 import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProviderFactory;
@@ -770,16 +767,16 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         return context;
     }
 
-    interface Enablable {
+    private interface Enablable {
         boolean isEnabled();
 
         void setEnabled(boolean enabled);
     }
 
-    interface EnablableRequestListener extends Enablable, ServletRequestListener {
+    private interface EnablableRequestListener extends Enablable, ServletRequestListener {
     }
 
-    static class NotifyOnDestroyRequestListener implements EnablableRequestListener {
+    private static class NotifyOnDestroyRequestListener implements EnablableRequestListener {
         private volatile boolean enabled = false;
 
         @Override
@@ -793,12 +790,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
 
         @Override
-        public void requestInitialized(ServletRequestEvent event) {
+        public void requestInitialized() {
             // Do nothing
         }
 
         @Override
-        public void requestDestroyed(ServletRequestEvent event) {
+        public void requestDestroyed() {
             if (this.enabled) {
                 // Notify waiting threads, but only if enabled
                 synchronized (this) {
@@ -808,15 +805,15 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
     }
 
-    static class NotifyOnDestroySessionListener implements HttpSessionListener {
+    private static class NotifyOnDestroySessionListener implements HttpSessionListener {
 
         @Override
-        public void sessionCreated(HttpSessionEvent event) {
+        public void sessionCreated() {
             // Do nothing
         }
 
         @Override
-        public void sessionDestroyed(HttpSessionEvent event) {
+        public void sessionDestroyed() {
             synchronized (this) {
                 this.notify();
             }

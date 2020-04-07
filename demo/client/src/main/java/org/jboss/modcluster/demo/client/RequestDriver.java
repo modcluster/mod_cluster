@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Brian Stansberry
- * @version $Id: PerfTest2.java 68892 2008-01-11 14:39:07Z bela@jboss.com $
  */
 public class RequestDriver {
     private Client[] clients;
