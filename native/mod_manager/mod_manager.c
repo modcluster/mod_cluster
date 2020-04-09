@@ -174,6 +174,8 @@ typedef struct mod_manager_config
     int enable_ws_tunnel;
     /* WebSocket upgrade header */
     char *ws_upgrade_header;
+    /* AJP secret */
+    char *ajp_secret;
 
 } mod_manager_config;
 
@@ -188,14 +190,14 @@ static int loc_get_ids_used_node(int *ids)
 {
     return(get_ids_used_node(nodestatsmem, ids)); 
 }
-static int loc_get_max_size_node()
+static int loc_get_max_size_node(void)
 {
     if (nodestatsmem)
         return(get_max_size_node(nodestatsmem));
     else
         return 0;
 }
-static int loc_get_max_size_jgroupsid()
+static int loc_get_max_size_jgroupsid(void)
 {
     if (jgroupsidstatsmem)
         return(get_max_size_jgroupsid(jgroupsidstatsmem));
@@ -242,22 +244,22 @@ static int loc_worker_nodes_are_updated(void *data, unsigned int last)
     mconf->tableversion = last;
     return (0);
 }
-static void loc_lock_nodes()
+static void loc_lock_nodes(void)
 {
     lock_nodes(nodestatsmem);
 }
-static void loc_unlock_nodes()
+static void loc_unlock_nodes(void)
 {
     unlock_nodes(nodestatsmem);
 }
-static int loc_get_max_size_context()
+static int loc_get_max_size_context(void)
 {
     if (contextstatsmem)
         return(get_max_size_context(contextstatsmem));
     else
         return 0;
 }
-static int loc_get_max_size_host()
+static int loc_get_max_size_host(void)
 {
     if (hoststatsmem)
         return(get_max_size_host(hoststatsmem));
@@ -322,11 +324,11 @@ static int loc_get_ids_used_context(int *ids)
 {
     return(get_ids_used_context(contextstatsmem, ids)); 
 }
-static void loc_lock_contexts()
+static void loc_lock_contexts(void)
 {
     lock_contexts(contextstatsmem);
 }
-static void loc_unlock_contexts()
+static void loc_unlock_contexts(void)
 {
     unlock_contexts(contextstatsmem);
 }
@@ -368,7 +370,7 @@ static int loc_get_ids_used_balancer(int *ids)
 {
     return(get_ids_used_balancer(balancerstatsmem, ids)); 
 }
-static int loc_get_max_size_balancer()
+static int loc_get_max_size_balancer(void)
 {
     if (balancerstatsmem)
         return(get_max_size_balancer(balancerstatsmem));
@@ -392,7 +394,7 @@ static int loc_get_ids_used_sessionid(int *ids)
 {
     return(get_ids_used_sessionid(sessionidstatsmem, ids)); 
 }
-static int loc_get_max_size_sessionid()
+static int loc_get_max_size_sessionid(void)
 {
     if (sessionidstatsmem)
         return(get_max_size_sessionid(sessionidstatsmem));
@@ -427,7 +429,7 @@ static int loc_get_ids_used_domain(int *ids)
 {
     return(get_ids_used_domain(domainstatsmem, ids)); 
 }
-static int loc_get_max_size_domain()
+static int loc_get_max_size_domain(void)
 {
     if (domainstatsmem)
         return(get_max_size_domain(domainstatsmem));
@@ -483,7 +485,7 @@ static void mc_initialize_cleanup(apr_pool_t *p)
     apr_pool_cleanup_register(p, NULL, cleanup_manager, apr_pool_cleanup_null);
 }
 
-void normalize_balancer_name(char* balancer_name, server_rec *s)
+static void normalize_balancer_name(char* balancer_name, server_rec *s)
 {
     int upper_case_char_found = 0;
     char* balancer_name_start = balancer_name;
@@ -714,6 +716,7 @@ static apr_status_t  insert_update_hosts(mem_t *mem, char *str, int node, int vh
         if (*ptr == ',') {
             *ptr = '\0';
             strncpy(info.host, previous, sizeof(info.host));
+            info.host[sizeof(info.host)-1] = '\0';
             status = insert_update_host(mem, &info); 
             if (status != APR_SUCCESS)
                 return status;
@@ -722,6 +725,7 @@ static apr_status_t  insert_update_hosts(mem_t *mem, char *str, int node, int vh
         ptr ++;
     }
     strncpy(info.host, previous, sizeof(info.host));
+    info.host[sizeof(info.host)-1] = '\0';
     return insert_update_host(mem, &info); 
 }
 /*
@@ -852,6 +856,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     strcpy(nodeinfo.mess.Port, "8009");
     strcpy(nodeinfo.mess.Type, "ajp");
     nodeinfo.mess.Upgrade[0] = '\0';
+    nodeinfo.mess.AJPSecret[0] = '\0';
     nodeinfo.mess.reversed = 0;
     nodeinfo.mess.remove = 0; /* not marked as removed */
     nodeinfo.mess.flushpackets = flush_off; /* FLUSH_OFF; See enum flush_packets in proxy.h flush_off */
@@ -1047,8 +1052,17 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             strcpy(nodeinfo.mess.Type, "ws");
         if (!strcmp(nodeinfo.mess.Type, "https"))
             strcpy(nodeinfo.mess.Type, "wss");
-        if (mconf->ws_upgrade_header)
-            strcpy(nodeinfo.mess.Upgrade,mconf->ws_upgrade_header);
+        if (mconf->ws_upgrade_header) {
+            strncpy(nodeinfo.mess.Upgrade,mconf->ws_upgrade_header, sizeof(nodeinfo.mess.Upgrade));
+            nodeinfo.mess.Upgrade[sizeof(nodeinfo.mess.Upgrade)-1] = '\0';
+        }
+    }
+
+    if (strcmp(nodeinfo.mess.Type, "ajp") == 0) {
+        if (mconf->ajp_secret) {
+            strncpy(nodeinfo.mess.AJPSecret,mconf->ajp_secret, sizeof(nodeinfo.mess.AJPSecret));
+            nodeinfo.mess.AJPSecret[sizeof(nodeinfo.mess.AJPSecret)-1] = '\0';
+        }
     }
     /* Insert or update balancer description */
     if (insert_update_balancer(balancerstatsmem, &balancerinfo) != APR_SUCCESS) {
@@ -1104,7 +1118,7 @@ static char * process_dump(request_rec *r, int *errtype)
     unsigned char type;
     const char *accept_header = apr_table_get(r->headers_in, "Accept");
 
-    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+    if (accept_header && strstr((char *)accept_header, "text/xml") != NULL )  {
         ap_set_content_type(r, "text/xml");
         type = TEXT_XML;
         ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
@@ -1323,7 +1337,7 @@ static char * process_info(request_rec *r, int *errtype)
     unsigned char type;
     const char *accept_header = apr_table_get(r->headers_in, "Accept");
 
-    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+    if (accept_header && strstr((char *)accept_header, "text/xml") != NULL )  {
         ap_set_content_type(r, "text/xml");
         type = TEXT_XML;
         ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
@@ -1698,6 +1712,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         char *s = hostinfo.host;
         int j = 1;
         strncpy(hostinfo.host, vhost->host, sizeof(hostinfo.host));
+        hostinfo.host[sizeof(hostinfo.host)-1] = '\0';
         while (*s != ',' && j<sizeof(hostinfo.host)) {
            j++;
            s++;
@@ -1814,6 +1829,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         contextinfo_t *ou;
         in.id = 0;
         strncpy(in.context, vhost->context, sizeof(in.context));
+        in.context[sizeof(in.context)-1] = '\0';
         in.vhost = host->vhost;
         in.node = node->mess.id;
         ou = read_context(contextstatsmem, &in);
@@ -2057,7 +2073,7 @@ static char * process_version(request_rec *r, char **ptr, int *errtype)
 {
     const char *accept_header = apr_table_get(r->headers_in, "Accept");
 
-    if (accept_header && strstr(accept_header, "text/xml") != NULL )  {
+    if (accept_header && strstr((char *)accept_header, "text/xml") != NULL )  {
         ap_set_content_type(r, "text/xml");
         ap_rprintf(r, "<?xml version=\"1.0\" standalone=\"yes\" ?>\n");
         ap_rprintf(r, "<version><release>%s</release><protocol>%s</protocol></version>", MOD_CLUSTER_EXPOSED_VERSION, VERSION_PROTOCOL);
@@ -2335,10 +2351,9 @@ static int manager_trans(request_rec *r)
 /* Create the commands that are possible on the context */
 static char*context_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
 {
-    char context[sizeof(ou->context)+1];
+    char context[CONTEXTSZ+1];
     char *raw;
-    context[sizeof(ou->context)] = '\0';
-    strncpy(context, ou->context, sizeof(ou->context));
+    strncpy(context, ou->context, CONTEXTSZ+1);
     raw = apr_pstrcat(r->pool, "JVMRoute=", JVMRoute, "&Alias=", Alias, "&Context=", context, NULL);
     return raw;
 }
@@ -3349,6 +3364,25 @@ static const char*cmd_manager_ws_upgrade_header(cmd_parms *cmd, void *mconfig, c
     }
 }
 
+static const char*cmd_manager_ajp_secret(cmd_parms *cmd, void *mconfig, const char *word)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    if (err != NULL) {
+        return err;
+    }
+    if (strlen(word) >= PROXY_WORKER_MAX_SECRET_SIZE) {
+        return apr_psprintf(cmd->temp_pool, "AJP secret length must be < %d characters",
+                            PROXY_WORKER_MAX_SECRET_SIZE);
+    }
+    if (ap_find_linked_module("mod_proxy_ajp.c") != NULL) {
+        mconf->ajp_secret = apr_pstrdup(cmd->pool, word);
+        return NULL;
+    } else {
+        return "AJPsecret requires mod_proxy_ajp.c";
+    }
+}
+
 
 static const command_rec  manager_cmds[] =
 {
@@ -3464,6 +3498,13 @@ static const command_rec  manager_cmds[] =
          OR_ALL,
          "WSUpgradeHeader - Accepted upgrade headers, ONE bypass checks, ANY read it from request, other values: header value to check before using the WS tunnel."
     ),
+    AP_INIT_TAKE1(
+        "AJPSecret",
+         cmd_manager_ajp_secret,
+         NULL,
+         OR_ALL,
+         "AJPSecret - secret for all mod_cluster node, not configued no secret."
+    ),
     {NULL}
 };
 
@@ -3518,6 +3559,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->enable_mcpm_receive = 0;
     mconf->enable_ws_tunnel = 0;
     mconf->ws_upgrade_header = NULL;
+    mconf->ajp_secret = NULL;
     return mconf;
 }
 
@@ -3617,6 +3659,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->ws_upgrade_header = apr_pstrdup(p, mconf2->ws_upgrade_header);
     else if (mconf1->ws_upgrade_header)
         mconf->ws_upgrade_header = apr_pstrdup(p, mconf1->ws_upgrade_header);
+
+    if (mconf2->ajp_secret)
+        mconf->ajp_secret = apr_pstrdup(p, mconf2->ajp_secret);
+    else if (mconf1->ajp_secret)
+        mconf->ajp_secret = apr_pstrdup(p, mconf1->ajp_secret);
 
     return mconf;
 }

@@ -57,6 +57,7 @@ struct nodemess {
     char Port[PORTNODESZ];
     char Type[SCHEMENDSZ];
     char Upgrade[SCHEMENDSZ];
+    char AJPSecret[AJPSECRETSZ];
     int  reversed; /* 1 : reversed... 0 : normal */
     int  remove;   /* 1 : removed     0 : normal */
 
@@ -238,12 +239,12 @@ void (*remove_host_context)(int node, apr_pool_t *pool);
 /*
  * lock the nodes table
  */
-void (*lock_nodes)();
+void (*lock_nodes)(void);
 
 /*
  * unlock the nodes table
  */
-void (*unlock_nodes)();
+void (*unlock_nodes)(void);
 
 };
 #endif /*NODE_H*/

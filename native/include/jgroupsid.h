@@ -151,7 +151,7 @@ int (* get_ids_used_jgroupsid)(int *ids);
 /**
  * read the max number of jgroupsid records in the shared table
  */
-int (*get_max_size_jgroupsid)();
+int (*get_max_size_jgroupsid)(void);
 /*
  * Remove the jgroupsid from shared memory (free the slotmem)
  */

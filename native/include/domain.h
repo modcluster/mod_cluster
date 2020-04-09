@@ -153,7 +153,7 @@ int (* get_ids_used_domain)(int *ids);
 /**
  * read the max number of domains in the shared table
  */
-int (*get_max_size_domain)();
+int (*get_max_size_domain)(void);
 /*
  * Remove the domain from shared memory (free the slotmem)
  */

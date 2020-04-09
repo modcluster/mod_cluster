@@ -143,7 +143,7 @@ int (* get_ids_used_sessionid)(int *ids);
 /**
  * read the max number of sessionids in the shared table
  */
-int (*get_max_size_sessionid)();
+int (*get_max_size_sessionid)(void);
 /*
  * Remove the sessionid from shared memory (free the slotmem)
  */

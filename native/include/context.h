@@ -164,15 +164,15 @@ int (* get_ids_used_context)(int *ids);
 /**
  * read the max number of contexts in the shared table
  */
-int (*get_max_size_context)();
+int (*get_max_size_context)(void);
 /*
  * lock the context table
  */
-void (*lock_contexts)();
+void (*lock_contexts)(void);
 /*
  * unlock the context table
  */
-void (*unlock_contexts)();
+void (*unlock_contexts)(void);
 
 };
 #endif /*CONTEXT_H*/

@@ -35,11 +35,12 @@
 
 /* For node.h */
 #define BALANCERSZ 40
-#define JVMROUTESZ 80
+#define JVMROUTESZ 64 /* MUST BE 64 like PROXY_WORKER_MAX_ROUTE_SIZE */
 #define DOMAINNDSZ 20
 #define HOSTNODESZ 64
 #define PORTNODESZ 7
 #define SCHEMENDSZ 16
+#define AJPSECRETSZ 64
 
 /* For balancer.h */
 #define COOKNAMESZ 30
