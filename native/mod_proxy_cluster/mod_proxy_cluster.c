@@ -64,6 +64,17 @@
 #error "httpd 2.2.x NOT SUPPORTED!"
 #endif
 
+/* define OUR load balancer method names (lbpname), must start by MC */
+/* default behaviour be sticky StickySession="yes" */
+#define MC_STICKY "MC"
+/* don't be STICKY use the best factor worker StickySession="no" */
+#define MC_NOT_STICKY "MC_NS"
+/* remove session information on fail-over StickySessionRemove="yes", implies StickySession="yes" */
+#define MC_REMOVE_SESSION "MC_R"
+/* Don't failover if the corresponding worker is failing StickySessionForce="yes", implies StickySession="yes" */
+#define MC_NO_FAILOVER "MC_NF"
+
+
 struct proxy_cluster_helper {
     int count_active; /* currently active request using the worker */
     proxy_worker_shared *shared;
@@ -417,6 +428,7 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         }
         balancer->workers = apr_array_make(conf->pool, 5, sizeof(proxy_worker *));
         strncpy(balancer->s->name, name, PROXY_BALANCER_MAX_NAME_SIZE-1);
+        /* XXX: TODO we should have our own lbmethod(s), this one is the mod_proxy_balancer default one! */
         balancer->lbmethod = ap_lookup_provider(PROXY_LBMETHOD, "byrequests", "0");
     } else {
         ap_log_error(APLOG_MARK, APLOG_DEBUG|APLOG_NOERRNO, 0, server,
@@ -428,13 +440,22 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
         balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
         if (balan == NULL)
             return balancer; /* Done broken */
-        /* XXX: StickySession, StickySessionRemove not in */
+        /* StickySession, StickySessionRemove we hack it via the lbpname (16 bytes) */
+        if (!balan->StickySession)
+            strcpy(balancer->s->lbpname, MC_NOT_STICKY);
+        else
+            strcpy(balancer->s->lbpname, MC_STICKY); /* default is Sticky */
+        if (balan->StickySessionRemove)
+            strcpy(balancer->s->lbpname, MC_REMOVE_SESSION);
         strncpy(balancer->s->sticky, balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
         balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
         strncpy(balancer->s->sticky_path, balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
         balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-        if (balan->StickySessionForce)
-            balancer->s->sticky_force = 1; /* STSESSREM is keep in the mod_cluster "private" balancer */
+        if (balan->StickySessionForce) {
+            strcpy(balancer->s->lbpname, MC_NO_FAILOVER);
+            balancer->s->sticky_force = 1;
+            balancer->s->sticky_force_set = 1;
+        }
         balancer->s->timeout = balan->Timeout;
         balancer->s->max_attempts = balan->Maxattempts;
         balancer->s->max_attempts_set = 1;
@@ -442,6 +463,60 @@ static proxy_balancer *add_balancer_node(nodeinfo_t *node, proxy_server_conf *co
     return balancer;
 }
 
+/* We "reuse" the balancer */
+static void reuse_balancer(proxy_balancer *balancer, char *name, apr_pool_t *pool, server_rec *s)
+{
+    balancerinfo_t *balan = read_balancer_name(name, pool);
+    if (balan != NULL) {
+        int changed = 0;
+        if (strncmp(balancer->s->lbpname, "MC", 2)) {
+            /* replace the configured lbpname by our default one */
+            strcpy(balancer->s->lbpname, MC_STICKY);
+            changed = -1;
+        }
+        if (balan->StickySessionForce && !balancer->s->sticky_force) {
+            balancer->s->sticky_force = 1;
+            balancer->s->sticky_force_set = 1;
+            strcpy(balancer->s->lbpname, MC_NO_FAILOVER);
+            changed = -1;
+        }
+        if (!balan->StickySessionForce && balancer->s->sticky_force) {
+            balancer->s->sticky_force = 0;
+            strcpy(balancer->s->lbpname, MC_STICKY);
+            changed = -1;
+        }
+        if (balan->StickySessionForce && strcmp(balancer->s->lbpname, MC_NO_FAILOVER)) {
+            strcpy(balancer->s->lbpname, MC_NO_FAILOVER);
+            changed = -1;
+        }
+        if (balan->StickySessionRemove && strcmp(balancer->s->lbpname, MC_REMOVE_SESSION)) {
+            strcpy(balancer->s->lbpname, MC_REMOVE_SESSION);
+            changed = -1;
+        }
+        if (!balan->StickySession && strcmp(balancer->s->lbpname, MC_NOT_STICKY)) {
+            strcpy(balancer->s->lbpname, MC_NOT_STICKY);
+            changed = -1;
+        }
+        if (strcmp(balan->StickySessionCookie, balancer->s->sticky) != 0) {
+            strncpy(balancer->s->sticky , balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
+            balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
+            changed = -1;
+        }
+        if (strcmp(balan->StickySessionPath, balancer->s->sticky_path) != 0) {
+            strncpy(balancer->s->sticky_path , balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
+            balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
+            changed = -1;
+        }
+        balancer->s->timeout =  balan->Timeout;
+        balancer->s->max_attempts = balan->Maxattempts;
+        balancer->s->max_attempts_set = 1;
+        if (changed) {
+            /* log a warning */
+            ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
+                         "Balancer %s changed" , &balancer->s->name[11]);
+        }
+    }
+}
 /*
  * Adds the balancers and the workers to the VirtualHosts corresponding to node
  * Note that the calling routine should lock before calling us.
@@ -472,36 +547,7 @@ static void add_balancers_workers(nodeinfo_t *node, apr_pool_t *pool)
             balancer = add_balancer_node(node, conf, pool, s);
         else {
             /* We "reuse" the balancer */
-            balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
-            if (balan != NULL) {
-                int changed = 0;
-                if (!balancer->s->sticky_force && balan->StickySessionForce) {
-                    balancer->s->sticky_force = 1;
-                    changed = -1;
-                }
-                if (balancer->s->sticky_force && !balan->StickySessionForce) {
-                    balancer->s->sticky_force = 0;
-                    changed = -1;
-                }
-                if (strcmp(balan->StickySessionCookie, balancer->s->sticky) != 0) {
-                    strncpy(balancer->s->sticky , balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
-                    balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-                    changed = -1;
-                }
-                if (strcmp(balan->StickySessionPath, balancer->s->sticky_path) != 0) {
-                    strncpy(balancer->s->sticky_path , balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
-                    balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-                    changed = -1;
-                }
-                balancer->s->timeout =  balan->Timeout;
-                balancer->s->max_attempts = balan->Maxattempts;
-                balancer->s->max_attempts_set = 1;
-                if (changed) {
-                    /* log a warning */
-                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
-                                 "Balancer %s changed" , &balancer->s->name[11]);
-                }
-            }
+            reuse_balancer(balancer, &balancer->s->name[11], pool, s);
         }
         if (balancer)
             create_worker(conf, balancer, s, node, pool);
@@ -536,36 +582,7 @@ static void add_balancers_workers_for_server(nodeinfo_t *node, apr_pool_t *pool,
             balancer = add_balancer_node(node, conf, pool, s);
         else {
             /* We "reuse" the balancer */
-            balancerinfo_t *balan = read_balancer_name(&balancer->s->name[11], pool);
-            if (balan != NULL) {
-                int changed = 0;
-                if (!balancer->s->sticky_force && balan->StickySessionForce) {
-                    balancer->s->sticky_force = 1;
-                    changed = -1;
-                }
-                if (balancer->s->sticky_force && !balan->StickySessionForce) {
-                    balancer->s->sticky_force = 0;
-                    changed = -1;
-                }
-                if (strcmp(balan->StickySessionCookie, balancer->s->sticky) != 0) {
-                    strncpy(balancer->s->sticky , balan->StickySessionCookie, PROXY_BALANCER_MAX_STICKY_SIZE-1);
-                    balancer->s->sticky[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-                    changed = -1;
-                }
-                if (strcmp(balan->StickySessionPath, balancer->s->sticky_path) != 0) {
-                    strncpy(balancer->s->sticky_path , balan->StickySessionPath, PROXY_BALANCER_MAX_STICKY_SIZE-1);
-                    balancer->s->sticky_path[PROXY_BALANCER_MAX_STICKY_SIZE-1] = '\0';
-                    changed = -1;
-                }
-                balancer->s->timeout =  balan->Timeout;
-                balancer->s->max_attempts = balan->Maxattempts;
-                balancer->s->max_attempts_set = 1;
-                if (changed) {
-                    /* log a warning */
-                    ap_log_error(APLOG_MARK, APLOG_NOTICE|APLOG_NOERRNO, 0, s,
-                                 "Balancer %s changed" , &balancer->s->name[11]);
-                }
-            }
+            reuse_balancer(balancer, &balancer->s->name[11], pool, s);
         }
         if (balancer)
             create_worker(conf, balancer, s, node, pool);
@@ -1659,21 +1676,6 @@ static node_context *context_host_ok(request_rec *r, proxy_balancer *balancer, i
 }
 
 /*
- * Check that the balancer is in our balancer table
- */
-static int isbalancer_ours(proxy_balancer *balancer, proxy_balancer_table *balancer_table)
-{
-    int i;
-    for (i = 0; i < balancer_table->sizebalancer; i++) {
-      if (strcasecmp(balancer_table->balancer_info[i].balancer, &balancer->s->name[11]))
-            continue;
-        else
-            return 1; /* found */
-    }
-    return 0;
-}
-
-/*
  * Check that the worker corresponds to a node that belongs to the same domain according to the JVMRoute.
  */ 
 static int isnode_domain_ok(request_rec *r, nodeinfo_t *node,
@@ -2344,7 +2346,7 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
         if (strlen(balancer->s->name)<=11)
             continue;
         sticky = apr_psprintf(r->pool, "%s|%s", balancer->s->sticky, balancer->s->sticky_path);
-        if (!isbalancer_ours(balancer, balancer_table))
+        if (strncmp(balancer->s->lbpname, "MC", 2))
             continue;
 
         sessionid = cluster_get_sessionid(r, sticky, r->uri, &sticky_used);
@@ -2809,6 +2811,9 @@ static proxy_worker *find_session_route(proxy_balancer *balancer,
 #endif
     if (balancer->s->sticky[0] == '\0' || balancer->s->sticky_path[0] == '\0')
         return NULL;
+    /* Check our MC subname: MC_NOT_STICKY: we don't need the route */
+    if (strcmp(balancer->s->lbpname, MC_NOT_STICKY) == 0)
+        return NULL;
 
     /* We already should have the route in the notes for the trans() */
     *route = apr_table_get(r->notes, "session-route");
@@ -3037,7 +3042,6 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
     apr_status_t rv;
     proxy_cluster_helper *helper;
     const char *context_id;
-    int remove_sessionid = 0;
 
     proxy_vhost_table *vhost_table = read_vhost_table(r);
     proxy_context_table *context_table = read_context_table(r);
@@ -3187,21 +3191,8 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
              */
             apr_table_setn(r->subprocess_env, "BALANCER_ROUTE_CHANGED", "1");
         }
-        /* we should read Remove sessionid from the proxy_balancer_table */
-        if (route) {
-            const proxy_balancer_table *balancer_table =  (proxy_balancer_table *) apr_table_get(r->notes, "balancer-table");
-            if (balancer_table) {
-                int i;
-                for (i = 0; i < balancer_table->sizebalancer; i++) {
-                    if (strcmp(balancer_table->balancer_info[i].balancer, &(*balancer)->s->name[11])) {
-                        if ( balancer_table->balancer_info[i].StickySessionRemove)
-                            remove_sessionid = 1;
-                        break;
-                    }
-                } 
-            }
-        }
-        if (remove_sessionid) {
+        /* Use MC_R in lbpname to know if we have to remove the session information */
+        if (route && strcmp((*balancer)->s->lbpname, MC_REMOVE_SESSION) == 0 ) {
             /*
              * Failover to another domain. Remove sessionid information.
              */

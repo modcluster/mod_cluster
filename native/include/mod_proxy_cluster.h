@@ -30,11 +30,6 @@
 
 #define MOD_CLUSTER_EXPOSED_VERSION "mod_cluster/1.3.12.Final"
 
-/* define the values for sticky_force */
-#define STSESSION 0x01 /* Use sticky session logic (first sessionid and then domain) */
-#define STSESSREM 0x02 /* Remove session information if the failover can't use sticky */
-#define STSESSFOR 0x04 /* Force sticky (return error if no worker corresponds to sessionid or domain) */
-
 struct balancer_method {
 /**
  * Check that the node is responding
