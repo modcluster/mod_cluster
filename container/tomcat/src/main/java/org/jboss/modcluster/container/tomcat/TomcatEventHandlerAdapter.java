@@ -21,12 +21,6 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import java.beans.PropertyChangeEvent;
-import java.lang.management.ManagementFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
@@ -40,8 +34,17 @@ import org.apache.catalina.Service;
 import org.apache.catalina.connector.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import java.beans.PropertyChangeEvent;
+import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Adapts lifecycle and container listener events to the {@link ContainerEventHandler} interface.
+ *
+ * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class TomcatEventHandlerAdapter implements TomcatEventHandler {
 
@@ -112,7 +115,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     private boolean containsListener(Lifecycle lifecycle) {
-        for (LifecycleListener listener: lifecycle.findLifecycleListeners()) {
+        for (LifecycleListener listener : lifecycle.findLifecycleListeners()) {
             if (listener.equals(this)) {
                 return true;
             }
@@ -173,7 +176,8 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     /**
-     * Primary entry point for startup and shutdown events.
+     * Primary entry point for startup and shutdown events. Handles both situations where Listener is defined on either
+     * a top-level Server concept or Service in which case only the associated service is handled.
      */
     @Override
     public void lifecycleEvent(LifecycleEvent event) {
@@ -186,6 +190,11 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                     Server server = (Server) source;
                     init(server);
                 }
+            } else if (source instanceof Service) {
+                if (this.init.compareAndSet(false, true)) {
+                    Server server = new ServiceFilteringDelegatingServer((Service) source);
+                    init(server);
+                }
             }
         } else if (type.equals(Lifecycle.START_EVENT)) {
             if (source instanceof Server) {
@@ -193,13 +202,23 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                     Server server = (Server) source;
                     init(server);
                 }
+            } else if (source instanceof Service) {
+                if (this.init.compareAndSet(false, true)) {
+                    Server server = new ServiceFilteringDelegatingServer((Service) source);
+                    this.init(server);
+                }
             }
         } else if (type.equals(Lifecycle.AFTER_START_EVENT)) {
             if (source instanceof Server) {
                 if (this.init.get() && this.start.compareAndSet(false, true)) {
                     this.eventHandler.start(this.factory.createServer((Server) source));
                 }
-            } else if(source instanceof Context) {
+            } else if (source instanceof Service) {
+                if (this.init.get() && this.start.compareAndSet(false, true)) {
+                    Server server = new ServiceFilteringDelegatingServer((Service) source);
+                    this.eventHandler.start(this.factory.createServer(server));
+                }
+            } else if (source instanceof Context) {
                 // Start a webapp
                 this.eventHandler.start(this.factory.createContext((Context) source));
             }
@@ -213,11 +232,21 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 if (this.init.get() && this.start.compareAndSet(true, false)) {
                     this.eventHandler.stop(this.factory.createServer((Server) source));
                 }
+            } else if (source instanceof Service) {
+                if (this.init.get() && this.start.compareAndSet(true, false)) {
+                    Server server = new ServiceFilteringDelegatingServer((Service) source);
+                    this.eventHandler.stop(this.factory.createServer(server));
+                }
             }
         } else if (isBeforeDestroy(event)) {
             if (source instanceof Server) {
                 if (this.init.compareAndSet(true, false)) {
                     this.destroy((Server) source);
+                }
+            } else if (source instanceof Service) {
+                if (this.init.compareAndSet(true, false)) {
+                    Server server = new ServiceFilteringDelegatingServer((Service) source);
+                    this.destroy(server);
                 }
             }
         } else if (type.equals(Lifecycle.PERIODIC_EVENT)) {
@@ -241,10 +270,6 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         return event.getType().equals(Lifecycle.BEFORE_DESTROY_EVENT);
     }
 
-    /**
-     * initialize server stuff: in jbossweb-2.1.x the server can't be destroyed so you could start (restart) one that needs
-     * initializations...
-     */
     protected void init(Server server) {
         this.eventHandler.init(this.factory.createServer(server));
 
