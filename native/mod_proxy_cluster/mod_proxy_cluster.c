@@ -309,8 +309,6 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         strncpy(worker->s->scheme, shared->scheme, sizeof(worker->s->scheme));
         worker->s->port = shared->port;
         worker->s->hmax = shared->hmax;
-        if (worker->s->hmax < node->mess.smax)
-            worker->s->hmax = node->mess.smax + 1;
         strncpy(worker->s->route, node->mess.JVMRoute, sizeof(worker->s->route));
         worker->s->route[sizeof(worker->s->route)-1] = '\0';
         strncpy(worker->s->upgrade, node->mess.Upgrade, sizeof(worker->s->upgrade));
