@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -85,6 +86,7 @@ public class ResetRequestSourceTestCase {
         when(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).thenReturn(configRequest);
 
         when(engine.getJvmRoute()).thenReturn("host1");
+        when(engine.getProxyConnector()).thenReturn(mock(Connector.class));
 
         when(engine.getHosts()).thenReturn(Collections.singleton(host));
         when(host.getName()).thenReturn("host");
@@ -130,6 +132,7 @@ public class ResetRequestSourceTestCase {
         when(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).thenReturn(configRequest);
 
         when(engine.getJvmRoute()).thenReturn("host1");
+        when(engine.getProxyConnector()).thenReturn(mock(Connector.class));
 
         when(engine.getHosts()).thenReturn(Collections.singleton(host));
         when(host.getName()).thenReturn("host");
