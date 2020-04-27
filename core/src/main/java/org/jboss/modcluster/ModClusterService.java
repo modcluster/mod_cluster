@@ -266,6 +266,10 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     public void connectionEstablished(InetAddress localAddress) {
         for (Engine engine : this.server.getEngines()) {
             Connector connector = engine.getProxyConnector();
+            if (connector == null) {
+                ModClusterLogger.LOGGER.noConnectorForEngine(engine.getName());
+                continue;
+            }
             InetAddress address = connector.getAddress();
 
             // Set connector address
@@ -399,13 +403,17 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
 
     @Override
     public void status(Engine engine) {
+        Connector connector = engine.getProxyConnector();
+        if (connector == null) {
+            // Skip status for Engines that don't have a connector available
+            return;
+        }
+
         this.mcmpHandler.status();
 
         if (this.established) {
             // Send STATUS request
-            Connector connector = engine.getProxyConnector();
-
-            int lbf = (connector != null) && connector.isAvailable() ? this.getLoadBalanceFactor(engine) : -1;
+            int lbf = connector.isAvailable() ? this.getLoadBalanceFactor(engine) : -1;
 
             ModClusterLogger.LOGGER.sendEngineCommand(MCMPRequestType.STATUS, engine);
 
