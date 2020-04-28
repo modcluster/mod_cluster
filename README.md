@@ -97,9 +97,9 @@ Distribution files for Tomcat and a demo application will be built in the `dist/
 Reporting Issues
 ----------------
 
-Project mod_cluster uses JBoss Jira issue tracker under MODCLUSTER project:
+Project mod_cluster uses Red Hat Jira issue tracker under MODCLUSTER project:
 
-[https://issues.jboss.org/browse/MODCLUSTER](https://issues.jboss.org/browse/MODCLUSTER)
+[https://issues.redhat.com/browse/MODCLUSTER](https://issues.redhat.com/browse/MODCLUSTER)
 
 
 License
