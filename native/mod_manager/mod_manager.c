@@ -824,7 +824,6 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     nodeinfo_t nodeinfo;
     nodeinfo_t *node;
     balancerinfo_t balancerinfo;
-    int mpm_threads;
     
     struct cluster_host *vhost; 
     struct cluster_host *phost; 
@@ -862,8 +861,7 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     nodeinfo.mess.flushpackets = flush_off; /* FLUSH_OFF; See enum flush_packets in proxy.h flush_off */
     nodeinfo.mess.flushwait = PROXY_FLUSH_WAIT;
     nodeinfo.mess.ping = apr_time_from_sec(10);
-    ap_mpm_query(AP_MPMQ_MAX_THREADS, &mpm_threads);
-    nodeinfo.mess.smax = mpm_threads + 1;
+    nodeinfo.mess.smax = -1; /* let mod_proxy logic get the right one */
     nodeinfo.mess.ttl = apr_time_from_sec(60);
     nodeinfo.mess.timeout = 0;
     nodeinfo.mess.id = 0;
