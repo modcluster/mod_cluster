@@ -1,0 +1,8 @@
+Thanks for submitting your Pull Request!
+
+Please delete this text, and add a link to the Jira issue solved by this PR.
+
+If this change is relevant upstream/downstream link the correspoding PR for that branch.
+
+Remember to use the Jira issue ID (the identifier starting with MODCLUSTER) in the PR title, and any commits.
+
