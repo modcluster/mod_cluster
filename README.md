@@ -84,7 +84,7 @@ Building
 
 ### Servlet Container Modules
 
-When building from source, first ensure that Maven version 3.2.5 or newer (run `mvn -version`) and JDK 7.0 or newer
+When building from source, first ensure that Maven version 3.2.5 or newer (run `mvn -version`) and JDK 8.0 or newer
 (run `java -version`) are installed. The following command builds modules for all containers:
 
 ```
