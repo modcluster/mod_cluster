@@ -178,8 +178,8 @@ public interface ModClusterLogger {
     @Message(id = 46, value = "Starting to drain %d active sessions from %s:%s in %d seconds.")
     void startSessionDraining(int sessions, Host host, Context context, long timeout);
 
-    @Message(id = 47, value = "No configured connector matches specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
-    RuntimeException connectorNoMatch(String connector);
+//    @Message(id = 47, value = "No configured connector matches specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
+//    RuntimeException connectorNoMatch(String connector);
 
     @Message(id = 48, value = "Multiple connectors match specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
     RuntimeException connectorMatchesMultiple(String connector);
@@ -195,4 +195,8 @@ public interface ModClusterLogger {
     @LogMessage(level = INFO)
     @Message(id = 54, value = "Starting to drain %d active sessions from %s:%s waiting indefinitely until all remaining sessions are drained or expired.")
     void startSessionDrainingIndefinitely(int sessions, Host host, Context context);
+
+    @LogMessage(level = WARN)
+    @Message(id = 55, value = "No configured connector for engine %s. If this engine should be used with mod_cluster check connector, connectorPort and/or connectorAddress configuration.")
+    void noConnectorForEngine(String engineName);
 }

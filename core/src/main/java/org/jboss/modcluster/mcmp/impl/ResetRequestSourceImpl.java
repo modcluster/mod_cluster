@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
@@ -76,6 +77,11 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
         List<MCMPRequest> engineRequests = new LinkedList<MCMPRequest>();
 
         for (Engine engine : this.server.getEngines()) {
+            Connector connector = engine.getProxyConnector();
+            if (connector == null) {
+                // Skip config for Engines that don't have any available connector
+                continue;
+            }
             engineRequests.add(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig));
 
             String jvmRoute = engine.getJvmRoute();

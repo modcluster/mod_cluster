@@ -21,16 +21,17 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.apache.catalina.Engine;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Connector;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 /**
  * Connector provider implementation that picks a connector based on configured {@code connectorPort=".."} and/or {@code connectorAddress=".."}.
- * Should multiple or no connectors match the defined values a {@link RuntimeException} is thrown.
+ * Should multiple connectors match a {@link RuntimeException} is thrown.
+ * If no connectors match for the given engine, {@code null} is returned.
  *
  * @author Radoslav Husar
  */
@@ -86,7 +87,7 @@ public class ConfigurableProxyConnectorProvider implements ProxyConnectorProvide
         }
 
         if (candidate == null) {
-            throw ModClusterLogger.LOGGER.connectorNoMatch(format(connectorAddress, connectorPort));
+            return null;
         }
 
         return factory.createConnector(candidate);
