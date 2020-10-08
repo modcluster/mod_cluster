@@ -69,7 +69,7 @@
         <version.tomcat85>8.5.53</version.tomcat85>
         <version.tomcat9>9.0.33</version.tomcat9>
         <version.tomcat100>10.0.0-M5</version.tomcat100>
-        <version.http-client>4.5.12</version.http-client>
+        <version.http-client>4.5.13</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
         <version.junit>4.13</version.junit>
