@@ -23,6 +23,7 @@
 package org.jboss.modcluster;
 
 import java.math.BigInteger;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Locale;
 
 /**
@@ -68,7 +70,8 @@ public class TestUtils {
             throw new IllegalStateException("Both -Dmulticast.interface.address and -Dmulticast.interface.name specified!");
         }
 
-        // Automatically and deterministically find first multicast-enabled and preferably non-loopback network interface
+        // Automatically and deterministically find a first multicast-enabled with an IPv4 address
+        // and preferably a non-loopback network interface.
         ArrayList<NetworkInterface> ifaces = Collections.list(NetworkInterface.getNetworkInterfaces());
         ifaces.sort(new Comparator<NetworkInterface>() {
             @Override
@@ -79,7 +82,7 @@ public class TestUtils {
 
         NetworkInterface electedIface = ifaces.get(0);
         for (NetworkInterface iface : ifaces) {
-            if (iface.supportsMulticast()) {
+            if (iface.supportsMulticast() && hasIPv4Address(iface.getInetAddresses())) {
                 if (!iface.isLoopback() && iface.isUp() && !iface.isPointToPoint()) {
                     electedIface = iface;
                     break;
@@ -90,6 +93,15 @@ public class TestUtils {
         System.out.println("Automatically using interface for testing: " + electedIface.getDisplayName() + ". To override use -Dmulticast.interface.address or -Dmulticast.interface.name!");
 
         return electedIface;
+    }
+
+    private static boolean hasIPv4Address(Enumeration<InetAddress> inetAddresses) {
+        while (inetAddresses.hasMoreElements()) {
+            if (inetAddresses.nextElement() instanceof Inet4Address) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
