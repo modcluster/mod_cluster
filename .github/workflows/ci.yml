@@ -27,7 +27,9 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Build with Maven
+      - name: Build with Maven (Tomcat 7, 8, 8.5)
         run: mvn -B package
       - name: Build with Maven (Tomcat 9)
         run: mvn -B package -P TC9
+      - name: Build with Maven (Tomcat 10)
+        run: mvn -B package -P TC10
