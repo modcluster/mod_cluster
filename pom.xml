@@ -66,8 +66,8 @@
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
         <version.tomcat7>7.0.107</version.tomcat7>
         <version.tomcat8>8.0.53</version.tomcat8>
-        <version.tomcat85>8.5.53</version.tomcat85>
-        <version.tomcat9>9.0.33</version.tomcat9>
+        <version.tomcat85>8.5.61</version.tomcat85>
+        <version.tomcat9>9.0.41</version.tomcat9>
         <version.tomcat100>10.0.0</version.tomcat100>
         <version.http-client>4.5.13</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
