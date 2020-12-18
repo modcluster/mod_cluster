@@ -82,6 +82,8 @@ import org.jboss.modcluster.mcmp.ResetRequestSource;
 public class DefaultMCMPHandler implements MCMPHandler {
     private static final String NEW_LINE = "\r\n";
 
+    private static final boolean REFRESH_PROXY_IP = Boolean.valueOf(System.getProperty("org.jboss.modcluster.REFRESH_PROXY_IP", "false")).booleanValue();
+
     static final Logger log = Logger.getLogger(DefaultMCMPHandler.class);
 
     // -------------------------------------------------------------- Constants
@@ -713,7 +715,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
         /** The serialVersionUID */
         private static final long serialVersionUID = 5219680414337319908L;
 
-        private final InetSocketAddress socketAddress;
+        private InetSocketAddress socketAddress;
         private final InetSocketAddress sourceAddress;
 
         private volatile State state = State.OK;
@@ -800,6 +802,10 @@ public class DefaultMCMPHandler implements MCMPHandler {
         private synchronized Socket getConnection() throws IOException {
             if (this.socket == null || this.socket.isClosed()) {
                 this.socket = this.socketFactory.createSocket();
+                // refresh ip for the proxy?
+                if (REFRESH_PROXY_IP && this.getState() != State.OK ) {
+                    this.socketAddress = new InetSocketAddress(this.socketAddress.getHostName(), this.socketAddress.getPort());
+                }
                 InetAddress address = this.socketAddress.getAddress();
                 if (sourceAddress != null) {
                     // If using a specific port enable SO_REUSEADDR to avoid "Address already in use" errors
