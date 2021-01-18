@@ -1053,7 +1053,11 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
         if (mconf->ws_upgrade_header) {
             strncpy(nodeinfo.mess.Upgrade,mconf->ws_upgrade_header, sizeof(nodeinfo.mess.Upgrade));
             nodeinfo.mess.Upgrade[sizeof(nodeinfo.mess.Upgrade)-1] = '\0';
+        } else {
+            strcpy(nodeinfo.mess.Upgrade,"websocket");
         }
+    } else {
+        nodeinfo.mess.Upgrade[0] = '\0';
     }
 
     if (strcmp(nodeinfo.mess.Type, "ajp") == 0) {
