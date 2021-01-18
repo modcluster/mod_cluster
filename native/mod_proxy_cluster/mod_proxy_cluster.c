@@ -164,6 +164,17 @@ static int proxy_worker_cmp(const void *a, const void *b)
     return strcmp(route1, route2);
 }
 
+static char * normalize_hostname(apr_pool_t *p, char *hostname)
+{
+    char *ret = apr_palloc(p, strlen(hostname) + 1);
+    char *ptr = ret;
+    strcpy(ptr, hostname);
+    for (;*ptr; ++ptr) {
+       *ptr = apr_tolower(*ptr);
+    }
+    return ret;
+}
+
 static int (*ap_proxy_retry_worker_fn)(const char *proxy_function,
         proxy_worker *worker, server_rec *s) = NULL;
 
