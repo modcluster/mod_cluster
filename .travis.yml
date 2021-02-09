@@ -1,7 +1,0 @@
-language: java
-jdk:
-  - openjdk10
-  - openjdk8
-script: mvn verify -Pdist
-notifications:
-  email: false
