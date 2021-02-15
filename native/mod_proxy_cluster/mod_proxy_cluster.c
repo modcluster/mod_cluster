@@ -1846,7 +1846,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             helper = (proxy_cluster_helper *) worker->context;
             if (!worker->s || !worker->context) {
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy: byrequests balancer skipping BAD worker");
+                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ? worker->s->name : "NULL");
                 continue;
             }
             if (helper->index == 0)
@@ -1951,29 +1951,29 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                              "proxy: byrequests balancer DONE (%s)",
                              mycandidate->s->name
                              );
+        rc = proxy_run_check_trans(r, mycandidate->s->name);
+        if (rc != OK) {
+            char *ptr = balancer->workers->elts;
+            int sizew = balancer->workers->elt_size;
+            for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
+                proxy_worker **run = (proxy_worker **) ptr;
+                proxy_worker *httpworker = *run;
+                if (!strcmp(httpworker->s->hostname, mycandidate->s->hostname)) {
+                    /* They don't the shared memory another test is needed... */
+                    if (!memcmp(httpworker->s->scheme, "http", 4) &&
+                        httpworker->s->port == mycandidate->s->port &&
+                        !strcmp(httpworker->s->route, mycandidate->s->route)) {
+                        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                                     "proxy: byrequests balancer Using %s instead %s", httpworker->s->name, mycandidate->s->name);
+                        return httpworker;
+                    }
+                }
+            }
+        }
     } else {
         apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", "");
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "proxy: byrequests balancer FAILED");
-    }
-    rc = proxy_run_check_trans(r, mycandidate->s->name);
-    if (rc != OK) {
-        char *ptr = balancer->workers->elts;
-        int sizew = balancer->workers->elt_size;
-        for (i = 0; i < balancer->workers->nelts; i++, ptr=ptr+sizew) {
-            proxy_worker **run = (proxy_worker **) ptr;
-            proxy_worker *httpworker = *run;
-            if (!strcmp(httpworker->s->hostname, mycandidate->s->hostname)) {
-                /* They don't the shared memory another test is needed... */
-                if (!memcmp(httpworker->s->scheme, "http", 4) &&
-                    httpworker->s->port == mycandidate->s->port &&
-                    !strcmp(httpworker->s->route, mycandidate->s->route)) {
-                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                                 "proxy: byrequests balancer Using %s instead %s", httpworker->s->name, mycandidate->s->name);
-                    return httpworker;
-                }
-            }
-        }
     }
     return mycandidate;
 }
