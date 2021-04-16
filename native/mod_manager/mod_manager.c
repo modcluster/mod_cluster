@@ -97,6 +97,7 @@
 #define MCONTUI "MEM: Can't update or insert context for node with \"%s\" JVMRoute"
 #define MJBIDRD "MEM: Can't read JGroupId"
 #define MJBIDUI "MEM: Can't update or insert JGroupId"
+#define MNODEET "MEM: Another for the same worker already exist"
 
 /* Protocol version supported */
 #define VERSION_PROTOCOL "0.2.1"
@@ -798,6 +799,34 @@ static int  is_same_node(nodeinfo_t *nodeinfo, nodeinfo_t *node) {
     /* All other fields can be modified without causing problems */
     return -1;
 }
+/*
+ * Check if another node has the same worker.
+ */
+static int  is_same_worker_existing(request_rec *r, nodeinfo_t *node) {
+    int size, i;
+    int *id;
+    size = loc_get_max_size_node();
+    if (size == 0)
+        return 0;
+    id = apr_palloc(r->pool, sizeof(int) * size);
+    size = get_ids_used_node(nodestatsmem, id);
+    for (i=0; i<size; i++) {
+        nodeinfo_t *ou;
+        if (get_node(nodestatsmem, &ou, id[i]) != APR_SUCCESS)
+            continue;
+        if (is_same_node(ou, node)) {
+            /* we have a node that corresponds to the same worker */
+            if (!strcmp(ou->mess.JVMRoute,node->mess.JVMRoute))
+                return 0; /* well it is the same */
+            if (ou->mess.remove)
+                return 0; /* well it marked removed */
+            ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "process_config: node %s and %s correspond to the same worker!", node->mess.JVMRoute, ou->mess.JVMRoute);
+            return -1;
+        }
+    }
+    return 0;
+}
 
 /*
  * Process a CONFIG message
@@ -1087,6 +1116,11 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             *errtype = TYPEMEM;
             return apr_psprintf(r->pool, MNODERM, node->mess.JVMRoute);
         }
+    }
+    /* check if a node corresponding to the same worker already exists */
+    if (is_same_worker_existing(r, &nodeinfo)) {
+        *errtype = TYPEMEM;
+        return MNODEET;
     }
 
     /* Insert or update node description */

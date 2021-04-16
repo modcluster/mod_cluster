@@ -958,12 +958,12 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     APR_BRIGADE_INSERT_TAIL(header_brigade, e);
 
     status = ap_pass_brigade(p_conn->connection->output_filters, header_brigade);
+    apr_brigade_cleanup(header_brigade);
     if (status != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "http_cping_cpong(): send failed");
         return status;
     }
-    apr_brigade_cleanup(header_brigade);
 
     status = apr_socket_timeout_get(p_conn->sock, &org);
     if (status != APR_SUCCESS) {
