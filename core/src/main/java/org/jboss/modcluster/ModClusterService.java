@@ -300,10 +300,12 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     public void add(Context context) {
         ModClusterLogger.LOGGER.addContext(context.getHost(), context);
 
-        if (this.include(context)) {
+        if (this.include(context) && this.established) {
             // Send ENABLE-APP if state is started
-            if (this.established && context.isStarted()) {
+            if (context.isStarted()) {
                 this.enable(context);
+            } else {
+                this.stop(context);
             }
         }
     }
