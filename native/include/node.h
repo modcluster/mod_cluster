@@ -73,7 +73,8 @@ struct nodemess {
     int id;                   /* id in table and worker id */
     apr_time_t updatetimelb; /* time of last update of the lbstatus value */
     int num_failure_idle;    /* number of time the cping/cpong failed while calculating the lbstatus value */
-    int oldelected;          /* value of s->elected when calculating the lbstatus */
+    apr_size_t oldelected;   /* value of s->elected when calculating the lbstatus */
+    apr_off_t  oldread;      /* Number of bytes read from remote when calculating the lbstatus */
     apr_time_t lastcleantry; /* time of last unsuccessful try to clean the worker in proxy part */
 };
 typedef struct nodemess nodemess_t; 
