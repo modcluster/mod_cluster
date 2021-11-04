@@ -22,7 +22,7 @@
   -->
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-    <id>tomcat85</id>
+    <id>tomcat90</id>
     <componentDescriptors>
         <componentDescriptor>src/assembly/tomcat-component.xml</componentDescriptor>
     </componentDescriptors>
@@ -30,12 +30,12 @@
         <format>zip</format>
         <format>tar.gz</format>
     </formats>
-    <!-- Tomcat 8.5 specific jars -->
+    <!-- Tomcat 9.0 specific jars -->
     <fileSets>
         <fileSet>
             <directory>../container/tomcat85/target/</directory>
             <includes>
-                <include>*tomcat85*.jar</include>
+                <include>*tomcat90*.jar</include>
             </includes>
             <excludes>
                 <exclude>*-javadoc.jar</exclude>

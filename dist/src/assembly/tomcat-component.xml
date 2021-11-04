@@ -37,18 +37,6 @@
             <outputDirectory>lib</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>../container/tomcat/target/</directory>
-            <includes>
-                <include>*.jar</include>
-            </includes>
-            <excludes>
-                <exclude>*-javadoc.jar</exclude>
-                <exclude>*-sources.jar</exclude>
-                <exclude>*-tests.jar</exclude>
-            </excludes>
-            <outputDirectory>lib</outputDirectory>
-        </fileSet>
-        <fileSet>
             <directory>../core/target/</directory>
             <includes>
                 <include>*.jar</include>
