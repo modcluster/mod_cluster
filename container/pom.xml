@@ -40,7 +40,6 @@
             <modules>
                 <module>spi</module>
                 <module>tomcat</module>
-                <module>tomcat8</module>
                 <module>tomcat85</module>
                 <module>tomcat100</module>
             </modules>
@@ -53,17 +52,6 @@
             <modules>
                 <module>spi</module>
                 <module>tomcat</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC8</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat8</module>
             </modules>
         </profile>
         <profile>
