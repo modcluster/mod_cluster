@@ -312,7 +312,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     worker->s = (proxy_worker_shared *) ptr;
     helper->index = node->mess.id;
 
-    /* Changing the shared memory requires looking it... */
+    /* Changing the shared memory requires locking it... */
     if (strncmp(worker->s->name, shared->name, sizeof(worker->s->name))) {
         /* We will modify it only is the name has changed to minimize access */
         worker->s->was_malloced = 0; /* Prevent mod_proxy to free it */
@@ -750,6 +750,10 @@ static int remove_workers_node(nodeinfo_t *node, proxy_server_conf *conf, apr_po
         /* Here that is tricky the worker needs shared memory but we don't and CONFIG will reset it */
         helper->index = 0; /* mark it removed */
         if (helper->shared) {
+            /* if this happens we are in big troubles */
+            ap_assert(!strcmp(worker->s->hostname, helper->shared->hostname));
+            ap_assert(worker->s->port == helper->shared->port);
+            /* should be good  */
             worker->s = helper->shared;
             memcpy(worker->s, stat, sizeof(proxy_worker_shared));
         }
