@@ -27,7 +27,7 @@
         <artifactId>mod_cluster-container</artifactId>
         <version>2.0.0.Alpha1-SNAPSHOT</version>
     </parent>
-    <artifactId>mod_cluster-container-tomcat85</artifactId>
+    <artifactId>mod_cluster-container-tomcat-8.5</artifactId>
     <name>mod_cluster: Container - Tomcat 8.5</name>
     <dependencies>
         <dependency>

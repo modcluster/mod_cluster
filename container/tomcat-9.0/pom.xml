@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2020, Red Hat Middleware LLC, and individual contributors
+  ~ Copyright 2016, Red Hat Middleware LLC, and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -27,8 +27,8 @@
         <artifactId>mod_cluster-container</artifactId>
         <version>2.0.0.Alpha1-SNAPSHOT</version>
     </parent>
-    <artifactId>mod_cluster-container-tomcat100</artifactId>
-    <name>mod_cluster: Container - Tomcat 10.0</name>
+    <artifactId>mod_cluster-container-tomcat-9.0</artifactId>
+    <name>mod_cluster: Container - Tomcat 9.0</name>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -38,23 +38,23 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
         </dependency>
-        <!-- Tomcat 10.0 dependencies -->
+        <!-- Tomcat 9.0 dependencies -->
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>${version.tomcat-10.0}</version>
+            <version>${version.tomcat-9.0}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-coyote</artifactId>
-            <version>${version.tomcat-10.0}</version>
+            <version>${version.tomcat-9.0}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-util</artifactId>
-            <version>${version.tomcat-10.0}</version>
+            <version>${version.tomcat-9.0}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

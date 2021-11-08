@@ -32,8 +32,8 @@
     <packaging>pom</packaging>
     <modules>
         <module>spi</module>
-        <module>tomcat85</module>
-        <module>tomcat90</module>
-        <module>tomcat100</module>
+        <module>tomcat-8.5</module>
+        <module>tomcat-9.0</module>
+        <module>tomcat-10.0</module>
     </modules>
 </project>

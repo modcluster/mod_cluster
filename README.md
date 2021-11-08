@@ -60,9 +60,9 @@ Project is split up into multiple modules:
 core (contains the implementation of container-independent core mod_cluster concepts)
 container
   spi (SPI classes for container integrations, has no dependencies on a specific web container)
-  tomcat85 (Tomcat 8.5 container implementation)
-  tomcat90 (Tomcat 9.0 container implementation)
-  tomcat100 (Tomcat 10.0 container implementation)
+  tomcat-8.5 (Tomcat 8.5 container implementation)
+  tomcat-9.0 (Tomcat 9.0 container implementation)
+  tomcat-10.0 (Tomcat 10.0 container implementation)
 load-spi (SPI classes for load metric computation)
 demo
   client

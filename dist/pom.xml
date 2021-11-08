@@ -76,40 +76,40 @@
                     </configuration>
                 </execution>
                 <execution>
-                    <id>assemble-tomcat85</id>
+                    <id>assemble-tomcat-8.5</id>
                     <phase>package</phase>
                     <goals>
                         <goal>single</goal>
                     </goals>
                     <configuration>
                         <descriptors>
-                            <descriptor>src/assembly/tomcat85.xml</descriptor>
+                            <descriptor>src/assembly/tomcat-8.5.xml</descriptor>
                         </descriptors>
                         <tarLongFileMode>posix</tarLongFileMode>
                     </configuration>
                 </execution>
                 <execution>
-                    <id>assemble-tomcat90</id>
+                    <id>assemble-tomcat-9.0</id>
                     <phase>package</phase>
                     <goals>
                         <goal>single</goal>
                     </goals>
                     <configuration>
                         <descriptors>
-                            <descriptor>src/assembly/tomcat90.xml</descriptor>
+                            <descriptor>src/assembly/tomcat-9.0.xml</descriptor>
                         </descriptors>
                         <tarLongFileMode>posix</tarLongFileMode>
                     </configuration>
                 </execution>
                     <execution>
-                        <id>assemble-tomcat100</id>
+                        <id>assemble-tomcat-10.0</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/assembly/tomcat100.xml</descriptor>
+                                <descriptor>src/assembly/tomcat-10.0.xml</descriptor>
                             </descriptors>
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>

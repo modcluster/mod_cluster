@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2020, Red Hat Middleware LLC, and individual contributors
+  ~ Copyright 2017, Red Hat Middleware LLC, and individual contributors
   ~ as indicated by the @author tags. See the copyright.txt file in the
   ~ distribution for a full listing of individual contributors.
   ~
@@ -22,7 +22,7 @@
   -->
 <assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
-    <id>tomcat100</id>
+    <id>tomcat-9.0</id>
     <componentDescriptors>
         <componentDescriptor>src/assembly/tomcat-component.xml</componentDescriptor>
     </componentDescriptors>
@@ -30,10 +30,10 @@
         <format>zip</format>
         <format>tar.gz</format>
     </formats>
-    <!-- Tomcat 10.0 specific jars -->
+    <!-- Tomcat 9.0 specific jars -->
     <fileSets>
         <fileSet>
-            <directory>../container/tomcat100/target/</directory>
+            <directory>../container/tomcat-9.0/target/</directory>
             <includes>
                 <include>*.jar</include>
             </includes>
