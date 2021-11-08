@@ -33,9 +33,9 @@
     <!-- Tomcat 9.0 specific jars -->
     <fileSets>
         <fileSet>
-            <directory>../container/tomcat85/target/</directory>
+            <directory>../container/tomcat90/target/</directory>
             <includes>
-                <include>*tomcat90*.jar</include>
+                <include>*.jar</include>
             </includes>
             <excludes>
                 <exclude>*-javadoc.jar</exclude>

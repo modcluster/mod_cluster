@@ -38,61 +38,24 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
         </dependency>
+        <!-- Tomcat 8.5 dependencies -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version>${version.tomcat-8.5}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-coyote</artifactId>
+            <version>${version.tomcat-8.5}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-util</artifactId>
+            <version>${version.tomcat-8.5}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
-    <profiles>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <!-- Tomcat 8.5 dependencies -->
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-catalina</artifactId>
-                    <version>${version.tomcat-8.5}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-coyote</artifactId>
-                    <version>${version.tomcat-8.5}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-util</artifactId>
-                    <version>${version.tomcat-8.5}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <build>
-                <finalName>mod_cluster-container-tomcat90-${project.version}</finalName>
-            </build>
-            <dependencies>
-                <!-- Tomcat 9.0 dependencies -->
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-catalina</artifactId>
-                    <version>${version.tomcat-9.0}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-coyote</artifactId>
-                    <version>${version.tomcat-9.0}</version>
-                    <scope>provided</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.tomcat</groupId>
-                    <artifactId>tomcat-util</artifactId>
-                    <version>${version.tomcat-9.0}</version>
-                    <scope>provided</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>

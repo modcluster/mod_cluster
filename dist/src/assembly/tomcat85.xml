@@ -35,7 +35,7 @@
         <fileSet>
             <directory>../container/tomcat85/target/</directory>
             <includes>
-                <include>*tomcat85*.jar</include>
+                <include>*.jar</include>
             </includes>
             <excludes>
                 <exclude>*-javadoc.jar</exclude>

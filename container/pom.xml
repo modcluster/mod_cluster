@@ -30,47 +30,10 @@
     <artifactId>mod_cluster-container</artifactId>
     <name>mod_cluster: Container (parent)</name>
     <packaging>pom</packaging>
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat85</module>
-                <module>tomcat100</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat85</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat85</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC10</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat100</module>
-            </modules>
-        </profile>
-    </profiles>
+    <modules>
+        <module>spi</module>
+        <module>tomcat85</module>
+        <module>tomcat90</module>
+        <module>tomcat100</module>
+    </modules>
 </project>

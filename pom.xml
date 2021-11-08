@@ -247,44 +247,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <profiles>
-        <profile>
-            <id>TC85</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC10</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>dist</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>demo</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>
