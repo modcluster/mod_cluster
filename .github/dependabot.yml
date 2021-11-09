@@ -1,8 +1,57 @@
 version: 2
 updates:
-- package-ecosystem: maven
-  directory: "/"
-  schedule:
-    interval: daily
-    time: "10:00"
-  open-pull-requests-limit: 10
+  - package-ecosystem: maven
+    directory: "/"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+      - dependency-name: org.apache.tomcat:tomcat-servlet-api
+      - dependency-name: org.apache.tomcat:tomcat-util
+  - package-ecosystem: maven
+    directory: "/container/tomcat-8.5"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 9"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 9"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 9"
+  - package-ecosystem: maven
+    directory: "/container/tomcat-9.0"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 10"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 10"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 10"
+  - package-ecosystem: maven
+    directory: "/container/tomcat-10.0"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 11"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 11"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 11"
