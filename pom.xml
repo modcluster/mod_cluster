@@ -61,12 +61,11 @@
     </modules>
 
     <properties>
-        <!-- Dependency versions -->
+        <!-- Common dependency -->
         <version.jboss-logging>3.4.2.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
-        <version.tomcat-10.0>10.0.4</version.tomcat-10.0>
-        <version.tomcat-9.0>9.0.41</version.tomcat-9.0>
-        <version.tomcat-8.5>8.5.61</version.tomcat-8.5>
+
+        <!-- Demo dependencies -->
         <version.http-client>4.5.13</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
