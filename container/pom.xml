@@ -26,78 +26,14 @@
         <artifactId>mod_cluster-parent</artifactId>
         <groupId>org.jboss.mod_cluster</groupId>
         <version>2.0.0.Alpha1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container</artifactId>
     <name>mod_cluster: Container (parent)</name>
     <packaging>pom</packaging>
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat8</module>
-                <module>tomcat85</module>
-                <module>tomcat100</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC7</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC8</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat8</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat85</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat85</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC10</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <modules>
-                <module>spi</module>
-                <module>tomcat</module>
-                <module>tomcat100</module>
-            </modules>
-        </profile>
-    </profiles>
+    <modules>
+        <module>spi</module>
+        <module>tomcat-8.5</module>
+        <module>tomcat-9.0</module>
+        <module>tomcat-10.0</module>
+    </modules>
 </project>

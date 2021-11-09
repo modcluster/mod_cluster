@@ -34,7 +34,7 @@ This is the first version of AS that bundled mod_cluster, the configuration is l
 `/server/<profile>/deploy/mod_cluster.sar/META-INF` directory.
 
 
-### Tomcat 7 (or newer)
+### Tomcat 8.5 (or newer)
 
 Distribution archives are provided for each Tomcat version.
 
@@ -60,10 +60,9 @@ Project is split up into multiple modules:
 core (contains the implementation of container-independent core mod_cluster concepts)
 container
   spi (SPI classes for container integrations, has no dependencies on a specific web container)
-  tomcat (base for Tomcat container implementations, based on Tomcat 7.0)
-  tomcat8 (Tomcat 8.0 container implementation)
-  tomcat85 (Tomcat 8.5 and 9.0 container implementation)
-  tomcat100 (Tomcat 10.0 container implementation)
+  tomcat-8.5 (Tomcat 8.5 container implementation)
+  tomcat-9.0 (Tomcat 9.0 container implementation)
+  tomcat-10.0 (Tomcat 10.0 container implementation)
 load-spi (SPI classes for load metric computation)
 demo
   client

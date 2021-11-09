@@ -27,7 +27,6 @@
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>mod_cluster-parent</artifactId>
         <version>2.0.0.Alpha1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
 
     <artifactId>mod_cluster-distribution</artifactId>
@@ -63,15 +62,54 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
+                <execution>
+                    <id>assemble-demo</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/assembly/demo.xml</descriptor>
+                        </descriptors>
+                        <tarLongFileMode>posix</tarLongFileMode>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>assemble-tomcat-8.5</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/assembly/tomcat-8.5.xml</descriptor>
+                        </descriptors>
+                        <tarLongFileMode>posix</tarLongFileMode>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>assemble-tomcat-9.0</id>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                    <configuration>
+                        <descriptors>
+                            <descriptor>src/assembly/tomcat-9.0.xml</descriptor>
+                        </descriptors>
+                        <tarLongFileMode>posix</tarLongFileMode>
+                    </configuration>
+                </execution>
                     <execution>
-                        <id>assemble-demo</id>
+                        <id>assemble-tomcat-10.0</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
                             <descriptors>
-                                <descriptor>src/assembly/demo.xml</descriptor>
+                                <descriptor>src/assembly/tomcat-10.0.xml</descriptor>
                             </descriptors>
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
@@ -80,153 +118,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>TC7</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble-tomcat7</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/tomcat7.xml</descriptor>
-                                    </descriptors>
-                                    <tarLongFileMode>posix</tarLongFileMode>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>TC8</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble-tomcat8</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/tomcat8.xml</descriptor>
-                                    </descriptors>
-                                    <tarLongFileMode>posix</tarLongFileMode>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble-tomcat85</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/tomcat85.xml</descriptor>
-                                    </descriptors>
-                                    <tarLongFileMode>posix</tarLongFileMode>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble-tomcat9</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/tomcat9.xml</descriptor>
-                                    </descriptors>
-                                    <tarLongFileMode>posix</tarLongFileMode>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>TC10</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>assemble-tomcat100</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptors>
-                                        <descriptor>src/assembly/tomcat100.xml</descriptor>
-                                    </descriptors>
-                                    <tarLongFileMode>posix</tarLongFileMode>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
-
 </project>

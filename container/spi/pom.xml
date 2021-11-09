@@ -26,7 +26,6 @@
         <artifactId>mod_cluster-container</artifactId>
         <groupId>org.jboss.mod_cluster</groupId>
         <version>2.0.0.Alpha1-SNAPSHOT</version>
-        <relativePath>..</relativePath>
     </parent>
     <artifactId>mod_cluster-container-spi</artifactId>
     <name>mod_cluster: Container SPI</name>

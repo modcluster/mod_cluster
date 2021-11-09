@@ -64,11 +64,9 @@
         <!-- Dependency versions -->
         <version.jboss-logging>3.4.2.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
-        <version.tomcat7>7.0.107</version.tomcat7>
-        <version.tomcat8>8.0.53</version.tomcat8>
-        <version.tomcat85>8.5.61</version.tomcat85>
-        <version.tomcat9>9.0.41</version.tomcat9>
-        <version.tomcat100>10.0.4</version.tomcat100>
+        <version.tomcat-8.5>8.5.61</version.tomcat-8.5>
+        <version.tomcat-9.0>9.0.41</version.tomcat-9.0>
+        <version.tomcat-10.0>10.0.4</version.tomcat-10.0>
         <version.http-client>4.5.13</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
@@ -139,21 +137,6 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.jboss-logging-processor}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-catalina</artifactId>
-                <version>${version.tomcat7}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-coyote</artifactId>
-                <version>${version.tomcat7}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-util</artifactId>
-                <version>${version.tomcat7}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.httpcomponents</groupId>
@@ -264,62 +247,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <profiles>
-        <profile>
-            <id>TC7</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC8</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC85</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC9</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>TC10</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>dist</id>
-            <modules>
-                <module>core</module>
-                <module>container</module>
-                <module>load-spi</module>
-                <module>demo</module>
-                <module>dist</module>
-            </modules>
-        </profile>
-    </profiles>
 </project>
