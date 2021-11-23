@@ -44,7 +44,7 @@ public class JMXServerProviderTestCase {
         Server expected = mock(Server.class);
         Service service = mock(Service.class);
 
-        when(mbeanServer.invoke(same(name), eq("findServices"), (Object[]) isNull(), (String[]) isNull())).thenReturn(new Service[] { service });
+        when(mbeanServer.invoke(same(name), eq("findServices"), isNull(), isNull())).thenReturn(new Service[] { service });
         when(service.getServer()).thenReturn(expected);
 
         ServerProvider provider = new JMXServerProvider(mbeanServer, name);
@@ -58,7 +58,7 @@ public class JMXServerProviderTestCase {
         MBeanServer mbeanServer = mock(MBeanServer.class);
         ObjectName name = ObjectName.getInstance("Catalina:type=Server");
 
-        when(mbeanServer.invoke(same(name), eq("findServices"), (Object[]) isNull(), (String[]) isNull())).thenThrow(new InstanceNotFoundException());
+        when(mbeanServer.invoke(same(name), eq("findServices"), isNull(), isNull())).thenThrow(new InstanceNotFoundException());
 
         ServerProvider provider = new JMXServerProvider(mbeanServer, name);
         RuntimeException exception = null;

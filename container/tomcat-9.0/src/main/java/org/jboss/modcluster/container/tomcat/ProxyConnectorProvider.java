@@ -26,8 +26,9 @@ import org.jboss.modcluster.container.Connector;
 
 /**
  * Strategy for determining the connector with which mod_cluster will communicate.
+ *
  * @author Paul Ferraro
  */
 public interface ProxyConnectorProvider {
-    Connector createProxyConnector(ConnectorFactory factory, Engine engine);
+    Connector createProxyConnector(Engine engine);
 }

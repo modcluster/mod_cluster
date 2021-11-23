@@ -33,30 +33,45 @@ import static org.mockito.Mockito.when;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Manager;
 import org.apache.catalina.Pipeline;
+import org.apache.catalina.Server;
+import org.apache.catalina.Service;
 import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
-import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.listeners.HttpSessionListener;
 import org.jboss.modcluster.container.listeners.ServletRequestListener;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
+ * Test for {@link Context}.
+ *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class ContextTestCase {
-    protected final Host host = mock(Host.class);
-    protected final org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
-    private final RequestListenerValveFactory valveFactory = mock(RequestListenerValveFactory.class);
-    protected final Context catalinaContext = this.createContext(this.context, this.host);
+    protected final TomcatRegistry registry = mock(TomcatRegistry.class);
+    protected Server serverMock = mock(Server.class);
+    protected Service serviceMock = mock(Service.class);
+    protected org.apache.catalina.Engine engineMock = mock(org.apache.catalina.Engine.class);
+    protected org.apache.catalina.Host hostMock = mock(org.apache.catalina.Host.class);
 
-    protected Context createContext(org.apache.catalina.Context context, Host host) {
-        return new TomcatContext(this.context, this.host);
+    protected final org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
+    protected Context catalinaContext;
+
+    @Before
+    public void before() {
+        when(this.serviceMock.getServer()).thenReturn(this.serverMock);
+        when(this.engineMock.getService()).thenReturn(this.serviceMock);
+        when(this.hostMock.getParent()).thenReturn(this.engineMock);
+
+        when(context.getParent()).thenReturn(this.hostMock);
+        this.catalinaContext = new TomcatContext(this.registry, this.context);
     }
 
     @Test
     public void getHost() {
-        assertSame(this.host, this.catalinaContext.getHost());
+        assertEquals(new TomcatHost(registry, hostMock), this.catalinaContext.getHost());
     }
 
     @Test

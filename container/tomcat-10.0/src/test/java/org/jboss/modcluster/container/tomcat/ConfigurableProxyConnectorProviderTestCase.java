@@ -21,8 +21,7 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertSame;
-import static org.mockito.ArgumentMatchers.same;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,30 +31,31 @@ import org.jboss.modcluster.container.Connector;
 import org.junit.Test;
 
 /**
+ * Test case for {@link ConfigurableProxyConnectorProvider}.
+ *
  * @author Radoslav Husar
  */
 public class ConfigurableProxyConnectorProviderTestCase {
 
     @Test
     public void createProxyConnector() throws Exception {
-        ConnectorFactory factory = mock(ConnectorFactory.class);
         Engine engine = mock(Engine.class);
         Service service = mock(Service.class);
-        Connector expected = mock(Connector.class);
 
         org.apache.catalina.connector.Connector connector = new org.apache.catalina.connector.Connector("AJP/1.3");
         connector.setPort(8009);
 
+        Connector expected = new TomcatConnector(connector);
+
         when(engine.getService()).thenReturn(service);
         when(service.findConnectors()).thenReturn(new org.apache.catalina.connector.Connector[] { connector });
-        when(factory.createConnector(same(connector))).thenReturn(expected);
 
         TomcatConnectorConfiguration config = mock(TomcatConnectorConfiguration.class);
         when(config.getConnectorAddress()).thenReturn(null);
         when(config.getConnectorPort()).thenReturn(8009);
 
-        Connector result = new ConfigurableProxyConnectorProvider(config).createProxyConnector(factory, engine);
+        Connector result = new ConfigurableProxyConnectorProvider(config).createProxyConnector(engine);
 
-        assertSame(expected, result);
+        assertEquals(expected, result);
     }
 }

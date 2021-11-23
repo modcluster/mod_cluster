@@ -30,6 +30,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * Test case for {@link TomcatConnector}.
+ *
  * @author Radoslav Husar
  * @author Paul Ferraro
  */

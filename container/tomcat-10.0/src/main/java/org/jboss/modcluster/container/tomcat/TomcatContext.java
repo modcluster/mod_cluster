@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import jakarta.servlet.ServletException;
 
+import jakarta.servlet.ServletException;
 import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Pipeline;
 import org.apache.catalina.Valve;
@@ -49,26 +49,17 @@ public class TomcatContext implements Context {
     private final RequestListenerValveFactory valveFactory;
     protected final org.apache.catalina.Context context;
     protected final Host host;
+    protected final TomcatRegistry registry;
 
-    /**
-     * Constructs a new CatalinaContext wrapping the specified context.
-     *
-     * @param context the catalina context
-     * @param host    the parent container
-     */
-    public TomcatContext(org.apache.catalina.Context context, Host host, RequestListenerValveFactory valveFactory) {
+    public TomcatContext(TomcatRegistry registry, org.apache.catalina.Context context, RequestListenerValveFactory valveFactory) {
+        this.registry = registry;
         this.context = context;
-        this.host = host;
+        this.host = new TomcatHost(registry, (org.apache.catalina.Host) context.getParent());
         this.valveFactory = valveFactory;
     }
 
-    public TomcatContext(org.apache.catalina.Context context, Host host) {
-        this(context, host, new RequestListenerValveFactory() {
-            @Override
-            public Valve createValve(ServletRequestListener listener) {
-                return new RequestListenerValve(listener);
-            }
-        });
+    public TomcatContext(TomcatRegistry registry, org.apache.catalina.Context context) {
+        this(registry, context, RequestListenerValve::new);
     }
 
     private static class RequestListenerValve extends ValveBase {

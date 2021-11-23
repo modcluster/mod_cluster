@@ -34,15 +34,15 @@ import org.jboss.modcluster.container.Server;
  * @author Paul Ferraro
  */
 public class TomcatServer implements Server {
-    protected final TomcatFactoryRegistry registry;
+    protected final TomcatRegistry registry;
     protected final org.apache.catalina.Server server;
 
     /**
-     * Constructs a new CatalinaServer wrapping the specified catalina server.
+     * Constructs a new {@link org.apache.catalina.Server} wrapping the specified catalina server.
      *
      * @param server a catalina server
      */
-    public TomcatServer(TomcatFactoryRegistry registry, org.apache.catalina.Server server) {
+    public TomcatServer(TomcatRegistry registry, org.apache.catalina.Server server) {
         this.registry = registry;
         this.server = server;
     }
@@ -59,7 +59,7 @@ public class TomcatServer implements Server {
 
             @Override
             public Engine next() {
-                return TomcatServer.this.registry.getEngineFactory().createEngine(TomcatServer.this.registry, (org.apache.catalina.Engine) services.next().getContainer(), TomcatServer.this);
+                return new TomcatEngine(registry, services.next().getContainer());
             }
 
             @Override
@@ -78,7 +78,7 @@ public class TomcatServer implements Server {
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof TomcatServer)) return false;
+        if (!(object instanceof TomcatServer)) return false;
 
         TomcatServer server = (TomcatServer) object;
 

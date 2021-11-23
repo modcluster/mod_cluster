@@ -79,14 +79,8 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
 
     public ModClusterListener() {
         ModClusterService service = new ModClusterService(this, this);
-
         this.service = service;
-        this.listener = ServiceLoaderTomcatFactory.load(LifecycleListenerFactory.class, TomcatEventHandlerAdapterFactory.class).createListener(service, this);
-    }
-
-    protected ModClusterListener(ModClusterServiceMBean mbean, LifecycleListener listener) {
-        this.service = mbean;
-        this.listener = listener;
+        this.listener = new TomcatEventHandlerAdapter(service, this);
     }
 
     @Override
@@ -540,12 +534,7 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
                             break;
                     }
 
-                    Set<String> paths = excludedContextsPerHost.get(host);
-
-                    if (paths == null) {
-                        paths = new HashSet<>();
-                        excludedContextsPerHost.put(host, paths);
-                    }
+                    Set<String> paths = excludedContextsPerHost.computeIfAbsent(host, k -> new HashSet<>());
 
                     paths.add(path);
                 }
