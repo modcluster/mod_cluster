@@ -95,7 +95,7 @@ public class TomcatConnector implements Connector {
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof TomcatConnector)) return false;
+        if (!(object instanceof TomcatConnector)) return false;
 
         TomcatConnector connector = (TomcatConnector) object;
 
@@ -126,7 +126,7 @@ public class TomcatConnector implements Connector {
 
     @Override
     public boolean isAvailable() {
-        return LifecycleState.STARTED.equals(this.connector.getState());
+        return LifecycleState.STARTED == this.connector.getState();
     }
 
     @Override

@@ -38,7 +38,7 @@ import org.jboss.modcluster.container.Host;
  * @author Paul Ferraro
  */
 public class TomcatHost implements Host {
-    protected final TomcatFactoryRegistry registry;
+    protected final TomcatRegistry registry;
     protected final org.apache.catalina.Host host;
     protected final Engine engine;
 
@@ -46,12 +46,11 @@ public class TomcatHost implements Host {
      * Constructs a new CatalinaHost wrapping the specified catalina host.
      *
      * @param host a catalina host
-     * @param engine the parent container
      */
-    public TomcatHost(TomcatFactoryRegistry registry, org.apache.catalina.Host host, Engine engine) {
+    public TomcatHost(TomcatRegistry registry, org.apache.catalina.Host host) {
         this.registry = registry;
         this.host = host;
-        this.engine = engine;
+        this.engine = new TomcatEngine(registry, (org.apache.catalina.Engine) host.getParent());
     }
 
     @Override
@@ -67,9 +66,7 @@ public class TomcatHost implements Host {
 
         hosts.add(name);
 
-        for (String alias : aliases) {
-            hosts.add(alias);
-        }
+        hosts.addAll(Arrays.asList(aliases));
 
         return hosts;
     }
@@ -86,7 +83,7 @@ public class TomcatHost implements Host {
 
             @Override
             public Context next() {
-                return TomcatHost.this.registry.getContextFactory().createContext((org.apache.catalina.Context) children.next(), TomcatHost.this);
+                return new TomcatContext(registry, (org.apache.catalina.Context) children.next());
             }
 
             @Override
@@ -117,12 +114,12 @@ public class TomcatHost implements Host {
     public Context findContext(String path) {
         org.apache.catalina.Context context = (org.apache.catalina.Context) this.host.findChild(path);
 
-        return (context != null) ? TomcatHost.this.registry.getContextFactory().createContext(context, this) : null;
+        return (context != null) ? new TomcatContext(registry, context) : null;
     }
 
     @Override
     public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof TomcatHost)) return false;
+        if (!(object instanceof TomcatHost)) return false;
 
         TomcatHost host = (TomcatHost) object;
 

@@ -37,7 +37,7 @@ import org.jboss.modcluster.container.Server;
  * @author Paul Ferraro
  */
 public class TomcatEngine implements Engine {
-    protected final TomcatFactoryRegistry registry;
+    protected final TomcatRegistry registry;
     protected final org.apache.catalina.Engine engine;
     protected final Server server;
 
@@ -46,10 +46,10 @@ public class TomcatEngine implements Engine {
      *
      * @param engine a catalina engine
      */
-    public TomcatEngine(TomcatFactoryRegistry registry, org.apache.catalina.Engine engine, Server server) {
+    public TomcatEngine(TomcatRegistry registry, org.apache.catalina.Engine engine) {
         this.registry = registry;
         this.engine = engine;
-        this.server = server;
+        this.server = new TomcatServer(registry, engine.getService().getServer());
     }
 
     @Override
@@ -69,7 +69,7 @@ public class TomcatEngine implements Engine {
 
             @Override
             public Host next() {
-                return TomcatEngine.this.registry.getHostFactory().createHost(TomcatEngine.this.registry, (org.apache.catalina.Host) children.next(), TomcatEngine.this);
+                return new TomcatHost(registry, (org.apache.catalina.Host) children.next());
             }
 
             @Override
@@ -118,7 +118,7 @@ public class TomcatEngine implements Engine {
 
             @Override
             public Connector next() {
-                return TomcatEngine.this.registry.getConnectorFactory().createConnector(connectors.next());
+                return new TomcatConnector(connectors.next());
             }
 
             @Override
@@ -137,14 +137,14 @@ public class TomcatEngine implements Engine {
 
     @Override
     public Connector getProxyConnector() {
-        return this.registry.getProxyConnectorProvider().createProxyConnector(this.registry.getConnectorFactory(), this.engine);
+        return this.registry.getProxyConnectorProvider().createProxyConnector(this.engine);
     }
 
     @Override
     public Host findHost(String name) {
         org.apache.catalina.Host host = (org.apache.catalina.Host) this.engine.findChild(name);
 
-        return (host != null) ? this.registry.getHostFactory().createHost(this.registry, host, this) : null;
+        return (host != null) ? new TomcatHost(registry, host) : null;
     }
 
     // TODO MODCLUSTER-477 Broken design: cookie-name should be specified on the Context level instead of only on the Engine level

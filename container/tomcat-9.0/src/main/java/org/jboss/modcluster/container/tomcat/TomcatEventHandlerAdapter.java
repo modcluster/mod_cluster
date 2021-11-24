@@ -37,7 +37,6 @@ import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
-import org.apache.catalina.connector.Connector;
 import org.jboss.modcluster.container.ContainerEventHandler;
 
 /**
@@ -49,7 +48,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
 
     protected final ContainerEventHandler eventHandler;
     protected final ServerProvider serverProvider;
-    protected final TomcatFactory factory;
+    protected final TomcatRegistry registry;
 
     // Flags used to ignore redundant or invalid events
     protected final AtomicBoolean init = new AtomicBoolean(false);
@@ -58,21 +57,13 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     private volatile int statusCount = 0;
 
     public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, TomcatConnectorConfiguration connectorConfiguration) {
-        this(eventHandler, new JMXServerProvider(ManagementFactory.getPlatformMBeanServer(), toObjectName("Catalina:type=Server")), new ConfigurableProxyConnectorProvider(connectorConfiguration));
+        this(eventHandler, new JMXServerProvider(ManagementFactory.getPlatformMBeanServer(), toObjectName("Catalina:type=Server")), () -> new ConfigurableProxyConnectorProvider(connectorConfiguration));
     }
 
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, Server server, Connector connector) {
-        this(eventHandler, new SimpleServerProvider(server), new SimpleProxyConnectorProvider(connector));
-    }
-
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, ProxyConnectorProvider connectorProvider) {
-        this(eventHandler, serverProvider, new ServiceLoaderTomcatFactory(connectorProvider));
-    }
-
-    public TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, TomcatFactory factory) {
+    TomcatEventHandlerAdapter(ContainerEventHandler eventHandler, ServerProvider serverProvider, TomcatRegistry registry) {
         this.eventHandler = eventHandler;
         this.serverProvider = serverProvider;
-        this.factory = factory;
+        this.registry = registry;
     }
 
     @Override
@@ -90,7 +81,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         }
 
         if (this.start.compareAndSet(false, true)) {
-            this.eventHandler.start(this.factory.createServer(server));
+            this.eventHandler.start(new TomcatServer(registry, server));
         }
     }
 
@@ -103,7 +94,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         server.removeLifecycleListener(this);
 
         if (this.init.get() && this.start.compareAndSet(true, false)) {
-            this.eventHandler.stop(this.factory.createServer(server));
+            this.eventHandler.stop(new TomcatServer(registry, server));
         }
 
         if (this.init.compareAndSet(true, false)) {
@@ -112,7 +103,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     private boolean containsListener(Lifecycle lifecycle) {
-        for (LifecycleListener listener: lifecycle.findLifecycleListeners()) {
+        for (LifecycleListener listener : lifecycle.findLifecycleListeners()) {
             if (listener.equals(this)) {
                 return true;
             }
@@ -142,7 +133,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 ((Container) child).addPropertyChangeListener(this);
 
                 if (this.start.get()) {
-                    this.eventHandler.add(this.factory.createContext((Context) child));
+                    this.eventHandler.add(new TomcatContext(registry, (Context) child));
                 }
             } else if (container instanceof Engine) {
                 // Deploying a host
@@ -159,7 +150,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 ((Container) child).removePropertyChangeListener(this);
 
                 if (this.start.get()) {
-                    this.eventHandler.remove(this.factory.createContext((Context) child));
+                    this.eventHandler.remove(new TomcatContext(registry, (Context) child));
                 }
             } else if (container instanceof Engine) {
                 // Undeploying a host
@@ -197,21 +188,21 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
         } else if (type.equals(Lifecycle.AFTER_START_EVENT)) {
             if (source instanceof Server) {
                 if (this.init.get() && this.start.compareAndSet(false, true)) {
-                    this.eventHandler.start(this.factory.createServer((Server) source));
+                    this.eventHandler.start(new TomcatServer(registry, (Server) source));
                 }
-            } else if(source instanceof Context) {
+            } else if (source instanceof Context) {
                 // Start a webapp
-                this.eventHandler.start(this.factory.createContext((Context) source));
+                this.eventHandler.start(new TomcatContext(registry, (Context) source));
             }
         } else if (type.equals(Lifecycle.BEFORE_STOP_EVENT)) {
             if (source instanceof Context) {
                 if (this.start.get()) {
                     // Stop a webapp
-                    this.eventHandler.stop(this.factory.createContext((Context) source));
+                    this.eventHandler.stop(new TomcatContext(registry, (Context) source));
                 }
             } else if (source instanceof Server) {
                 if (this.init.get() && this.start.compareAndSet(true, false)) {
-                    this.eventHandler.stop(this.factory.createServer((Server) source));
+                    this.eventHandler.stop(new TomcatServer(registry, (Server) source));
                 }
             }
         } else if (isBeforeDestroy(event)) {
@@ -226,7 +217,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 this.statusCount = (this.statusCount + 1) % STATUS_FREQUENCY;
                 if (this.statusCount == 0) {
                     if (this.start.get()) {
-                        this.eventHandler.status(this.factory.createEngine(engine));
+                        this.eventHandler.status(new TomcatEngine(registry, engine));
                     }
                 }
             }
@@ -246,7 +237,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
      * initializations...
      */
     protected void init(Server server) {
-        this.eventHandler.init(this.factory.createServer(server));
+        this.eventHandler.init(new TomcatServer(registry, server));
 
         this.addListeners(server);
     }
@@ -258,7 +249,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     protected void addListeners(Server server) {
-        // Register ourself as a listener for child services
+        // Register ourselves as a listener for child services
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
             engine.addContainerListener(this);
@@ -276,7 +267,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
     }
 
     protected void removeListeners(Server server) {
-        // Unregister ourself as a listener to child components
+        // Unregister ourselves as a listener to child components
         for (Service service : server.findServices()) {
             Container engine = service.getContainer();
             engine.removeContainerListener(this);
@@ -303,9 +294,8 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        if (event.getSource() instanceof Context && "available".equals(event.getPropertyName())
-                && Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue())) {
-            this.eventHandler.start(this.factory.createContext((Context) event.getSource()));
+        if (event.getSource() instanceof Context && "available".equals(event.getPropertyName()) && Boolean.FALSE.equals(event.getOldValue()) && Boolean.TRUE.equals(event.getNewValue())) {
+            this.eventHandler.start(new TomcatContext(registry, (Context) event.getSource()));
         }
     }
 }

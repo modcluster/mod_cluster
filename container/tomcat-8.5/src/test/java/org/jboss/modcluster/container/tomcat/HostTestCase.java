@@ -27,39 +27,36 @@ import static org.mockito.Mockito.*;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.catalina.Container;
-import org.jboss.modcluster.container.Context;
+import org.apache.catalina.Server;
+import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * Test case for {@link TomcatHost}.
+ *
  * @author Paul Ferraro
  */
 public class HostTestCase {
-    protected final TomcatFactoryRegistry registry = mock(TomcatFactoryRegistry.class);
+    protected final TomcatRegistry registry = mock(TomcatRegistry.class);
     protected final org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
-    protected final Engine engine = mock(Engine.class);
+    protected Engine engine;
+    protected Host catalinaHost;
 
-    protected final Host catalinaHost = this.createHost();
+    @Before
+    public void setup() {
+        Service serviceMock = mock(Service.class);
+        when(serviceMock.getServer()).thenReturn(mock(Server.class));
 
-    protected Host createHost() {
-        return new TomcatHost(this.registry, this.host, this.engine);
-    }
+        org.apache.catalina.Engine engineMock = mock(org.apache.catalina.Engine.class);
+        when(engineMock.getService()).thenReturn(serviceMock);
 
-    @Test
-    public void findContext() {
-        org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
-        Context expected = mock(Context.class);
-        ContextFactory contextFactory = mock(ContextFactory.class);
+        when(this.host.getParent()).thenReturn(engineMock);
 
-        when(this.host.findChild("path")).thenReturn(context);
-        when(this.registry.getContextFactory()).thenReturn(contextFactory);
-        when(contextFactory.createContext(same(context), same(this.catalinaHost))).thenReturn(expected);
-
-        Context result = this.catalinaHost.findContext("path");
-
-        assertSame(expected, result);
+        engine = new TomcatEngine(registry, engineMock);
+        catalinaHost = new TomcatHost(this.registry, this.host);
     }
 
     @Test
@@ -77,28 +74,10 @@ public class HostTestCase {
     }
 
     @Test
-    public void getContexts() {
-        org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
-        Context expected = mock(Context.class);
-        ContextFactory contextFactory = mock(ContextFactory.class);
-
-        when(this.host.findChildren()).thenReturn(new Container[] { context });
-        when(this.registry.getContextFactory()).thenReturn(contextFactory);
-        when(contextFactory.createContext(same(context), same(this.catalinaHost))).thenReturn(expected);
-
-        Iterable<Context> result = this.catalinaHost.getContexts();
-
-        Iterator<Context> contexts = result.iterator();
-        assertTrue(contexts.hasNext());
-        assertSame(expected, contexts.next());
-        assertFalse(contexts.hasNext());
-    }
-
-    @Test
     public void getEngine() {
         Engine result = this.catalinaHost.getEngine();
 
-        assertSame(this.engine, result);
+        assertEquals(this.engine, result);
     }
 
     @Test

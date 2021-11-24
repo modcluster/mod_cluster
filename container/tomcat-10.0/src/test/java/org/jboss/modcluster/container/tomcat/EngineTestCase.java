@@ -24,69 +24,76 @@ package org.jboss.modcluster.container.tomcat;
 import java.util.Iterator;
 
 import org.apache.catalina.Container;
+import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
+ * Test case for {@link TomcatEngine}.
+ *
  * @author Paul Ferraro
+ * @author Radoslav Husar
  */
 public class EngineTestCase {
-    protected final TomcatFactoryRegistry registry = mock(TomcatFactoryRegistry.class);
-    protected final org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
-    protected final Server server = mock(Server.class);
 
-    protected final Engine catalinaEngine = this.createEngine();
+    protected Server server;
+    protected Engine engine;
 
-    protected Engine createEngine() {
-        return new TomcatEngine(this.registry, this.engine, this.server);
+    protected final TomcatRegistry registry = mock(TomcatRegistry.class);
+    protected final org.apache.catalina.Server serverMock = mock(org.apache.catalina.Server.class);
+    protected final Service serviceMock = mock(Service.class);
+    protected final org.apache.catalina.Engine engineMock = mock(org.apache.catalina.Engine.class);
+    protected final org.apache.catalina.Host hostMock = mock(org.apache.catalina.Host.class);
+
+    @Before
+    public void before() {
+        when(this.serviceMock.getServer()).thenReturn(this.serverMock);
+        when(this.engineMock.getService()).thenReturn(this.serviceMock);
+        when(this.hostMock.getParent()).thenReturn(this.engineMock);
+
+        this.engine = new TomcatEngine(this.registry, this.engineMock);
+        this.server = new TomcatServer(registry, serverMock);
     }
 
     @Test
     public void getDefaultHost() {
         String expected = "localhost";
-        when(this.engine.getDefaultHost()).thenReturn(expected);
+        when(this.engineMock.getDefaultHost()).thenReturn(expected);
 
-        String result = this.catalinaEngine.getDefaultHost();
+        String result = this.engine.getDefaultHost();
 
         assertSame(expected, result);
     }
 
     @Test
     public void findHost() {
-        org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
-        HostFactory hostFactory = mock(HostFactory.class);
-        Host expected = mock(Host.class);
+        Host expected = new TomcatHost(registry, hostMock);
 
-        when(this.engine.findChild("host")).thenReturn(host);
-        when(this.registry.getHostFactory()).thenReturn(hostFactory);
-        when(hostFactory.createHost(same(this.registry), same(host), same(this.catalinaEngine))).thenReturn(expected);
+        when(this.engineMock.findChild("host")).thenReturn(hostMock);
 
-        Host result = this.catalinaEngine.findHost("host");
+        Host result = this.engine.findHost("host");
 
-        assertSame(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
     public void getHosts() {
-        org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
-        HostFactory hostFactory = mock(HostFactory.class);
-        Host expected = mock(Host.class);
+        Host expected = new TomcatHost(registry, hostMock);
 
-        when(this.engine.findChildren()).thenReturn(new Container[] { host });
-        when(this.registry.getHostFactory()).thenReturn(hostFactory);
-        when(hostFactory.createHost(same(this.registry), same(host), same(this.catalinaEngine))).thenReturn(expected);
+        when(this.engineMock.findChildren()).thenReturn(new Container[] { hostMock });
 
-        Iterable<Host> result = this.catalinaEngine.getHosts();
+        Iterable<Host> result = this.engine.getHosts();
 
         Iterator<Host> hosts = result.iterator();
         assertTrue(hosts.hasNext());
-        assertSame(expected, hosts.next());
+        assertEquals(expected, hosts.next());
         assertFalse(hosts.hasNext());
     }
 
@@ -94,9 +101,9 @@ public class EngineTestCase {
     public void getJvmRoute() {
         String expected = "route";
 
-        when(this.engine.getJvmRoute()).thenReturn(expected);
+        when(this.engineMock.getJvmRoute()).thenReturn(expected);
 
-        String result = this.catalinaEngine.getJvmRoute();
+        String result = this.engine.getJvmRoute();
 
         assertSame(expected, result);
     }
@@ -105,9 +112,9 @@ public class EngineTestCase {
     public void getName() {
         String expected = "name";
 
-        when(this.engine.getName()).thenReturn(expected);
+        when(this.engineMock.getName()).thenReturn(expected);
 
-        String result = this.catalinaEngine.getName();
+        String result = this.engine.getName();
 
         assertSame(expected, result);
     }
@@ -116,38 +123,36 @@ public class EngineTestCase {
     public void getProxyConnector() throws Exception {
         ProxyConnectorProvider provider = mock(ProxyConnectorProvider.class);
         Connector expected = mock(Connector.class);
-        ConnectorFactory factory = mock(ConnectorFactory.class);
 
         when(this.registry.getProxyConnectorProvider()).thenReturn(provider);
-        when(this.registry.getConnectorFactory()).thenReturn(factory);
-        when(provider.createProxyConnector(factory, this.engine)).thenReturn(expected);
+        when(provider.createProxyConnector(this.engineMock)).thenReturn(expected);
 
-        Connector result = this.catalinaEngine.getProxyConnector();
+        Connector result = this.engine.getProxyConnector();
 
-        assertSame(expected, result);
+        assertEquals(expected, result);
     }
 
     @Test
     public void setJvmRoute() {
-        this.catalinaEngine.setJvmRoute("route");
+        this.engine.setJvmRoute("route");
 
-        verify(this.engine).setJvmRoute("route");
+        verify(this.engineMock).setJvmRoute("route");
     }
 
     @Test
     public void getServer() {
-        Server result = this.catalinaEngine.getServer();
+        Server result = this.engine.getServer();
 
-        assertSame(this.server, result);
+        assertEquals(this.server, result);
     }
 
     @Test
     public void getSessionCookieName() {
-        assertEquals("JSESSIONID", this.catalinaEngine.getSessionCookieName());
+        assertEquals("JSESSIONID", this.engine.getSessionCookieName());
     }
 
     @Test
     public void getSessionParameterName() {
-        assertEquals("jsessionid", this.catalinaEngine.getSessionParameterName());
+        assertEquals("jsessionid", this.engine.getSessionParameterName());
     }
 }

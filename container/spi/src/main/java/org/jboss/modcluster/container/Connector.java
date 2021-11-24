@@ -30,7 +30,7 @@ import java.net.InetAddress;
  */
 public interface Connector {
     /**
-     * Indicates the type of a connector.
+     * Indicates the type of connector.
      */
     enum Type {
         AJP(8009), HTTP(80), HTTPS(443);

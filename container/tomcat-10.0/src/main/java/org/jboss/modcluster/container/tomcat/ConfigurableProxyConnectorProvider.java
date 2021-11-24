@@ -44,7 +44,7 @@ public class ConfigurableProxyConnectorProvider implements ProxyConnectorProvide
     }
 
     @Override
-    public Connector createProxyConnector(ConnectorFactory factory, Engine engine) {
+    public Connector createProxyConnector(Engine engine) {
         // Resolve configuration parameters *after* it was set by Tomcat modeler
         String connectorAddress = connectorConfiguration.getConnectorAddress();
         Integer connectorPort = connectorConfiguration.getConnectorPort();
@@ -90,7 +90,7 @@ public class ConfigurableProxyConnectorProvider implements ProxyConnectorProvide
             return null;
         }
 
-        return factory.createConnector(candidate);
+        return new TomcatConnector(candidate);
     }
 
     private static String format(String connectorAddress, Integer connectorPort) {
