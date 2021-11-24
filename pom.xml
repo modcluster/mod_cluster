@@ -61,6 +61,10 @@
     </modules>
 
     <properties>
+        <!-- Require JDK 11 and build for 8 -->
+        <jdk.min.version>11</jdk.min.version>
+        <jdk.release.version>8</jdk.release.version>
+
         <!-- Common dependency -->
         <version.jboss-logging>3.4.2.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
@@ -192,6 +196,32 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <goals>
+                    <goal>compile</goal>
+                </goals>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <release>${jdk.release.version}</release>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <source>${jdk.release.version}</source>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
