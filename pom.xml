@@ -226,8 +226,6 @@
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <tagNameFormat>@{project.version}</tagNameFormat>
-                    <!-- After checking the created tag is correct, manually push the changes upstream with the release! -->
-                    <pushChanges>false</pushChanges>
                 </configuration>
             </plugin>
             <plugin>
