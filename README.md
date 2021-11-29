@@ -47,7 +47,7 @@ Distribution archives are provided for each Tomcat version.
    [here](https://docs.modcluster.io/). The minimal listener configuration is as follows:
    
     ```xml
-    <Listener className="org.jboss.modcluster.container.tomcat.ModClusterListener" connectorPort="8009"/>
+    <Listener className="org.jboss.modcluster.container.tomcat.ModClusterListener" connectorPort="8080" advertiseInterfaceName="lo0"/>
     ```
 
 
