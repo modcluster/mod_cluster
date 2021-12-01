@@ -23,6 +23,7 @@ package org.jboss.modcluster.container.tomcat;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.notNull;
+import static org.mockito.ArgumentMatchers.refEq;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -270,7 +271,6 @@ public class ContainerEventHandlerAdapterTestCase {
 
         Context catalinaContext = new TomcatContext(registry, context);
 
-        // handler.lifecycleEvent(event);
         handler.propertyChange(prop);
 
         verify(this.eventHandler).start(eq(catalinaContext));
@@ -319,6 +319,44 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
+    public void initServerFromService() throws Exception {
+        TomcatEventHandler handler = this.createEventHandler();
+        LifecycleService service = mock(LifecycleService.class);
+
+        this.initServerFromService(handler, service);
+
+        handler.lifecycleEvent(this.createAfterInitEvent(service));
+
+        verifyNoInteractions(this.eventHandler);
+    }
+
+    protected void initServerFromService(TomcatEventHandler handler, LifecycleService service) {
+        org.apache.catalina.Server server = mock(org.apache.catalina.Server.class);
+        LifecycleEngine engine = mock(LifecycleEngine.class);
+        Container container = mock(Container.class);
+        LifecycleContainer childContainer = mock(LifecycleContainer.class);
+
+        when(service.getServer()).thenReturn(server);
+        when(service.getName()).thenReturn("Catalina");
+        when(server.findServices()).thenReturn(new Service[] { service });
+        when(service.getContainer()).thenReturn(engine);
+        when(engine.findChildren()).thenReturn(new Container[] { container });
+        when(container.findChildren()).thenReturn(new Container[] { childContainer });
+
+        Server catalinaServer = new TomcatServer(registry, new SingleServiceServer(service));
+
+        handler.lifecycleEvent(this.createAfterInitEvent(service));
+
+        verify(this.eventHandler).init(refEq(catalinaServer));
+        verify(engine).addContainerListener(handler);
+        verify(engine).addLifecycleListener(handler);
+        verify(container).addContainerListener(handler);
+        verify(childContainer).addLifecycleListener(handler);
+
+        reset(this.eventHandler);
+    }
+
+    @Test
     public void startServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
         LifecycleServer server = mock(LifecycleServer.class);
@@ -338,6 +376,29 @@ public class ContainerEventHandlerAdapterTestCase {
         handler.lifecycleEvent(new LifecycleEvent(server, Lifecycle.AFTER_START_EVENT, null));
 
         verify(this.eventHandler).start(eq(catalinaServer));
+        reset(this.eventHandler);
+    }
+
+    @Test
+    public void startServerFromService() throws Exception {
+        TomcatEventHandler handler = this.createEventHandler();
+        LifecycleService service = mock(LifecycleService.class);
+
+        this.initServerFromService(handler, service);
+
+        this.startServerFromService(handler, service);
+
+        handler.lifecycleEvent(new LifecycleEvent(service, Lifecycle.AFTER_START_EVENT, null));
+
+        verifyNoInteractions(this.eventHandler);
+    }
+
+    protected void startServerFromService(TomcatEventHandler handler, LifecycleService service) {
+        Server catalinaServer = new TomcatServer(registry, new SingleServiceServer(service));
+
+        handler.lifecycleEvent(new LifecycleEvent(service, Lifecycle.AFTER_START_EVENT, null));
+
+        verify(this.eventHandler).start(refEq(catalinaServer));
         reset(this.eventHandler);
     }
 
@@ -407,6 +468,37 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
+    public void stopServerFromService() throws Exception {
+        TomcatEventHandler handler = this.createEventHandler();
+
+        LifecycleService service = mock(LifecycleService.class);
+        LifecycleEvent event = new LifecycleEvent(service, Lifecycle.BEFORE_STOP_EVENT, null);
+
+        handler.lifecycleEvent(event);
+
+        verifyNoInteractions(this.eventHandler);
+
+        this.initServerFromService(handler, service);
+
+        handler.lifecycleEvent(event);
+
+        verifyNoInteractions(this.eventHandler);
+
+        this.startServerFromService(handler, service);
+
+        Server catalinaServer = new TomcatServer(registry, new SingleServiceServer(service));
+
+        handler.lifecycleEvent(event);
+
+        verify(this.eventHandler).stop(refEq(catalinaServer));
+        reset(this.eventHandler);
+
+        handler.lifecycleEvent(event);
+
+        verifyNoInteractions(this.eventHandler);
+    }
+
+    @Test
     public void destroyServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
@@ -420,6 +512,43 @@ public class ContainerEventHandlerAdapterTestCase {
         this.initServer(handler, server);
 
         Service service = mock(Service.class);
+        LifecycleEngine engine = mock(LifecycleEngine.class);
+        Container container = mock(Container.class);
+        LifecycleContainer childContainer = mock(LifecycleContainer.class);
+
+        when(server.findServices()).thenReturn(new Service[] { service });
+        when(service.getContainer()).thenReturn(engine);
+        when(engine.findChildren()).thenReturn(new Container[] { container });
+        when(container.findChildren()).thenReturn(new Container[] { childContainer });
+
+        handler.lifecycleEvent(event);
+
+        verify(engine).removeContainerListener(handler);
+        verify(engine).removeLifecycleListener(handler);
+        verify(container).removeContainerListener(handler);
+        verify(childContainer).removeLifecycleListener(handler);
+        verify(this.eventHandler).shutdown();
+        reset(this.eventHandler);
+
+        handler.lifecycleEvent(event);
+
+        verifyNoInteractions(this.eventHandler);
+    }
+
+    @Test
+    public void destroyServerFromService() throws Exception {
+        TomcatEventHandler handler = this.createEventHandler();
+
+        LifecycleService service = mock(LifecycleService.class);
+        org.apache.catalina.Server server = mock(org.apache.catalina.Server.class);
+        LifecycleEvent event = createBeforeDestroyInitEvent(service);
+
+        handler.lifecycleEvent(event);
+
+        verifyNoInteractions(this.eventHandler);
+
+        this.initServerFromService(handler, service);
+
         LifecycleEngine engine = mock(LifecycleEngine.class);
         Container container = mock(Container.class);
         LifecycleContainer childContainer = mock(LifecycleContainer.class);
@@ -482,9 +611,12 @@ public class ContainerEventHandlerAdapterTestCase {
     protected interface LifecycleServer extends Lifecycle, org.apache.catalina.Server {
     }
 
+    protected interface LifecycleService extends Lifecycle, Service {
+    }
+
     protected interface LifecycleEngine extends Lifecycle, org.apache.catalina.Engine {
     }
 
-    protected interface LifecycleContainer extends Lifecycle, org.apache.catalina.Container {
+    protected interface LifecycleContainer extends Lifecycle, Container {
     }
 }
