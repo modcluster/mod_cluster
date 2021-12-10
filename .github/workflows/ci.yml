@@ -35,4 +35,5 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Run test with Maven using JDK ${{ matrix.java }}
-        run: mvn -B verify -Denforcer.skip=true -Dmaven.main.skip=true
+        # In order to support Windows Powershell, a space between -D property=true is required.
+        run: mvn -B verify -D enforcer.skip=true -D maven.main.skip=true
