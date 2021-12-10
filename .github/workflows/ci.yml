@@ -12,14 +12,14 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
-        java: [ 11, 17 ]
+        java: [ 8, 11, 17 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Set up JDK ${{ matrix.java }}
         uses: actions/setup-java@v1
         with:
-          java-version: ${{ matrix.java }}
+          java-version: 11
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
@@ -27,5 +27,11 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Build with Maven
-        run: mvn -B verify
+      - name: Build with Maven using JDK 11
+        run: mvn -B verify -DskipTests
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v1
+        with:
+          java-version: ${{ matrix.java }}
+      - name: Run test with Maven using JDK ${{ matrix.java }}
+        run: mvn -B verify -Denforcer.skip=true -Dmaven.main.skip=true
