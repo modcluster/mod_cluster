@@ -10,7 +10,7 @@ jobs:
   ci:
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 1
+      #max-parallel: 1
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         java: [ 8, 11, 17 ]
