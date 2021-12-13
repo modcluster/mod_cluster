@@ -26,6 +26,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.StandardSocketOptions;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.DatagramChannel;
@@ -234,7 +235,7 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
             while (true) {
                 try {
                     channel.receive(buffer);
-                    buffer.flip();
+                    flipBuffer(buffer);
 
                     String message = new String(buffer.array(), 0, buffer.remaining(), DEFAULT_ENCODING);
 
@@ -328,9 +329,28 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         Thread.yield();
                     }
                 } finally {
-                    buffer.clear();
+                    clearBuffer(buffer);
                 }
             }
         }
     }
+
+    /**
+     * JDK-compatible flip operating on {@link Buffer} instead of {@link ByteBuffer}. See MODCLUSTER-743.
+     *
+     * @param buffer a buffer to flip
+     */
+    public static void flipBuffer(Buffer buffer) {
+        buffer.flip();
+    }
+
+    /**
+     * JDK-compatible clear operating on {@link Buffer} instead of {@link ByteBuffer}. See MODCLUSTER-743.
+     *
+     * @param buffer a buffer to clear
+     */
+    public static void clearBuffer(Buffer buffer) {
+        buffer.clear();
+    }
+
 }

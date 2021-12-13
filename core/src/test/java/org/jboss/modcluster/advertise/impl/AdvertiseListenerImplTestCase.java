@@ -21,6 +21,8 @@
  */
 package org.jboss.modcluster.advertise.impl;
 
+import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.clearBuffer;
+import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.flipBuffer;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -95,10 +97,10 @@ public class AdvertiseListenerImplTestCase {
 
             ByteBuffer buffer = ByteBuffer.allocate(512);
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS));
-            buffer.flip();
+            flipBuffer(buffer);
 
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
-            buffer.flip();
+            flipBuffer(buffer);
 
             verify(this.mcmpHandler, timeout(TIMEOUT)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);
@@ -108,12 +110,12 @@ public class AdvertiseListenerImplTestCase {
             assertEquals(SERVER_PORT, socketAddress.getPort());
 
             capturedSocketAddress = ArgumentCaptor.forClass(ProxyConfiguration.class);
-            buffer.clear();
+            clearBuffer(buffer);
             buffer.put(TestUtils.generateAdvertisePacketData(new Date(), 1, SERVER2, SERVER2_ADDRESS));
-            buffer.flip();
+            flipBuffer(buffer);
 
             sendChannel.send(buffer, config.getAdvertiseSocketAddress());
-            buffer.flip();
+            flipBuffer(buffer);
 
             verify(this.mcmpHandler, timeout(TIMEOUT)).addProxy(capturedSocketAddress.capture());
             reset(this.mcmpHandler);

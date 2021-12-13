@@ -22,6 +22,8 @@
 
 package org.jboss.modcluster.advertise.impl;
 
+import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.flipBuffer;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -93,7 +95,7 @@ public class DatagramChannelFactoryImplTestCase {
 
             ByteBuffer sendBuffer = ByteBuffer.allocate(256);
             sendBuffer.put(stringData);
-            sendBuffer.flip();
+            flipBuffer(sendBuffer);
 
             InetSocketAddress group = new InetSocketAddress(sendAddress, PORT);
             sendChannel.send(sendBuffer, group);
@@ -118,7 +120,7 @@ public class DatagramChannelFactoryImplTestCase {
                 ByteBuffer receiveBuffer = ByteBuffer.allocate(256);
 
                 receiveChannel.receive(receiveBuffer);
-                receiveBuffer.flip();
+                flipBuffer(receiveBuffer);
 
                 byte[] packetData = new byte[receiveBuffer.remaining()];
                 receiveBuffer.get(packetData);
