@@ -42,9 +42,11 @@ import org.jboss.modcluster.container.Connector;
  */
 public class TomcatConnector implements Connector {
     protected final org.apache.catalina.connector.Connector connector;
+    protected String externalAddress;
+    protected Integer externalPort;
 
     /**
-     * Constructs a new CatalinaConnector wrapping the specified catalina connector.
+     * Constructs a new {@link TomcatConnector} wrapping the specified catalina connector.
      *
      * @param connector the catalina connector
      */
@@ -52,9 +54,26 @@ public class TomcatConnector implements Connector {
         this.connector = connector;
     }
 
+    /**
+     * Constructs a new {@link TomcatConnector} wrapping the specified catalina connector.
+     *
+     * @param connector the catalina connector
+     */
+    public TomcatConnector(org.apache.catalina.connector.Connector connector, String externalAddress, Integer externalPort) {
+        this.connector = connector;
+        this.externalAddress = externalAddress;
+        this.externalPort = externalPort;
+    }
+
     @Override
     public InetAddress getAddress() {
-        Object value = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
+        Object value;
+
+        if (this.externalAddress == null) {
+            value = IntrospectionUtils.getProperty(this.connector.getProtocolHandler(), "address");
+        } else {
+            value = this.externalAddress;
+        }
 
         if (value instanceof InetAddress) return (InetAddress) value;
 
@@ -76,7 +95,7 @@ public class TomcatConnector implements Connector {
 
     @Override
     public int getPort() {
-        return this.connector.getPort();
+        return (this.externalPort == null) ? this.connector.getPort() : this.externalPort;
     }
 
     @Override

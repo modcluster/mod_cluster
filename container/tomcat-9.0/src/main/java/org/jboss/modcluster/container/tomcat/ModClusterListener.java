@@ -77,6 +77,11 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
     private int history = DynamicLoadBalanceFactorProvider.DEFAULT_HISTORY;
     private double capacity = LoadMetric.DEFAULT_CAPACITY;
 
+    private String connectorAddress;
+    private Integer connectorPort;
+    private String externalConnectorAddress;
+    private Integer externalConnectorPort;
+
     public ModClusterListener() {
         ModClusterService service = new ModClusterService(this, this);
         this.service = service;
@@ -372,8 +377,6 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
 
     // ---------------------- Tomcat connector configuration ----------------------
 
-    private String connectorAddress;
-
     @Override
     public String getConnectorAddress() {
         return connectorAddress;
@@ -383,8 +386,6 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
         this.connectorAddress = connectorAddress;
     }
 
-    private Integer connectorPort;
-
     @Override
     public Integer getConnectorPort() {
         return connectorPort;
@@ -392,6 +393,24 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
 
     public void setConnectorPort(int connectorPort) {
         this.connectorPort = connectorPort;
+    }
+
+    @Override
+    public String getExternalConnectorAddress() {
+        return this.externalConnectorAddress;
+    }
+
+    public void setExternalConnectorAddress(String externalConnectorAddress) {
+        this.externalConnectorAddress = externalConnectorAddress;
+    }
+
+    @Override
+    public Integer getExternalConnectorPort() {
+        return this.externalConnectorPort;
+    }
+
+    public void setExternalConnectorPort(int externalConnectorPort) {
+        this.externalConnectorPort = externalConnectorPort;
     }
 
     // ---------------------------------------- String-based Tomcat modeler and server.xml methods ----------------------------------------
