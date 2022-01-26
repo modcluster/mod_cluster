@@ -90,7 +90,14 @@ public class ConfigurableProxyConnectorProvider implements ProxyConnectorProvide
             return null;
         }
 
-        return new TomcatConnector(candidate);
+        String externalConnectorAddress = connectorConfiguration.getExternalConnectorAddress();
+        Integer externalConnectorPort = connectorConfiguration.getExternalConnectorPort();
+
+        if (externalConnectorAddress == null && externalConnectorPort == null) {
+            return new TomcatConnector(candidate);
+        } else {
+            return new TomcatConnector(candidate, externalConnectorAddress, externalConnectorPort);
+        }
     }
 
     private static String format(String connectorAddress, Integer connectorPort) {

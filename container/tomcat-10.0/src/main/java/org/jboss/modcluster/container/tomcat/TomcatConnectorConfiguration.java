@@ -42,4 +42,18 @@ public interface TomcatConnectorConfiguration {
      */
     Integer getConnectorPort();
 
+    /**
+     * Returns optional external connector address.
+     *
+     * @return connector address
+     */
+    String getExternalConnectorAddress();
+
+    /**
+     * Returns optional external connector port.
+     *
+     * @return connector port
+     */
+    Integer getExternalConnectorPort();
+
 }
