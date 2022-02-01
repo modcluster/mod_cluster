@@ -90,9 +90,12 @@ public class DatagramChannelFactoryImpl implements DatagramChannelFactory {
             throw ModClusterLogger.LOGGER.createMulticastSocketWithUnicastAddress(address);
         }
 
+        // Avoid MODCLUSTER-746 Creating an IPv4 multicast socket on Windows while java.net.preferIPv6Addresses=true can throw UnsupportedAddressTypeException
+        InetSocketAddress bindToPort = (address instanceof Inet4Address) ? new InetSocketAddress("0.0.0.0", port) : new InetSocketAddress("::", port);
+
         // Windows-like
         if (!canBindToMulticastAddress) {
-            return newChannel(address, new InetSocketAddress(port));
+            return newChannel(address, bindToPort);
         }
 
         // Linux-like
@@ -101,7 +104,7 @@ public class DatagramChannelFactoryImpl implements DatagramChannelFactory {
         } catch (IOException e) {
             ModClusterLogger.LOGGER.potentialCrossTalking(address, (address instanceof Inet4Address) ? "IPv4" : "IPv6", e.getLocalizedMessage());
             ModClusterLogger.LOGGER.catchingDebug(e);
-            return newChannel(address, new InetSocketAddress(port));
+            return newChannel(address, bindToPort);
         }
     }
 
