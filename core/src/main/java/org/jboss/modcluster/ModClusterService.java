@@ -21,7 +21,6 @@
  */
 package org.jboss.modcluster;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -160,7 +159,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         if (Boolean.TRUE.equals(advertise) || (advertise == null && this.mcmpConfig.getProxyConfigurations().isEmpty())) {
             try {
                 this.advertiseListener = this.listenerFactory.createListener(this.mcmpHandler, this.advertiseConfig);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 ModClusterLogger.LOGGER.advertiseStartFailed(e);
             }
         }
@@ -194,7 +193,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         if (this.advertiseListener != null) {
             try {
                 this.advertiseListener.close();
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 ModClusterLogger.LOGGER.catchingDebug(e);
             }
 
