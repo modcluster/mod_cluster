@@ -967,6 +967,7 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     if (status != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "http_cping_cpong(): send failed");
+        p_conn->close = 1;
         return status;
     }
 
@@ -974,6 +975,7 @@ static apr_status_t http_handle_cping_cpong(proxy_conn_rec *p_conn,
     if (status != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR, status, r->server,
                       "http_cping_cpong(): apr_socket_timeout_get failed");
+        p_conn->close = 1;
         return status;
     }
     status = apr_socket_timeout_set(p_conn->sock, timeout);
