@@ -177,6 +177,8 @@ typedef struct mod_manager_config
     char *ws_upgrade_header;
     /* AJP secret */
     char *ajp_secret;
+    /* size of the proxy response field buffer */
+    long response_field_size;
 
 } mod_manager_config;
 
@@ -1094,6 +1096,10 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             strncpy(nodeinfo.mess.AJPSecret,mconf->ajp_secret, sizeof(nodeinfo.mess.AJPSecret));
             nodeinfo.mess.AJPSecret[sizeof(nodeinfo.mess.AJPSecret)-1] = '\0';
         }
+    }
+
+    if ( mconf->response_field_size && strcmp(nodeinfo.mess.Type, "ajp")) {
+        nodeinfo.mess.ResponseFieldSize = mconf->response_field_size;
     }
     /* Insert or update balancer description */
     if (insert_update_balancer(balancerstatsmem, &balancerinfo) != APR_SUCCESS) {
@@ -3419,6 +3425,25 @@ static const char*cmd_manager_ajp_secret(cmd_parms *cmd, void *mconfig, const ch
     }
 }
 
+static const char*cmd_manager_responsefieldsize(cmd_parms *cmd, void *mconfig, const char *word)
+{
+    mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
+    const char *err = ap_check_cmd_context(cmd, GLOBAL_ONLY);
+    long s = atol(word);
+    if (err != NULL) {
+        return err;
+    }
+    if (s < 0) {
+            return "ResponseFieldSize must be greater than 0 bytes, or 0 for system default.";
+    }
+    if (ap_find_linked_module("mod_proxy_http.c") != NULL) {
+        mconf->response_field_size = (s ? s : HUGE_STRING_LEN);
+        return NULL;
+    } else {
+        return "ResponseFieldSize requires mod_proxy_http.c";
+    }
+}
+
 
 static const command_rec  manager_cmds[] =
 {
@@ -3541,6 +3566,13 @@ static const command_rec  manager_cmds[] =
          OR_ALL,
          "AJPSecret - secret for all mod_cluster node, not configued no secret."
     ),
+    AP_INIT_TAKE1(
+        "ResponseFieldSize",
+        cmd_manager_responsefieldsize,
+        NULL,
+        OR_ALL,
+        "ResponseFieldSize - Adjust the size of the proxy response field buffer."
+    ),
     {NULL}
 };
 
@@ -3596,6 +3628,7 @@ static void *create_manager_config(apr_pool_t *p)
     mconf->enable_ws_tunnel = 0;
     mconf->ws_upgrade_header = NULL;
     mconf->ajp_secret = NULL;
+    mconf->response_field_size = 0;
     return mconf;
 }
 
@@ -3700,6 +3733,11 @@ static void *merge_manager_server_config(apr_pool_t *p, void *server1_conf,
         mconf->ajp_secret = apr_pstrdup(p, mconf2->ajp_secret);
     else if (mconf1->ajp_secret)
         mconf->ajp_secret = apr_pstrdup(p, mconf1->ajp_secret);
+
+    if (mconf2->response_field_size)
+        mconf->response_field_size = mconf2->response_field_size;
+    else if (mconf1->response_field_size)
+        mconf->response_field_size = mconf1->response_field_size;
 
     return mconf;
 }

@@ -60,6 +60,7 @@ struct nodemess {
     char AJPSecret[AJPSECRETSZ];
     int  reversed; /* 1 : reversed... 0 : normal */
     int  remove;   /* 1 : removed     0 : normal */
+    long ResponseFieldSize;
 
     /* node conf part */
     int flushpackets;
