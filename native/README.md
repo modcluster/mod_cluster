@@ -17,6 +17,7 @@ Furthermore, mod_proxy_cluster depends on mod_proxy. It means that one needs mod
 
 ## Build
 In each mod_cluster/native/ directory
+
     $ bash buildconf
     $ ./configure --with-apxs=path_to_apxs
     $ make
