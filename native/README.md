@@ -8,7 +8,21 @@ All modules depend on
 
 Furthermore, mod_proxy_cluster depends on mod_proxy. It means that one needs mod_proxy symbols at linking time and mod_proxy module must be loaded prior to mod_proxy_cluster module at runtime. It happens automatically on Linux and might need an explicit path to mod_proxy.lib on Windows.
 
-# Compilation on Linux
+# Compilation on Linux (using buildconf and configure)
+## Dependencies
+* gcc, make (your build tool chain of choice cmake can generate targets for)
+* apr-util, apr-util-devel
+* apr, apr-devel
+* apache httpd, httpd-devel
+
+## Build
+In each mod_cluster/native/ directory
+    $ bash buildconf
+    $ ./configure --with-apxs=path_to_apxs
+    $ make
+    $ cp *.so path_to_apache_httpd_modules
+
+# Compilation on Linux (using cmake)
 ## Dependencies
 * cmake 2.8+
 * gcc, make (your build tool chain of choice cmake can generate targets for)
