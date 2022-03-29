@@ -81,6 +81,23 @@
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
     </properties>
 
+    <profiles>
+        <profile>
+            <!-- Profile that configures enforcer plugin to allow JDK 8 only for running tests -->
+            <!-- Required since the main build requires JDK 11 for compilation -->
+            <id>jdk8-test-only</id>
+            <activation>
+                <property>
+                    <name>maven.main.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <jdk.min.version>1.8</jdk.min.version>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
