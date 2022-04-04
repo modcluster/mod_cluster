@@ -79,6 +79,7 @@
 
         <!-- Plugin versions -->
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
+        <version.org.jacoco.jacoco-maven-plugin>0.8.7</version.org.jacoco.jacoco-maven-plugin>
     </properties>
 
     <profiles>
@@ -96,6 +97,34 @@
                 <jdk.min.version>1.8</jdk.min.version>
             </properties>
         </profile>
+        <!-- Code coverage report using JaCoCo -->
+        <profile>
+            <id>coverage</id>
+            <activation>
+                <property>
+                    <name>coverage</name>
+                </property>
+            </activation>
+            <modules>
+                <module>code-coverage</module>
+            </modules>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jacoco-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
     <dependencyManagement>
@@ -107,18 +136,22 @@
             </dependency>
             <dependency>
                 <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-container-tomcat-8.5</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-container-tomcat-9.0</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-container-tomcat-10.0</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-core</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-container-tomcat</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-container-tomcat</artifactId>
-                <type>test-jar</type>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -292,8 +325,13 @@
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
-                        <useFile />
+                        <useFile/>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${version.org.jacoco.jacoco-maven-plugin}</version>
                 </plugin>
             </plugins>
         </pluginManagement>
