@@ -92,6 +92,15 @@ mvn clean install
 
 Distribution files for Tomcat and a demo application will be built in the `dist/target/` directory.
 
+### Code Coverage Report
+
+This project currently supports JaCoCo to generate a code coverage report bound to `verify` goal:
+
+```
+mvn clean verify -P coverage
+```
+
+The resulting report can be viewed by opening `code-coverage/target/site/jacoco-aggregate/index.html`.
 
 Reporting Issues
 ----------------
