@@ -27,6 +27,7 @@ import static org.mockito.Mockito.*;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -37,6 +38,7 @@ import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
 import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
+import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 import org.junit.Test;
 
@@ -49,7 +51,17 @@ public class ResetRequestSourceTestCase {
     private final BalancerConfiguration balancerConfig = mock(BalancerConfiguration.class);
     private final MCMPRequestFactory requestFactory = mock(MCMPRequestFactory.class);
 
-    private ResetRequestSource source = new ResetRequestSourceImpl(this.nodeConfig, this.balancerConfig, this.requestFactory);
+    private final ResetRequestSource source = new ResetRequestSourceImpl(this.nodeConfig, this.balancerConfig, this.requestFactory);
+
+    private final MCMPRequest configRequest = mock(MCMPRequest.class);
+    private final MCMPRequest enableRequest = mock(MCMPRequest.class);
+    private final MCMPRequest disableRequest = mock(MCMPRequest.class);
+    private final MCMPRequest stopRequest = mock(MCMPRequest.class);
+
+    private static final String JVM_ROUTE = "host1";
+    private static final String HOST_NAME = "host";
+    private static final String ALIAS1 = "alias1";
+    private static final String ALIAS2 = "alias2";
 
     @Test
     public void getResetRequestsNoServer() {
@@ -63,53 +75,74 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequests() throws Exception {
-        Server server = mock(Server.class);
-        ContextFilter contextFilter = mock(ContextFilter.class);
-
-        this.source.init(server, contextFilter);
-
-        verifyNoInteractions(server);
-
-        Engine engine = mock(Engine.class);
-        Host host = mock(Host.class);
-        Context context = mock(Context.class);
-        Context excludedContext = mock(Context.class);
-        MCMPRequest configRequest = mock(MCMPRequest.class);
-        MCMPRequest contextRequest = mock(MCMPRequest.class);
-
-        when(contextFilter.getExcludedContexts(host)).thenReturn(Collections.singleton("/excluded"));
-        when(contextFilter.isAutoEnableContexts()).thenReturn(true);
-
-        when(server.getEngines()).thenReturn(Collections.singleton(engine));
-
-        when(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).thenReturn(configRequest);
-
-        when(engine.getJvmRoute()).thenReturn("host1");
-        when(engine.getProxyConnector()).thenReturn(mock(Connector.class));
-
-        when(engine.getHosts()).thenReturn(Collections.singleton(host));
-        when(host.getName()).thenReturn("host");
-        when(host.getAliases()).thenReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
-        when(host.getContexts()).thenReturn(Arrays.asList(context, excludedContext));
-        when(context.getPath()).thenReturn("/context");
-        when(context.isStarted()).thenReturn(true);
-
-        when(this.requestFactory.createEnableRequest(context)).thenReturn(contextRequest);
-
-        when(excludedContext.getPath()).thenReturn("/excluded");
+    public void getResetRequests() {
+        setupMocks(true, true);
 
         List<MCMPRequest> requests = this.source.getResetRequests(Collections
                 .<String, Set<ResetRequestSource.VirtualHost>> emptyMap());
 
         assertEquals(2, requests.size());
 
-        assertSame(configRequest, requests.get(0));
-        assertSame(contextRequest, requests.get(1));
+        assertSame(this.configRequest, requests.get(0));
+        assertSame(this.enableRequest, requests.get(1));
     }
 
     @Test
-    public void getResetRequestsDisableContexts() throws Exception {
+    public void getResetRequestsDisableContexts() {
+        setupMocks(false, true);
+
+        List<MCMPRequest> requests = this.source.getResetRequests(Collections
+                .<String, Set<ResetRequestSource.VirtualHost>> emptyMap());
+
+        assertEquals(2, requests.size());
+
+        assertSame(configRequest, requests.get(0));
+        assertSame(disableRequest, requests.get(1));
+    }
+
+    @Test
+    public void getResetRequestsContextStoppedNoProxyStatus() {
+        setupMocks(true, false);
+
+        List<MCMPRequest> requests = this.source.getResetRequests(Collections
+                .<String, Set<ResetRequestSource.VirtualHost>> emptyMap());
+
+        assertEquals(2, requests.size());
+
+        assertSame(configRequest, requests.get(0));
+        assertSame(stopRequest, requests.get(1));
+    }
+
+    @Test
+    public void getResetRequestsContextStoppedProxyStatusEnabled() {
+        setupMocks(true, false);
+
+        Map<String, Set<ResetRequestSource.VirtualHost>> infoResponse = createInfoResponse(
+                ResetRequestSource.Status.ENABLED);
+
+        List<MCMPRequest> requests = this.source.getResetRequests(infoResponse);
+
+        assertEquals(2, requests.size());
+
+        assertSame(configRequest, requests.get(0));
+        assertSame(stopRequest, requests.get(1));
+    }
+
+    @Test
+    public void getResetRequestsContextStartedProxyStatusDisabled() {
+        setupMocks(true, true);
+        Map<String, Set<ResetRequestSource.VirtualHost>> infoResponse = createInfoResponse(
+                ResetRequestSource.Status.DISABLED);
+
+        List<MCMPRequest> requests = this.source.getResetRequests(infoResponse);
+
+        assertEquals(2, requests.size());
+
+        assertSame(configRequest, requests.get(0));
+        assertSame(enableRequest, requests.get(1));
+    }
+
+    private void setupMocks(boolean autoEnableContexts, boolean contextsAreStarted) {
         Server server = mock(Server.class);
         ContextFilter contextFilter = mock(ContextFilter.class);
 
@@ -121,36 +154,38 @@ public class ResetRequestSourceTestCase {
         Host host = mock(Host.class);
         Context context = mock(Context.class);
         Context excludedContext = mock(Context.class);
-        MCMPRequest configRequest = mock(MCMPRequest.class);
-        MCMPRequest contextRequest = mock(MCMPRequest.class);
 
         when(contextFilter.getExcludedContexts(host)).thenReturn(Collections.singleton("/excluded"));
-        when(contextFilter.isAutoEnableContexts()).thenReturn(false);
+        when(contextFilter.isAutoEnableContexts()).thenReturn(autoEnableContexts);
 
         when(server.getEngines()).thenReturn(Collections.singleton(engine));
 
-        when(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig)).thenReturn(configRequest);
-
-        when(engine.getJvmRoute()).thenReturn("host1");
+        when(engine.getJvmRoute()).thenReturn(JVM_ROUTE);
         when(engine.getProxyConnector()).thenReturn(mock(Connector.class));
 
         when(engine.getHosts()).thenReturn(Collections.singleton(host));
-        when(host.getName()).thenReturn("host");
-        when(host.getAliases()).thenReturn(new TreeSet<String>(Arrays.asList("alias1", "alias2")));
+        when(host.getName()).thenReturn(HOST_NAME);
+        when(host.getAliases()).thenReturn(new TreeSet<String>(Arrays.asList(HOST_NAME, ALIAS1, ALIAS2)));
         when(host.getContexts()).thenReturn(Arrays.asList(context, excludedContext));
         when(context.getPath()).thenReturn("/context");
-        when(context.isStarted()).thenReturn(true);
+        when(context.isStarted()).thenReturn(contextsAreStarted);
 
-        when(this.requestFactory.createDisableRequest(context)).thenReturn(contextRequest);
+        when(this.requestFactory.createConfigRequest(engine, this.nodeConfig, this.balancerConfig))
+                .thenReturn(this.configRequest);
+        when(this.requestFactory.createEnableRequest(context)).thenReturn(this.enableRequest);
+        when(this.requestFactory.createDisableRequest(context)).thenReturn(this.disableRequest);
+        when(this.requestFactory.createStopRequest(context)).thenReturn(this.stopRequest);
 
         when(excludedContext.getPath()).thenReturn("/excluded");
-
-        List<MCMPRequest> requests = this.source.getResetRequests(Collections
-                .<String, Set<ResetRequestSource.VirtualHost>> emptyMap());
-
-        assertEquals(2, requests.size());
-
-        assertSame(configRequest, requests.get(0));
-        assertSame(contextRequest, requests.get(1));
     }
+
+    private Map<String, Set<ResetRequestSource.VirtualHost>> createInfoResponse(ResetRequestSource.Status contextStatus) {
+        DefaultMCMPHandler.VirtualHostImpl virtualHost = new DefaultMCMPHandler.VirtualHostImpl();
+        virtualHost.getAliases().add(HOST_NAME);
+        virtualHost.getAliases().add(ALIAS1);
+        virtualHost.getAliases().add(ALIAS2);
+        virtualHost.getContexts().put("/context", contextStatus);
+        return Collections.singletonMap(JVM_ROUTE, Collections.singleton(virtualHost));
+    }
+
 }
