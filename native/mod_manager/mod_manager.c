@@ -2390,6 +2390,29 @@ static int manager_trans(request_rec *r)
     return DECLINED;
 }
 
+/* fixup logic to prevent subrequest to our methods */
+static int manager_map_to_storage(request_rec *r)
+{
+    int ours = 0;
+    mod_manager_config *mconf = ap_get_module_config(r->server->module_config,
+                                                     &manager_module);
+    if (r->method_number != M_INVALID)
+        return DECLINED;
+    if (!mconf->enable_mcpm_receive)
+        return DECLINED; /* Not allowed to receive MCMP */
+
+    ours = check_method(r); 
+    if (ours) {
+        int i;
+        /* The method one of ours */
+        ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                    "manager_map_to_storage %s (%s)", r->method, r->uri);
+        return OK;
+    }
+    
+    return DECLINED;
+}
+
 /* Create the commands that are possible on the context */
 static char*context_string(request_rec *r, contextinfo_t *ou, char *Alias, char *JVMRoute)
 {
@@ -3594,6 +3617,9 @@ static void manager_hooks(apr_pool_t *p)
 
     /* Process the request from the ModClusterService */
     ap_hook_handler(manager_handler, NULL, NULL, APR_HOOK_REALLY_FIRST);
+
+    /* prevent subrequest to map our / or what ever is send with our methods. */
+    ap_hook_map_to_storage(manager_map_to_storage, NULL, NULL, APR_HOOK_REALLY_FIRST);
 
     /* Register nodes/hosts/contexts table provider */
     ap_register_provider(p, "manager" , "shared", "0", &node_storage);
