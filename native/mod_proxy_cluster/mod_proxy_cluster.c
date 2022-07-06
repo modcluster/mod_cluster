@@ -92,6 +92,7 @@ static struct domain_storage_method *domain_storage = NULL;
 static apr_thread_t *watchdog_thread = NULL;
 static apr_thread_mutex_t *lock = NULL;
 static apr_thread_cond_t *exit_cond = NULL;
+apr_pool_t *cached_pool = NULL;
 static int watchdog_must_terminate = 0;
 
 static server_rec *main_server = NULL;
@@ -156,6 +157,13 @@ struct node_context
         int context;
 };
 typedef struct node_context node_context;
+
+
+// Create static table references we can look back to instead of fetching each request
+static proxy_vhost_table *cached_vhost_table = NULL;
+static proxy_context_table *cached_context_table = NULL;
+static proxy_balancer_table *cached_balancer_table = NULL;
+static proxy_node_table *cached_node_table = NULL;
 
 static int proxy_worker_cmp(const void *a, const void *b)
 {
@@ -1507,6 +1515,32 @@ static proxy_vhost_table *read_vhost_table(request_rec *r)
     return vhost_table;
 }
 
+/* Read the virtual host table from shared memory to populate a cached table */
+static proxy_vhost_table *read_vhost_table_cached(apr_pool_t *pool)
+{
+    int i;
+    int size;
+    proxy_vhost_table *vhost_table = apr_palloc(pool, sizeof(proxy_vhost_table));
+    size = host_storage->get_max_size_host();
+    if (size == 0) {
+        vhost_table->sizevhost = 0;
+        vhost_table->vhosts = NULL;
+        vhost_table->vhost_info = NULL;
+        return vhost_table;
+    }
+
+    vhost_table->vhosts =  apr_palloc(pool, sizeof(int) * host_storage->get_max_size_host());
+    vhost_table->sizevhost = host_storage->get_ids_used_host(vhost_table->vhosts);
+    vhost_table->vhost_info = apr_palloc(pool, sizeof(hostinfo_t) * vhost_table->sizevhost);
+    for (i = 0; i < vhost_table->sizevhost; i++) {
+        hostinfo_t* h;
+        int host_index = vhost_table->vhosts[i];
+        host_storage->read_host(host_index, &h);
+        vhost_table->vhost_info[i] = *h;
+    }
+    return vhost_table;
+}
+
 /* Read the context table from shared memory */
 static proxy_context_table *read_context_table(request_rec *r)
 {
@@ -1523,6 +1557,31 @@ static proxy_context_table *read_context_table(request_rec *r)
     context_table->contexts =  apr_palloc(r->pool, sizeof(int) * size);
     context_table->sizecontext = context_storage->get_ids_used_context(context_table->contexts);
     context_table->context_info = apr_palloc(r->pool, sizeof(contextinfo_t) * context_table->sizecontext);
+    for (i = 0; i < context_table->sizecontext; i++) {
+        contextinfo_t* h;
+        int context_index = context_table->contexts[i];
+        context_storage->read_context(context_index, &h);
+        context_table->context_info[i] = *h;
+    }
+    return context_table;
+}
+
+/* Read the context table from shared memory to populate a cached table */
+static proxy_context_table *read_context_table_cached(apr_pool_t *pool)
+{
+    int i;
+    int size;
+    proxy_context_table *context_table = apr_palloc(pool, sizeof(proxy_context_table));
+    size = context_storage->get_max_size_context();
+    if (size == 0) {
+        context_table->sizecontext = 0;
+        context_table->contexts = NULL;
+        context_table->context_info = NULL;
+        return context_table;
+    }
+    context_table->contexts =  apr_palloc(pool, sizeof(int) * size);
+    context_table->sizecontext = context_storage->get_ids_used_context(context_table->contexts);
+    context_table->context_info = apr_palloc(pool, sizeof(contextinfo_t) * context_table->sizecontext);
     for (i = 0; i < context_table->sizecontext; i++) {
         contextinfo_t* h;
         int context_index = context_table->contexts[i];
@@ -1557,6 +1616,31 @@ static proxy_balancer_table *read_balancer_table(request_rec *r)
     return balancer_table;
 }
 
+/* Read the balancer table from shared memory to populate a cached table */
+static proxy_balancer_table *read_balancer_table_cached(apr_pool_t *pool)
+{
+    int i;
+    int size;
+    proxy_balancer_table *balancer_table = apr_palloc(pool, sizeof(proxy_balancer_table));
+    size = balancer_storage->get_max_size_balancer();
+    if (size == 0) {
+        balancer_table->sizebalancer = 0;
+        balancer_table->balancers = NULL;
+        balancer_table->balancer_info = NULL;
+        return balancer_table;
+    }
+    balancer_table->balancers =  apr_palloc(pool, sizeof(int) * size);
+    balancer_table->sizebalancer = balancer_storage->get_ids_used_balancer(balancer_table->balancers);
+    balancer_table->balancer_info = apr_palloc(pool, sizeof(balancerinfo_t) * balancer_table->sizebalancer);
+    for (i = 0; i < balancer_table->sizebalancer; i++) {
+        balancerinfo_t* h;
+        int balancer_index = balancer_table->balancers[i];
+        balancer_storage->read_balancer(balancer_index, &h);
+        balancer_table->balancer_info[i] = *h;
+    }
+    return balancer_table;
+}
+
 /* Read the node table from shared memory */
 static proxy_node_table *read_node_table(request_rec *r)
 {
@@ -1573,6 +1657,31 @@ static proxy_node_table *read_node_table(request_rec *r)
     node_table->nodes =  apr_palloc(r->pool, sizeof(int) * size);
     node_table->sizenode = node_storage->get_ids_used_node(node_table->nodes);
     node_table->node_info = apr_palloc(r->pool, sizeof(nodeinfo_t) * node_table->sizenode);
+    for (i = 0; i < node_table->sizenode; i++) {
+        nodeinfo_t* h;
+        int node_index = node_table->nodes[i];
+        node_storage->read_node(node_index, &h);
+        node_table->node_info[i] = *h;
+    }
+    return node_table;
+}
+
+/* Read the node table from shared memory to populate a cached table*/
+static proxy_node_table *read_node_table_cached(apr_pool_t *pool)
+{
+    int i;
+    int size;
+    proxy_node_table *node_table =  apr_palloc(pool, sizeof(proxy_node_table));
+    size = node_storage->get_max_size_node();
+    if (size == 0) {
+        node_table->sizenode = 0;
+        node_table->nodes = NULL;
+        node_table->node_info = NULL;
+        return node_table;
+    }
+    node_table->nodes =  apr_palloc(pool, sizeof(int) * size);
+    node_table->sizenode = node_storage->get_ids_used_node(node_table->nodes);
+    node_table->node_info = apr_palloc(pool, sizeof(nodeinfo_t) * node_table->sizenode);
     for (i = 0; i < node_table->sizenode; i++) {
         nodeinfo_t* h;
         int node_index = node_table->nodes[i];
@@ -2224,8 +2333,15 @@ static void remove_workers_nodes(proxy_server_conf *conf, apr_pool_t *pool, serv
 static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, void *data)
 {
     apr_status_t rv;
+
     apr_pool_t *pool;
     apr_sleep(apr_time_make(1, 0)); /* wait before starting */
+
+    cached_vhost_table = read_vhost_table_cached(cached_pool);
+    cached_context_table = read_context_table_cached(cached_pool);
+    cached_balancer_table = read_balancer_table_cached(cached_pool);
+    cached_node_table = read_node_table_cached(cached_pool);
+
     for (;;) {
         server_rec *s = main_server;
         void *sconf = s->module_config;
@@ -2271,8 +2387,13 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
             s = s->next;
         }
         apr_pool_destroy(pool);
-        if (last)
+        if (last) {
             node_storage->worker_nodes_are_updated(main_server, last);
+            cached_vhost_table = read_vhost_table_cached(cached_pool);
+            cached_context_table = read_context_table_cached(cached_pool);
+            cached_balancer_table = read_balancer_table_cached(cached_pool);
+            cached_node_table = read_node_table_cached(cached_pool);
+        }
     }
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, main_server, "cluster: Watchdog thread exiting cleanly.");
     apr_thread_exit(thd, 0);
@@ -2348,6 +2469,7 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
         apr_pool_destroy(pool);
     }
 
+    apr_pool_create(&cached_pool, conf->pool);
     rv = apr_thread_create(&watchdog_thread, NULL, proxy_cluster_watchdog_func, main_server, p);
     if (rv != APR_SUCCESS) {
         ap_log_error(APLOG_MARK, APLOG_ERR|APLOG_NOERRNO, 0, main_server,
@@ -2655,10 +2777,34 @@ static int proxy_cluster_trans(request_rec *r)
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    proxy_vhost_table *vhost_table = read_vhost_table(r);
-    proxy_context_table *context_table = read_context_table(r);
-    proxy_balancer_table *balancer_table = read_balancer_table(r);
-    proxy_node_table *node_table = read_node_table(r);
+    proxy_vhost_table *vhost_table = cached_vhost_table;
+    proxy_context_table *context_table = cached_context_table;
+    proxy_balancer_table *balancer_table = cached_balancer_table;
+    proxy_node_table *node_table = cached_node_table;
+
+    if (!vhost_table) {
+        vhost_table = read_vhost_table(r);
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                    "proxy_cluster_trans sees null vhost table and has to read");
+    }
+
+    if (!context_table) {
+        context_table = read_context_table(r);
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                    "proxy_cluster_trans sees null vhost table and has to read");
+    }
+
+    if (!balancer_table) {
+        balancer_table = read_balancer_table(r);
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                    "proxy_cluster_trans sees null vhost table and has to read");
+    }
+
+    if (!node_table) {
+        node_table = read_node_table(r);
+        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                    "proxy_cluster_trans sees null vhost table and has to read");
+    }
 
     apr_table_setn(r->notes, "vhost-table",  (char *) vhost_table);
     apr_table_setn(r->notes, "context-table",  (char *) context_table);
