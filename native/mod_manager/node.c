@@ -120,7 +120,9 @@ apr_status_t insert_update_node(mem_t *s, nodeinfo_t *node, int *id)
 
     node->mess.id = 0;
     now = apr_time_now();
-    s->storage->ap_slotmem_lock(s->slotmem);
+    rv = s->storage->ap_slotmem_lock(s->slotmem);
+    if (rv != APR_SUCCESS)
+        return(rv);
     rv = s->storage->ap_slotmem_do(s->slotmem, insert_update, &node, 1, s->p);
     if (node->mess.id != 0 && rv == APR_SUCCESS) {
         s->storage->ap_slotmem_unlock(s->slotmem);
@@ -190,7 +192,9 @@ nodeinfo_t * read_node(mem_t *s, nodeinfo_t *node)
 apr_status_t get_node(mem_t *s, nodeinfo_t **node, int ids)
 {
   apr_status_t status;
-  s->storage->ap_slotmem_lock(s->slotmem);
+  status = s->storage->ap_slotmem_lock(s->slotmem);
+  if (status != APR_SUCCESS)
+    return(status);
   status = s->storage->ap_slotmem_mem(s->slotmem, ids, (void **) node);
   s->storage->ap_slotmem_unlock(s->slotmem);
   return(status);
