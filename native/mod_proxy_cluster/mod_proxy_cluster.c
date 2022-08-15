@@ -1840,6 +1840,8 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     int i, hash = 0;
     proxy_worker *mycandidate = NULL;
     node_context *mynodecontext = NULL;
+    node_context *best = NULL;
+    nodeinfo_t *node1 = NULL;
     proxy_worker *worker;
     int checking_standby = 0;
     int checked_standby = 0;
@@ -1848,6 +1850,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     proxy_worker **workers = NULL;
     int workers_length = 0;
     const char *session_id_with_route;
+    const char *route;
     char *tokenizer;
     const char *session_id;
     int rc; /* for trans */
@@ -1862,6 +1865,10 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 
     /* create workers for new nodes */
     update_workers_node(conf, r->pool, r->server, 1);
+
+    // do this once now to avoid repeating find_node_context_host through loop iterations
+    route = apr_table_get(r->notes, "session-route");
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
 
     /* First try to see if we have available candidate */
     if (domain && strlen(domain)>0)
@@ -1909,14 +1916,29 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
              * not in error state or not disabled.
              * and that can map the context.
              */
-            if (node_storage->read_node(worker->s->index, &node) != APR_SUCCESS)
-                continue; /* Can't read node */
-            pptr = (char *) node;
-            pptr = pptr + node->offset;
-            if (worker->s != (proxy_worker_shared *) pptr)
-                continue; /* wrong shared memory address */
+            if (PROXY_WORKER_IS_USABLE(worker)) {
+                if (best == NULL)
+                    break;
+                node_context *best1;
+                best1 = best;
 
-            if (PROXY_WORKER_IS_USABLE(worker) && (nodecontext = context_host_ok(r, balancer, worker->s->index, vhost_table, context_table, node_table)) != NULL) {
+                while ((*best1).node != -1) {
+                    if ((*best1).node == worker->s->index) break;
+                    best1++;
+                }
+                if ((*best1).node == -1)
+                    continue; /* not found */
+
+                nodecontext = best1;
+
+                // Let's do the table read only now after we know the worker is usable and matches
+                if (node_storage->read_node(worker->s->index, &node) != APR_SUCCESS)
+                    continue; /* Can't read node */
+                pptr = (char *) node;
+                pptr = pptr + node->offset;
+                if (worker->s != (proxy_worker_shared *) pptr)
+                    continue; /* wrong shared memory address */
+
                 if (!checked_domain) {
                     /* First try only nodes in the domain */
                     if (!isnode_domain_ok(r, node, domain)) {
@@ -1933,11 +1955,15 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         mycandidate = worker;
                         mynodecontext = nodecontext;
                     } else {
-                        nodeinfo_t *node1;
                         int lbstatus, lbstatus1;
 
-                        if (node_storage->read_node(mycandidate->s->index, &node1) != APR_SUCCESS)
-                            continue;
+                        // Let's avoid repeat reads of mycandidate through our loop iterations
+                        if (!node1) {
+                            if (node_storage->read_node(mycandidate->s->index, &node1) != APR_SUCCESS) {
+                                mycandidate = NULL;
+                                continue;
+                            }
+                        }
                         lbstatus1 = ((mycandidate->s->elected - node1->mess.oldelected) * 1000)/mycandidate->s->lbfactor;
                         lbstatus  = ((worker->s->elected - node->mess.oldelected) * 1000)/worker->s->lbfactor;
                         lbstatus1 = lbstatus1 + mycandidate->s->lbstatus;
@@ -1945,6 +1971,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         if (lbstatus1> lbstatus) {
                             mycandidate = worker;
                             mynodecontext = nodecontext;
+                            node1 = NULL;
                         }
                     }
                 }
