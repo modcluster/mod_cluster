@@ -1989,7 +1989,8 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 #endif
 
     /* create workers for new nodes */
-    update_workers_node(conf, r->pool, r->server, 1, node_table);
+    if (!cache_share_for)
+        update_workers_node(conf, r->pool, r->server, 1, node_table);
 
     // do this once now to avoid repeating find_node_context_host through loop iterations
     route = apr_table_get(r->notes, "session-route");
@@ -2883,7 +2884,9 @@ static int proxy_cluster_trans(request_rec *r)
 #endif
 
     /* make sure we have a up to date workers and balancers in our process */
-    update_workers_node(conf, r->pool, r->server, 1, node_table);
+    if (!cache_share_for)
+        update_workers_node(conf, r->pool, r->server, 1, node_table);
+
     balancer = get_route_balancer(r, conf, vhost_table, context_table, balancer_table, node_table);
     if (!balancer) {
         balancer = get_context_host_balancer(r, vhost_table, context_table, node_table);
