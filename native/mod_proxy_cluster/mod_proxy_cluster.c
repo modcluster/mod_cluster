@@ -159,8 +159,9 @@ struct node_context
 typedef struct node_context node_context;
 
 /* Create static table references we can look back to instead of fetching each request */
-static apr_time_t cache_share_for =  apr_time_from_sec(0); /* cache the shared memory in the process for n seconds */
+static apr_time_t cache_share_for =  apr_time_from_sec(0); /* cache the node shared memory in the process for n seconds */
 static apr_time_t last_cached = 0;
+static apr_time_t vhost_context_last_cached = 0; /* cache the context and virtualhost */
 static apr_pool_t *cached_pool = NULL;
 static proxy_vhost_table *cached_vhost_table = NULL;
 static proxy_context_table *cached_context_table = NULL;
@@ -2412,8 +2413,10 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
                 /* time to refresh or create */
                 apr_time_t now = apr_time_now();
                 if (now >= last_cached+cache_share_for) {
+                    /* we are good to lock here, because there is only this thread updating last_cached */
                     apr_thread_mutex_lock(lock);
                     last_cached = now;
+                    vhost_context_last_cached = now; /* vhost_context_last_cached is retested in proxy_cluster_trans */
                     if (cached_pool) {
                         /* we need to update the cache */
                         update_vhost_table_cached(cached_vhost_table);
@@ -2430,6 +2433,9 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
                                      "cached_pool: should have been created in proxy_cluster_child_init!");
                     }
                     apr_thread_mutex_unlock(lock);
+                } else {
+                    /* we are using cached values */
+                    last = 0;
                 }
                 node_table = cached_node_table;
             } else {
@@ -2531,6 +2537,8 @@ static void  proxy_cluster_child_init(apr_pool_t *p, server_rec *s)
             cached_balancer_table = read_balancer_table(cached_pool, 1);
             cached_node_table = read_node_table(cached_pool, 1);
             node_table = cached_node_table;
+            last_cached = apr_time_now();
+            vhost_context_last_cached = last_cached;
         } else {
             node_table = read_node_table(pool, 0);
         }
@@ -2861,6 +2869,25 @@ static int proxy_cluster_trans(request_rec *r)
     if (cache_share_for) {
         ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
                      "proxy_cluster_trans with cache");
+        /* 
+         * test the r->request_time for context and vhost modifications
+         * the watchdog thread only takes care of the node updates,
+         * update in context/virtualhost are not notified by node_storage->worker_nodes_need_update
+         */
+        if (r->request_time > vhost_context_last_cached+cache_share_for) {
+            apr_thread_mutex_lock(lock);
+            /* we have the lock, another might have changed vhost_context_last_cached */
+            if (r->request_time > vhost_context_last_cached+cache_share_for) {
+                ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+                             "proxy_cluster_trans with cache: update vhost and context");
+                if (cached_vhost_table != NULL)
+                    update_vhost_table_cached(cached_vhost_table);
+                if (cached_context_table != NULL)
+                    update_context_table_cached(cached_context_table);
+                vhost_context_last_cached = r->request_time;
+            }
+            apr_thread_mutex_unlock(lock);
+        }
         vhost_table = cached_vhost_table;
         context_table = cached_context_table;
         balancer_table = cached_balancer_table;
