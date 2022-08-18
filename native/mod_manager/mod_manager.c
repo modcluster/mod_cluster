@@ -3292,7 +3292,7 @@ static const char *cmd_manager_memmanagerfile(cmd_parms *cmd, void *mconfig, con
     if (err != NULL) {
         return err;
     }
-    mconf->basefilename = apr_pstrdup(cmd->pool, word);
+    mconf->basefilename = ap_server_root_relative(cmd->pool, word);
     if (apr_dir_make_recursive(mconf->basefilename, APR_UREAD | APR_UWRITE | APR_UEXECUTE, cmd->pool) != APR_SUCCESS)
         return  "Can't create directory corresponding to MemManagerFile";
     return NULL;
