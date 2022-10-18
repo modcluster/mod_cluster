@@ -12,8 +12,9 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
-        java-compilation: [ 11, 17, 19 ]
-        java-runtime: [ 8, 11, 17, 19 ]
+        java-compilation: [ 11, 17, 19, 20-ea ]
+        # Keep this list as: all supported LTS JDKs, the latest GA JDK, and the latest EA JDK.
+        java-runtime: [ 8, 11, 17, 19, 20-ea ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
