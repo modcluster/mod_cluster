@@ -74,7 +74,7 @@
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
         <version.junit>4.13.2</version.junit>
-        <version.mockito>4.6.1</version.mockito>
+        <version.mockito>4.8.0</version.mockito>
         <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
 
         <!-- Plugin versions -->
