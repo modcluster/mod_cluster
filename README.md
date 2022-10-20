@@ -63,6 +63,7 @@ container
   tomcat-8.5 (Tomcat 8.5 container implementation)
   tomcat-9.0 (Tomcat 9.0 container implementation)
   tomcat-10.0 (Tomcat 10.0 container implementation)
+  tomcat-10.1 (Tomcat 10.1 container implementation)
 load-spi (SPI classes for load metric computation)
 demo
   client
