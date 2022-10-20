@@ -48,6 +48,21 @@ updates:
     ignore:
       - dependency-name: org.apache.tomcat:tomcat-catalina
         versions:
+          - ">= 10.1"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 10.1"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 10.1"
+  - package-ecosystem: maven
+    directory: "/container/tomcat-10.1"
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
           - ">= 11"
       - dependency-name: org.apache.tomcat:tomcat-coyote
         versions:
