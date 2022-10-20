@@ -2570,6 +2570,8 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
     proxy_server_conf *conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
     int sizew = conf->workers->elt_size;
     int sizeb = conf->balancers->elt_size;
+    int idx;
+    int has_static_workers = 0;
     if (sizew != sizeof(proxy_worker) || sizeb != sizeof(proxy_balancer)) {
         ap_version_t version;
         ap_get_server_revision(&version);
@@ -2592,6 +2594,31 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                      "Module mod_proxy_balancer is loaded"
                      " it must be removed  in order for mod_proxy_cluster to function properly");
         return HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    /* check for static workers and warn if that is the case */
+    for (idx = 0; s; ++idx) {
+        int i;
+        proxy_balancer *balancer;
+        void *sconf = s->module_config;
+        conf = (proxy_server_conf *)ap_get_module_config(sconf, &proxy_module);
+        balancer = (proxy_balancer *)conf->balancers->elts;
+        for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
+            int j;
+            proxy_worker **workers;
+            workers = (proxy_worker **)balancer->workers->elts;
+            for (j = 0; j < balancer->workers->nelts; j++, workers++) {
+                 proxy_worker *worker = *workers;
+                 ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
+                              "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name);
+                 has_static_workers = 1;
+            }
+        }
+	s = s->next;
+    }
+    if (has_static_workers) {
+        ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s, "Worker defined as BalancerMember are NOT supported");
+        return !OK;
     }
 
     node_storage = ap_lookup_provider("manager" , "shared", "0");
