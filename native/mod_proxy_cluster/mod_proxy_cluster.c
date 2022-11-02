@@ -331,11 +331,19 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
     helper->index = node->mess.id;
 
     /* Changing the shared memory requires locking it... */
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+    if (strncmp(worker->s->name_ex, shared->name_ex, sizeof(worker->s->name_ex))) {
+#else
     if (strncmp(worker->s->name, shared->name, sizeof(worker->s->name))) {
+#endif
         /* We will modify it only is the name has changed to minimize access */
         worker->s->was_malloced = 0; /* Prevent mod_proxy to free it */
         worker->s->index = node->mess.id;
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+        strncpy(worker->s->name_ex, shared->name_ex, sizeof(worker->s->name_ex));
+#else
         strncpy(worker->s->name, shared->name, sizeof(worker->s->name));
+#endif
         strncpy(worker->s->hostname, shared->hostname, sizeof(worker->s->hostname));
         strncpy(worker->s->hostname_ex, shared->hostname_ex, sizeof(worker->s->hostname_ex));
         strncpy(worker->s->scheme, shared->scheme, sizeof(worker->s->scheme));
@@ -2014,7 +2022,13 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             helper = (proxy_cluster_helper *) worker->context;
             if (!worker->s || !worker->context) {
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ? worker->s->name : "NULL");
+                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ?
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                              worker->s->name_ex 
+#else
+                              worker->s->name
+#endif
+                             : "NULL");
                 continue;
             }
             if (helper->index == 0)
@@ -2137,9 +2151,17 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
         apr_table_setn(r->subprocess_env, "BALANCER_CONTEXT_ID", apr_psprintf(r->pool, "%d", (*mynodecontext).context));
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                              "proxy: byrequests balancer DONE (%s)",
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                             mycandidate->s->name_ex
+#else
                              mycandidate->s->name
+#endif
                              );
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+        rc = proxy_run_check_trans(r, mycandidate->s->name_ex);
+#else
         rc = proxy_run_check_trans(r, mycandidate->s->name);
+#endif
         if (rc != OK) {
             char *ptr = balancer->workers->elts;
             int sizew = balancer->workers->elt_size;
@@ -2152,7 +2174,11 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
                         httpworker->s->port == mycandidate->s->port &&
                         !strcmp(httpworker->s->route, mycandidate->s->route)) {
                         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                                     "proxy: byrequests balancer Using %s instead %s", httpworker->s->name_ex, mycandidate->s->name_ex);
+#else
                                      "proxy: byrequests balancer Using %s instead %s", httpworker->s->name, mycandidate->s->name);
+#endif
                         return httpworker;
                     }
                 }
@@ -2610,7 +2636,11 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
             for (j = 0; j < balancer->workers->nelts; j++, workers++) {
                  proxy_worker *worker = *workers;
                  ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                              "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name_ex);
+#else
                               "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name);
+#endif
                  has_static_workers = 1;
             }
         }
@@ -3344,7 +3374,11 @@ static int rewrite_url(request_rec *r, proxy_worker *worker,
                              NULL));
     }
 
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+    *url = apr_pstrcat(r->pool, worker->s->name_ex, path, NULL);
+#else
     *url = apr_pstrcat(r->pool, worker->s->name, path, NULL);
+#endif
 
     return OK;
 }
@@ -3657,7 +3691,11 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
      */
     /* Add balancer/worker info to env. */
     apr_table_setn(r->subprocess_env, "BALANCER_NAME", (*balancer)->s->name);
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+    apr_table_setn(r->subprocess_env, "BALANCER_WORKER_NAME", (*worker)->s->name_ex);
+#else
     apr_table_setn(r->subprocess_env, "BALANCER_WORKER_NAME", (*worker)->s->name);
+#endif
     apr_table_setn(r->subprocess_env, "BALANCER_WORKER_ROUTE", (*worker)->s->route);
 
     /* Rewrite the url from 'balancer://url'
@@ -3670,7 +3708,11 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 #if HAVE_CLUSTER_EX_DEBUG
     ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                  "proxy_cluster_pre_request: balancer (%s) worker (%s) rewritten to %s",
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                 (*balancer)->s->name, (*worker)->s->name_ex,
+#else
                  (*balancer)->s->name, (*worker)->s->name,
+#endif
                  *url);
 #endif
 
@@ -3773,7 +3815,11 @@ static int proxy_cluster_post_request(proxy_worker *worker,
                               "due to status code %d matching 'failonstatus' "
                               "balancer parameter",
                               balancer->s->name,
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                              worker->s->name_ex,
+#else
                               worker->s->name,
+#endif
                               val);
                 worker->s->status |= PROXY_WORKER_IN_ERROR;
                 worker->s->error_time = apr_time_now();
