@@ -2022,11 +2022,13 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
             helper = (proxy_cluster_helper *) worker->context;
             if (!worker->s || !worker->context) {
                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ?
 #if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
-                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ? worker->s->name_ex : "NULL");
+                              worker->s->name_ex 
 #else
-                             "proxy: byrequests balancer %s skipping BAD worker %s", balancer->s->name, worker->s ? worker->s->name : "NULL");
+                              worker->s->name
 #endif
+                             : "NULL");
                 continue;
             }
             if (helper->index == 0)
@@ -2152,7 +2154,6 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 #if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
                              mycandidate->s->name_ex
 #else
-
                              mycandidate->s->name
 #endif
                              );
@@ -2636,9 +2637,9 @@ static int proxy_cluster_post_config(apr_pool_t *p, apr_pool_t *plog,
                  proxy_worker *worker = *workers;
                  ap_log_error(APLOG_MARK, APLOG_EMERG, 0, s,
 #if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
-                              "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name);
-#else
                               "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name_ex);
+#else
+                              "%s BalancerMember are NOT supported %s", balancer->s->name, worker->s->name);
 #endif
                  has_static_workers = 1;
             }
