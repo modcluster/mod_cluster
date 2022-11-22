@@ -102,6 +102,7 @@ static int creat_bal = CREAT_ROOT;
 
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
 static int deterministic_failover = 0;
+static int use_nocanon = 0;
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
@@ -2917,6 +2918,7 @@ static int proxy_cluster_trans(request_rec *r)
     void *sconf = r->server->module_config;
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
+    proxy_dir_conf *dconf = ap_get_module_config(r->per_dir_config, &proxy_module);
 
     proxy_vhost_table *vhost_table = NULL;
     proxy_context_table *context_table = NULL;
@@ -2961,11 +2963,9 @@ static int proxy_cluster_trans(request_rec *r)
     apr_table_setn(r->notes, "balancer-table",  (char *) balancer_table);
     apr_table_setn(r->notes, "node-table",  (char *) node_table);
 
-#if HAVE_CLUSTER_EX_DEBUG
-    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE8, 0, r,
                 "proxy_cluster_trans for %d %s %s uri: %s args: %s unparsed_uri: %s",
                  r->proxyreq, r->filename, r->handler, r->uri, r->args, r->unparsed_uri);
-#endif
 
     /* make sure we have a up to date workers and balancers in our process */
     if (!cache_share_for)
@@ -2978,66 +2978,63 @@ static int proxy_cluster_trans(request_rec *r)
 
     if (balancer) {
         int i;
-        int sizea = conf->aliases->elt_size;
-        char *ptr = conf->aliases->elts;
-        /* Check that we don't have a ProxyPassMatch ^(/.*\.gif)$ ! or something similar */
-        for (i = 0; i < conf->aliases->nelts; i++, ptr=ptr+sizea) {
-            struct proxy_alias *ent = (struct proxy_alias *) ptr;
-            if (ent->real[0] == '!' && ent->real[1] == '\0') {
-                ap_regmatch_t regm[AP_MAX_REG_MATCH];
-                if (ent->regex) {
-                    if (!ap_regexec(ent->regex, r->uri, AP_MAX_REG_MATCH, regm, 0)) {
-#if HAVE_CLUSTER_EX_DEBUG
-                        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
-                                    "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s (match: regexp)",
-                                     balancer, r->filename, r->unparsed_uri);
-#endif
-                        return DECLINED;
-                    }
-                }
-                else {
-                    const char *fake;
-                    proxy_dir_conf *dconf = ap_get_module_config(r->per_dir_config,
-                                                                 &proxy_module);
-                    if ((dconf->interpolate_env == 1)
-                        && (ent->flags & PROXYPASS_INTERPOLATE)) {
-                        fake = proxy_interpolate(r, ent->fake);
-                    }
-                    else {
-                        fake = ent->fake;
-                    }
-                    if (alias_match(r->uri, fake)) {
-#if HAVE_CLUSTER_EX_DEBUG
-                        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
-                                    "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s (match: %s)",
-                                     balancer, r->filename, r->unparsed_uri, fake);
-#endif
-                        return DECLINED;
-                    }
+        int rv = HTTP_CONTINUE;
+        struct proxy_alias *ent;
+        const char *use_uri;
+        /* short way - this location is reverse proxied? */
+        if (dconf->alias) {
+            int enc = (dconf->alias->flags & PROXYPASS_MAP_ENCODED) != 0;
+            if (!enc) {
+                rv = ap_proxy_trans_match(r, dconf->alias, dconf);
+                if (rv != HTTP_CONTINUE) {
+                   ap_log_rerror(APLOG_MARK, APLOG_TRACE3, 0, r,
+                                "proxy_cluster_trans ap_proxy_trans_match(dconf) matches or reject %s  to %s", r->uri, r->filename);
+                    return rv; /* Done */
                 }
             }
         }
 
-        /* It is safer to use r->uri */
-        if (strncmp(r->uri, "balancer://",11))
-            r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, r->uri, NULL);
+        /* long way - walk the list of aliases, find a match */
+        for (i = 0; i < conf->aliases->nelts; i++) {
+            int enc;
+            ent = &((struct proxy_alias *)conf->aliases->elts)[i];
+            enc = (ent->flags & PROXYPASS_MAP_ENCODED) != 0;
+            if (!enc) {
+                rv = ap_proxy_trans_match(r, ent, dconf);
+                if (rv != HTTP_CONTINUE) {
+                   ap_log_rerror(APLOG_MARK, APLOG_TRACE3, 0, r,
+                                "proxy_cluster_trans ap_proxy_trans_match(conf) matches or reject %s  to %s", r->uri, r->filename);
+                    return rv; /* Done */
+                }
+            }
+        }
+
+        /* Here the ProxyPass or ProxyPassMatch have been checked and have NOT returned ERRROR nor OK */
+        ap_log_rerror(APLOG_MARK, APLOG_TRACE3, 0, r,
+                      "proxy_cluster_trans no match for ap_proxy_trans_match on:%s", r->uri);
+
+        /* Use proxy-nocanon if needed */
+        if (use_nocanon) {
+            apr_table_setn(r->notes, "proxy-nocanon", "1");
+            use_uri = r->unparsed_uri;
+        } else {
+            use_uri = r->uri;
+        } 
+        if (strncmp(use_uri, "balancer://",11))
+            r->filename =  apr_pstrcat(r->pool, "proxy:balancer://", balancer, use_uri, NULL);
         else
-            r->filename =  apr_pstrcat(r->pool, "proxy:", r->uri, NULL);
+            r->filename =  apr_pstrcat(r->pool, "proxy:", use_uri, NULL);
         r->handler = "proxy-server";
         r->proxyreq = PROXYREQ_REVERSE;
-#if HAVE_CLUSTER_EX_DEBUG
-        ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+        ap_log_rerror(APLOG_MARK, APLOG_TRACE3, 0, r,
                     "proxy_cluster_trans using %s uri: %s",
                      balancer, r->filename);
-#endif
         return OK; /* Mod_proxy will process it */
     }
  
-#if HAVE_CLUSTER_EX_DEBUG
-    ap_log_error(APLOG_MARK, APLOG_NOERRNO|APLOG_DEBUG, 0, r->server,
+    ap_log_rerror(APLOG_MARK, APLOG_TRACE8, 0, r,
                 "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s",
                  balancer, r->filename, r->unparsed_uri);
-#endif
     return DECLINED;
 }
 
@@ -3092,6 +3089,8 @@ static int proxy_cluster_canon(request_rec *r, char *url)
 
     r->filename = apr_pstrcat(r->pool, "proxy:balancer://", host,
             "/", path, (search) ? "?" : "", (search) ? search : "", NULL);
+
+    r->path_info = apr_pstrcat(r->pool, "/", path, NULL);
 
     /*
      * Check sticky sessions again in case of ProxyPass
@@ -3959,6 +3958,14 @@ static const char*cmd_proxy_cluster_cache_shared_for(cmd_parms *cmd, void *dummy
     return NULL;
 }
 
+static const char *cmd_proxy_cluster_use_nocanon(cmd_parms *parms, void *mconfig, int on)
+{
+    use_nocanon = on;
+
+    return NULL;
+}
+
+
 static const command_rec  proxy_cluster_cmds[] =
 {
     AP_INIT_TAKE1(
@@ -4010,6 +4017,13 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "CacheShareFor - Time in seconds for how long the shared information is cached by httpd: (Default: 0 seconds, no-caching)"
+    ),
+    AP_INIT_FLAG(
+        "UseNocanon",
+        cmd_proxy_cluster_use_nocanon,
+        NULL,
+        OR_ALL,
+        "UseNocanon - When no ProxyPass or ProxyMatch for the URL, passes the URL path \"raw\" to the backend (Default: Off)"
     ),
     {NULL}
 };
