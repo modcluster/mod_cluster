@@ -70,7 +70,7 @@
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
 
         <!-- Demo dependencies -->
-        <version.http-client>4.5.13</version.http-client>
+        <version.http-client>4.5.14</version.http-client>
         <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
         <version.junit>4.13.2</version.junit>
