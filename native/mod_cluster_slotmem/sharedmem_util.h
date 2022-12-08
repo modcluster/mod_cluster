@@ -17,5 +17,5 @@
 /* Memory handler for a shared memory divided in slot.
  * This one uses shared memory.
  */
-const slotmem_storage_method *sharedmem_getstorage();
+const slotmem_storage_method *sharedmem_getstorage(void);
 apr_status_t sharedmem_initialize_child(apr_pool_t *p);

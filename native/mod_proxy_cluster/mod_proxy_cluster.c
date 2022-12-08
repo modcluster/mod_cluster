@@ -1689,7 +1689,7 @@ static proxy_node_table *read_node_table(apr_pool_t *pool, int for_cache)
     return node_table;
 }
 /* Update the node table from shared memory to populate a cached table*/
-proxy_node_table *update_node_table_cached(proxy_node_table *node_table)
+static proxy_node_table *update_node_table_cached(proxy_node_table *node_table)
 {
     int i;
     int size;
@@ -1900,20 +1900,20 @@ static char *get_context_host_balancer(request_rec *r,
         return NULL;
     while ((*nodes).node != -1) {
         nodeinfo_t *node;
+        char *name;
+        proxy_balancer *balancer;
         if (node_storage->read_node((*nodes).node, &node) != APR_SUCCESS) {
             nodes++;
             continue;
         }
-        if (node->mess.balancer) {
-            /* Check that it is in our proxy_server_conf */
-            char *name = apr_pstrcat(r->pool, "balancer://", node->mess.balancer, NULL);
-            proxy_balancer *balancer = ap_proxy_get_balancer(r->pool, conf, name, 0);
-            if (balancer)
-                return node->mess.balancer;
-            else
-                 ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "get_context_host_balancer: balancer %s not found", name);
-        }
+        /* Check that it is in our proxy_server_conf */
+        name = apr_pstrcat(r->pool, "balancer://", node->mess.balancer, NULL);
+        balancer = ap_proxy_get_balancer(r->pool, conf, name, 0);
+        if (balancer)
+            return node->mess.balancer;
+        else
+             ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
+                         "get_context_host_balancer: balancer %s not found", name);
         nodes++;
     }
     return NULL;
@@ -2816,97 +2816,6 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
     return NULL;
 }
 
-/* Copied from httpd mod_proxy */
-static const char *proxy_interpolate(request_rec *r, const char *str)
-{
-    /* Interpolate an env str in a configuration string
-     * Syntax ${var} --> value_of(var)
-     * Method: replace one var, and recurse on remainder of string
-     * Nothing clever here, and crap like nested vars may do silly things
-     * but we'll at least avoid sending the unwary into a loop
-     */
-    const char *start;
-    const char *end;
-    const char *var;
-    const char *val;
-    const char *firstpart;
-
-    start = ap_strstr_c(str, "${");
-    if (start == NULL) {
-        return str;
-    }
-    end = ap_strchr_c(start+2, '}');
-    if (end == NULL) {
-        return str;
-    }
-    /* OK, this is syntax we want to interpolate.  Is there such a var ? */
-    var = apr_pstrndup(r->pool, start+2, end-(start+2));
-    val = apr_table_get(r->subprocess_env, var);
-    firstpart = apr_pstrndup(r->pool, str, (start-str));
-
-    if (val == NULL) {
-        return apr_pstrcat(r->pool, firstpart,
-                           proxy_interpolate(r, end+1), NULL);
-    }
-    else {
-        return apr_pstrcat(r->pool, firstpart, val,
-                           proxy_interpolate(r, end+1), NULL);
-    }
-}
-/* Copied from httpd mod_proxy */
-static int alias_match(const char *uri, const char *alias_fakename)
-{
-    const char *end_fakename = alias_fakename + strlen(alias_fakename);
-    const char *aliasp = alias_fakename, *urip = uri;
-    const char *end_uri = uri + strlen(uri);
-
-    while (aliasp < end_fakename && urip < end_uri) {
-        if (*aliasp == '/') {
-            /* any number of '/' in the alias matches any number in
-             * the supplied URI, but there must be at least one...
-             */
-            if (*urip != '/')
-                return 0;
-
-            while (*aliasp == '/')
-                ++aliasp;
-            while (*urip == '/')
-                ++urip;
-        }
-        else {
-            /* Other characters are compared literally */
-            if (*urip++ != *aliasp++)
-                return 0;
-        }
-    }
-
-    /* fixup badly encoded stuff (e.g. % as last character) */
-    if (aliasp > end_fakename) {
-        aliasp = end_fakename;
-    }
-    if (urip > end_uri) {
-        urip = end_uri;
-    }
-
-   /* We reach the end of the uri before the end of "alias_fakename"
-    * for example uri is "/" and alias_fakename "/examples"
-    */
-   if (urip == end_uri && aliasp!=end_fakename) {
-       return 0;
-   }
-
-    /* Check last alias path component matched all the way */
-    if (aliasp[-1] != '/' && *urip != '\0' && *urip != '/')
-        return 0;
-
-    /* Return number of characters from URI which matched (may be
-     * greater than length of alias, since we may have matched
-     * doubled slashes)
-     */
-
-    return urip - uri;
-}
-
 /*
  * See if we could map the request.
  * first check is we have a balancer corresponding to the route.
@@ -3033,8 +2942,8 @@ static int proxy_cluster_trans(request_rec *r)
     }
  
     ap_log_rerror(APLOG_MARK, APLOG_TRACE8, 0, r,
-                "proxy_cluster_trans DECLINED %s uri: %s unparsed_uri: %s",
-                 balancer, r->filename, r->unparsed_uri);
+                "proxy_cluster_trans DECLINED (NULL) uri: %s unparsed_uri: %s",
+                 r->filename, r->unparsed_uri);
     return DECLINED;
 }
 
@@ -3643,7 +3552,7 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
             return HTTP_SERVICE_UNAVAILABLE;
         }
-        if ((*balancer)->s->sticky && runtime) {
+        if ((*balancer)->s->sticky[0] != '\0' && runtime) {
             /*
              * This balancer has sticky sessions and the client either has not
              * supplied any routing information or all workers for this route

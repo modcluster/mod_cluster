@@ -36,6 +36,7 @@
 #include "apr_shm.h"
 
 #include "slotmem.h"
+#include "sharedmem_util.h"
 
 #include "httpd.h"
 #ifdef AP_NEED_SET_MUTEX_PERMS
@@ -81,7 +82,7 @@ static struct ap_slotmem *globallistmem = NULL;
 static apr_pool_t *globalpool = NULL;
 static apr_thread_mutex_t *globalmutex_lock = NULL;
 
-apr_status_t unixd_set_shm_perms(const char *fname)
+static apr_status_t unixd_set_shm_perms(const char *fname)
 {
 #ifdef AP_NEED_SET_MUTEX_PERMS
 #if APR_USE_SHMEM_SHMGET || APR_USE_SHMEM_SHMGET_ANON
@@ -152,7 +153,7 @@ static void store_slotmem(ap_slotmem_t *slotmem)
     apr_file_write(fp, slotmem->ident, &nbytes);
     apr_file_close(fp);
 }
-void restore_slotmem(void *ptr, const char *name, apr_size_t item_size, int item_num, apr_pool_t *pool)
+static void restore_slotmem(void *ptr, const char *name, apr_size_t item_size, int item_num, apr_pool_t *pool)
 {
     const char *storename;
     apr_file_t *fp;
@@ -179,7 +180,7 @@ void restore_slotmem(void *ptr, const char *name, apr_size_t item_size, int item
     }
 }
 
-apr_status_t cleanup_slotmem(void *param)
+static apr_status_t cleanup_slotmem(void *param)
 {
     ap_slotmem_t **mem = param;
 
