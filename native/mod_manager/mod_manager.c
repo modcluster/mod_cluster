@@ -2403,7 +2403,6 @@ static int manager_map_to_storage(request_rec *r)
 
     ours = check_method(r); 
     if (ours) {
-        int i;
         /* The method one of ours */
         ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
                     "manager_map_to_storage %s (%s)", r->method, r->uri);
