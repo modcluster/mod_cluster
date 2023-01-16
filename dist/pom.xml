@@ -71,6 +71,19 @@
                             <tarLongFileMode>posix</tarLongFileMode>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>assemble-tomcat-11.0</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/tomcat-11.0.xml</descriptor>
+                            </descriptors>
+                            <tarLongFileMode>posix</tarLongFileMode>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
