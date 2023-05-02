@@ -43,8 +43,8 @@
     </modules>
 
     <properties>
-        <!-- Require and build for JDK 11 -->
-        <jdk.min.version>11</jdk.min.version>
+        <!-- Require JDK 17 and build for JDK 11 -->
+        <jdk.min.version>17</jdk.min.version>
         <jdk.release.version>11</jdk.release.version>
 
         <!-- Common dependencies -->
@@ -62,6 +62,20 @@
     </properties>
 
     <profiles>
+        <!-- Profile that configures enforcer plugin to allow JDK 11 solely for running tests -->
+        <!-- Required since the main build requires JDK 17 for the compilation -->
+        <profile>
+            <id>jdk11-test-only</id>
+            <activation>
+                <property>
+                    <name>maven.main.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <jdk.min.version>11</jdk.min.version>
+            </properties>
+        </profile>
         <!-- Code coverage report using JaCoCo -->
         <profile>
             <id>coverage</id>
