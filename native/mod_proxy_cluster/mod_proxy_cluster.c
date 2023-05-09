@@ -2005,11 +2005,6 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     /* do this once now to avoid repeating find_node_context_host through loop iterations */
     route = apr_table_get(r->notes, "session-route");
     best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
-    if (best == NULL) {
-        /* No context to serve the request we can't do much */
-        apr_table_setn(r->notes, "no-context-error", "1");
-        return NULL;
-    }
 
     /* First try to see if we have available candidate */
     if (domain && strlen(domain)>0)
@@ -2917,7 +2912,7 @@ static int proxy_cluster_trans(request_rec *r)
                 rv = ap_proxy_trans_match(r, ent, dconf);
                 if (rv != HTTP_CONTINUE) {
                    ap_log_rerror(APLOG_MARK, APLOG_TRACE3, 0, r,
-                                "proxy_cluster_trans ap_proxy_trans_match(conf) matches or reject %s  to %s %d", r->uri, r->filename, rv);
+                                "proxy_cluster_trans ap_proxy_trans_match(conf) matches or reject %s  to %s", r->uri, r->filename);
                     return rv; /* Done */
                 }
             }
@@ -3550,22 +3545,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
         runtime = find_best_worker(*balancer, conf, r, domain, failoverdomain,
         		vhost_table, context_table, node_table, 1);
         if (!runtime) {
-            const char *no_context_error = apr_table_get(r->notes, "no-context-error");
-            if (no_context_error == NULL) {
-                ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
-                             "proxy: CLUSTER: (%s). All workers are in error state",
-                             (*balancer)->s->name
-                             );
+            ap_log_error(APLOG_MARK, APLOG_ERR, 0, r->server,
+                         "proxy: CLUSTER: (%s). All workers are in error state",
+                         (*balancer)->s->name
+                         );
 
-                return HTTP_SERVICE_UNAVAILABLE;
-            } else {
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy: CLUSTER: (%s). No context for the URL",
-                             (*balancer)->s->name
-                             );
-
-                return HTTP_NOT_FOUND;
-            }
+            return HTTP_SERVICE_UNAVAILABLE;
         }
         if ((*balancer)->s->sticky[0] != '\0' && runtime) {
             /*
