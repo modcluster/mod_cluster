@@ -2198,6 +2198,40 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     return mycandidate;
 }
 
+/* Get the http worker if we are getting a STATUS for ws one. */
+static proxy_worker *get_http_worker(server_rec *s, proxy_worker *ws_worker)
+{
+    if (ws_worker->balancer != NULL) {
+        /* we need to find the corresponding http/https worker */
+        char *ptrw;
+        proxy_balancer *balancer = ws_worker->balancer;
+        int sizew = balancer->workers->elt_size;
+        int j;
+        ptrw = balancer->workers->elts;
+        for (j = 0; j < balancer->workers->nelts; j++,  ptrw=ptrw+sizew) {
+            proxy_worker **worker = (proxy_worker **) ptrw;
+            if (strcasecmp((*worker)->s->scheme, "HTTP") == 0 ||
+                strcasecmp((*worker)->s->scheme, "HTTPS") == 0) {
+                if ((*worker)->s->port == ws_worker->s->port &&
+                    !strcmp((*worker)->s->route, ws_worker->s->route) &&
+                    !strcmp((*worker)->s->hostname, ws_worker->s->hostname)) {
+                    ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, s,
+                                 "proxy: get_http_worker %s",
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                                 (*worker)->s->name_ex
+#else
+                                 (*worker)->s->name
+#endif
+                                 );
+                    return *worker;
+                }
+            }
+        }
+
+    }
+    return NULL;
+}
+
 /*
  * Check that we could connect to the node and create corresponding balancers and workers.
  * id   : worker id
@@ -2211,6 +2245,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
 {
     apr_status_t rv;
     proxy_worker *worker = NULL;
+    proxy_worker *http_worker = NULL;
     server_rec *s = main_server;
     proxy_server_conf *conf = NULL;
     nodeinfo_t *node;
@@ -2239,8 +2274,14 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         conf = (proxy_server_conf *) ap_get_module_config(sconf, &proxy_module);
 
         worker = get_worker_from_id_stat(conf, id, stat);
-        if (worker != NULL)
+        if (worker != NULL) {
+            if (strcasecmp(worker->s->scheme, "WSS") == 0 ||
+                strcasecmp(worker->s->scheme, "WS") == 0) {
+                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server, "proxy_cluster_isup: getting http/https worker");
+                http_worker = get_http_worker(r->server, worker);
+            }
             break;
+        }
         s = s->next;
     }
     if (worker == NULL) {
@@ -2274,10 +2315,18 @@ static int proxy_node_isup(request_rec *r, int id, int load)
     else if (load == -1) {
         worker->s->status |= PROXY_WORKER_IN_ERROR;
         worker->s->lbfactor = -1;
+        if (http_worker != NULL) {
+           http_worker->s->status |= PROXY_WORKER_IN_ERROR;
+           http_worker->s->lbfactor = -1;
+        }
     }
     else if (load == 0) {
         worker->s->status |= PROXY_WORKER_HOT_STANDBY;
         worker->s->lbfactor = 0;
+        if (http_worker != NULL) {
+           http_worker->s->status |= PROXY_WORKER_HOT_STANDBY;
+           http_worker->s->lbfactor = 0;
+        }
     }
     else {
         worker->s->status &= ~PROXY_WORKER_IN_ERROR;
@@ -2285,6 +2334,15 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         worker->s->status &= ~PROXY_WORKER_DISABLED;
         worker->s->status &= ~PROXY_WORKER_HOT_STANDBY;
         worker->s->lbfactor = load;
+        if (http_worker != NULL) {
+           /* the ws/wss doesn't point to shared memory, so fix the http/https part */
+           http_worker->s->error_time = 0; /* we know the worker is OK ;-) */
+           http_worker->s->status &= ~PROXY_WORKER_IN_ERROR;
+           http_worker->s->status &= ~PROXY_WORKER_STOPPED;
+           http_worker->s->status &= ~PROXY_WORKER_DISABLED;
+           http_worker->s->status &= ~PROXY_WORKER_HOT_STANDBY;
+           http_worker->s->lbfactor = load;
+        }
     }
     return 0;
 }
