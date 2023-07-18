@@ -233,9 +233,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <goals>
-                    <goal>compile</goal>
-                </goals>
                 <executions>
                     <execution>
                         <id>default-compile</id>
