@@ -134,7 +134,12 @@ public class ResetRequestSourceImpl implements ResetRequestSource {
                                         : this.requestFactory.createDisableRequest(context));
                             }
                         } else {
-                            if (status == ResetRequestSource.Status.ENABLED) {
+                            if (status == ResetRequestSource.Status.ENABLED || status == null) {
+                                // Two cases are handled here:
+                                // 1. Context is not started, but proxy reports the context as ENABLED
+                                //    => send STOP request, so that proxy disables the context.
+                                // 2. Context is not started, proxy is not aware of the context (status == null)
+                                //    => send STOP reqeust, so that proxy registers the context.
                                 engineRequests.add(this.requestFactory.createStopRequest(context));
                             }
                         }
