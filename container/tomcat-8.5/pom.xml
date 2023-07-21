@@ -25,13 +25,13 @@
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>mod_cluster-container</artifactId>
-        <version>2.0.2.Final-SNAPSHOT</version>
+        <version>2.0.3.Final-SNAPSHOT</version>
     </parent>
     <artifactId>mod_cluster-container-tomcat-8.5</artifactId>
     <name>mod_cluster: Container - Tomcat 8.5</name>
 
     <properties>
-        <version.org.apache.tomcat-8.5>8.5.79</version.org.apache.tomcat-8.5>
+        <version.org.apache.tomcat-8.5>8.5.91</version.org.apache.tomcat-8.5>
     </properties>
 
     <dependencies>

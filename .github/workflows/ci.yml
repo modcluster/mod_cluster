@@ -12,15 +12,16 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
-        java-compilation: [ 11, 17 ]
-        java-runtime: [ 8, 11, 17 ]
+        # Keep this list as: all supported LTS JDKs, the latest GA JDK, and the latest EA JDK (if available).
+        java: [ 11, 17, 20, 21-ea ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Set up JDK ${{ matrix.java-compilation }}
-        uses: actions/setup-java@v1
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v3.11.0
         with:
-          java-version: ${{ matrix.java-compilation }}
+          distribution: temurin
+          java-version: ${{ matrix.java }}
       - name: Cache local Maven repository
         uses: actions/cache@v3
         with:
@@ -28,12 +29,5 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Build with Maven using JDK ${{ matrix.java-compilation }}
-        run: mvn -B verify -DskipTests
-      - name: Set up JDK ${{ matrix.java-runtime }}
-        uses: actions/setup-java@v1
-        with:
-          java-version: ${{ matrix.java-runtime }}
-      - name: Run test with Maven using JDK ${{ matrix.java-runtime }}
-        # In order to support Windows Powershell, a space between -D property=true is required.
-        run: mvn -B verify -D maven.main.skip=true
+      - name: Build with Maven using JDK ${{ matrix.java }}
+        run: mvn -B verify

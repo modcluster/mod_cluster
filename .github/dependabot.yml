@@ -1,4 +1,10 @@
 version: 2
+# Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+registries:
+  maven-central:
+    type: maven-repository
+    url: https://repo.maven.apache.org/maven2/
+    replaces-base: true
 updates:
   - package-ecosystem: maven
     directory: "/"
@@ -12,6 +18,9 @@ updates:
       - dependency-name: org.apache.tomcat:tomcat-util
   - package-ecosystem: maven
     directory: "/container/tomcat-8.5"
+    # Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+    registries:
+      - maven-central
     schedule:
       interval: daily
     open-pull-requests-limit: 10
@@ -27,6 +36,9 @@ updates:
           - ">= 9"
   - package-ecosystem: maven
     directory: "/container/tomcat-9.0"
+    # Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+    registries:
+      - maven-central
     schedule:
       interval: daily
     open-pull-requests-limit: 10
@@ -42,6 +54,27 @@ updates:
           - ">= 10"
   - package-ecosystem: maven
     directory: "/container/tomcat-10.0"
+    # Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+    registries:
+      - maven-central
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 10.1"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 10.1"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 10.1"
+  - package-ecosystem: maven
+    directory: "/container/tomcat-10.1"
+    # Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+    registries:
+      - maven-central
     schedule:
       interval: daily
     open-pull-requests-limit: 10
