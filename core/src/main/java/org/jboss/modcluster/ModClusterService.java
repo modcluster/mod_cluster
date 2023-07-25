@@ -300,11 +300,15 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         ModClusterLogger.LOGGER.addContext(context.getHost(), context);
 
         if (this.include(context) && this.established) {
-            // Send ENABLE-APP if state is started
-            if (context.isStarted()) {
-                this.enable(context);
-            } else {
+            if (context.isSuspended()) {
+                // Send STOP-APP if the context is suspended
                 this.stop(context);
+            } else if (context.isStarted()) {
+                // Send ENABLE-APP if state is started
+
+                // n.b. for some containers like Tomcat, the context at this point is only in the 'STARTING' state and
+                // thus enable(..) will not be called here but rather during a start(..) call.
+                this.enable(context);
             }
         }
     }
@@ -313,7 +317,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
     public void start(Context context) {
         ModClusterLogger.LOGGER.startContext(context.getHost(), context);
 
-        if (this.include(context)) {
+        if (this.include(context) && !context.isSuspended()) {
             if (this.established) {
                 this.enable(context);
             }

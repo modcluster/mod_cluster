@@ -53,6 +53,18 @@ public interface Context {
     boolean isStarted();
 
     /**
+     * Returns whether this context is suspended. A suspended context is not available for processing requests,
+     * but it could be made available at later time. This translates into the context be made known to reverse proxies
+     * but in a stopped state. Implementing this method is optional defaulting to suspended mode not being supported
+     * by the container.
+     *
+     * @return whether this context is suspended
+     */
+    default boolean isSuspended() {
+        return false;
+    }
+
+    /**
      * Registers the specified request listener with this context. Used for request draining.
      *
      * @param requestListener request listener to register
