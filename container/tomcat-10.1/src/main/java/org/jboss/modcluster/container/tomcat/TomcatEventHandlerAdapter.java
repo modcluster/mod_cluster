@@ -135,9 +135,7 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 ((Lifecycle) child).addLifecycleListener(this);
                 ((Container) child).addPropertyChangeListener(this);
 
-                if (this.start.get()) {
-                    this.eventHandler.add(new TomcatContext(registry, (Context) child));
-                }
+                // n.b. MODCLUSTER-790 do not ContainerEventHandler#add(..) the context here - wait for actual start(..)
             } else if (container instanceof Engine) {
                 // Deploying a host
                 container.addContainerListener(this);

@@ -169,7 +169,10 @@ public class ContainerEventHandlerAdapterTestCase {
 
         verify(context).addLifecycleListener(handler);
         verify(context).addPropertyChangeListener(handler);
-        verify(this.eventHandler).add(eq(catalinaContext));
+
+        LifecycleEvent lifecycleEvent = new LifecycleEvent(context, Lifecycle.AFTER_START_EVENT, context);
+        handler.lifecycleEvent(lifecycleEvent);
+        verify(this.eventHandler).start(eq(catalinaContext));
     }
 
     @Test
