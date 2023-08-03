@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * @author Paul Ferraro
  */
 public class DeterministicLoadStateImpl implements DeterministicLoadState {
-    private final AtomicReference<Double> previousLoad = new AtomicReference<Double>(new Double(0));
+    private final AtomicReference<Double> previousLoad = new AtomicReference<>((double) 0);
     private final AtomicLong previousTime = new AtomicLong(System.currentTimeMillis());
 
     @Override
@@ -38,7 +38,7 @@ public class DeterministicLoadStateImpl implements DeterministicLoadState {
         long currentTime = System.currentTimeMillis();
         long previousTime = this.previousTime.getAndSet(currentTime);
 
-        double previousLoad = this.previousLoad.getAndSet(new Double(currentLoad)).doubleValue();
+        double previousLoad = this.previousLoad.getAndSet(currentLoad);
 
         double seconds = (currentTime - previousTime) / 1000d;
 

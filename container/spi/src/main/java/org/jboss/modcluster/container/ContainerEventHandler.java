@@ -42,8 +42,9 @@ public interface ContainerEventHandler {
     void shutdown();
 
     /**
-     * Indicates the deployment of a new web application. This event triggers a ENABLE-APP command for this context, if it is
-     * already started.
+     * Indicates the deployment of a new web application which is not intending to start immediately. This will issue a STOP-APP
+     * without session draining command on the proxies. In case the application will start
+     * use {@link ContainerEventHandler#start(Context)}.
      *
      * @param context the added context
      */

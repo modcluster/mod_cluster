@@ -211,11 +211,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
             for (Engine engine : server.getEngines()) {
                 this.config(engine);
 
-                for (Host host : engine.getHosts()) {
-                    for (Context context : host.getContexts()) {
-                        this.add(context);
-                    }
-                }
+                // n.b. MODCLUSTER-790 do not ContainerEventHandler#add(..) the context here - wait for actual start(..)
             }
         }
     }
@@ -300,12 +296,8 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         ModClusterLogger.LOGGER.addContext(context.getHost(), context);
 
         if (this.include(context) && this.established) {
-            // Send ENABLE-APP if state is started
-            if (context.isStarted()) {
-                this.enable(context);
-            } else {
-                this.stop(context);
-            }
+            // Send a STOP-APP directly, without session draining.
+            this.mcmpHandler.sendRequest(this.requestFactory.createStopRequest(context));
         }
     }
 
