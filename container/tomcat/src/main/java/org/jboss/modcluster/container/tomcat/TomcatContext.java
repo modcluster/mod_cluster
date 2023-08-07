@@ -159,6 +159,8 @@ public class TomcatContext implements Context {
 
     @Override
     public int getActiveSessionCount() {
+        if (this.context.getManager() == null)
+            return 0;
         return this.context.getManager().getActiveSessions();
     }
 
@@ -194,6 +196,7 @@ public class TomcatContext implements Context {
 
     private Object[] removeListener(Object listener, Object[] listeners) {
         if (listeners == null) return null;
+        if (listeners.length == 0) return null;
 
         List<Object> listenerList = new ArrayList<>(listeners.length - 1);
 
