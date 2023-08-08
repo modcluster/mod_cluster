@@ -159,8 +159,9 @@ public class TomcatContext implements Context {
 
     @Override
     public int getActiveSessionCount() {
-        if (this.context.getManager() == null)
+        if (this.context.getManager() == null) {
             return 0;
+        }
         return this.context.getManager().getActiveSessions();
     }
 
