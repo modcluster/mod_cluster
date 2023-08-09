@@ -35,6 +35,7 @@ import org.apache.catalina.Host;
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
+import org.apache.catalina.LifecycleState;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.ContainerEventHandler;
@@ -136,6 +137,14 @@ public class TomcatEventHandlerAdapter implements TomcatEventHandler {
                 ((Container) child).addPropertyChangeListener(this);
 
                 // n.b. MODCLUSTER-790 do not ContainerEventHandler#add(..) the context here - wait for actual start(..)
+
+                // In Tomcat 8.5 the LifecycleListener does not pass an after_start event and thus this is the only event
+                // obtained during 'autoDeploy', so we need to start the context from here, which is already started:
+                if (child instanceof Context) {
+                    if (LifecycleState.STARTED == ((Context) child).getState()) {
+                        this.eventHandler.start(new TomcatContext(registry, (Context) child));
+                    }
+                }
             } else if (container instanceof Engine) {
                 // Deploying a host
                 container.addContainerListener(this);
