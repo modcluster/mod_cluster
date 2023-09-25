@@ -100,7 +100,7 @@ public class SingleServiceServer implements Server {
 
     @Override
     public int getPortWithOffset() {
-        return this.service.getServer().getPort();
+        return this.service.getServer().getPortWithOffset();
     }
 
     @Override
