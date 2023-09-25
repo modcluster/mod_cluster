@@ -95,7 +95,7 @@ public class TomcatConnector implements Connector {
 
     @Override
     public int getPort() {
-        return (this.externalPort == null) ? this.connector.getPort() : this.externalPort;
+        return (this.externalPort == null) ? this.connector.getPortWithOffset() : this.externalPort;
     }
 
     @Override
