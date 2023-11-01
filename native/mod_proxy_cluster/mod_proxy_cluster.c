@@ -103,6 +103,7 @@ static int creat_bal = CREAT_ROOT;
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
 static int deterministic_failover = 0;
 static int use_nocanon = 0;
+static int responsecode_when_no_context = HTTP_NOT_FOUND;
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
@@ -3617,12 +3618,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
                 return HTTP_SERVICE_UNAVAILABLE;
             } else {
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy: CLUSTER: (%s). No context for the URL",
-                             (*balancer)->s->name
-                             );
+                ap_log_error(APLOG_MARK,
+                             responsecode_when_no_context == HTTP_NOT_FOUND ? APLOG_DEBUG : APLOG_ERR, 0, r->server,
+                             "proxy: CLUSTER: (%s). No context for the URL returns %d",
+                             (*balancer)->s->name, responsecode_when_no_context);
 
-                return HTTP_NOT_FOUND;
+                return responsecode_when_no_context;
             }
         }
         if ((*balancer)->s->sticky[0] != '\0' && runtime) {
@@ -3947,6 +3948,16 @@ static const char *cmd_proxy_cluster_use_nocanon(cmd_parms *parms, void *mconfig
     return NULL;
 }
 
+static const char *cmd_proxy_cluster_responsecode_when_no_context(cmd_parms *parms, void *mconfig, const char *arg)
+{
+    int val = atoi(arg);
+    if (val<0) {
+        return "ResponseStatusCodeOnNoContext must be greater than 0";
+    } else {
+        responsecode_when_no_context = val;
+    }
+    return NULL;
+}
 
 static const command_rec  proxy_cluster_cmds[] =
 {
@@ -4006,6 +4017,14 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "UseNocanon - When no ProxyPass or ProxyMatch for the URL, passes the URL path \"raw\" to the backend (Default: Off)"
+    ),
+
+    AP_INIT_TAKE1(
+        "ResponseStatusCodeOnNoContext",
+        cmd_proxy_cluster_responsecode_when_no_context,
+        NULL,
+        OR_ALL,
+        "ResponseStatusCodeOnNoContext - Response code returned when ProxyPass or ProxyMatch doesn't have matching context (Default: 404)"
     ),
     {NULL}
 };
