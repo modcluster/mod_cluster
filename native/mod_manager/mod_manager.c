@@ -3579,7 +3579,7 @@ static const command_rec  manager_cmds[] =
          cmd_manager_ws_upgrade_header,
          NULL,
          OR_ALL,
-         "WSUpgradeHeader - Accepted upgrade headers, ONE bypass checks, ANY read it from request, other values: header value to check before using the WS tunnel."
+         "WSUpgradeHeader - Accepted upgrade header values: NONE bypass checks, ANY read it from request, other values: header value to check before using the WS tunnel."
     ),
     AP_INIT_TAKE1(
         "AJPSecret",
