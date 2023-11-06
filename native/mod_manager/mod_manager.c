@@ -3572,7 +3572,7 @@ static const command_rec  manager_cmds[] =
          cmd_manager_enable_ws_tunnel,
          NULL,
          OR_ALL,
-         "EnableWsTunnel - Use ws or wss instead http or https when creating nodes (Allow Websockets proxing)."
+         "EnableWsTunnel - Use ws or wss instead of http or https when creating nodes (allows WebSocket proxying)."
     ),
     AP_INIT_TAKE1(
         "WSUpgradeHeader",
