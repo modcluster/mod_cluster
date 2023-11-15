@@ -58,10 +58,10 @@
 /* define HAVE_CLUSTER_EX_DEBUG to have extented debug in mod_cluster */
 #define HAVE_CLUSTER_EX_DEBUG 0
 
-/* prevent old 2.2.x httpd version to compile */
-#if AP_MODULE_MAGIC_AT_LEAST(20101223,1)
+/* prevent httpd versions older than 2.4.49 to compile */
+#if AP_MODULE_MAGIC_AT_LEAST(20120211,116)
 #else
-#error "httpd 2.2.x NOT SUPPORTED!"
+#error "httpd 2.4.48 and older are NOT SUPPORTED!"
 #endif
 
 /* define OUR load balancer method names (lbpname), must start by MC */
