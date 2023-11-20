@@ -5,6 +5,7 @@
 package org.jboss.modcluster.container;
 
 import java.net.InetAddress;
+import java.util.Locale;
 
 /**
  * SPI for a connector, defined as a communication end-point for a client or proxy.
@@ -38,7 +39,7 @@ public interface Connector {
          */
         @Override
         public String toString() {
-            return this.name().toLowerCase();
+            return this.name().toLowerCase(Locale.ENGLISH);
         }
     }
 

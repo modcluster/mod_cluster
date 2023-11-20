@@ -13,6 +13,7 @@ import java.net.StandardSocketOptions;
 import java.nio.channels.DatagramChannel;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Locale;
 
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterLogger;
@@ -42,7 +43,7 @@ public class DatagramChannelFactoryImpl implements DatagramChannelFactory {
 
     public DatagramChannelFactoryImpl() {
         String value = this.getSystemProperty("os.name");
-        this.canBindToMulticastAddress = (value != null) && (value.toLowerCase().startsWith("linux") || value.toLowerCase().startsWith("mac") || value.toLowerCase().startsWith("hp"));
+        this.canBindToMulticastAddress = (value != null) && (value.toLowerCase(Locale.ENGLISH).startsWith("linux") || value.toLowerCase(Locale.ENGLISH).startsWith("mac") || value.toLowerCase(Locale.ENGLISH).startsWith("hp"));
     }
 
     private String getSystemProperty(final String key) {

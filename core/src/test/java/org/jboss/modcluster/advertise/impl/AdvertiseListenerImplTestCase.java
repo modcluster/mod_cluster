@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.Executors;
 
 import org.jboss.modcluster.TestUtils;
@@ -109,7 +110,7 @@ public class AdvertiseListenerImplTestCase {
 
             assertFalse(this.channel.isConnected());
 
-            if (!System.getProperty("os.name").toLowerCase().startsWith("mac")) {
+            if (!System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac")) {
                 listener.close();
             } else {
                 try {
