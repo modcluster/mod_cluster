@@ -1,3 +1,7 @@
+/*
+ * Copyright The mod_cluster Project Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 package org.jboss.modcluster;
 
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;

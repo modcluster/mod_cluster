@@ -1,6 +1,11 @@
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
 
+REM
+REM Copyright The mod_cluster Project Authors
+REM SPDX-License-Identifier: Apache-2.0
+REM
+
 set CP=
 
 for %%i in (lib\*.jar) do call :concatsep %%i

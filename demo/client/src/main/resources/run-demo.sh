@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+#
+# Copyright The mod_cluster Project Authors
+# SPDX-License-Identifier: Apache-2.0
+#
+
 CP=
 
 for i in lib/*.jar
