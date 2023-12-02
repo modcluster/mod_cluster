@@ -57,7 +57,7 @@
         <fileSet>
             <directory>..</directory>
             <includes>
-                <include>LICENSE*</include>
+                <include>LICENSE</include>
                 <include>README*</include>
             </includes>
             <outputDirectory>.</outputDirectory>

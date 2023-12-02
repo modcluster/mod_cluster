@@ -109,9 +109,6 @@ Project mod_cluster uses Red Hat Jira issue tracker under MODCLUSTER project:
 
 [https://issues.redhat.com/browse/MODCLUSTER](https://issues.redhat.com/browse/MODCLUSTER)
 
-
 License
 -------
-
-This software is distributed under the terms of the GNU Lesser General Public License (see [LICENSE.txt](LICENSE.txt)).
-
+* [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
