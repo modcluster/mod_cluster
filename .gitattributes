@@ -4,6 +4,6 @@
 # Set text and script files which are bundled as part of the distribution to use CRLF line endings
 # so that they are human readable on Microsoft Windows-based systems
 README.md       text eol=crlf
-LICENSE.txt     text eol=crlf
+LICENSE         text eol=crlf
 *.bat           text eol=crlf
 *.cmd           text eol=crlf
