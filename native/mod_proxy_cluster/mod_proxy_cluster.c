@@ -1737,7 +1737,7 @@ static  nodeinfo_t* table_get_node(proxy_node_table *node_table, int id)
  * @param use_alias compare alias with server_name
  * @return a pointer to a list of nodes.
  */
-static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table, proxy_node_table *node_table)
+static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table, proxy_node_table *node_table, int *has_contexts)
 {
     int sizecontext = context_table->sizecontext;
     int *contexts;
@@ -1831,6 +1831,7 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
             if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
                 continue;
         }
+        *has_contexts = -1;
         len = strlen(context->context);
         if (strncmp(uri, context->context, len) == 0) {
             if (uri[len] == '\0' || uri[len] == '/' || len==1) {
@@ -1893,10 +1894,11 @@ static char *get_context_host_balancer(request_rec *r,
 		proxy_vhost_table *vhost_table, proxy_context_table *context_table, proxy_node_table *node_table)
 {
     void *sconf = r->server->module_config;
+    int has_contexts = 0;
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table, node_table);
+    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (nodes == NULL)
         return NULL;
     while ((*nodes).node != -1) {
@@ -1931,8 +1933,9 @@ static node_context *context_host_ok(request_rec *r, proxy_balancer *balancer, i
 {
     const char *route;
     node_context *best;
+    int has_contexts = 0;
     route = apr_table_get(r->notes, "session-route");
-    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (best == NULL)
         return NULL;
     while ((*best).node != -1) {
@@ -1990,6 +1993,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     char *tokenizer;
     const char *session_id;
     int rc; /* for trans */
+    int has_contexts = 0;
 
     workers = apr_pcalloc(r->pool, sizeof(proxy_worker *) * balancer->workers->nelts);
 #if HAVE_CLUSTER_EX_DEBUG
@@ -2005,10 +2009,11 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 
     /* do this once now to avoid repeating find_node_context_host through loop iterations */
     route = apr_table_get(r->notes, "session-route");
-    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (best == NULL) {
         /* No context to serve the request we can't do much */
-        apr_table_setn(r->notes, "no-context-error", "1");
+        if (has_contexts)
+            apr_table_setn(r->notes, "no-context-error", "1");
         return NULL;
     }
 
@@ -2842,7 +2847,8 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                 route++;
             if (route && *route) {
                 /* Nice we have a route, but make sure we have to serve it */
-                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+                int has_contexts = 0;
+                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
                 if (nodes == NULL)
                     continue; /* we can't serve context/host for the request with this balancer*/
             }
