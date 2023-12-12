@@ -76,13 +76,13 @@ public class SingleServiceServer implements Server {
     }
 
     @Override
-    public void setPortOffset(int i) {
+    public void setPortOffset(int portOffset) {
         throw new IllegalStateException();
     }
 
     @Override
     public int getPortWithOffset() {
-        return this.service.getServer().getPort();
+        return this.service.getServer().getPortWithOffset();
     }
 
     @Override
