@@ -220,6 +220,39 @@
                         </goals>
                         <configuration>
                             <release>${jdk.release.version}</release>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging-processor</artifactId>
+                                    <version>${version.jboss-logging-processor}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.jboss-logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging-processor</artifactId>
+                                    <version>${version.jboss-logging-processor}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.jboss-logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
                         </configuration>
                     </execution>
                 </executions>
