@@ -263,4 +263,20 @@
             </plugins>
         </pluginManagement>
     </build>
+
+    <!-- Setup <distributionManagement> until org.jboss:jboss-parent:42 which will add altReleaseDeploymentRepository/altSnapshotDeploymentRepository for the deploy plugin -->
+    <!-- See https://github.com/jboss/jboss-parent-pom/pull/244 -->
+    <distributionManagement>
+        <repository>
+            <id>${jboss.releases.repo.id}</id>
+            <name>JBoss Releases Repository</name>
+            <url>${jboss.releases.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${jboss.snapshots.repo.id}</id>
+            <name>JBoss Snapshots Repository</name>
+            <url>${jboss.snapshots.repo.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
 </project>
