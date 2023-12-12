@@ -186,6 +186,18 @@
                         </goals>
                         <configuration>
                             <release>${jdk.release.version}</release>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging-processor</artifactId>
+                                    <version>${version.jboss-logging-processor}</version>
+                                </path>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging</artifactId>
+                                    <version>${version.jboss-logging}</version>
+                                </path>
+                            </annotationProcessorPaths>
                         </configuration>
                     </execution>
                 </executions>
@@ -252,7 +264,7 @@
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
-                        <useFile />
+                        <useFile/>
                     </configuration>
                 </plugin>
                 <plugin>
