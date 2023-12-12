@@ -73,9 +73,10 @@ public interface Connector {
     void setAddress(InetAddress address);
 
     /**
-     * Returns the port on which this connector operates.
+     * Returns the port on which this connector operates. Note that the implementations need to account for any form
+     * of external port mapping or port offsetting that might have an effect on the configured port.
      *
-     * @return a port number
+     * @return a port number on which this connector operates
      */
     int getPort();
 

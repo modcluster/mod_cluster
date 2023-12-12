@@ -78,7 +78,7 @@ public class TomcatConnector implements Connector {
 
     @Override
     public int getPort() {
-        return (this.externalPort == null) ? this.connector.getPort() : this.externalPort;
+        return (this.externalPort == null) ? this.connector.getPortWithOffset() : this.externalPort;
     }
 
     @Override
@@ -112,7 +112,7 @@ public class TomcatConnector implements Connector {
     @Override
     public String toString() {
         InetAddress address = this.getAddress();
-        return String.format("%s://%s:%d", this.getType(), (address != null) ? address.getHostAddress() : "<undefined>", this.connector.getPort());
+        return String.format("%s://%s:%d", this.getType(), (address != null) ? address.getHostAddress() : "<undefined>", this.connector.getPortWithOffset());
     }
 
     /**
