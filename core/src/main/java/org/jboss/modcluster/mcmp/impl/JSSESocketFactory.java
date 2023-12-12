@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import javax.net.SocketFactory;
@@ -243,7 +244,7 @@ public class JSSESocketFactory extends SocketFactory {
         KeyManager[] kms = kmf.getKeyManagers();
         if (alias != null) {
             if ("JKS".equals(this.config.getSslKeyStoreType())) {
-                alias = alias.toLowerCase();
+                alias = alias.toLowerCase(Locale.ENGLISH);
             }
             for (int i = 0; i < kms.length; i++) {
                 kms[i] = new JSSEKeyManager((X509KeyManager) kms[i], alias);
