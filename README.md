@@ -64,9 +64,6 @@ container
   tomcat-9.0 (Tomcat 9.0 container implementation)
   tomcat-10.1 (Tomcat 10.1 container implementation)
 load-spi (SPI classes for load metric computation)
-demo
-  client
-  server
 ```
 
 
@@ -90,7 +87,7 @@ When building from source, first ensure that Maven version 3.2.5 or newer (run `
 mvn clean install
 ```
 
-Distribution files for Tomcat and a demo application will be built in the `dist/target/` directory.
+Distribution files for Tomcat will be built in the `dist/target/` directory.
 
 ### Code Coverage Report
 

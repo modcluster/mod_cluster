@@ -39,7 +39,6 @@
         <module>core</module>
         <module>container</module>
         <module>load-spi</module>
-        <module>demo</module>
         <module>dist</module>
     </modules>
 
@@ -48,17 +47,14 @@
         <jdk.min.version>11</jdk.min.version>
         <jdk.release.version>11</jdk.release.version>
 
-        <!-- Common dependency -->
+        <!-- Common dependencies -->
         <version.jboss-logging>3.5.3.Final</version.jboss-logging>
         <version.jboss-logging-processor>2.2.1.Final</version.jboss-logging-processor>
-
-        <!-- Demo dependencies -->
-        <version.http-client>4.5.14</version.http-client>
-        <version.jfreechart>1.0.13</version.jfreechart>
         <version.jcip-annotations>1.0</version.jcip-annotations>
+
+        <!-- Test dependencies -->
         <version.junit>4.13.2</version.junit>
         <version.mockito>5.8.0</version.mockito>
-        <version.javax.servlet-3.0>1.0.2.Final</version.javax.servlet-3.0>
 
         <!-- Plugin versions -->
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
@@ -124,26 +120,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-demo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-demo-client</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.mod_cluster</groupId>
-                <artifactId>mod_cluster-demo-server</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jboss.spec.javax.servlet</groupId>
-                <artifactId>jboss-servlet-api_3.0_spec</artifactId>
-                <version>${version.javax.servlet-3.0}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${version.jboss-logging}</version>
@@ -152,16 +128,6 @@
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging-processor</artifactId>
                 <version>${version.jboss-logging-processor}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.httpcomponents</groupId>
-                <artifactId>httpclient</artifactId>
-                <version>${version.http-client}</version>
-            </dependency>
-            <dependency>
-                <groupId>jfree</groupId>
-                <artifactId>jfreechart</artifactId>
-                <version>${version.jfreechart}</version>
             </dependency>
             <dependency>
                 <groupId>net.jcip</groupId>
@@ -286,7 +252,7 @@
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
-                        <useFile />
+                        <useFile/>
                     </configuration>
                 </plugin>
                 <plugin>
