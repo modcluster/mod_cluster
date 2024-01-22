@@ -103,6 +103,7 @@ static int creat_bal = CREAT_ROOT;
 static int use_alias = 0; /* 1 : Compare Alias with server_name */
 static int deterministic_failover = 0;
 static int use_nocanon = 0;
+static int responsecode_when_no_context = HTTP_NOT_FOUND;
 
 static apr_time_t lbstatus_recalc_time = apr_time_from_sec(5); /* recalcul the lbstatus based on number of request in the time interval */
 
@@ -1736,7 +1737,7 @@ static  nodeinfo_t* table_get_node(proxy_node_table *node_table, int id)
  * @param use_alias compare alias with server_name
  * @return a pointer to a list of nodes.
  */
-static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table, proxy_node_table *node_table)
+static node_context *find_node_context_host(request_rec *r, proxy_balancer *balancer, const char *route, int use_alias, proxy_vhost_table* vhost_table, proxy_context_table* context_table, proxy_node_table *node_table, int *has_contexts)
 {
     int sizecontext = context_table->sizecontext;
     int *contexts;
@@ -1830,6 +1831,7 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
             if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
                 continue;
         }
+        *has_contexts = -1;
         len = strlen(context->context);
         if (strncmp(uri, context->context, len) == 0) {
             if (uri[len] == '\0' || uri[len] == '/' || len==1) {
@@ -1892,10 +1894,11 @@ static char *get_context_host_balancer(request_rec *r,
 		proxy_vhost_table *vhost_table, proxy_context_table *context_table, proxy_node_table *node_table)
 {
     void *sconf = r->server->module_config;
+    int has_contexts = 0;
     proxy_server_conf *conf = (proxy_server_conf *)
         ap_get_module_config(sconf, &proxy_module);
 
-    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table, node_table);
+    node_context *nodes =  find_node_context_host(r, NULL, NULL, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (nodes == NULL)
         return NULL;
     while ((*nodes).node != -1) {
@@ -1930,8 +1933,9 @@ static node_context *context_host_ok(request_rec *r, proxy_balancer *balancer, i
 {
     const char *route;
     node_context *best;
+    int has_contexts = 0;
     route = apr_table_get(r->notes, "session-route");
-    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (best == NULL)
         return NULL;
     while ((*best).node != -1) {
@@ -1989,6 +1993,7 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
     char *tokenizer;
     const char *session_id;
     int rc; /* for trans */
+    int has_contexts = 0;
 
     workers = apr_pcalloc(r->pool, sizeof(proxy_worker *) * balancer->workers->nelts);
 #if HAVE_CLUSTER_EX_DEBUG
@@ -2004,10 +2009,11 @@ static proxy_worker *internal_find_best_byrequests(proxy_balancer *balancer, pro
 
     /* do this once now to avoid repeating find_node_context_host through loop iterations */
     route = apr_table_get(r->notes, "session-route");
-    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+    best = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
     if (best == NULL) {
         /* No context to serve the request we can't do much */
-        apr_table_setn(r->notes, "no-context-error", "1");
+        if (has_contexts)
+            apr_table_setn(r->notes, "no-context-error", "1");
         return NULL;
     }
 
@@ -2841,7 +2847,8 @@ static const char *get_route_balancer(request_rec *r, proxy_server_conf *conf,
                 route++;
             if (route && *route) {
                 /* Nice we have a route, but make sure we have to serve it */
-                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table);
+                int has_contexts = 0;
+                node_context *nodes = find_node_context_host(r, balancer, route, use_alias, vhost_table, context_table, node_table, &has_contexts);
                 if (nodes == NULL)
                     continue; /* we can't serve context/host for the request with this balancer*/
             }
@@ -3617,12 +3624,12 @@ static int proxy_cluster_pre_request(proxy_worker **worker,
 
                 return HTTP_SERVICE_UNAVAILABLE;
             } else {
-                ap_log_error(APLOG_MARK, APLOG_DEBUG, 0, r->server,
-                             "proxy: CLUSTER: (%s). No context for the URL",
-                             (*balancer)->s->name
-                             );
+                ap_log_error(APLOG_MARK,
+                             responsecode_when_no_context == HTTP_NOT_FOUND ? APLOG_DEBUG : APLOG_ERR, 0, r->server,
+                             "proxy: CLUSTER: (%s). No context for the URL returns %d",
+                             (*balancer)->s->name, responsecode_when_no_context);
 
-                return HTTP_NOT_FOUND;
+                return responsecode_when_no_context;
             }
         }
         if ((*balancer)->s->sticky[0] != '\0' && runtime) {
@@ -3947,6 +3954,16 @@ static const char *cmd_proxy_cluster_use_nocanon(cmd_parms *parms, void *mconfig
     return NULL;
 }
 
+static const char *cmd_proxy_cluster_responsecode_when_no_context(cmd_parms *parms, void *mconfig, const char *arg)
+{
+    int val = atoi(arg);
+    if (val<0) {
+        return "ResponseStatusCodeOnNoContext must be greater than 0";
+    } else {
+        responsecode_when_no_context = val;
+    }
+    return NULL;
+}
 
 static const command_rec  proxy_cluster_cmds[] =
 {
@@ -4006,6 +4023,14 @@ static const command_rec  proxy_cluster_cmds[] =
         NULL,
         OR_ALL,
         "UseNocanon - When no ProxyPass or ProxyMatch for the URL, passes the URL path \"raw\" to the backend (Default: Off)"
+    ),
+
+    AP_INIT_TAKE1(
+        "ResponseStatusCodeOnNoContext",
+        cmd_proxy_cluster_responsecode_when_no_context,
+        NULL,
+        OR_ALL,
+        "ResponseStatusCodeOnNoContext - Response code returned when ProxyPass or ProxyMatch doesn't have matching context (Default: 404)"
     ),
     {NULL}
 };
