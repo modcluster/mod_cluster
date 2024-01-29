@@ -237,18 +237,23 @@ static apr_status_t ap_slotmem_do(ap_slotmem_t *mem, mc_slotmem_callback_fn_t *f
 static apr_status_t ap_slotmem_lock(ap_slotmem_t *s)
 {
     apr_status_t rv;
-    rv = apr_file_lock(s->global_lock, APR_FLOCK_EXCLUSIVE);
-    if (rv != APR_SUCCESS)
-        return rv;
     rv = apr_thread_mutex_lock(globalmutex_lock);
     if (rv != APR_SUCCESS)
-        apr_file_unlock(s->global_lock);
+        return rv;
+    rv = apr_file_lock(s->global_lock, APR_FLOCK_EXCLUSIVE);
+    if (rv != APR_SUCCESS)
+        apr_thread_mutex_unlock(globalmutex_lock);
     return rv;
 }
 static apr_status_t ap_slotmem_unlock(ap_slotmem_t *s)
 {
-    apr_thread_mutex_unlock(globalmutex_lock);
-    return(apr_file_unlock(s->global_lock));
+    apr_status_t rv;
+    rv = apr_file_unlock(s->global_lock);
+    if (rv == APR_SUCCESS)
+        rv = apr_thread_mutex_unlock(globalmutex_lock);
+    else
+        apr_thread_mutex_unlock(globalmutex_lock);
+    return rv;
 }
 
 /* Create the whole slotmem array */
