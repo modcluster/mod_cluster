@@ -2477,6 +2477,17 @@ static void domain_command_string(request_rec *r, char *Domain)
 }
 
 /*
+ * Helper function for html escaping of non-NULL terminated strings.
+*/
+static char* mc_escape_html(apr_pool_t *pool, const char* str, int len)
+{
+    char *s = apr_palloc(pool, len + 1);
+    memcpy(s, str, len);
+    s[len] = '\0';
+    return ap_escape_html(pool, s);
+}
+
+/*
  * Process the parameters and display corresponding informations.
  */
 static void manager_info_contexts(request_rec *r, int reduce_display, int allow_cmd, int node, int host, char *Alias, char *JVMRoute)
@@ -2511,7 +2522,7 @@ static void manager_info_contexts(request_rec *r, int reduce_display, int allow_
                 status = "STOPPED";
                 break;
         }
-        ap_rprintf(r, "%.*s, Status: %s Request: %d ", (int) sizeof(ou->context), ou->context, status, ou->nbrequests);
+        ap_rprintf(r, "%.*s, Status: %s Request: %d ", (int) sizeof(ou->context), mc_escape_html(r->pool, ou->context, sizeof(ou->context)), status, ou->nbrequests);
         if (allow_cmd)
             context_command_string(r, ou, Alias, JVMRoute);
         ap_rprintf(r, "\n");
@@ -2545,7 +2556,7 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
                 ap_rprintf(r, "</pre>");
             if (!reduce_display)
                 ap_rprintf(r, "<h2> Virtual Host %d:</h2>", ou->vhost);
-            manager_info_contexts(r, reduce_display, allow_cmd, ou->node, ou->vhost, ou->host, JVMRoute);
+            manager_info_contexts(r, reduce_display, allow_cmd, ou->node, ou->vhost, mc_escape_html(r->pool, ou->host, sizeof(ou->host)), JVMRoute);
             if (reduce_display)
                 ap_rprintf(r, "Aliases: ");
             else {
@@ -2555,9 +2566,9 @@ static void manager_info_hosts(request_rec *r, int reduce_display, int allow_cmd
             vhost = ou->vhost;
         
             if (reduce_display)
-                ap_rprintf(r, "%.*s ", (int) sizeof(ou->host), ou->host);
+                ap_rprintf(r, "%.*s ", (int) sizeof(ou->host), mc_escape_html(r->pool, ou->host, sizeof(ou->host)));
             else
-                ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), ou->host);
+                ap_rprintf(r, "%.*s\n", (int) sizeof(ou->host), mc_escape_html(r->pool, ou->host, sizeof(ou->host)));
             
             /* Go ahead and check for any other later alias entries for this vhost and print them now */
             for (j=i+1; j<size; j++) {
