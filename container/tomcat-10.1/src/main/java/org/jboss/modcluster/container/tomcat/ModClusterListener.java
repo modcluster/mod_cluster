@@ -27,6 +27,7 @@ import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
@@ -77,8 +78,8 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
             @Override
             public LoadMetric run() {
                 try {
-                    return ModClusterListener.this.loadMetricClass.newInstance();
-                } catch (IllegalAccessException | InstantiationException e) {
+                    return ModClusterListener.this.loadMetricClass.getConstructor().newInstance();
+                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
@@ -140,8 +141,8 @@ public class ModClusterListener extends ModClusterConfig implements TomcatConnec
             @Override
             public JvmRouteFactory run() {
                 try {
-                    return factoryClass.newInstance();
-                } catch (IllegalAccessException | InstantiationException e) {
+                    return factoryClass.getConstructor().newInstance();
+                } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                     throw new IllegalArgumentException(e);
                 }
             }
