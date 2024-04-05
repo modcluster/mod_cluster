@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
         # Keep this list as: all supported LTS JDKs, the latest GA JDK, and the latest EA JDK (if available).
-        java: [ 11, 17, 21, 22-ea ]
+        java: [ 11, 17, 21, 22, 23-ea ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,11 +29,14 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Build (with coverage) with Maven using JDK ${{ matrix.java }}
-        run: mvn -B verify -P coverage
-      - name: Upload JaCoCo report
-        uses: actions/upload-artifact@v4
+      - name: Build with Maven using JDK ${{ matrix.java }}
+        run: mvn --batch-mode --no-transfer-progress verify --define net.bytebuddy.experimental=true
+      - name: Build with coverage with Maven using JDK ${{ matrix.java }}
         if: ${{ matrix.java == '11' && matrix.os == 'ubuntu-latest' }}
+        run: mvn --batch-mode --no-transfer-progress --activate-profiles=coverage verify
+      - name: Upload JaCoCo report
+        if: ${{ matrix.java == '11' && matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
         with:
           name: jacoco
           path: code-coverage/target/site/jacoco-aggregate
