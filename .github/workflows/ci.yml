@@ -29,3 +29,69 @@ jobs:
             ${{ runner.os }}-maven-
       - name: Build with Maven
         run: mvn -B package -P dist
+
+  cmake-fedora-latest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler: [ gcc, clang ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: mod_proxy_cluster
+      - name: Setup Podman
+        run: |
+          sudo apt update
+          sudo apt-get -y install podman
+          podman pull fedora:39
+      - name: Create container and build
+        run: |
+          {
+              echo 'FROM fedora:39'
+              echo 'RUN dnf install cmake httpd-devel ${{ matrix.compiler }} -y'
+              echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
+              echo 'RUN dnf clean all'
+              echo 'COPY mod_proxy_cluster mod_proxy_cluster'
+              echo 'WORKDIR /mod_proxy_cluster/native'
+              echo 'RUN cmake . -DCMAKE_C_COMPILER=${{ matrix.compiler }}'
+              echo 'RUN make'
+          } > podmanfile
+          podman build -f ./podmanfile
+    name: cmake-fedora-latest
+
+  make-fedora-latest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: mod_proxy_cluster
+      - name: Setup Podman
+        run: |
+          sudo apt update
+          sudo apt-get -y install podman
+          podman pull fedora:39
+      - name: Create container and build
+        run: |
+          {
+              echo 'FROM fedora:39'
+              echo 'RUN dnf install httpd-devel redhat-rpm-config -y'
+              echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
+              echo 'RUN dnf clean all'
+              echo 'COPY mod_proxy_cluster mod_proxy_cluster'
+              echo 'WORKDIR /mod_proxy_cluster/native'
+              echo 'RUN \'
+              echo 'for module in advertise mod_cluster_slotmem mod_manager mod_proxy_cluster; do \'
+              echo '  echo Building: $module; \'
+              echo '  cd $module; \'
+              echo '  sh buildconf; \'
+              echo '  ./configure --with-apxs=$APACHE_DIR/bin/apxs; \'
+              echo '  make clean; \'
+              # Ensure the build fails in case of a failure in any of the module builds!
+              echo '  make || exit 1; \'
+              echo '  cd ..; \'
+              echo 'done;'
+          } > podmanfile
+          podman build -f ./podmanfile
