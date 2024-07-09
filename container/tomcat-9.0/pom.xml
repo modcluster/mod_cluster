@@ -14,7 +14,7 @@
     <name>mod_cluster: Container - Tomcat 9.0</name>
 
     <properties>
-        <version.org.apache.tomcat-9.0>9.0.90</version.org.apache.tomcat-9.0>
+        <version.org.apache.tomcat-9.0>9.0.91</version.org.apache.tomcat-9.0>
     </properties>
 
     <dependencies>
