@@ -13,7 +13,7 @@ Project mod_cluster boasts the following advantages over other httpd-based load 
 
 * Dynamic configuration of httpd workers
 * Server-side load balance factor calculation
-* Fine grained web-app lifecycle control
+* Fine-grained web-app lifecycle control
 * AJP is optional
 
 [https://www.modcluster.io](https://www.modcluster.io)
@@ -22,23 +22,15 @@ Project mod_cluster boasts the following advantages over other httpd-based load 
 Installation Instructions
 -------------------------
 
-### JBoss AS 7/WildFly 8 (or newer)
+### WildFly 8 and newer
 
-These versions already ship with bundled mod_cluster. It is configured via mod_cluster
-subsystem.
+These versions already ship with bundled mod_cluster. It is configured via mod_cluster subsystem.
 
-
-### JBoss AS 6
-
-This is the first version of AS that bundled mod_cluster, the configuration is located in
-`/server/<profile>/deploy/mod_cluster.sar/META-INF` directory.
-
-
-### Tomcat 8.5 (or newer)
+### Tomcat 9.0 and newer
 
 Distribution archives are provided for each Tomcat version.
 
-1. Obtain the distribution archive corresponding to the intended Tomcat version by either downloading from the project
+1. Get the distribution archive corresponding to the intended Tomcat version by either downloading from the project
    website or if building from source located in `dist/target/` directory.
 2. Download and unzip or untar the distribution archive and navigate to the extracted directory.
 3. Copy the `lib/` directory to the Tomcat installation directory adding jars to its `lib/` directory. If upgrading from
@@ -54,13 +46,12 @@ Distribution archives are provided for each Tomcat version.
 Project Structure
 -----------------
 
-Project is split up into multiple modules:
+The Project is split up into multiple modules:
 
 ```
 core (contains the implementation of container-independent core mod_cluster concepts)
 container
   spi (SPI classes for container integrations, has no dependencies on a specific web container)
-  tomcat-8.5 (Tomcat 8.5 container implementation)
   tomcat-9.0 (Tomcat 9.0 container implementation)
   tomcat-10.1 (Tomcat 10.1 container implementation)
 load-spi (SPI classes for load metric computation)
@@ -108,4 +99,5 @@ Project mod_cluster uses Red Hat Jira issue tracker under MODCLUSTER project:
 
 License
 -------
+
 * [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)

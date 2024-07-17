@@ -15,7 +15,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>spi</module>
-        <module>tomcat-8.5</module>
         <module>tomcat-9.0</module>
         <module>tomcat-10.1</module>
     </modules>
