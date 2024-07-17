@@ -18,7 +18,7 @@
 
     <name>mod_cluster (parent)</name>
     <description>An httpd-based load balancer</description>
-    <url>https://modcluster.io</url>
+    <url>https://www.modcluster.io</url>
 
     <licenses>
         <license>
