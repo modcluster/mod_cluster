@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
+<!--
+  ~ Copyright The mod_cluster Project Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
 <mbeans-descriptors>
 
   <mbean name="ModClusterListener"
