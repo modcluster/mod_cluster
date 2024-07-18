@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright The mod_cluster Project Authors
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
+    <id>tomcat-11.0</id>
+    <componentDescriptors>
+        <componentDescriptor>src/assembly/tomcat-component.xml</componentDescriptor>
+    </componentDescriptors>
+    <formats>
+        <format>zip</format>
+        <format>tar.gz</format>
+    </formats>
+    <!-- Tomcat 11.0 specific jars -->
+    <fileSets>
+        <fileSet>
+            <directory>../container/tomcat-11.0/target/</directory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <excludes>
+                <exclude>*-javadoc.jar</exclude>
+                <exclude>*-sources.jar</exclude>
+                <exclude>*-tests.jar</exclude>
+            </excludes>
+            <outputDirectory>lib</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
