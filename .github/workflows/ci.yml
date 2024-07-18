@@ -12,16 +12,20 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest, macos-latest ]
+        # Keep this list as: all supported LTS JDKs
+        java-compilation: [ 17, 21 ]
         # Keep this list as: all supported LTS JDKs, the latest GA JDK, and the latest EA JDK (if available).
-        java: [ 11, 17, 21, 22, 23-ea ]
+        java-runtime: [ 11, 17, 21, 22, 23-ea ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up JDK ${{ matrix.java }}
+      - name: Set up JDK ${{ matrix.java-compilation }} (compilation)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: ${{ matrix.java }}
+          java-version: ${{ matrix.java-compilation }}
+      - name: Build with Maven using JDK ${{ matrix.java-compilation }} (compilation only)
+        run: mvn --batch-mode --no-transfer-progress verify --define net.bytebuddy.experimental=true --define skipTests
       - name: Cache local Maven repository
         uses: actions/cache@v4
         with:
@@ -29,13 +33,20 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Build with Maven using JDK ${{ matrix.java }}
-        run: mvn --batch-mode --no-transfer-progress verify --define net.bytebuddy.experimental=true
-      - name: Build with coverage with Maven using JDK ${{ matrix.java }}
-        if: ${{ matrix.java == '11' && matrix.os == 'ubuntu-latest' }}
-        run: mvn --batch-mode --no-transfer-progress --activate-profiles=coverage verify
+      - name: Set up JDK ${{ matrix.java-runtime }} (runtime)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-runtime }}
+      - name: Build with Maven using JDK ${{ matrix.java-runtime }}
+        # To support Windows PowerShell, a space between -D property=true is required.
+        run: mvn --batch-mode --no-transfer-progress verify --define net.bytebuddy.experimental=true --define maven.main.skip=true
+      # Code Coverage (runs once per matrix)
+      - name: Build with coverage with Maven using JDK ${{ matrix.runtime }}
+        if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '11' && matrix.os == 'ubuntu-latest' }}
+        run: mvn --batch-mode --no-transfer-progress --activate-profiles=coverage verify --define maven.main.skip=true
       - name: Upload JaCoCo report
-        if: ${{ matrix.java == '11' && matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '11' && matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
           name: jacoco

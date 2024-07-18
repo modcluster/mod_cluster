@@ -52,6 +52,24 @@ updates:
       - dependency-name: org.apache.tomcat:tomcat-util
         versions:
           - ">= 11"
+  - package-ecosystem: maven
+    directory: "/container/tomcat-11.0"
+    # Workaround for MODCLUSTER-778 Dependabot stopped working for Tomcat updates due to bogus tomcat releases in repository.jboss.org
+    registries:
+      - maven-central
+    schedule:
+      interval: daily
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: org.apache.tomcat:tomcat-catalina
+        versions:
+          - ">= 12"
+      - dependency-name: org.apache.tomcat:tomcat-coyote
+        versions:
+          - ">= 12"
+      - dependency-name: org.apache.tomcat:tomcat-util
+        versions:
+          - ">= 12"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

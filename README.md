@@ -54,6 +54,7 @@ container
   spi (SPI classes for container integrations, has no dependencies on a specific web container)
   tomcat-9.0 (Tomcat 9.0 container implementation)
   tomcat-10.1 (Tomcat 10.1 container implementation)
+  tomcat-11.0 (Tomcat 11.0 container implementation)
 load-spi (SPI classes for load metric computation)
 ```
 

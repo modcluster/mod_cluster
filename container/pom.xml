@@ -17,5 +17,6 @@
         <module>spi</module>
         <module>tomcat-9.0</module>
         <module>tomcat-10.1</module>
+        <module>tomcat-11.0</module>
     </modules>
 </project>
