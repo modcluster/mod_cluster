@@ -49,7 +49,7 @@ jobs:
       - name: Create container and build
         run: |
           {
-              echo 'FROM fedora:39'
+              echo 'FROM fedora:40'
               echo 'RUN dnf install cmake httpd-devel ${{ matrix.compiler }} -y'
               echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
               echo 'RUN dnf clean all'
@@ -76,7 +76,7 @@ jobs:
       - name: Create container and build
         run: |
           {
-              echo 'FROM fedora:39'
+              echo 'FROM fedora:40'
               echo 'RUN dnf install httpd-devel redhat-rpm-config -y'
               echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
               echo 'RUN dnf clean all'
@@ -95,3 +95,4 @@ jobs:
               echo 'done;'
           } > podmanfile
           podman build -f ./podmanfile
+
