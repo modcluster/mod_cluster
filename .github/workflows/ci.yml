@@ -96,3 +96,49 @@ jobs:
           } > podmanfile
           podman build -f ./podmanfile
 
+  make-with-httpd-trunk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          path: mod_proxy_cluster
+      - name: Checkout latest httpd
+        uses: actions/checkout@v4
+        with:
+          repository: apache/httpd
+          path: httpd
+      - name: Checkout apr for httpd
+        uses: actions/checkout@v4
+        with:
+          repository: apache/apr
+          path: httpd/srclib/apr
+      - name: Install necessary packages
+        run: |
+          ls
+          sudo apt-get update
+          sudo apt-get install cmake gcc cmake gcc make libtool libtool-bin python3 autoconf libxml2-dev libpcre2-dev -y
+      - name: Build httpd
+        run: |
+          ls
+          export "APACHE_DIR=/usr/local/apache2/"
+          cd httpd
+          ./buildconf
+          ./configure --prefix=/usr/local/apache2 --with-included-apr --enable-proxy-ajp --enable-maintainer-mode \
+                      --enable-so --enable-proxy --enable-proxy-http --enable-proxy-wstunned --enable-proxy-hcheck \
+                      --with-port=8000
+          sudo make
+          sudo make install
+      - name: Build mod_proxy_cluster
+        run: |
+          ls
+          cd mod_proxy_cluster/native
+          for module in advertise/ mod_proxy_cluster/ mod_cluster_slotmem/ mod_manager/; do \
+            cd $module; \
+            sh buildconf; \
+            ./configure CFLAGS="-Wall -Werror" --with-apxs=/usr/local/apache2/bin/apxs; \
+            make clean; \
+            make || exit 1; \
+            cd ..; \
+          done;
+
