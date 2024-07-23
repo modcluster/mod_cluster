@@ -284,7 +284,7 @@ static const char *cmd_advertise_h(cmd_parms *cmd, void *dummy,
 
 static const char *hex = "0123456789abcdef";
 
-apr_status_t ma_advertise_server(server_rec *server, int type)
+static apr_status_t ma_advertise_server(server_rec *server, int type)
 {
     char buf[MA_BSIZE];
     char dat[APR_RFC822_DATE_LEN];
@@ -420,7 +420,7 @@ static apr_status_t ma_group_join(const char *addr, apr_port_t port,
     return APR_SUCCESS;
 }
 
-static void ma_group_leave()
+static void ma_group_leave(void)
 {
     if (ma_mgroup_socket) {
         apr_mcast_leave(ma_mgroup_socket, ma_mgroup_sa,
