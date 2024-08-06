@@ -49,7 +49,7 @@
 
         <!-- Common dependencies -->
         <version.jboss-logging>3.6.0.Final</version.jboss-logging>
-        <version.jboss-logging-processor>3.0.0.Final</version.jboss-logging-processor>
+        <version.jboss-logging-processor>3.0.1.Final</version.jboss-logging-processor>
         <version.jcip-annotations>1.0</version.jcip-annotations>
 
         <!-- Test dependencies -->
