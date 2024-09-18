@@ -232,15 +232,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <!-- Workaround for compiling on JDK11 -->
-                    <!-- ModClusterLogger_$logger.java:6: error: package javax.annotation does not exist; for @Generated -->
-                    <additionalDependencies>
-                        <additionalDependency>
-                            <groupId>javax.annotation</groupId>
-                            <artifactId>javax.annotation-api</artifactId>
-                            <version>1.3.2</version>
-                        </additionalDependency>
-                    </additionalDependencies>
+                    <!-- The Tomcat container integration modules use the *same* package and class names which are not discerned by an aggregate Javadoc report.
+                         Thus, the following skippedModules should be a comma separated list of all non-latest Tomcat modules (artifactId) to not add in aggregated Javadoc.
+                         See https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#skippedModules -->
+                    <skippedModules>mod_cluster-container-tomcat-9.0,mod_cluster-container-tomcat-10.1</skippedModules>
                     <source>${jdk.release.version}</source>
                 </configuration>
             </plugin>
