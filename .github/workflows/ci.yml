@@ -39,15 +39,25 @@ jobs:
           distribution: temurin
           java-version: ${{ matrix.java-runtime }}
       - name: Build with Maven using JDK ${{ matrix.java-runtime }}
-        # To support Windows PowerShell, a space between -D property=true is required.
-        run: mvn --batch-mode --no-transfer-progress verify --define net.bytebuddy.experimental=true --define maven.main.skip=true
+        # To support Windows PowerShell, a space between --define property=true is required.
+        run: mvn --batch-mode --no-transfer-progress --define net.bytebuddy.experimental=true --define maven.main.skip=true verify
       # Code Coverage (runs once per matrix)
       - name: Build with coverage with Maven using JDK ${{ matrix.runtime }}
         if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '11' && matrix.os == 'ubuntu-latest' }}
-        run: mvn --batch-mode --no-transfer-progress --activate-profiles=coverage verify --define maven.main.skip=true
+        run: mvn --batch-mode --no-transfer-progress --activate-profiles=coverage --define maven.main.skip=true verify
       - name: Upload JaCoCo report
         if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '11' && matrix.os == 'ubuntu-latest' }}
         uses: actions/upload-artifact@v4
         with:
           name: jacoco
-          path: code-coverage/target/site/jacoco-aggregate
+          path: code-coverage/target/site/jacoco-aggregate/
+      # Aggregate Javadoc (runs once per matrix)
+      - name: Build aggregate Javadoc with Maven using JDK ${{ matrix.runtime }}
+        if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '17' && matrix.os == 'ubuntu-latest' }}
+        run: mvn --batch-mode --no-transfer-progress --define skipTests=true verify javadoc:aggregate
+      - name: Upload aggregate Javadoc
+        if: ${{ matrix.java-compilation == '17' && matrix.java-runtime == '17' && matrix.os == 'ubuntu-latest' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: apidocs
+          path: target/site/apidocs/
