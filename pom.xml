@@ -48,7 +48,7 @@
         <jdk.release.version>11</jdk.release.version>
 
         <!-- Common dependencies -->
-        <version.jboss-logging>3.6.0.Final</version.jboss-logging>
+        <version.jboss-logging>3.6.1.Final</version.jboss-logging>
         <version.jboss-logging-processor>3.0.2.Final</version.jboss-logging-processor>
         <version.jcip-annotations>1.0</version.jcip-annotations>
 
