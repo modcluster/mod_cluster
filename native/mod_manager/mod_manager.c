@@ -3412,7 +3412,7 @@ static const char*cmd_manager_enable_mcmp_receive(cmd_parms *cmd, void *dummy)
 }
 static const char*cmd_manager_enable_mcmp_receive_deprecated(cmd_parms *cmd, void *dummy)
 {
-    ap_log_error(APLOG_MARK, APLOG_WARNING, 0, cmd->server,
+    ap_log_error(APLOG_MARK, APLOG_WARNING, 0, NULL,
                  "EnableMCPMReceive is deprecated misspelled version of 'EnableMCMPReceive' configuration option."
                  "Please update your configuration.");
 
