@@ -2335,11 +2335,13 @@ static int proxy_node_isup(request_rec *r, int id, int load)
         }
     }
     else {
+        apr_time_t now = apr_time_now();
         worker->s->status &= ~PROXY_WORKER_IN_ERROR;
         worker->s->status &= ~PROXY_WORKER_STOPPED;
         worker->s->status &= ~PROXY_WORKER_DISABLED;
         worker->s->status &= ~PROXY_WORKER_HOT_STANDBY;
         worker->s->lbfactor = load;
+        worker->s->updated = now;
         if (http_worker != NULL) {
            /* the ws/wss doesn't point to shared memory, so fix the http/https part */
            http_worker->s->error_time = 0; /* we know the worker is OK ;-) */
@@ -2348,6 +2350,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
            http_worker->s->status &= ~PROXY_WORKER_DISABLED;
            http_worker->s->status &= ~PROXY_WORKER_HOT_STANDBY;
            http_worker->s->lbfactor = load;
+           http_worker->s->updated = now;
         }
     }
     return 0;
@@ -2540,6 +2543,8 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
         }
 
         while (s) {
+            int i;
+            proxy_balancer *balancer;
             sconf = s->module_config;
             conf = (proxy_server_conf *)
                 ap_get_module_config(sconf, &proxy_module);
@@ -2556,6 +2561,45 @@ static void * APR_THREAD_FUNC proxy_cluster_watchdog_func(apr_thread_t *thd, voi
             /* Free sessionid slots */
             if (sessionid_storage)
                 remove_timeout_sessionid(conf, pool, s);
+
+            /* synchronize the http_worker when we have WS or WSS */
+            balancer = (proxy_balancer *)conf->balancers->elts;
+            for (i = 0; i < conf->balancers->nelts; i++, balancer++) {
+                int j;
+                proxy_worker **workers;
+                workers = (proxy_worker **)balancer->workers->elts;
+                for (j = 0; j < balancer->workers->nelts; j++, workers++) {
+                    proxy_worker *worker = *workers;
+                    if (strcasecmp(worker->s->scheme, "WSS") == 0 ||
+                        strcasecmp(worker->s->scheme, "WS") == 0) {
+                        proxy_worker *http_worker;
+                        http_worker = get_http_worker(s, worker);
+                        if (http_worker != NULL) {
+                            if (http_worker->s->status != worker->s->status ||
+                                http_worker->s->error_time != worker->s->error_time) {
+                                ap_log_error(APLOG_MARK, APLOG_TRACE8, 0, s,
+                                              "proxy_cluster_watchdog_func status(%d %d) error_time (%ld %ld) updated (%ld %ld) pid: %d %s",
+                                               http_worker->s->status, worker->s->status,
+                                               http_worker->s->error_time, worker->s->error_time,
+                                               http_worker->s->updated, worker->s->updated,
+                                               getpid(),
+#if MODULE_MAGIC_NUMBER_MAJOR == 20120211 && MODULE_MAGIC_NUMBER_MINOR >= 124
+                                               worker->s->name_ex);
+#else
+                                               worker->s->name);
+#endif
+                                /* The STATUS sets the worker->s->updated */
+                                if (http_worker->s->updated < worker->s->updated) {
+                                    http_worker->s->status = worker->s->status;
+                                    http_worker->s->error_time = worker->s->error_time;
+                                    http_worker->s->updated = apr_time_now();
+                                }
+                            }  
+                        }
+                    }
+                }
+            }
+             
             s = s->next;
         }
         apr_pool_destroy(pool);
