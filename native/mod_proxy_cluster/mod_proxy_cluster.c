@@ -382,6 +382,7 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         worker->s->is_address_reusable = 1;
         worker->s->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
         worker->s->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
+        worker->s->status = 0;
     }
 
     if (created && worker->s->upgrade[0] != '\0') {
@@ -1828,7 +1829,7 @@ static node_context *find_node_context_host(request_rec *r, proxy_balancer *bala
             nodeinfo_t *node =  table_get_node(node_table, context->node);
             if (node == NULL)
                 continue;
-            if (strlen(balancer->s->name) > 11 && strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
+            if (strlen(balancer->s->name) <= 11 || strcasecmp(&balancer->s->name[11], node->mess.balancer) != 0)
                 continue;
         }
         *has_contexts = -1;
