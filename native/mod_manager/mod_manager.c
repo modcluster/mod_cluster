@@ -3405,11 +3405,24 @@ static const char*cmd_manager_maxmesssize(cmd_parms *cmd, void *mconfig, const c
 static const char*cmd_manager_enable_mcmp_receive(cmd_parms *cmd, void *dummy)
 {
     mod_manager_config *mconf = ap_get_module_config(cmd->server->module_config, &manager_module);
-    if (!cmd->server->is_virtual)
-        return "EnableMCPMReceive must be in a VirtualHost";
-    mconf->enable_mcmp_receive = -1;
+    ap_directive_t *directive = cmd->directive->parent ? cmd->directive->parent->first_child : cmd->directive;
+    (void)dummy;
+
+    if (!cmd->server->is_virtual) {
+        return "EnableMCMPReceive must be in a VirtualHost";
+    }
+
+    while (directive) {
+        if (strcmp(directive->directive, "<Directory") == 0) {
+            return "Directory cannot be used with EnableMCMPReceive, use Location instead";
+        }
+        directive = directive->next;
+    }
+
+    mconf->enable_mcmp_receive = 1;
     return NULL;
 }
+
 static const char*cmd_manager_enable_mcmp_receive_deprecated(cmd_parms *cmd, void *dummy)
 {
     ap_log_error(APLOG_MARK, APLOG_WARNING, 0, NULL,
