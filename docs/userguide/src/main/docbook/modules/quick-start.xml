@@ -122,11 +122,11 @@ LoadModule advertise_module /opt/jboss/httpd/lib/httpd/modules/mod_advertise.so
 Listen 10.33.144.3:6666
 <VirtualHost 10.33.144.3:6666>
  
-  <Directory />
+  <Location />
     Order deny,allow
     Deny from all
     Allow from 10.33.144.
-  </Directory>
+  </Location>
  
   KeepAliveTimeout 60
   MaxKeepAliveRequests 0
@@ -149,11 +149,11 @@ LoadModule advertise_module modules/mod_advertise.so
 Listen 10.33.144.3:6666
 <VirtualHost 10.33.144.3:6666>
  
-  <Directory />
+  <Location />
     Order deny,allow
     Deny from all
     Allow from 10.33.144.
-  </Directory>
+  </Location>
  
   KeepAliveTimeout 60
   MaxKeepAliveRequests 0

@@ -17,11 +17,11 @@ NOTE the httpd should have something like the following in httpd.conf
 <IfModule manager_module>
    Listen jfcpc:6666
    <VirtualHost jfcpc:6666>
-    <Directory />
+    <Location />
       Order deny,allow
       Deny from all
       Allow from 10.33.144
-    </Directory>
+    </Location>
 
    KeepAliveTimeout 300
    MaxKeepAliveRequests 0
