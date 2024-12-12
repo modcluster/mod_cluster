@@ -314,11 +314,11 @@ then
   Listen @IP@:6666
   ManagerBalancerName mycluster
   <VirtualHost @IP@:6666>
-    <Directory />
+    <Location />
      Order deny,allow
      Deny from all
      Allow from @SUBIP@
-    </Directory>
+    </Location>
 
     KeepAliveTimeout 300
     MaxKeepAliveRequests 0
@@ -343,9 +343,9 @@ EOF
   Listen @IP@:6666
   ManagerBalancerName mycluster
   <VirtualHost @IP@:6666>
-    <Directory />
+    <Location />
      Require ip @SUBIP@
-    </Directory>
+    </Location>
 
     KeepAliveTimeout 300
     MaxKeepAliveRequests 0
