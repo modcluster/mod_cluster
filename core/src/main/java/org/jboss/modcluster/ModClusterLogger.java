@@ -4,8 +4,12 @@
  */
 package org.jboss.modcluster;
 
-import static org.jboss.logging.Logger.Level.*;
+import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -24,7 +28,7 @@ import org.jboss.modcluster.mcmp.MCMPRequestType;
  */
 @MessageLogger(projectCode = "MODCLUSTER")
 public interface ModClusterLogger {
-    ModClusterLogger LOGGER = Logger.getMessageLogger(ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
+    ModClusterLogger LOGGER = Logger.getMessageLogger(MethodHandles.lookup(), ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
 
     String CATCHING_MARKER = "Catching";
 
