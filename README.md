@@ -1,4 +1,4 @@
-mod_cluster [![CI Status](https://github.com/modcluster/mod_cluster/workflows/CI/badge.svg)](https://github.com/modcluster/mod_cluster/actions)
+mod_cluster [![CI Status](https://github.com/modcluster/mod_cluster/workflows/CI/badge.svg)](https://github.com/modcluster/mod_cluster/actions) [![Maven](https://img.shields.io/maven-central/v/org.jboss.mod_cluster/mod_cluster-parent?logo=apache-maven)](https://central.sonatype.com/artifact/org.jboss.mod_cluster/mod_cluster-parent)
 ===========
 
 Project mod_cluster is an intelligent load balancer. It uses a communication channel to forward requests from a reverse
