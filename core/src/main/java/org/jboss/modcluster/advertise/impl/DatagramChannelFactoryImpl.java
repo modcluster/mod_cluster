@@ -22,7 +22,7 @@ import org.jboss.modcluster.advertise.DatagramChannelFactory;
 /**
  * On Linux-like systems, we attempt to avoid cross-talk problem by binding the DatagramChannel to the multicast
  * address, if possible. If not possible, default to binding only to the port. See
- * {@link <a href="https://issues.jboss.org/browse/JGRP-777">JGRP-777</a>}.
+ * {@link <a href="https://issues.redhat.com/browse/JGRP-777">JGRP-777</a>}.
  * <p>
  * On Windows-like systems, we do not attempt to bind the socket to the multicast address, we only bind to the port.
  * <p>
