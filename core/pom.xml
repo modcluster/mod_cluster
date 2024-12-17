@@ -14,11 +14,11 @@
     <name>mod_cluster: Core</name>
     <dependencies>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-load-spi</artifactId>
         </dependency>
         <dependency>
