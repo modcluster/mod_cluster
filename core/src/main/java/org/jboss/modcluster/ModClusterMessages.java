@@ -4,6 +4,7 @@
  */
 package org.jboss.modcluster;
 
+import java.lang.invoke.MethodHandles;
 import java.security.cert.CRLException;
 
 import org.jboss.logging.Messages;
@@ -16,7 +17,7 @@ import org.jboss.modcluster.container.Host;
  */
 @MessageBundle(projectCode = "MODCLUSTER")
 public interface ModClusterMessages {
-    ModClusterMessages MESSAGES = Messages.getBundle(ModClusterMessages.class);
+    ModClusterMessages MESSAGES = Messages.getBundle(MethodHandles.lookup(), ModClusterMessages.class);
 
     @Message(id = 100, value = "Unable to locate host %s")
     IllegalArgumentException hostNotFound(String host);
