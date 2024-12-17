@@ -43,9 +43,8 @@
     </modules>
 
     <properties>
-        <!-- Require JDK 17 and build for JDK 11 -->
-        <jdk.min.version>17</jdk.min.version>
-        <jdk.release.version>11</jdk.release.version>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
 
         <!-- Common dependencies -->
         <version.jboss-logging>3.6.1.Final</version.jboss-logging>
@@ -62,20 +61,6 @@
     </properties>
 
     <profiles>
-        <!-- Profile that configures enforcer plugin to allow JDK 11 solely for running tests -->
-        <!-- Required since the main build requires JDK 17 for the compilation -->
-        <profile>
-            <id>jdk11-test-only</id>
-            <activation>
-                <property>
-                    <name>maven.main.skip</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                <jdk.min.version>11</jdk.min.version>
-            </properties>
-        </profile>
         <!-- Code coverage report using JaCoCo -->
         <profile>
             <id>coverage</id>
@@ -203,9 +188,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <release>${jdk.release.version}</release>
-                </configuration>
                 <executions>
                     <execution>
                         <id>default-compile</id>
@@ -238,7 +220,6 @@
                          Thus, the following skippedModules should be a comma separated list of all non-latest Tomcat modules (artifactId) to not add in aggregated Javadoc.
                          See https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#skippedModules -->
                     <skippedModules>mod_cluster-container-tomcat-9.0,mod_cluster-container-tomcat-10.1</skippedModules>
-                    <source>${jdk.release.version}</source>
                 </configuration>
             </plugin>
             <plugin>
