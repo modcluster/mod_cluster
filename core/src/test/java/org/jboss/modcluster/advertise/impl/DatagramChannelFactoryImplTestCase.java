@@ -48,9 +48,11 @@ public class DatagramChannelFactoryImplTestCase {
     }
 
     /**
-     * Verify that cross-talking problem does not happen any more.
+     * Verify that crosstalking problem does not happen anymore.
      *
-     * @see <a href="https://developer.jboss.org/wiki/CrossTalkingBetweenClustersWithSameMulticastPortsButDifferentMulticastAddresses">Cross-talking wiki</a>
+     * @see <a href="https://developer.jboss.org/docs/DOC-9469">Crosstalking between clusters with same multicast ports but different multicast addresses</a>
+     * @see <a href="https://issues.redhat.com/browse/JGRP-777">JGRP-777 Revisit multicast socket creation code</a>
+     * @see <a href="https://issues.redhat.com/browse/JGRP-836">JGRP-836 Eliminate Linux cross-talk in MPING</a>
      */
     @Test
     public void testDatagramChannelNoCrossTalking() throws Exception {
