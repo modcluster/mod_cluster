@@ -17,27 +17,27 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-tomcat-9.0</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-tomcat-10.1</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-tomcat-11.0</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-load-spi</artifactId>
         </dependency>
     </dependencies>

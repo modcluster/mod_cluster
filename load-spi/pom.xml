@@ -17,7 +17,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.mod_cluster</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>mod_cluster-container-spi</artifactId>
         </dependency>
     </dependencies>
