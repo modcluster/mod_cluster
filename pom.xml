@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.jboss.mod_cluster</groupId>
         <artifactId>mod_cluster-bom</artifactId>
-        <version>2.1.0.Final-SNAPSHOT</version>
+        <version>2.1.0.Final</version>
         <relativePath>bom</relativePath>
     </parent>
 
@@ -32,7 +32,7 @@
         <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
         <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
         <url>https://github.com/modcluster/mod_cluster</url>
-        <tag>HEAD</tag>
+        <tag>2.1.0.Final</tag>
     </scm>
 
     <modules>
@@ -238,7 +238,7 @@
                         <failsOnError>true</failsOnError>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <excludes>**/*$logger.java,**/*$bundle.java</excludes>
-                        <useFile/>
+                        <useFile />
                     </configuration>
                 </plugin>
                 <plugin>
