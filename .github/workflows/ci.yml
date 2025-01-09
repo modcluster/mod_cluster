@@ -45,20 +45,18 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get -y install podman
-          podman pull fedora:39
       - name: Create container and build
         run: |
           {
-              echo 'FROM fedora:40'
-              echo 'RUN dnf install cmake httpd-devel ${{ matrix.compiler }} -y'
-              echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
+              echo 'FROM fedora:41'
+              echo 'RUN dnf install --assumeyes @c-development cmake httpd-devel ${{ matrix.compiler }}'
               echo 'RUN dnf clean all'
               echo 'COPY mod_proxy_cluster mod_proxy_cluster'
               echo 'WORKDIR /mod_proxy_cluster/native'
               echo 'RUN cmake . -DCMAKE_C_COMPILER=${{ matrix.compiler }}'
               echo 'RUN make'
-          } > podmanfile
-          podman build -f ./podmanfile
+          } > Containerfile
+          podman build .
     name: cmake-fedora-latest
 
   make-fedora-latest:
@@ -72,13 +70,11 @@ jobs:
         run: |
           sudo apt update
           sudo apt-get -y install podman
-          podman pull fedora:39
       - name: Create container and build
         run: |
           {
-              echo 'FROM fedora:40'
-              echo 'RUN dnf install httpd-devel redhat-rpm-config -y'
-              echo 'RUN dnf groupinstall "C Development Tools and Libraries" -y'
+              echo 'FROM fedora:41'
+              echo 'RUN dnf install --assumeyes @c-development httpd-devel redhat-rpm-config'
               echo 'RUN dnf clean all'
               echo 'COPY mod_proxy_cluster mod_proxy_cluster'
               echo 'WORKDIR /mod_proxy_cluster/native'
@@ -93,8 +89,8 @@ jobs:
               echo '  make || exit 1; \'
               echo '  cd ..; \'
               echo 'done;'
-          } > podmanfile
-          podman build -f ./podmanfile
+          } > Containerfile
+          podman build .
 
   make-with-httpd-trunk:
     runs-on: ubuntu-latest
