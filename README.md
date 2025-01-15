@@ -7,7 +7,7 @@ additional connection between the application server nodes and the reverse proxy
 factors and lifecycle events back to the proxy. This additional feedback channel allows mod_cluster to offer a level of
 intelligence and granularity not found in other load balancing solutions. There are currently two reverse proxy
 implementations: a native [Apache HTTP Server](https://httpd.apache.org/) implementation and a pure Java 
-[Undertow](http://undertow.io/)-based implementation.
+[Undertow](https://undertow.io/)-based implementation.
 
 Project mod_cluster boasts the following advantages over other httpd-based load balancers:
 
