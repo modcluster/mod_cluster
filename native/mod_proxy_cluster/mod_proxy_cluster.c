@@ -380,6 +380,11 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
         worker->s->keepalive = 1;
         worker->s->keepalive_set = 1;
         worker->s->is_address_reusable = 1;
+#if AP_MODULE_MAGIC_AT_LEAST(20120211,130)
+        worker->s->address_ttl = 60; /* DNS will reload after 60 sec */
+        worker->s->address_ttl_set = 1;
+        worker->s->disablereuse = 0;
+#endif
         worker->s->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
         worker->s->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
         worker->s->status = 0;
@@ -462,6 +467,11 @@ static apr_status_t create_worker(proxy_server_conf *conf, proxy_balancer *balan
             ws_worker->s->keepalive = 1;
             ws_worker->s->keepalive_set = 1;
             ws_worker->s->is_address_reusable = 1;
+#if AP_MODULE_MAGIC_AT_LEAST(20120211,130)
+            ws_worker->s->address_ttl = 60; /* DNS will reload after 60 sec */
+            ws_worker->s->address_ttl_set = 1;
+            ws_worker->s->disablereuse = 0;
+#endif
             ws_worker->s->acquire = apr_time_make(0, 2 * 1000); /* 2 ms */
             ws_worker->s->retry = apr_time_from_sec(PROXY_WORKER_DEFAULT_RETRY);
 
