@@ -28,7 +28,7 @@
 #ifndef MOD_PROXY_CLUSTER_H
 #define MOD_PROXY_CLUSTER_H
 
-#define MOD_CLUSTER_EXPOSED_VERSION "mod_cluster/1.3.22.Final-SNAPSHOT"
+#define MOD_CLUSTER_EXPOSED_VERSION "mod_cluster/1.3.22.Final"
 
 struct balancer_method {
 /**
