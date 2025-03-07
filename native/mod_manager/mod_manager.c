@@ -1666,7 +1666,7 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
 
     int i = 0;
     hostinfo_t hostinfo;
-    hostinfo_t *host;
+    hostinfo_t *host = NULL;
     char *p_tmp;
 
     memset(&nodeinfo.mess, '\0', sizeof(nodeinfo.mess));
@@ -1748,23 +1748,29 @@ static char * process_appl_cmd(request_rec *r, char **ptr, int status, int *errt
         return (process_node_cmd(r, status, errtype, node));
     }
 
-    /* Read the ID of the virtual host corresponding to the first Alias */
+    /* Go through the provided Aliases, the first Alias that matches an existing host gets used
+     * otherwise, a new host will be created
+     */
     hostinfo.node = node->mess.id;
-    if (vhost->host != NULL) {
-        char *s = hostinfo.host;
-        int j = 1;
-        strncpy(hostinfo.host, vhost->host, sizeof(hostinfo.host));
-        hostinfo.host[sizeof(hostinfo.host)-1] = '\0';
-        while (*s != ',' && j<sizeof(hostinfo.host)) {
-           j++;
-           s++;
-        }
-        *s = '\0';
-    } else
-        hostinfo.host[0] = '\0';
-
     hostinfo.id = 0;
-    host = read_host(hoststatsmem, &hostinfo);
+    if (vhost->host != NULL) {
+        int start = 0;
+        i = 0;
+        while (host == NULL && i + start < strlen(vhost->host)) {
+            while (vhost->host[start+i] != ',' && vhost->host[start+i] != '\0') {
+                i++;
+            }
+
+            strncpy(hostinfo.host, vhost->host + start, i);
+            hostinfo.host[i] = '\0';
+            host = read_host(hoststatsmem, &hostinfo);
+            start = start + i + 1;
+            i = 0;
+        }
+    } else {
+        hostinfo.host[0] = '\0';
+    }
+
     if (host == NULL) {
         /* If REMOVE ignores it */
         if (status == REMOVE)
