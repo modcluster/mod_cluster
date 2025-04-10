@@ -60,7 +60,7 @@
 
         <!-- Plugin versions -->
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.jacoco.jacoco-maven-plugin>0.8.12</version.org.jacoco.jacoco-maven-plugin>
+        <version.org.jacoco.jacoco-maven-plugin>0.8.13</version.org.jacoco.jacoco-maven-plugin>
     </properties>
 
     <profiles>
