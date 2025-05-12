@@ -21,6 +21,7 @@ jobs:
           - 17
           - 21
           - 24
+          - 25-ea
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +33,8 @@ jobs:
           cache: maven
       - name: Build with Maven
         # To support Windows PowerShell, a space between --define property=true is required.
-        run: ./mvnw --batch-mode --no-transfer-progress clean verify
+        # n.b. bytebuddy experimental features must be enabled on early access JDKs.
+        run: ./mvnw --batch-mode --no-transfer-progress clean verify --define net.bytebuddy.experimental=${{ matrix.java == '25-ea' }}
       # Code Coverage (runs once per matrix)
       - name: Build with coverage with Maven using JDK ${{ matrix.java }}
         if: ${{ matrix.java == '17' && matrix.os == 'ubuntu-latest' }}
