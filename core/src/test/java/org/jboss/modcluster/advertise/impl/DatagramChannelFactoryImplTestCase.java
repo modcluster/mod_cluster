@@ -5,6 +5,7 @@
 package org.jboss.modcluster.advertise.impl;
 
 import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.flipBuffer;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -21,8 +22,6 @@ import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests {@link DatagramChannelFactoryImpl}.

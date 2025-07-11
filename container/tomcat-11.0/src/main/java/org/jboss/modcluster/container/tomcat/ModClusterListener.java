@@ -4,6 +4,26 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.catalina.Lifecycle;
 import org.apache.catalina.LifecycleEvent;
 import org.apache.catalina.LifecycleListener;
@@ -23,26 +43,6 @@ import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.load.impl.DynamicLoadBalanceFactorProvider;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Mod_cluster lifecycle listener for use in Tomcat.

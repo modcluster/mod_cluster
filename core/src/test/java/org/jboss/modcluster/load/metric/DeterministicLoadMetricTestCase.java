@@ -4,10 +4,10 @@
  */
 package org.jboss.modcluster.load.metric;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.jboss.modcluster.load.metric.impl.DeterministicLoadStateImpl;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Paul Ferraro

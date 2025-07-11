@@ -4,10 +4,10 @@
  */
 package org.jboss.modcluster.mcmp;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPResponseParser;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Paul Ferraro

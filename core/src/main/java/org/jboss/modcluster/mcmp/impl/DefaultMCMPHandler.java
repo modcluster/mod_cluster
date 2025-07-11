@@ -33,12 +33,10 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 import javax.net.SocketFactory;
 
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
-
 import org.jboss.logging.Logger;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;

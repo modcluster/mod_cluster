@@ -4,27 +4,21 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.jboss.modcluster.config.BalancerConfiguration;
+import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
-import org.jboss.modcluster.config.BalancerConfiguration;
-import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
 import org.junit.jupiter.api.Test;
 

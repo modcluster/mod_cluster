@@ -4,6 +4,13 @@
  */
 package org.jboss.modcluster;
 
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.container.Context;
@@ -14,18 +21,6 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
 import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
-
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class ModClusterServiceTest {
 

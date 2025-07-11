@@ -4,6 +4,9 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import java.util.Iterator;
 
 import org.apache.catalina.Container;
@@ -14,9 +17,6 @@ import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Test case for {@link TomcatEngine}.

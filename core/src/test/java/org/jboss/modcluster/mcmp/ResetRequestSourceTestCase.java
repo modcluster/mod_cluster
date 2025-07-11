@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.modcluster.config.BalancerConfiguration;
+import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
-import org.jboss.modcluster.config.BalancerConfiguration;
-import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
 import org.junit.jupiter.api.Test;

@@ -4,15 +4,12 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
