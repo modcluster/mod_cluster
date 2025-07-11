@@ -5,7 +5,6 @@
 package org.jboss.modcluster.load.metric.impl;
 
 import java.util.List;
-
 import javax.management.JMException;
 
 import org.jboss.modcluster.load.metric.LoadMetric;

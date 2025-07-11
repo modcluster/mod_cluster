@@ -4,12 +4,12 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 import org.apache.catalina.Engine;
 import org.jboss.modcluster.ModClusterLogger;
 import org.jboss.modcluster.container.Connector;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 /**
  * Connector provider implementation that picks a connector based on configured {@code connectorPort=".."} and/or {@code connectorAddress=".."}.

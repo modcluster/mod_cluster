@@ -4,24 +4,23 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import org.apache.catalina.Engine;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Connector;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link ConfigurableProxyConnectorProvider}.
  *
  * @author Radoslav Husar
  */
-public class ConfigurableProxyConnectorProviderTestCase {
+class ConfigurableProxyConnectorProviderTestCase {
 
     @Test
-    public void createProxyConnector() throws Exception {
+    void createProxyConnector() throws Exception {
         Engine engine = mock(Engine.class);
         Service service = mock(Service.class);
 

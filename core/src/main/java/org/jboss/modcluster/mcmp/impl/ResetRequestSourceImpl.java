@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.modcluster.config.BalancerConfiguration;
+import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
-import org.jboss.modcluster.config.BalancerConfiguration;
-import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.ContextFilter;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;

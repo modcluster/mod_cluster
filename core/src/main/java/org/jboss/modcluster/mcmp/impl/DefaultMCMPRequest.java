@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import net.jcip.annotations.Immutable;
-
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestType;
 

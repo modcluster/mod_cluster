@@ -4,23 +4,22 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Collections;
 
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class BusyConnectorsLoadMetricTestCase {
+class BusyConnectorsLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         LoadMetric metric = new BusyConnectorsLoadMetric();
         Engine engine = mock(Engine.class);
         Connector connector = mock(Connector.class);

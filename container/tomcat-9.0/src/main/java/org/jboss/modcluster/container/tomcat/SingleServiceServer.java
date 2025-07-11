@@ -4,6 +4,11 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import java.io.File;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+import javax.naming.Context;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.LifecycleState;
@@ -11,11 +16,6 @@ import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.apache.catalina.deploy.NamingResourcesImpl;
 import org.apache.catalina.startup.Catalina;
-
-import javax.naming.Context;
-import java.io.File;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A {@link Server} delegate which filters found services to return only one configured {@link Service}.

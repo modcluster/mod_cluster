@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Collections;
@@ -13,14 +13,14 @@ import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.load.metric.impl.ActiveSessionsLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class ActiveSessionsLoadMetricTestCase {
+class ActiveSessionsLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         LoadMetric metric = new ActiveSessionsLoadMetric();
         Engine engine = mock(Engine.class);
         Host host = mock(Host.class);

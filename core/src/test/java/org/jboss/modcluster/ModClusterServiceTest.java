@@ -4,6 +4,13 @@
  */
 package org.jboss.modcluster;
 
+import static org.mockito.Mockito.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.modcluster.config.MCMPHandlerConfiguration;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.container.Context;
@@ -13,26 +20,14 @@ import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
-
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
 
 public class ModClusterServiceTest {
 
     private static final String SOME_PATH = "somePath";
 
     @Test
-    public void stopSingleContext() {
+    void stopSingleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -45,7 +40,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void stopMultipleContextWithSamePath() {
+    void stopMultipleContextWithSamePath() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -59,7 +54,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void removeSingleContext() {
+    void removeSingleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -72,7 +67,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void removeMultipleContext() {
+    void removeMultipleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);

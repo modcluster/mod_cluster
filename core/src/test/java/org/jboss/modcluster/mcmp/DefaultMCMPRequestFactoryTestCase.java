@@ -4,33 +4,32 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.net.InetAddress;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.jboss.modcluster.config.BalancerConfiguration;
+import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
-import org.jboss.modcluster.config.BalancerConfiguration;
-import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPRequestFactory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class DefaultMCMPRequestFactoryTestCase {
-    private MCMPRequestFactory factory = new DefaultMCMPRequestFactory();
+class DefaultMCMPRequestFactoryTestCase {
+    private final MCMPRequestFactory factory = new DefaultMCMPRequestFactory();
 
     @Test
-    public void createEnableRequestContext() {
+    void createEnableRequestContext() {
         Context context = mock(Context.class);
         Host host = mock(Host.class);
         Engine engine = mock(Engine.class);
@@ -56,7 +55,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createDisableRequestContext() {
+    void createDisableRequestContext() {
         Context context = mock(Context.class);
         Host host = mock(Host.class);
         Engine engine = mock(Engine.class);
@@ -82,7 +81,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createStopRequest() {
+    void createStopRequest() {
         Context context = mock(Context.class);
         Host host = mock(Host.class);
         Engine engine = mock(Engine.class);
@@ -108,7 +107,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createRemoveRequestContext() {
+    void createRemoveRequestContext() {
         Context context = mock(Context.class);
         Host host = mock(Host.class);
         Engine engine = mock(Engine.class);
@@ -134,7 +133,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createStatusRequest() {
+    void createStatusRequest() {
         MCMPRequest request = this.factory.createStatusRequest("route", 10);
 
         assertSame(MCMPRequestType.STATUS, request.getRequestType());
@@ -148,7 +147,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createConfigRequest() throws Exception {
+    void createConfigRequest() throws Exception {
         Engine engine = mock(Engine.class);
         NodeConfiguration nodeConfig = mock(NodeConfiguration.class);
         BalancerConfiguration balancerConfig = mock(BalancerConfiguration.class);
@@ -209,7 +208,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createInfoRequest() {
+    void createInfoRequest() {
         MCMPRequest request = this.factory.createInfoRequest();
 
         assertSame(MCMPRequestType.INFO, request.getRequestType());
@@ -219,7 +218,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createDumpRequest() {
+    void createDumpRequest() {
         MCMPRequest request = this.factory.createDumpRequest();
 
         assertSame(MCMPRequestType.DUMP, request.getRequestType());
@@ -229,7 +228,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createDisableRequestEngine() {
+    void createDisableRequestEngine() {
         Engine engine = mock(Engine.class);
 
         when(engine.getJvmRoute()).thenReturn("route");
@@ -243,7 +242,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createEnableRequestEngine() {
+    void createEnableRequestEngine() {
         Engine engine = mock(Engine.class);
 
         when(engine.getJvmRoute()).thenReturn("route");
@@ -257,7 +256,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createRemoveRequestEngine() {
+    void createRemoveRequestEngine() {
         Engine engine = mock(Engine.class);
 
         when(engine.getJvmRoute()).thenReturn("route");
@@ -271,7 +270,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createRemoveContextRequest() {
+    void createRemoveContextRequest() {
         String route = "route";
         String path = "path";
 
@@ -290,7 +289,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createRemoveEngineRequest() {
+    void createRemoveEngineRequest() {
         String route = "route";
 
         MCMPRequest request = this.factory.createRemoveEngineRequest(route);
@@ -303,7 +302,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createPingRequest() {
+    void createPingRequest() {
         MCMPRequest request = this.factory.createPingRequest();
 
         assertSame(MCMPRequestType.PING, request.getRequestType());
@@ -313,7 +312,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createJvmRoutePingRequest() {
+    void createJvmRoutePingRequest() {
         String jvmRoute = "route";
 
         MCMPRequest request = this.factory.createPingRequest(jvmRoute);
@@ -325,7 +324,7 @@ public class DefaultMCMPRequestFactoryTestCase {
     }
 
     @Test
-    public void createURIPingRequest() throws URISyntaxException {
+    void createURIPingRequest() {
         MCMPRequest request = this.factory.createPingRequest("ajp", "localhost", 8009);
 
         assertSame(MCMPRequestType.PING, request.getRequestType());

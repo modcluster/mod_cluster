@@ -5,7 +5,6 @@
 package org.jboss.modcluster.mcmp.impl;
 
 import java.net.Inet6Address;
-
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
@@ -13,12 +12,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.modcluster.config.BalancerConfiguration;
+import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
-import org.jboss.modcluster.config.BalancerConfiguration;
-import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.MCMPRequest;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.MCMPRequestType;

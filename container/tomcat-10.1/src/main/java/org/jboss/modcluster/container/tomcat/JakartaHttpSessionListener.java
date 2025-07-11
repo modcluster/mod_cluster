@@ -5,6 +5,7 @@
 package org.jboss.modcluster.container.tomcat;
 
 import jakarta.servlet.http.HttpSessionEvent;
+
 import org.jboss.modcluster.container.listeners.HttpSessionListener;
 
 /**

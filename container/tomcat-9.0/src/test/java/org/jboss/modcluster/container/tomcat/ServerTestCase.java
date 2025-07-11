@@ -4,19 +4,16 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Iterator;
 
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test case for {@link TomcatServer}.
@@ -24,7 +21,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class ServerTestCase {
+class ServerTestCase {
     protected final org.apache.catalina.Server server = mock(org.apache.catalina.Server.class);
     protected final Server catalinaServer = new TomcatServer(this.registry, server);
 
@@ -34,15 +31,15 @@ public class ServerTestCase {
     protected org.apache.catalina.Engine engineMock = mock(org.apache.catalina.Engine.class);
     protected org.apache.catalina.Host hostMock = mock(org.apache.catalina.Host.class);
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         when(this.serviceMock.getServer()).thenReturn(this.serverMock);
         when(this.engineMock.getService()).thenReturn(this.serviceMock);
         when(this.hostMock.getParent()).thenReturn(this.engineMock);
     }
 
     @Test
-    public void getEngines() {
+    void getEngines() {
         Service service = mock(Service.class);
         Engine expected = new TomcatEngine(registry, engineMock);
 

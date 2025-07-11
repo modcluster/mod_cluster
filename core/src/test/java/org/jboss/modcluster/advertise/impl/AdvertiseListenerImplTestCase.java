@@ -6,7 +6,7 @@ package org.jboss.modcluster.advertise.impl;
 
 import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.clearBuffer;
 import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.flipBuffer;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -24,8 +24,8 @@ import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -34,7 +34,7 @@ import org.mockito.ArgumentCaptor;
  * @author Brian Stansberry
  * @author Radoslav Husar
  */
-public class AdvertiseListenerImplTestCase {
+class AdvertiseListenerImplTestCase {
 
     private static final String ADVERTISE_GROUP = System.getProperty("multicast.address1", "224.0.1.106");
     private static final int ADVERTISE_PORT = 23364;
@@ -51,8 +51,8 @@ public class AdvertiseListenerImplTestCase {
 
     private DatagramChannel channel;
 
-    @Before
-    public void setup() throws Exception {
+    @BeforeEach
+    void setup() throws Exception {
         when(this.config.getAdvertiseThreadFactory()).thenReturn(Executors.defaultThreadFactory());
         when(this.config.getAdvertiseSocketAddress()).thenReturn(new InetSocketAddress(ADVERTISE_GROUP, ADVERTISE_PORT));
         when(this.config.getAdvertiseSecurityKey()).thenReturn(null);
@@ -63,7 +63,7 @@ public class AdvertiseListenerImplTestCase {
     }
 
     @Test
-    public void testBasicOperation() throws Exception {
+    void testBasicOperation() throws Exception {
         // Test using a separate sendChannel to test AdvertiseListenerImpl
         try (DatagramChannel sendChannel = new SendingDatagramChannelFactoryImpl().createDatagramChannel(new InetSocketAddress(ADVERTISE_GROUP, ADVERTISE_PORT))) {
 

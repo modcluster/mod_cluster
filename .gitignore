@@ -14,5 +14,8 @@ target/
 *.ipr
 *.iml
 
+# VSCode IDE
+.vscode/
+
 # macOS
 .DS_Store

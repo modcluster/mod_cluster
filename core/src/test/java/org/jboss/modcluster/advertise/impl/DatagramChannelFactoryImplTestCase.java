@@ -5,6 +5,7 @@
 package org.jboss.modcluster.advertise.impl;
 
 import static org.jboss.modcluster.advertise.impl.AdvertiseListenerImpl.flipBuffer;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -20,8 +21,7 @@ import java.util.concurrent.Executors;
 import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link DatagramChannelFactoryImpl}.
@@ -33,7 +33,7 @@ import org.junit.Test;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class DatagramChannelFactoryImplTestCase {
+class DatagramChannelFactoryImplTestCase {
 
     private static final String GROUP1 = System.getProperty("multicast.address1", "224.0.1.106");
     private static final String GROUP2 = System.getProperty("multicast.address2", "224.0.1.107");
@@ -43,7 +43,7 @@ public class DatagramChannelFactoryImplTestCase {
      * Verify that the created channel can receive datagrams; sender and receiver address are the same.
      */
     @Test
-    public void testDatagramChannelRead() throws Exception {
+    void testDatagramChannelRead() throws Exception {
         this.testDatagramChannel(InetAddress.getByName(GROUP1));
     }
 
@@ -55,7 +55,7 @@ public class DatagramChannelFactoryImplTestCase {
      * @see <a href="https://issues.redhat.com/browse/JGRP-836">JGRP-836 Eliminate Linux cross-talk in MPING</a>
      */
     @Test
-    public void testDatagramChannelNoCrossTalking() throws Exception {
+    void testDatagramChannelNoCrossTalking() throws Exception {
         this.testDatagramChannel(InetAddress.getByName(GROUP2));
     }
 
@@ -109,10 +109,10 @@ public class DatagramChannelFactoryImplTestCase {
                 byte[] packetData = new byte[receiveBuffer.remaining()];
                 receiveBuffer.get(packetData);
 
-                Assert.assertTrue(expectSuccessfulRead);
-                Assert.assertArrayEquals(stringData, packetData);
+                assertTrue(expectSuccessfulRead);
+                assertArrayEquals(stringData, packetData);
             } catch (AsynchronousCloseException e) {
-                Assert.assertFalse(expectSuccessfulRead);
+                assertFalse(expectSuccessfulRead);
             }
         }
     }

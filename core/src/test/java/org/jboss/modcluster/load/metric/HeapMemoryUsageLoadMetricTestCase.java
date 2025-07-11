@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.lang.management.MemoryMXBean;
@@ -12,17 +12,17 @@ import java.lang.management.MemoryUsage;
 
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class HeapMemoryUsageLoadMetricTestCase {
+class HeapMemoryUsageLoadMetricTestCase {
     private MemoryMXBean bean = mock(MemoryMXBean.class);
     private HeapMemoryUsageLoadMetric metric = new HeapMemoryUsageLoadMetric(this.bean);
 
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         Engine engine = mock(Engine.class);
         MemoryUsage usage = new MemoryUsage(0, 1000, 2000, 5000);
 
@@ -34,7 +34,7 @@ public class HeapMemoryUsageLoadMetricTestCase {
     }
 
     @Test
-    public void getLoadNoMax() throws Exception {
+    void getLoadNoMax() throws Exception {
         Engine engine = mock(Engine.class);
         MemoryUsage usage = new MemoryUsage(0, 1000, 2000, -1);
 

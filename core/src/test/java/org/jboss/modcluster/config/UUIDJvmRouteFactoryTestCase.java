@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.config;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayOutputStream;
@@ -17,11 +17,11 @@ import java.util.UUID;
 import org.jboss.modcluster.config.impl.UUIDJvmRouteFactory;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UUIDJvmRouteFactoryTestCase {
+class UUIDJvmRouteFactoryTestCase {
     @Test
-    public void test() throws IOException {
+    void test() throws IOException {
         Engine engine = mock(Engine.class);
         Connector connector = mock(Connector.class);
         InetAddress address = InetAddress.getLocalHost();

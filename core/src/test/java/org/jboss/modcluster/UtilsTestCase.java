@@ -4,64 +4,65 @@
  */
 package org.jboss.modcluster;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class UtilsTestCase {
+class UtilsTestCase {
     @Test
-    public void parseParseSocketAddress() throws UnknownHostException {
+    void parseParseSocketAddress() throws UnknownHostException {
         InetSocketAddress address = Utils.parseSocketAddress("127.0.0.1", 0);
 
-        Assert.assertEquals("127.0.0.1", address.getAddress().getHostAddress());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals("127.0.0.1", address.getAddress().getHostAddress());
+        assertEquals(0, address.getPort());
 
         address = Utils.parseSocketAddress("127.0.0.1:80", 0);
 
-        Assert.assertEquals("127.0.0.1", address.getAddress().getHostAddress());
-        Assert.assertEquals(80, address.getPort());
+        assertEquals("127.0.0.1", address.getAddress().getHostAddress());
+        assertEquals(80, address.getPort());
 
         address = Utils.parseSocketAddress("localhost", 0);
 
-        Assert.assertEquals("localhost", address.getAddress().getHostName());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals("localhost", address.getAddress().getHostName());
+        assertEquals(0, address.getPort());
 
         address = Utils.parseSocketAddress("localhost:80", 0);
 
-        Assert.assertEquals("localhost", address.getAddress().getHostName());
-        Assert.assertEquals(80, address.getPort());
+        assertEquals("localhost", address.getAddress().getHostName());
+        assertEquals(80, address.getPort());
 
         address = Utils.parseSocketAddress("0:0:0:0:0:0:0:1", 0);
 
-        Assert.assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
+        assertEquals(0, address.getPort());
 
         address = Utils.parseSocketAddress("::1", 0);
 
-        Assert.assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
+        assertEquals(0, address.getPort());
 
         address = Utils.parseSocketAddress("[0:0:0:0:0:0:0:1]:80", 0);
 
-        Assert.assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
-        Assert.assertEquals(80, address.getPort());
+        assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
+        assertEquals(80, address.getPort());
 
         address = Utils.parseSocketAddress("[::1]:80", 0);
 
-        Assert.assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
-        Assert.assertEquals(80, address.getPort());
+        assertEquals("0:0:0:0:0:0:0:1", address.getAddress().getHostAddress());
+        assertEquals(80, address.getPort());
 
         address = Utils.parseSocketAddress("", 0);
 
-        Assert.assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
+        assertEquals(0, address.getPort());
 
         address = Utils.parseSocketAddress(null, 0);
 
-        Assert.assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
-        Assert.assertEquals(0, address.getPort());
+        assertEquals(InetAddress.getLocalHost().getHostName(), address.getHostName());
+        assertEquals(0, address.getPort());
     }
 }
