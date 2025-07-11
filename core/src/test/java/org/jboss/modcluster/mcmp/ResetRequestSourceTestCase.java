@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
@@ -23,13 +23,13 @@ import org.jboss.modcluster.config.BalancerConfiguration;
 import org.jboss.modcluster.config.NodeConfiguration;
 import org.jboss.modcluster.mcmp.impl.DefaultMCMPHandler;
 import org.jboss.modcluster.mcmp.impl.ResetRequestSourceImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  *
  */
-public class ResetRequestSourceTestCase {
+class ResetRequestSourceTestCase {
     private final NodeConfiguration nodeConfig = mock(NodeConfiguration.class);
     private final BalancerConfiguration balancerConfig = mock(BalancerConfiguration.class);
     private final MCMPRequestFactory requestFactory = mock(MCMPRequestFactory.class);
@@ -47,7 +47,7 @@ public class ResetRequestSourceTestCase {
     private static final String ALIAS2 = "alias2";
 
     @Test
-    public void getResetRequestsNoServer() {
+    void getResetRequestsNoServer() {
         Server server = mock(Server.class);
 
         List<MCMPRequest> requests = this.source.getResetRequests(Collections.emptyMap());
@@ -58,7 +58,7 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequests() {
+    void getResetRequests() {
         setupMocks(true, true);
 
         List<MCMPRequest> requests = this.source.getResetRequests(Collections
@@ -71,7 +71,7 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequestsDisableContexts() {
+    void getResetRequestsDisableContexts() {
         setupMocks(false, true);
 
         List<MCMPRequest> requests = this.source.getResetRequests(Collections
@@ -84,7 +84,7 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequestsContextStoppedNoProxyStatus() {
+    void getResetRequestsContextStoppedNoProxyStatus() {
         setupMocks(true, false);
 
         List<MCMPRequest> requests = this.source.getResetRequests(Collections
@@ -97,7 +97,7 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequestsContextStoppedProxyStatusEnabled() {
+    void getResetRequestsContextStoppedProxyStatusEnabled() {
         setupMocks(true, false);
 
         Map<String, Set<ResetRequestSource.VirtualHost>> infoResponse = createInfoResponse(
@@ -112,7 +112,7 @@ public class ResetRequestSourceTestCase {
     }
 
     @Test
-    public void getResetRequestsContextStartedProxyStatusDisabled() {
+    void getResetRequestsContextStartedProxyStatusDisabled() {
         setupMocks(true, true);
         Map<String, Set<ResetRequestSource.VirtualHost>> infoResponse = createInfoResponse(
                 ResetRequestSource.Status.DISABLED);

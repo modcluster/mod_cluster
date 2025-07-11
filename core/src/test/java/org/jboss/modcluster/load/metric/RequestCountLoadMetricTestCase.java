@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,14 +14,14 @@ import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.DeterministicLoadState;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class RequestCountLoadMetricTestCase {
+class RequestCountLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         Engine engine = mock(Engine.class);
         Connector connector = mock(Connector.class);
         DeterministicLoadState state = mock(DeterministicLoadState.class);

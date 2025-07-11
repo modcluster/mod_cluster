@@ -4,16 +4,16 @@
  */
 package org.jboss.modcluster.config;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.jboss.modcluster.config.impl.SystemPropertyJvmRouteFactory;
 import org.jboss.modcluster.container.Engine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SystemPropertyJvmRouteFactoryTestCase {
+class SystemPropertyJvmRouteFactoryTestCase {
     @Test
-    public void defaultSystemProperty() {
+    void defaultSystemProperty() {
         String expected = "expected";
         System.setProperty("jboss.mod_cluster.jvmRoute", expected);
 
@@ -29,7 +29,7 @@ public class SystemPropertyJvmRouteFactoryTestCase {
     }
 
     @Test
-    public void customSystemProperty() {
+    void customSystemProperty() {
         String expected = "expected";
         System.setProperty("jboss.jvmRoute", expected);
 
@@ -45,7 +45,7 @@ public class SystemPropertyJvmRouteFactoryTestCase {
     }
 
     @Test
-    public void defaultJvmRoute() {
+    void defaultJvmRoute() {
         String expected = "expected";
         System.clearProperty("jboss.mod_cluster.jvmRoute");
 
@@ -61,7 +61,7 @@ public class SystemPropertyJvmRouteFactoryTestCase {
     }
 
     @Test
-    public void customDefaultJvmRoute() {
+    void customDefaultJvmRoute() {
         String expected = "expected";
         System.clearProperty("jboss.jvmRoute");
 

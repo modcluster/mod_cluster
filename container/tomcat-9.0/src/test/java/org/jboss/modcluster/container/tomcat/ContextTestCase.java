@@ -4,10 +4,10 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -22,8 +22,8 @@ import org.apache.catalina.Valve;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.listeners.HttpSessionListener;
 import org.jboss.modcluster.container.listeners.ServletRequestListener;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -32,7 +32,7 @@ import org.mockito.ArgumentCaptor;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class ContextTestCase {
+class ContextTestCase {
     protected final TomcatRegistry registry = mock(TomcatRegistry.class);
     protected Server serverMock = mock(Server.class);
     protected Service serviceMock = mock(Service.class);
@@ -42,8 +42,8 @@ public class ContextTestCase {
     protected final org.apache.catalina.Context context = mock(org.apache.catalina.Context.class);
     protected Context catalinaContext;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         when(this.serviceMock.getServer()).thenReturn(this.serverMock);
         when(this.engineMock.getService()).thenReturn(this.serviceMock);
         when(this.hostMock.getParent()).thenReturn(this.engineMock);
@@ -53,12 +53,12 @@ public class ContextTestCase {
     }
 
     @Test
-    public void getHost() {
+    void getHost() {
         assertEquals(new TomcatHost(registry, hostMock), this.catalinaContext.getHost());
     }
 
     @Test
-    public void getPath() {
+    void getPath() {
         String expected = "path";
 
         when(this.context.getPath()).thenReturn(expected);
@@ -69,7 +69,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void isStarted() {
+    void isStarted() {
         when(this.context.getState()).thenReturn(LifecycleState.STOPPED);
 
         boolean result = this.catalinaContext.isStarted();
@@ -84,7 +84,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void requestListener() throws Exception {
+    void requestListener() throws Exception {
         // Test addRequestListener()
         ServletRequestListener listener = mock(ServletRequestListener.class);
         Pipeline pipeline = mock(Pipeline.class);
@@ -108,7 +108,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void getActiveSessionCount() {
+    void getActiveSessionCount() {
         Manager manager = mock(Manager.class);
 
         when(this.context.getManager()).thenReturn(manager);
@@ -120,7 +120,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void addSessionListener() {
+    void addSessionListener() {
         HttpSessionListener listener = mock(HttpSessionListener.class);
         ArgumentCaptor<Object[]> capturedListeners = ArgumentCaptor.forClass(Object[].class);
         Object otherListener = new Object();
@@ -138,7 +138,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void removeSessionListener() {
+    void removeSessionListener() {
         HttpSessionListener listener = mock(HttpSessionListener.class);
         ArgumentCaptor<Object[]> capturedListeners = ArgumentCaptor.forClass(Object[].class);
         Object otherListener = new Object();
@@ -155,7 +155,7 @@ public class ContextTestCase {
     }
 
     @Test
-    public void isDistributable() {
+    void isDistributable() {
         when(this.context.getDistributable()).thenReturn(true);
 
         boolean result = this.catalinaContext.isDistributable();

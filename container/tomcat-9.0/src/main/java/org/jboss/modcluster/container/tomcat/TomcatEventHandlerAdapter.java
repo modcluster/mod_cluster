@@ -4,6 +4,12 @@
  */
 package org.jboss.modcluster.container.tomcat;
 
+import java.beans.PropertyChangeEvent;
+import java.lang.management.ManagementFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
@@ -15,12 +21,6 @@ import org.apache.catalina.LifecycleListener;
 import org.apache.catalina.Server;
 import org.apache.catalina.Service;
 import org.jboss.modcluster.container.ContainerEventHandler;
-
-import javax.management.MalformedObjectNameException;
-import javax.management.ObjectName;
-import java.beans.PropertyChangeEvent;
-import java.lang.management.ManagementFactory;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Adapts lifecycle and container listener events to the {@link ContainerEventHandler} interface.

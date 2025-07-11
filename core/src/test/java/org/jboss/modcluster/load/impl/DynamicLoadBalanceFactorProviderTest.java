@@ -7,12 +7,12 @@ package org.jboss.modcluster.load.impl;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.modcluster.load.metric.NodeUnavailableException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -21,10 +21,10 @@ import static org.mockito.Mockito.when;
  *
  * @author Radoslav Husar
  */
-public class DynamicLoadBalanceFactorProviderTest {
+class DynamicLoadBalanceFactorProviderTest {
 
     @Test
-    public void getLoadBalanceFactor() throws Exception {
+    void getLoadBalanceFactor() throws Exception {
         Engine engine = mock(Engine.class);
 
         Set<LoadMetric> metrics = new HashSet<>();
@@ -40,7 +40,7 @@ public class DynamicLoadBalanceFactorProviderTest {
     }
 
     @Test
-    public void getLoadBalanceFactor_FloatDecayFactor() throws Exception {
+    void getLoadBalanceFactor_FloatDecayFactor() throws Exception {
         Engine engine = mock(Engine.class);
 
         Set<LoadMetric> metrics = new HashSet<>();
@@ -59,7 +59,7 @@ public class DynamicLoadBalanceFactorProviderTest {
     }
 
     @Test
-    public void getLoadBalanceFactor_InitialLoad() throws Exception {
+    void getLoadBalanceFactor_InitialLoad() throws Exception {
         Engine engine = mock(Engine.class);
 
         Set<LoadMetric> metrics = new HashSet<>();

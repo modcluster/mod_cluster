@@ -12,10 +12,10 @@ import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.*;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class EngineTestCase {
+class EngineTestCase {
 
     protected Server server;
     protected Engine engine;
@@ -35,8 +35,8 @@ public class EngineTestCase {
     protected final org.apache.catalina.Engine engineMock = mock(org.apache.catalina.Engine.class);
     protected final org.apache.catalina.Host hostMock = mock(org.apache.catalina.Host.class);
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         when(this.serviceMock.getServer()).thenReturn(this.serverMock);
         when(this.engineMock.getService()).thenReturn(this.serviceMock);
         when(this.hostMock.getParent()).thenReturn(this.engineMock);
@@ -46,7 +46,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void getDefaultHost() {
+    void getDefaultHost() {
         String expected = "localhost";
         when(this.engineMock.getDefaultHost()).thenReturn(expected);
 
@@ -56,7 +56,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void findHost() {
+    void findHost() {
         Host expected = new TomcatHost(registry, hostMock);
 
         when(this.engineMock.findChild("host")).thenReturn(hostMock);
@@ -67,7 +67,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void getHosts() {
+    void getHosts() {
         Host expected = new TomcatHost(registry, hostMock);
 
         when(this.engineMock.findChildren()).thenReturn(new Container[] { hostMock });
@@ -81,7 +81,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void getJvmRoute() {
+    void getJvmRoute() {
         String expected = "route";
 
         when(this.engineMock.getJvmRoute()).thenReturn(expected);
@@ -92,7 +92,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void getName() {
+    void getName() {
         String expected = "name";
 
         when(this.engineMock.getName()).thenReturn(expected);
@@ -103,7 +103,7 @@ public class EngineTestCase {
     }
 
     @Test
-    public void getProxyConnector() throws Exception {
+    void getProxyConnector() throws Exception {
         ProxyConnectorProvider provider = mock(ProxyConnectorProvider.class);
         Connector expected = mock(Connector.class);
 
@@ -116,26 +116,26 @@ public class EngineTestCase {
     }
 
     @Test
-    public void setJvmRoute() {
+    void setJvmRoute() {
         this.engine.setJvmRoute("route");
 
         verify(this.engineMock).setJvmRoute("route");
     }
 
     @Test
-    public void getServer() {
+    void getServer() {
         Server result = this.engine.getServer();
 
         assertEquals(this.server, result);
     }
 
     @Test
-    public void getSessionCookieName() {
+    void getSessionCookieName() {
         assertEquals("JSESSIONID", this.engine.getSessionCookieName());
     }
 
     @Test
-    public void getSessionParameterName() {
+    void getSessionParameterName() {
         assertEquals("jsessionid", this.engine.getSessionParameterName());
     }
 }

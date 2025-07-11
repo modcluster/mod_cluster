@@ -13,7 +13,7 @@ import org.jboss.modcluster.load.LoadBalanceFactorProviderFactory;
 import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.jboss.modcluster.mcmp.MCMPRequestFactory;
 import org.jboss.modcluster.mcmp.ResetRequestSource;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ public class ModClusterServiceTest {
     private static final String SOME_PATH = "somePath";
 
     @Test
-    public void stopSingleContext() {
+    void stopSingleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -45,7 +45,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void stopMultipleContextWithSamePath() {
+    void stopMultipleContextWithSamePath() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -59,7 +59,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void removeSingleContext() {
+    void removeSingleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);
@@ -72,7 +72,7 @@ public class ModClusterServiceTest {
     }
 
     @Test
-    public void removeMultipleContext() {
+    void removeMultipleContext() {
 
         MCMPHandler mcmpHandler = mock(MCMPHandler.class);
         ModClusterService mod = createModClusterService(mcmpHandler);

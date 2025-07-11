@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
@@ -19,14 +19,14 @@ import javax.management.QueryExp;
 
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.MBeanAttributeLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class MBeanAttributeLoadMetricTestCase {
+class MBeanAttributeLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         MBeanServer server = mock(MBeanServer.class);
         ObjectName pattern = ObjectName.getInstance("domain:*");
         String attribute = "attribute";

@@ -26,8 +26,8 @@ import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.modcluster.container.Context;
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Server;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 /**
@@ -36,7 +36,7 @@ import org.mockito.Mockito;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
-public class ContainerEventHandlerAdapterTestCase {
+class ContainerEventHandlerAdapterTestCase {
     protected final TomcatRegistry registry = mock(TomcatRegistry.class);
     protected final ContainerEventHandler eventHandler = mock(ContainerEventHandler.class);
     protected final LifecycleServer server = mock(LifecycleServer.class);
@@ -46,13 +46,13 @@ public class ContainerEventHandlerAdapterTestCase {
         return new TomcatEventHandlerAdapter(this.eventHandler, this.provider, this.registry);
     }
 
-    @After
-    public void init() {
+    @AfterEach
+    void init() {
         Mockito.reset(this.eventHandler, this.server, this.provider);
     }
 
     @Test
-    public void start() {
+    void start() {
         Service service = mock(Service.class);
         LifecycleListener listener = mock(LifecycleListener.class);
         LifecycleEngine engine = mock(LifecycleEngine.class);
@@ -82,7 +82,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void stop() throws Exception {
+    void stop() throws Exception {
         Server server = new TomcatServer(registry, this.server);
         Service service = mock(Service.class);
         LifecycleEngine engine = mock(LifecycleEngine.class);
@@ -113,7 +113,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void deployWebApp() throws Exception {
+    void deployWebApp() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
@@ -159,7 +159,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void deployHost() {
+    void deployHost() {
         TomcatEventHandler handler = this.createEventHandler();
 
         org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
@@ -172,7 +172,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void undeployWebApp() throws Exception {
+    void undeployWebApp() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         org.apache.catalina.Host host = mock(org.apache.catalina.Host.class);
@@ -216,7 +216,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void undeployHost() {
+    void undeployHost() {
         TomcatEventHandler handler = this.createEventHandler();
 
         org.apache.catalina.Engine engine = mock(org.apache.catalina.Engine.class);
@@ -229,7 +229,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void startWebApp() throws Exception {
+    void startWebApp() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleContext context = mock(LifecycleContext.class);
@@ -263,7 +263,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void initServer() throws Exception {
+    void initServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
         LifecycleServer server = mock(LifecycleServer.class);
 
@@ -305,7 +305,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void initServerFromService() throws Exception {
+    void initServerFromService() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
         LifecycleService service = mock(LifecycleService.class);
 
@@ -343,7 +343,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void startServer() throws Exception {
+    void startServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
         LifecycleServer server = mock(LifecycleServer.class);
 
@@ -366,7 +366,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void startServerFromService() throws Exception {
+    void startServerFromService() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
         LifecycleService service = mock(LifecycleService.class);
 
@@ -389,7 +389,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void stopWebApp() throws Exception {
+    void stopWebApp() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleContext context = mock(LifecycleContext.class);
@@ -423,7 +423,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void stopServer() throws Exception {
+    void stopServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleServer server = mock(LifecycleServer.class);
@@ -454,7 +454,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void stopServerFromService() throws Exception {
+    void stopServerFromService() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleService service = mock(LifecycleService.class);
@@ -485,7 +485,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void destroyServer() throws Exception {
+    void destroyServer() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleServer server = mock(LifecycleServer.class);
@@ -522,7 +522,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void destroyServerFromService() throws Exception {
+    void destroyServerFromService() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleService service = mock(LifecycleService.class);
@@ -559,7 +559,7 @@ public class ContainerEventHandlerAdapterTestCase {
     }
 
     @Test
-    public void periodicEvent() throws Exception {
+    void periodicEvent() throws Exception {
         TomcatEventHandler handler = this.createEventHandler();
 
         LifecycleEngine engine = mock(LifecycleEngine.class);
@@ -597,12 +597,12 @@ public class ContainerEventHandlerAdapterTestCase {
     protected interface LifecycleServer extends Lifecycle, org.apache.catalina.Server {
     }
 
-    protected interface LifecycleService extends Lifecycle, org.apache.catalina.Service {
+    protected interface LifecycleService extends Lifecycle, Service {
     }
 
     protected interface LifecycleEngine extends Lifecycle, org.apache.catalina.Engine {
     }
 
-    protected interface LifecycleContainer extends Lifecycle, org.apache.catalina.Container {
+    protected interface LifecycleContainer extends Lifecycle, Container {
     }
 }
