@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.net.SocketFactory;
 
 import org.jboss.modcluster.ModClusterService;
@@ -18,7 +17,7 @@ import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.config.impl.UUIDJvmRouteFactory;
 import org.jboss.modcluster.load.impl.SimpleLoadBalanceFactorProvider;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Radoslav Husar
@@ -26,7 +25,7 @@ import org.junit.Test;
 public class ModClusterConfigurationBuilderTest {
 
     @Test
-    public void testBuilder() {
+    void testBuilder() {
         final ModClusterConfiguration configuration = new ModClusterConfigurationBuilder()
                 .advertise()
                 .setAdvertiseSocketAddress(null)

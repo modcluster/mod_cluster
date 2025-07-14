@@ -55,7 +55,7 @@
         <version.jcip-annotations>1.0</version.jcip-annotations>
 
         <!-- Test dependencies -->
-        <version.junit>4.13.2</version.junit>
+        <version.junit.jupiter>5.10.2</version.junit.jupiter>
         <version.mockito>5.18.0</version.mockito>
 
         <!-- Plugin versions -->
@@ -119,9 +119,11 @@
                 <version>${version.jcip-annotations}</version>
             </dependency>
             <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>${version.junit}</version>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${version.junit.jupiter}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -133,8 +135,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

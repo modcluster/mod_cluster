@@ -4,13 +4,13 @@
  */
 package org.jboss.modcluster.mcmp;
 
-import org.jboss.modcluster.config.ProxyConfiguration;
-
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.modcluster.config.ProxyConfiguration;
 
 /**
  * Handles communication via MCMP with the reverse proxy side.

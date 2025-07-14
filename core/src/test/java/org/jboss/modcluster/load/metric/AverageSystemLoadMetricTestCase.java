@@ -4,22 +4,21 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.lang.management.OperatingSystemMXBean;
 
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.AverageSystemLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class AverageSystemLoadMetricTestCase {
+class AverageSystemLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         OperatingSystemMXBean bean = mock(OperatingSystemMXBean.class);
         LoadMetric metric = new AverageSystemLoadMetric(bean);
         Engine engine = mock(Engine.class);

@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import javax.net.SocketFactory;
 
 import org.jboss.modcluster.config.JvmRouteFactory;

@@ -4,7 +4,7 @@
  */
 package org.jboss.modcluster.config;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.net.InetAddress;
@@ -13,11 +13,11 @@ import java.net.UnknownHostException;
 import org.jboss.modcluster.config.impl.SimpleJvmRouteFactory;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SimpleJvmRouteFactoryTestCase {
+class SimpleJvmRouteFactoryTestCase {
     @Test
-    public void defaultPattern() throws UnknownHostException {
+    void defaultPattern() throws UnknownHostException {
         Engine engine = mock(Engine.class);
         Connector connector = mock(Connector.class);
         InetAddress address = InetAddress.getLocalHost();
@@ -35,7 +35,7 @@ public class SimpleJvmRouteFactoryTestCase {
     }
 
     @Test
-    public void customPattern() throws UnknownHostException {
+    void customPattern() throws UnknownHostException {
         Engine engine = mock(Engine.class);
         Connector connector = mock(Connector.class);
         InetAddress address = InetAddress.getLocalHost();

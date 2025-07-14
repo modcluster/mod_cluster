@@ -4,18 +4,19 @@
  */
 package org.jboss.modcluster.load.metric;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import org.jboss.modcluster.load.metric.impl.DeterministicLoadStateImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class DeterministicLoadMetricTestCase {
+class DeterministicLoadMetricTestCase {
     private DeterministicLoadStateImpl state = new DeterministicLoadStateImpl();
 
     @Test
-    public void testDelta() throws InterruptedException {
+    void testDelta() throws InterruptedException {
         long lastTime = this.state.getPreviousTime();
 
         Thread.sleep(500);
@@ -26,7 +27,7 @@ public class DeterministicLoadMetricTestCase {
 
         double elapsed = (nextTime - lastTime) / 1000d;
 
-        Assert.assertEquals(20 / elapsed, result, 0);
+        assertEquals(20 / elapsed, result, 0);
 
         lastTime = this.state.getPreviousTime();
 
@@ -38,6 +39,6 @@ public class DeterministicLoadMetricTestCase {
 
         elapsed = (nextTime - lastTime) / 1000d;
 
-        Assert.assertEquals(30 / elapsed, result, 0);
+        assertEquals(30 / elapsed, result, 0);
     }
 }

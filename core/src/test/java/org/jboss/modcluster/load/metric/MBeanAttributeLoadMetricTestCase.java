@@ -4,29 +4,26 @@
  */
 package org.jboss.modcluster.load.metric;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.ArgumentMatchers.same;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.load.metric.impl.MBeanAttributeLoadMetric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Paul Ferraro
  */
-public class MBeanAttributeLoadMetricTestCase {
+class MBeanAttributeLoadMetricTestCase {
     @Test
-    public void getLoad() throws Exception {
+    void getLoad() throws Exception {
         MBeanServer server = mock(MBeanServer.class);
         ObjectName pattern = ObjectName.getInstance("domain:*");
         String attribute = "attribute";

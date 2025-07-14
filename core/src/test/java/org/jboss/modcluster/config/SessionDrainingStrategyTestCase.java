@@ -4,18 +4,18 @@
  */
 package org.jboss.modcluster.config;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import org.jboss.modcluster.config.impl.SessionDrainingStrategyEnum;
 import org.jboss.modcluster.container.Context;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-public class SessionDrainingStrategyTestCase {
+class SessionDrainingStrategyTestCase {
     private Context context = mock(Context.class);
 
     @Test
-    public void defaultStrategy() {
+    void defaultStrategy() {
         when(this.context.isDistributable()).thenReturn(false);
 
         boolean result = SessionDrainingStrategyEnum.DEFAULT.isEnabled(this.context);
@@ -30,14 +30,14 @@ public class SessionDrainingStrategyTestCase {
     }
 
     @Test
-    public void alwaysStrategy() {
+    void alwaysStrategy() {
         boolean result = SessionDrainingStrategyEnum.ALWAYS.isEnabled(this.context);
 
         assertTrue(result);
     }
 
     @Test
-    public void neverStrategy() {
+    void neverStrategy() {
         boolean result = SessionDrainingStrategyEnum.NEVER.isEnabled(this.context);
 
         assertFalse(result);
