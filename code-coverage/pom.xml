@@ -15,6 +15,12 @@
     <artifactId>mod_cluster-code-coverage-jacoco</artifactId>
     <name>mod_cluster: Code Coverage Aggregate Report (JaCoCo)</name>
 
+    <properties>
+        <!-- Do NOT deploy this module -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -56,13 +62,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
             </plugin>
         </plugins>
     </build>
