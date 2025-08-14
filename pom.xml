@@ -17,8 +17,8 @@
     <packaging>pom</packaging>
 
     <name>mod_cluster (parent)</name>
-    <description>An httpd-based load balancer</description>
-    <url>https://modcluster.io</url>
+    <description>mod_cluster is an intelligent native Apache httpd-based and pure-Java Undertow-based load-balancer</description>
+    <url>https://www.modcluster.io</url>
 
     <licenses>
         <license>
@@ -28,12 +28,33 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Radoslav Husar</name>
+            <email>rhusar@redhat.com</email>
+            <roles>
+                <role>developer</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
         <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
         <url>https://github.com/modcluster/mod_cluster</url>
         <tag>HEAD</tag>
     </scm>
+
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://issues.redhat.com/browse/MODCLUSTER</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/modcluster/mod_cluster/actions</url>
+    </ciManagement>
 
     <modules>
         <module>core</module>
@@ -43,6 +64,12 @@
     </modules>
 
     <properties>
+        <!-- Uncomment the following once a staging repo is created for this project -->
+        <!--
+        <nexus.repository.staging>modcluster-staging</nexus.repository.staging>
+        -->
+        <nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+
         <!-- Require and build for JDK 11 -->
         <jdk.min.version>11</jdk.min.version>
         <jdk.release.version>11</jdk.release.version>
@@ -217,14 +244,6 @@
                         </additionalDependency>
                     </additionalDependencies>
                     <source>${jdk.release.version}</source>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
             <plugin>
