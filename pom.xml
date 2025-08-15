@@ -17,24 +17,6 @@
     <name>mod_cluster (parent)</name>
     <packaging>pom</packaging>
 
-    <description>mod_cluster is an intelligent native Apache httpd-based and pure-Java Undertow-based load-balancer</description>
-    <url>https://www.modcluster.io</url>
-
-    <licenses>
-        <license>
-            <name>Apache License 2.0</name>
-            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
-        <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
-        <url>https://github.com/modcluster/mod_cluster</url>
-        <tag>HEAD</tag>
-    </scm>
-
     <modules>
         <module>bom</module>
         <module>core</module>
@@ -200,14 +182,6 @@
                          Thus, the following skippedModules should be a comma separated list of all non-latest Tomcat modules (artifactId) to not add in aggregated Javadoc.
                          See https://maven.apache.org/plugins/maven-javadoc-plugin/javadoc-mojo.html#skippedModules -->
                     <skippedModules>mod_cluster-container-tomcat-9.0,mod_cluster-container-tomcat-10.1</skippedModules>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
             <plugin>

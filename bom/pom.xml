@@ -9,7 +9,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>49</version>
+        <version>50</version>
         <relativePath />
     </parent>
 
@@ -19,6 +19,52 @@
     <packaging>pom</packaging>
 
     <name>mod_cluster: BOM</name>
+    <description>mod_cluster is an intelligent native Apache httpd-based and pure-Java Undertow-based load-balancer</description>
+    <url>https://www.modcluster.io</url>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://repository.jboss.org/licenses/apache-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Radoslav Husar</name>
+            <email>rhusar@redhat.com</email>
+            <roles>
+                <role>developer</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
+        <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/modcluster/mod_cluster</url>
+    </scm>
+
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://issues.redhat.com/browse/MODCLUSTER</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/modcluster/mod_cluster/actions</url>
+    </ciManagement>
+
+    <properties>
+        <!-- Uncomment the following once a staging repo is created for this project -->
+        <!--
+        <nexus.repository.staging>modcluster-staging</nexus.repository.staging>
+        -->
+        <nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
