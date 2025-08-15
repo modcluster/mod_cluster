@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - macos-latest
+          - macos-14
           - ubuntu-latest
           - windows-latest
         # Keep this list as: all supported LTS JDKs, the latest GA JDK, and optionally the latest EA JDK (if available).
