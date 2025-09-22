@@ -38,7 +38,7 @@
 
         <!-- Test dependencies -->
         <version.junit.jupiter>5.13.4</version.junit.jupiter>
-        <version.mockito>5.19.0</version.mockito>
+        <version.mockito>5.20.0</version.mockito>
 
         <!-- Plugin versions -->
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
