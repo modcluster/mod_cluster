@@ -37,7 +37,7 @@
         <version.jcip-annotations>1.0</version.jcip-annotations>
 
         <!-- Test dependencies -->
-        <version.junit.jupiter>5.13.4</version.junit.jupiter>
+        <version.junit.jupiter>6.0.0</version.junit.jupiter>
         <version.mockito>5.20.0</version.mockito>
 
         <!-- Plugin versions -->
