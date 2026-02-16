@@ -2316,7 +2316,9 @@ static apr_status_t decodeenc(char **ptr)
     val = 0;
     while (NULL != ptr[val]) {
         if (ptr[val][0] == '\0') {
-            return APR_SUCCESS;   /* special case for no characters */
+            /* special case for no characters */
+            val++;
+            continue;
         }
         for (i = 0, j = 0; ptr[val][i] != '\0'; i++, j++) {
             /* decode it if not already done */
