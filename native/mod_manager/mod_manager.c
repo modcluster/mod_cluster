@@ -75,6 +75,10 @@
 #define SPORBIG "SYNTAX: Port field too big"
 #define STYPBIG "SYNTAX: Type field too big"
 #define SALIBAD "SYNTAX: Alias without Context"
+#define SFLUBAD "SYNTAX: Flushwait field has bad value"
+#define SPNGBAD "SYNTAX: Ping field has bad value"
+#define STTLBAD "SYNTAX: TTL field has bad value"
+#define STIMBAD "SYNTAX: Timeout field has bad value"
 #define SCONBAD "SYNTAX: Context without Alias"
 #define SBADFLD "SYNTAX: Invalid field \"%s\" in message"
 #define SMISFLD "SYNTAX: Mandatory field(s) missing in message"
@@ -859,6 +863,8 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
     struct cluster_host *vhost; 
     struct cluster_host *phost; 
 
+    apr_interval_time_t time;
+
     int i = 0;
     int id;
     int vid = 1; /* zero and "" is empty */
@@ -1028,19 +1034,39 @@ static char * process_config(request_rec *r, char **ptr, int *errtype)
             }
         }
         if (strcasecmp(ptr[i], "flushwait") == 0) {
-            nodeinfo.mess.flushwait = atoi(ptr[i+1]) * 1000;
+            if (ap_timeout_parameter_parse(ptr[i+1], &time, "ms") != APR_SUCCESS) {
+                *errtype = TYPESYNTAX;
+                return SFLUBAD;
+            } else {
+                nodeinfo.mess.flushwait = time;
+            }
         }
         if (strcasecmp(ptr[i], "ping") == 0) {
-            nodeinfo.mess.ping = apr_time_from_sec(atoi(ptr[i+1]));
+            if (ap_timeout_parameter_parse(ptr[i+1], &time, "s") != APR_SUCCESS) {
+                *errtype = TYPESYNTAX;
+                return SPNGBAD;
+            } else {
+                nodeinfo.mess.ping = time;
+            }
         }
         if (strcasecmp(ptr[i], "smax") == 0) {
             nodeinfo.mess.smax = atoi(ptr[i+1]);
         }
         if (strcasecmp(ptr[i], "ttl") == 0) {
-            nodeinfo.mess.ttl = apr_time_from_sec(atoi(ptr[i+1]));
+            if (ap_timeout_parameter_parse(ptr[i+1], &time, "s") != APR_SUCCESS) {
+                *errtype = TYPESYNTAX;
+                return STTLBAD;
+            } else {
+                nodeinfo.mess.ttl = time;
+            }
         }
         if (strcasecmp(ptr[i], "Timeout") == 0) {
-            nodeinfo.mess.timeout = apr_time_from_sec(atoi(ptr[i+1]));
+            if (ap_timeout_parameter_parse(ptr[i+1], &time, "s") != APR_SUCCESS) {
+                *errtype = TYPESYNTAX;
+                return STIMBAD;
+            } else {
+                nodeinfo.mess.timeout = time;
+            }
         }
 
         /* Hosts and contexts (optional paramters) */
