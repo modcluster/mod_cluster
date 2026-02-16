@@ -19,6 +19,7 @@ native/*/Makefile
 native/*/autom4te.cache/
 native/*/config.status
 native/*/configure
+native/build/
 
 # Native testsuite
 test/java/node*/
