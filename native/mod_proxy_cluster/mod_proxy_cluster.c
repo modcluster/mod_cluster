@@ -2253,7 +2253,7 @@ static proxy_worker *get_http_worker(server_rec *s, proxy_worker *ws_worker)
  * Check that we could connect to the node and create corresponding balancers and workers.
  * id   : worker id
  * load : load factor from the cluster manager.
- * load > 0  : a load factor.
+ * load in [1, 100] : a load factor
  * load = 0  : standby worker.
  * load = -1 : errored worker.
  * load = -2 : just do a cping/cpong. 
@@ -2345,7 +2345,7 @@ static int proxy_node_isup(request_rec *r, int id, int load)
            http_worker->s->lbfactor = 0;
         }
     }
-    else {
+    else if (load >= 1 && load <= 100) {
         apr_time_t now = apr_time_now();
         worker->s->status &= ~PROXY_WORKER_IN_ERROR;
         worker->s->status &= ~PROXY_WORKER_STOPPED;
