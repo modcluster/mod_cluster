@@ -3,8 +3,8 @@
 # @author: Michal Karm Babacek
 #==================================
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-PROJECT(mod_cluster)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
+PROJECT(mod_cluster LANGUAGES C)
 
 IF(WIN32)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /O2 /Wall /Z7")
