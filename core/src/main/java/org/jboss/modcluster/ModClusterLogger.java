@@ -167,7 +167,7 @@ public interface ModClusterLogger {
     @Message(id = 48, value = "Multiple connectors match specified host:port (%s)! Ensure connectorPort and/or connectorAddress are configured.")
     RuntimeException connectorMatchesMultiple(String connector);
 
-    @Message(id = 49, value = "Could not resolve configured connector address (%d)!")
+    @Message(id = 49, value = "Could not resolve configured connector address (%s)!")
     RuntimeException connectorAddressUnknownHost(String connectorAddress);
 
     @Message(id = 50, value = "Initial load must be within the range [0..100] or -1 to not prepopulate with initial load, but was: %d")
