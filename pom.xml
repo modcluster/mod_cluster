@@ -38,7 +38,7 @@
         <!-- Plugin versions -->
         <version.checkstyle>10.26.1</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
-        <version.org.jacoco.jacoco-maven-plugin>0.8.14</version.org.jacoco.jacoco-maven-plugin>
+        <version.org.jacoco.jacoco-maven-plugin>0.8.15</version.org.jacoco.jacoco-maven-plugin>
     </properties>
 
     <profiles>
