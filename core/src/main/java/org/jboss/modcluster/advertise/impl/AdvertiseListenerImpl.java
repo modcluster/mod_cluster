@@ -148,8 +148,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     // Check the digest, using our key and server + date.
     // digest is a hex string for httpd.
     private boolean verifyDigest(String digest, String server, String date, String sequence) {
-        // Neither side is configured to use digest -- pass verification
-        if (this.md == null && digest == null) return true;
+        // A message missing any of the digested headers or the digest itself cannot ever be verified
+        if (digest == null || server == null || date == null || sequence == null) return false;
 
         String securityKey = this.config.getAdvertiseSecurityKey();
         byte[] salt;
@@ -241,7 +241,11 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                             if (sline == null || sline.length != 3) {
                                 break;
                             }
-                            status = Integer.parseInt(sline[1]);
+                            try {
+                                status = Integer.parseInt(sline[1]);
+                            } catch (NumberFormatException e) {
+                                break;
+                            }
                             if (status < 100) {
                                 break;
                             }
@@ -311,6 +315,25 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         // Do not blow the CPU in case of temporary communication error
                         Thread.yield();
                     }
+                } catch (RuntimeException e) {
+                    // Processing an advertisement message (e.g. a malformed one) may throw; discard the message and keep listening
+                    try {
+                        log.trace("Failed to process advertise message - message discarded", e);
+                    } catch (Throwable ignored) {
+                        // Logging itself may fail (e.g. OutOfMemoryError); do not let it terminate the listener thread
+                    }
+
+                    // Do not blow the CPU should the exception persist
+                    Thread.yield();
+                } catch (Error e) {
+                    try {
+                        ModClusterLogger.LOGGER.advertiseListenerError(e);
+                    } catch (Throwable ignored) {
+                        // Logging itself may fail (e.g. OutOfMemoryError); do not let it terminate the listener thread
+                    }
+
+                    // Do not blow the CPU should the error persist
+                    Thread.yield();
                 } finally {
                     clearBuffer(buffer);
                 }

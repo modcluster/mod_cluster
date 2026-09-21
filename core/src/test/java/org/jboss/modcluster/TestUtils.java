@@ -19,7 +19,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
+
+import org.jboss.modcluster.advertise.impl.AdvertisedServer;
 
 /**
  * Utility class to be used in tests.
@@ -88,8 +92,11 @@ public class TestUtils {
 
     /**
      * Generates datagram packet content buffer including all fields as sent by native code.
+     *
+     * @param omittedHeaders names of headers to leave out of the generated message; the digest is always computed over
+     *                       the complete set of values, exactly as the native code would have sent them
      */
-    public static byte[] generateAdvertisePacketData(Date date, int sequence, String server, String serverAddress) throws NoSuchAlgorithmException {
+    public static byte[] generateAdvertisePacketData(Date date, int sequence, String server, String serverAddress, String... omittedHeaders) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("MD5");
 
         String rfcDate = df.format(date);
@@ -99,10 +106,25 @@ public class TestUtils {
         digestString(md, String.valueOf(sequence));
         digestString(md, server);
 
-        String data = String.format("HTTP/1.1 200 OK\r\nDate: %s\r\nSequence: %d\r\nDigest: %032x\r\nServer: %s\r\nX-Manager-Address: %s\r\n",
-                rfcDate, sequence, new BigInteger(1, md.digest()), server, serverAddress);
+        Map<String, String> headers = new LinkedHashMap<>();
+        headers.put("Date", rfcDate);
+        headers.put("Sequence", String.valueOf(sequence));
+        headers.put("Digest", String.format("%032x", new BigInteger(1, md.digest())));
+        headers.put("Server", server);
+        headers.put(AdvertisedServer.MANAGER_ADDRESS, serverAddress);
 
-        return data.getBytes();
+        for (String omittedHeader : omittedHeaders) {
+            if (headers.remove(omittedHeader) == null) {
+                throw new IllegalArgumentException("No such advertise header: " + omittedHeader);
+            }
+        }
+
+        StringBuilder data = new StringBuilder("HTTP/1.1 200 OK\r\n");
+        for (Map.Entry<String, String> header : headers.entrySet()) {
+            data.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n");
+        }
+
+        return data.toString().getBytes();
     }
 
     /**

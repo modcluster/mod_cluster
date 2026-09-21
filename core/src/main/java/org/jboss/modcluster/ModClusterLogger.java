@@ -189,4 +189,8 @@ public interface ModClusterLogger {
     @LogMessage(level = WARN)
     @Message(id = 55, value = "No configured connector for engine %s. If this engine should be used with mod_cluster check connector, connectorPort and/or connectorAddress configuration.")
     void noConnectorForEngine(String engineName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 56, value = "Unexpected error while processing advertise message; message discarded, advertise listener will continue listening")
+    void advertiseListenerError(@Cause Throwable cause);
 }
