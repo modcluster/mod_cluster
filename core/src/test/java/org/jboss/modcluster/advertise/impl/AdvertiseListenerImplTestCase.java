@@ -26,6 +26,7 @@ import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +69,14 @@ public class AdvertiseListenerImplTestCase {
 
         InetAddress groupAddress = InetAddress.getByName(ADVERTISE_GROUP);
         this.channel = new DatagramChannelFactoryImpl().createDatagramChannel(new InetSocketAddress(groupAddress, this.advertiseSocketAddress.getPort()));
+    }
+
+    @After
+    public void cleanup() throws IOException {
+        // Tests normally close the channel via the listener; make sure it does not leak when a test fails early
+        if (this.channel != null && this.channel.isOpen()) {
+            this.channel.close();
+        }
     }
 
     @Test
@@ -195,7 +204,7 @@ public class AdvertiseListenerImplTestCase {
      * advertisements from registering its proxy.
      */
     @Test
-    void testMalformedManagerAddressDoesNotPreventRegistration() throws Exception {
+    public void testMalformedManagerAddressDoesNotPreventRegistration() throws Exception {
         try (DatagramChannel sendChannel = new SendingDatagramChannelFactoryImpl().createDatagramChannel(this.advertiseSocketAddress)) {
             when(this.channelFactory.createDatagramChannel(any(InetSocketAddress.class))).thenReturn(this.channel);
             AdvertiseListenerImpl listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.channelFactory);
