@@ -26,6 +26,7 @@ import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.jboss.modcluster.config.ProxyConfiguration;
 import org.jboss.modcluster.mcmp.MCMPHandler;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -68,6 +69,14 @@ class AdvertiseListenerImplTestCase {
 
         InetAddress groupAddress = InetAddress.getByName(ADVERTISE_GROUP);
         this.channel = new DatagramChannelFactoryImpl().createDatagramChannel(new InetSocketAddress(groupAddress, this.advertiseSocketAddress.getPort()));
+    }
+
+    @AfterEach
+    void cleanup() throws IOException {
+        // Tests normally close the channel via the listener; make sure it does not leak when a test fails early
+        if (this.channel != null && this.channel.isOpen()) {
+            this.channel.close();
+        }
     }
 
     @Test
