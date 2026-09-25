@@ -190,6 +190,41 @@ class AdvertiseListenerImplTestCase {
         }
     }
 
+    /**
+     * An advertisement with a missing or malformed X-Manager-Address header must not prevent the server's subsequent
+     * advertisements from registering its proxy.
+     */
+    @Test
+    void testMalformedManagerAddressDoesNotPreventRegistration() throws Exception {
+        try (DatagramChannel sendChannel = new SendingDatagramChannelFactoryImpl().createDatagramChannel(this.advertiseSocketAddress)) {
+            when(this.channelFactory.createDatagramChannel(any(InetSocketAddress.class))).thenReturn(this.channel);
+            AdvertiseListenerImpl listener = new AdvertiseListenerImpl(this.mcmpHandler, this.config, this.channelFactory);
+
+            try {
+                send(sendChannel, TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1 + ":port"));
+                send(sendChannel, TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1 + ":99999"));
+                send(sendChannel, TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS, AdvertisedServer.MANAGER_ADDRESS));
+
+                // A well-formed advertisement from the very same server must still register its proxy
+                send(sendChannel, TestUtils.generateAdvertisePacketData(new Date(), 0, SERVER1, SERVER1_ADDRESS));
+
+                ArgumentCaptor<ProxyConfiguration> capturedProxy = ArgumentCaptor.forClass(ProxyConfiguration.class);
+                verify(this.mcmpHandler, timeout(TIMEOUT)).addProxy(capturedProxy.capture());
+
+                assertEquals(SERVER1, capturedProxy.getValue().getRemoteAddress().getAddress().getHostAddress());
+                assertEquals(SERVER_PORT, capturedProxy.getValue().getRemoteAddress().getPort());
+                // The server is recorded only after addProxy(...) returns, so wait for the worker to get there
+                long deadline = System.currentTimeMillis() + TIMEOUT;
+                while (listener.getServer(SERVER1) == null && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(10);
+                }
+                assertNotNull(listener.getServer(SERVER1));
+            } finally {
+                closeListener(listener);
+            }
+        }
+    }
+
     private void send(DatagramChannel sendChannel, byte[] packet) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(512);
         buffer.put(packet);

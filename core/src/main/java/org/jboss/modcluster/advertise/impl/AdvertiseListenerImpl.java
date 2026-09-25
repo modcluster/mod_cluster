@@ -289,13 +289,15 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         server.setDate(date);
                         server.setStatus(status, status_desc);
                         if (added) {
-                            AdvertiseListenerImpl.this.servers.put(server_name, server);
-                            // Call the new server callback
-                            // eventHandler.onEvent(AdvertiseEventType.ON_NEW_SERVER, server);
+                            // Only record the server once its proxy was added, so that an advertisement with a missing or
+                            // malformed manager address does not prevent subsequent ones from ever adding it
                             String proxy = server.getParameter(AdvertisedServer.MANAGER_ADDRESS);
                             if (proxy != null) {
                                 InetSocketAddress proxyAddress = Utils.parseSocketAddress(proxy, 0);
                                 AdvertiseListenerImpl.this.handler.addProxy(new ProxyConfigurationImpl(proxyAddress));
+                                // Call the new server callback
+                                // eventHandler.onEvent(AdvertiseEventType.ON_NEW_SERVER, server);
+                                AdvertiseListenerImpl.this.servers.put(server_name, server);
                             }
                         }
                     }
