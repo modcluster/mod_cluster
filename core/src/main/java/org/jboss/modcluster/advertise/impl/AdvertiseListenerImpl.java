@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -235,6 +236,9 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                     String sequence = null;
                     AdvertisedServer server = null;
                     boolean added = false;
+                    // Collect headers first and apply them only once the digest was verified, so that an
+                    // unauthenticated or malformed message cannot modify an already recorded server
+                    Map<String, String> parameters = new HashMap<>();
                     for (int i = 0; i < headers.length; i++) {
                         if (i == 0) {
                             String[] sline = headers[i].split(" ", 3);
@@ -273,8 +277,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                                     server = new AdvertisedServer(server_name);
                                     added = true;
                                 }
-                            } else if (server != null) {
-                                server.setParameter(hdrv[0], hdrv[1]);
+                            } else {
+                                parameters.put(hdrv[0], hdrv[1]);
                             }
                         }
                     }
@@ -286,6 +290,11 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         }
                         log.tracef("Advertise message digest verification passed for server %s", server_name);
 
+                        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+                            server.setParameter(key, value);
+                        }
                         server.setDate(date);
                         server.setStatus(status, status_desc);
                         if (added) {
