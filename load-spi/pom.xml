@@ -14,6 +14,7 @@
 
     <artifactId>mod_cluster-load-spi</artifactId>
     <name>mod_cluster: Load SPI</name>
+    <description>Service provider interface for mod_cluster load balance factor providers and load metrics</description>
 
     <dependencies>
         <dependency>

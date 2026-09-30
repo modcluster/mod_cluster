@@ -16,6 +16,7 @@
     <artifactId>mod_cluster-parent</artifactId>
     <name>mod_cluster (parent)</name>
     <packaging>pom</packaging>
+    <description>mod_cluster is an intelligent native Apache httpd-based and pure-Java Undertow-based load-balancer</description>
 
     <modules>
         <module>bom</module>

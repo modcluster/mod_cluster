@@ -14,11 +14,12 @@
 
     <artifactId>mod_cluster-code-coverage-jacoco</artifactId>
     <name>mod_cluster: Code Coverage Aggregate Report (JaCoCo)</name>
+    <description>Aggregate JaCoCo code coverage report across all mod_cluster modules; not deployed</description>
 
     <properties>
         <!-- Do NOT deploy this module -->
         <maven.deploy.skip>true</maven.deploy.skip>
-        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+        <nexus.skipPublishing>true</nexus.skipPublishing>
     </properties>
 
     <dependencies>
