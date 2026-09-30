@@ -19,6 +19,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -148,8 +149,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
     // Check the digest, using our key and server + date.
     // digest is a hex string for httpd.
     private boolean verifyDigest(String digest, String server, String date, String sequence) {
-        // Neither side is configured to use digest -- pass verification
-        if (this.md == null && digest == null) return true;
+        // A message missing any of the digested headers or the digest itself cannot ever be verified
+        if (digest == null || server == null || date == null || sequence == null) return false;
 
         String securityKey = this.config.getAdvertiseSecurityKey();
         byte[] salt;
@@ -235,13 +236,20 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                     String sequence = null;
                     AdvertisedServer server = null;
                     boolean added = false;
+                    // Collect headers first and apply them only once the digest was verified, so that an
+                    // unauthenticated or malformed message cannot modify an already recorded server
+                    Map<String, String> parameters = new HashMap<>();
                     for (int i = 0; i < headers.length; i++) {
                         if (i == 0) {
                             String[] sline = headers[i].split(" ", 3);
                             if (sline == null || sline.length != 3) {
                                 break;
                             }
-                            status = Integer.parseInt(sline[1]);
+                            try {
+                                status = Integer.parseInt(sline[1]);
+                            } catch (NumberFormatException e) {
+                                break;
+                            }
                             if (status < 100) {
                                 break;
                             }
@@ -269,8 +277,8 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                                     server = new AdvertisedServer(server_name);
                                     added = true;
                                 }
-                            } else if (server != null) {
-                                server.setParameter(hdrv[0], hdrv[1]);
+                            } else {
+                                parameters.put(hdrv[0], hdrv[1]);
                             }
                         }
                     }
@@ -282,16 +290,23 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         }
                         log.tracef("Advertise message digest verification passed for server %s", server_name);
 
+                        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+                            server.setParameter(key, value);
+                        }
                         server.setDate(date);
                         server.setStatus(status, status_desc);
                         if (added) {
-                            AdvertiseListenerImpl.this.servers.put(server_name, server);
-                            // Call the new server callback
-                            // eventHandler.onEvent(AdvertiseEventType.ON_NEW_SERVER, server);
+                            // Only record the server once its proxy was added, so that an advertisement with a missing or
+                            // malformed manager address does not prevent subsequent ones from ever adding it
                             String proxy = server.getParameter(AdvertisedServer.MANAGER_ADDRESS);
                             if (proxy != null) {
                                 InetSocketAddress proxyAddress = Utils.parseSocketAddress(proxy, 0);
                                 AdvertiseListenerImpl.this.handler.addProxy(new ProxyConfigurationImpl(proxyAddress));
+                                // Call the new server callback
+                                // eventHandler.onEvent(AdvertiseEventType.ON_NEW_SERVER, server);
+                                AdvertiseListenerImpl.this.servers.put(server_name, server);
                             }
                         }
                     }
@@ -311,6 +326,25 @@ public class AdvertiseListenerImpl implements AdvertiseListener {
                         // Do not blow the CPU in case of temporary communication error
                         Thread.yield();
                     }
+                } catch (RuntimeException e) {
+                    // Processing an advertisement message (e.g. a malformed one) may throw; discard the message and keep listening
+                    try {
+                        log.trace("Failed to process advertise message - message discarded", e);
+                    } catch (Throwable ignored) {
+                        // Logging itself may fail (e.g. OutOfMemoryError); do not let it terminate the listener thread
+                    }
+
+                    // Do not blow the CPU should the exception persist
+                    Thread.yield();
+                } catch (Error e) {
+                    try {
+                        ModClusterLogger.LOGGER.advertiseListenerError(e);
+                    } catch (Throwable ignored) {
+                        // Logging itself may fail (e.g. OutOfMemoryError); do not let it terminate the listener thread
+                    }
+
+                    // Do not blow the CPU should the error persist
+                    Thread.yield();
                 } finally {
                     clearBuffer(buffer);
                 }
