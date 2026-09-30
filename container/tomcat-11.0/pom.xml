@@ -12,6 +12,7 @@
     </parent>
     <artifactId>mod_cluster-container-tomcat-11.0</artifactId>
     <name>mod_cluster: Container - Tomcat 11.0</name>
+    <description>mod_cluster servlet container integration for Apache Tomcat 11.0</description>
 
     <properties>
         <version.org.apache.tomcat-11.0>11.0.26</version.org.apache.tomcat-11.0>

@@ -12,6 +12,7 @@
     </parent>
     <artifactId>mod_cluster-container</artifactId>
     <name>mod_cluster: Container (parent)</name>
+    <description>Parent of the mod_cluster servlet container integration modules</description>
     <packaging>pom</packaging>
     <modules>
         <module>spi</module>
