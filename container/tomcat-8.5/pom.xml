@@ -12,6 +12,7 @@
     </parent>
     <artifactId>mod_cluster-container-tomcat-8.5</artifactId>
     <name>mod_cluster: Container - Tomcat 8.5</name>
+    <description>mod_cluster servlet container integration for Apache Tomcat 8.5</description>
 
     <properties>
         <version.org.apache.tomcat-8.5>8.5.96</version.org.apache.tomcat-8.5>

@@ -12,4 +12,5 @@
     </parent>
     <artifactId>mod_cluster-container-spi</artifactId>
     <name>mod_cluster: Container SPI</name>
+    <description>Service provider interface abstracting the servlet container (server, engine, host, context) for mod_cluster</description>
 </project>

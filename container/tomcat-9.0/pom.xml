@@ -12,6 +12,7 @@
     </parent>
     <artifactId>mod_cluster-container-tomcat-9.0</artifactId>
     <name>mod_cluster: Container - Tomcat 9.0</name>
+    <description>mod_cluster servlet container integration for Apache Tomcat 9.0</description>
 
     <properties>
         <version.org.apache.tomcat-9.0>9.0.83</version.org.apache.tomcat-9.0>

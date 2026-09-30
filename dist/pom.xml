@@ -14,6 +14,7 @@
 
     <artifactId>mod_cluster-distribution</artifactId>
     <name>mod_cluster: Distribution</name>
+    <description>mod_cluster distribution archives for Apache Tomcat</description>
     <packaging>pom</packaging>
 
     <dependencies>

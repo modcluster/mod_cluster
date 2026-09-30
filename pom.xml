@@ -64,11 +64,14 @@
     </modules>
 
     <properties>
-        <!-- Uncomment the following once a staging repo is created for this project -->
-        <!--
-        <nexus.repository.staging>modcluster-staging</nexus.repository.staging>
-        -->
         <nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+
+        <!-- maven-release-plugin -->
+        <!-- Skip local tests during release:prepare and release:perform runs -->
+        <arguments>-DskipTests -DskipITs</arguments>
+        <!-- Temporarily keep SCM changes manual -->
+        <pushChanges>false</pushChanges>
+        <localCheckout>true</localCheckout>
 
         <!-- Require and build for JDK 11 -->
         <jdk.min.version>11</jdk.min.version>
