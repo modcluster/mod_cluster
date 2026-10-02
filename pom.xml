@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.jboss</groupId>
         <artifactId>jboss-parent</artifactId>
-        <version>41</version>
+        <version>54</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -17,8 +17,8 @@
     <packaging>pom</packaging>
 
     <name>mod_cluster (parent)</name>
-    <description>An httpd-based load balancer</description>
-    <url>https://modcluster.io</url>
+    <description>mod_cluster is an intelligent native Apache httpd-based and pure-Java Undertow-based load-balancer</description>
+    <url>https://www.modcluster.io</url>
 
     <licenses>
         <license>
@@ -28,6 +28,17 @@
         </license>
     </licenses>
 
+    <developers>
+        <developer>
+            <name>Radoslav Husar</name>
+            <email>rhusar@redhat.com</email>
+            <roles>
+                <role>developer</role>
+                <role>maintainer</role>
+            </roles>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:modcluster/mod_cluster.git</connection>
         <developerConnection>scm:git:git@github.com:modcluster/mod_cluster.git</developerConnection>
@@ -35,14 +46,34 @@
         <tag>HEAD</tag>
     </scm>
 
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://issues.redhat.com/browse/MODCLUSTER</url>
+    </issueManagement>
+
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/modcluster/mod_cluster/actions</url>
+    </ciManagement>
+
     <modules>
         <module>core</module>
         <module>container</module>
         <module>load-spi</module>
         <module>dist</module>
+        <module>code-coverage</module>
     </modules>
 
     <properties>
+        <nexus.staging.tag>${project.groupId}-${project.version}</nexus.staging.tag>
+
+        <!-- maven-release-plugin -->
+        <!-- Skip local tests during release:prepare and release:perform runs -->
+        <arguments>-DskipTests -DskipITs</arguments>
+        <!-- Temporarily keep SCM changes manual -->
+        <pushChanges>false</pushChanges>
+        <localCheckout>true</localCheckout>
+
         <!-- Require and build for JDK 11 -->
         <jdk.min.version>11</jdk.min.version>
         <jdk.release.version>11</jdk.release.version>
@@ -57,6 +88,7 @@
         <version.mockito>5.24.0</version.mockito>
 
         <!-- Plugin versions -->
+        <version.checkstyle>10.26.1</version.checkstyle>
         <version.org.wildfly.checkstyle-config>1.0.8.Final</version.org.wildfly.checkstyle-config>
         <version.org.jacoco.jacoco-maven-plugin>0.8.11</version.org.jacoco.jacoco-maven-plugin>
     </properties>
@@ -70,9 +102,6 @@
                     <name>coverage</name>
                 </property>
             </activation>
-            <modules>
-                <module>code-coverage</module>
-            </modules>
             <build>
                 <plugins>
                     <plugin>
@@ -107,6 +136,11 @@
             <dependency>
                 <groupId>org.jboss.mod_cluster</groupId>
                 <artifactId>mod_cluster-container-tomcat-9.0</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.mod_cluster</groupId>
+                <artifactId>mod_cluster-container-tomcat-10.1</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -207,17 +241,8 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <tagNameFormat>@{project.version}</tagNameFormat>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
-                <version>2.16.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -263,20 +288,4 @@
             </plugins>
         </pluginManagement>
     </build>
-
-    <!-- Setup <distributionManagement> until org.jboss:jboss-parent:42 which will add altReleaseDeploymentRepository/altSnapshotDeploymentRepository for the deploy plugin -->
-    <!-- See https://github.com/jboss/jboss-parent-pom/pull/244 -->
-    <distributionManagement>
-        <repository>
-            <id>${jboss.releases.repo.id}</id>
-            <name>JBoss Releases Repository</name>
-            <url>${jboss.releases.repo.url}</url>
-        </repository>
-        <snapshotRepository>
-            <id>${jboss.snapshots.repo.id}</id>
-            <name>JBoss Snapshots Repository</name>
-            <url>${jboss.snapshots.repo.url}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
 </project>

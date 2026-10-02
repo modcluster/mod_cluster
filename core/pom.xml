@@ -12,6 +12,7 @@
     </parent>
     <artifactId>mod_cluster-core</artifactId>
     <name>mod_cluster: Core</name>
+    <description>Core mod_cluster implementation: MCMP communication with the proxy, advertise support, configuration and load metrics</description>
     <dependencies>
         <dependency>
             <groupId>org.jboss.mod_cluster</groupId>
