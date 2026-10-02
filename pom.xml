@@ -24,6 +24,7 @@
         <module>container</module>
         <module>load-spi</module>
         <module>dist</module>
+        <module>code-coverage</module>
     </modules>
 
     <properties>
@@ -51,9 +52,6 @@
                     <name>coverage</name>
                 </property>
             </activation>
-            <modules>
-                <module>code-coverage</module>
-            </modules>
             <build>
                 <plugins>
                     <plugin>
@@ -70,13 +68,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
-        <!-- Include the code-coverage module during release to keep module versions synchronized -->
-        <profile>
-            <id>jboss-release</id>
-            <modules>
-                <module>code-coverage</module>
-            </modules>
         </profile>
     </profiles>
 
