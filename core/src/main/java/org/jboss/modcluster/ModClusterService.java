@@ -184,6 +184,7 @@ public class ModClusterService implements ModClusterServiceMBean, ContainerEvent
         }
 
         this.mcmpHandler.shutdown();
+        this.established = false;
     }
 
     @Override
