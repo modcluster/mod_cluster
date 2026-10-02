@@ -16,7 +16,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.util.Date;
-import java.util.Locale;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -127,7 +126,7 @@ class AdvertiseListenerImplTestCase {
 
             assertFalse(this.channel.isConnected());
 
-            closeListener(listener);
+            listener.close();
 
             assertFalse(this.channel.isOpen());
         }
@@ -166,7 +165,7 @@ class AdvertiseListenerImplTestCase {
                 assertEquals(SERVER2, capturedProxy.getValue().getRemoteAddress().getAddress().getHostAddress());
                 assertEquals(SERVER_PORT, capturedProxy.getValue().getRemoteAddress().getPort());
             } finally {
-                closeListener(listener);
+                listener.close();
             }
         }
     }
@@ -194,7 +193,7 @@ class AdvertiseListenerImplTestCase {
 
                 assertEquals(SERVER2, capturedProxy.getValue().getRemoteAddress().getAddress().getHostAddress());
             } finally {
-                closeListener(listener);
+                listener.close();
             }
         }
     }
@@ -224,7 +223,7 @@ class AdvertiseListenerImplTestCase {
                 assertEquals(SERVER_PORT, capturedProxy.getValue().getRemoteAddress().getPort());
                 assertNotNull(awaitServer(listener, SERVER1));
             } finally {
-                closeListener(listener);
+                listener.close();
             }
         }
     }
@@ -253,7 +252,7 @@ class AdvertiseListenerImplTestCase {
 
                 assertEquals(SERVER1_ADDRESS, server.getParameter(AdvertisedServer.MANAGER_ADDRESS));
             } finally {
-                closeListener(listener);
+                listener.close();
             }
         }
     }
@@ -277,16 +276,5 @@ class AdvertiseListenerImplTestCase {
         flipBuffer(buffer);
 
         sendChannel.send(buffer, this.advertiseSocketAddress);
-    }
-
-    private static void closeListener(AdvertiseListener listener) throws IOException {
-        try {
-            listener.close();
-        } catch (IOException e) {
-            // Workaround for https://bugs.openjdk.java.net/browse/JDK-8050499
-            if (!System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("mac") || !"Unknown error: 316".equals(e.getMessage())) {
-                throw e;
-            }
-        }
     }
 }
