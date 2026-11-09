@@ -52,4 +52,32 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <!-- MODCLUSTER-862 GitHub Actions macOS 15+ runners block multicast due to local network privacy restrictions -->
+            <id>skip-multicast-tests-on-github-actions-macos</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+                <property>
+                    <name>env.GITHUB_ACTIONS</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <skipMulticastTests>true</skipMulticastTests>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

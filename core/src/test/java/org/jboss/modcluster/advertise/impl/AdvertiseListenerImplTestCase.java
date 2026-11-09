@@ -28,6 +28,7 @@ import org.jboss.modcluster.mcmp.MCMPHandler;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.mockito.ArgumentCaptor;
 
 /**
@@ -36,6 +37,7 @@ import org.mockito.ArgumentCaptor;
  * @author Brian Stansberry
  * @author Radoslav Husar
  */
+@DisabledIfSystemProperty(named = "skipMulticastTests", matches = "true", disabledReason = "MODCLUSTER-862 Multicast is blocked on macOS 15+ GitHub Actions runners")
 class AdvertiseListenerImplTestCase {
 
     private static final String ADVERTISE_GROUP = System.getProperty("multicast.address1", "224.0.1.106");

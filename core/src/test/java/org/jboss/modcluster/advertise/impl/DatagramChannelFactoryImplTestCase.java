@@ -22,6 +22,7 @@ import org.jboss.modcluster.TestUtils;
 import org.jboss.modcluster.advertise.DatagramChannelFactory;
 import org.jboss.modcluster.config.AdvertiseConfiguration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 
 /**
  * Tests {@link DatagramChannelFactoryImpl}.
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.Test;
  * @author Paul Ferraro
  * @author Radoslav Husar
  */
+@DisabledIfSystemProperty(named = "skipMulticastTests", matches = "true", disabledReason = "MODCLUSTER-862 Multicast is blocked on macOS 15+ GitHub Actions runners")
 class DatagramChannelFactoryImplTestCase {
 
     private static final String GROUP1 = System.getProperty("multicast.address1", "224.0.1.106");
