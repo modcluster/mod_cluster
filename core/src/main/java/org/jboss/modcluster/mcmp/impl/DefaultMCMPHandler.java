@@ -119,6 +119,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
                     this.add(proxy.getRemoteAddress(), proxy.getLocalAddress());
                 }
 
+                this.processPendingDiscoveryEvents();
                 this.status(false);
             } finally {
                 lock.unlock();
@@ -131,6 +132,7 @@ public class DefaultMCMPHandler implements MCMPHandler {
     @Override
     public void shutdown() {
         this.init = false;
+        this.established.set(false);
 
         Lock lock = this.proxiesLock.readLock();
         lock.lock();
