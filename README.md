@@ -28,11 +28,15 @@ These versions already ship with bundled mod_cluster. It is configured via mod_c
 
 ### Tomcat 9.0 and newer
 
-Distribution archives are provided for each Tomcat version.
+Distribution archives (`zip` and `tar.gz`) are provided for each supported Tomcat version. They are published to Maven
+Central as the `org.jboss.mod_cluster:mod_cluster-distribution` artifact with a classifier matching the Tomcat version
+(`tomcat-9.0`, `tomcat-10.1` or `tomcat-11.0`). Archives for all released versions can be browsed and downloaded from:
 
-1. Get the distribution archive corresponding to the intended Tomcat version by either downloading from the project
-   website or if building from source located in `dist/target/` directory.
-2. Download and unzip or untar the distribution archive and navigate to the extracted directory.
+[https://repo1.maven.org/maven2/org/jboss/mod_cluster/mod_cluster-distribution/](https://repo1.maven.org/maven2/org/jboss/mod_cluster/mod_cluster-distribution/)
+
+1. Get the distribution archive corresponding to the intended Tomcat version by either downloading it from Maven Central
+   (see above) or, if building from source, from the `dist/target/` directory.
+2. Unzip or untar the distribution archive and navigate to the extracted directory.
 3. Copy the `lib/` directory to the Tomcat installation directory adding jars to its `lib/` directory. If upgrading from
    a different version, it is necessary to remove all jars copied previously.
 4. Modify `server.xml` within the `conf` directory and add the mod_cluster listener as documented
